@@ -15,12 +15,17 @@ func _run() -> void:
 	var player: PlayerCharacter = player_scene.instantiate() as PlayerCharacter
 	player.position = Vector2(600, 600)
 	root.add_child(player)
+	await process_frame
+	player.add_to_group("player")
+	player.set_physics_process(true)
 
 	var wolf_script: Script = load("res://scripts/forest_wolf.gd")
 	var wolf: ForestWolf = wolf_script.new() as ForestWolf
 	wolf.position = Vector2(540, 600)
 	root.add_child(wolf)
+	wolf.set_physics_process(true)
 	await physics_frame
+	print("WOLF TEST DEBUG: players=%d player_physics=%s distance=%.1f brain=%d attack=%d" % [root.get_nodes_in_group("player").size(), str(player.is_physics_processing()), wolf.global_position.distance_to(player.global_position), wolf.brain_state, wolf.attack_state])
 
 	if not _check(player.is_physics_processing(), "player test fixture must process physics"):
 		return
