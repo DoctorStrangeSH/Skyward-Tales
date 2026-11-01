@@ -5,7 +5,7 @@
   "frames_per_direction": 4,
   "sheets": {
     "hero_8dir_walk.png": {"cell_size": [32, 32], "columns": 4, "rows": 8, "animation": "walk", "notes": "Four walk frames per direction. Frame zero is the idle pose."},
-    "forest_slime_8dir.png": {"cell_size": [32, 32], "columns": 4, "rows": 8, "animation": "idle_move", "notes": "Four slime poses rotated into eight facing directions."},
+    "enemies/forest_slime_true8.png": {"cell_size": [32, 32], "columns": 4, "rows": 8, "animation": "idle_move", "notes": "Direct res:// PNG. Genuine anatomical rear and rear-quarter views, no eyes on back."},
     "fireball_8dir.png": {"cell_size": [32, 32], "columns": 4, "rows": 8, "animation": "flight", "notes": "Four flight frames pre-rotated into eight directions; do not rotate Sprite2D again."}
   }
 }
