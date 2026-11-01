@@ -61,42 +61,45 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact"):
 		if hud.dialogue_visible:
 			hud.close_dialogue()
+			player.set_physics_process(true)
 		else:
 			_try_interact()
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("cast_spell"):
-		_cast_spell()
+		if not hud.dialogue_visible:
+			_cast_spell()
 		get_viewport().set_input_as_handled()
 
 func _spawn_elder() -> void:
 	elder = NPC_SCRIPT.new() as WorldNpc
 	elder.display_name = "Старейшина Элиан"
-	elder.global_position = Vector2(250, 205)
 	add_child(elder)
+	elder.global_position = Vector2(250, 205)
 	elder.interacted.connect(_on_elder_interacted)
 
 func _spawn_herb(spawn_position: Vector2) -> void:
 	var herb := COLLECTIBLE_SCRIPT.new() as WorldCollectible
-	herb.global_position = spawn_position
 	add_child(herb)
+	herb.global_position = spawn_position
 	herb.interacted.connect(_on_herb_interacted)
 
 func _spawn_slime(spawn_position: Vector2) -> void:
 	var slime := ENEMY_SCRIPT.new() as SlimeEnemy
-	slime.global_position = spawn_position
 	add_child(slime)
+	slime.global_position = spawn_position
 	slime.defeated.connect(_on_enemy_defeated)
 
 func _find_nearest_interactable() -> Node2D:
 	var nearest: Node2D = null
 	var nearest_distance := 28.0
 	for candidate in get_tree().get_nodes_in_group("interactables"):
-		if not is_instance_valid(candidate):
+		var candidate_2d := candidate as Node2D
+		if candidate_2d == null or not is_instance_valid(candidate_2d):
 			continue
-		var distance := player.global_position.distance_to(candidate.global_position)
+		var distance := player.global_position.distance_to(candidate_2d.global_position)
 		if distance < nearest_distance:
 			nearest_distance = distance
-			nearest = candidate as Node2D
+			nearest = candidate_2d
 	return nearest
 
 func _try_interact() -> void:
@@ -107,19 +110,23 @@ func _try_interact() -> void:
 	if target.has_method("interact"):
 		target.interact()
 
+func _show_dialogue(speaker: String, message: String) -> void:
+	player.set_physics_process(false)
+	hud.show_dialogue(speaker, message)
+
 func _on_elder_interacted(_source: Node2D) -> void:
 	if quests.is_completed("moonleaf_gathering"):
-		hud.show_dialogue("Старейшина Элиан", "Ты помог нашему поселению. Но лес хранит куда больше тайн, чем кажется...")
+		_show_dialogue("Старейшина Элиан", "Ты помог нашему поселению. Но лес хранит куда больше тайн, чем кажется...")
 	elif quests.active_quest_id.is_empty():
 		quests.start_quest("moonleaf_gathering")
-		hud.show_dialogue("Старейшина Элиан", "Юный странник, ночной туман отравляет наш лес. Принеси мне три лунных листа — они растут вдоль старой тропы. Я щедро тебя отблагодарю.")
+		_show_dialogue("Старейшина Элиан", "Юный странник, ночной туман отравляет наш лес. Принеси мне три лунных листа — они растут вдоль старой тропы. Я щедро тебя отблагодарю.")
 	elif quests.is_ready_to_complete("moonleaf_gathering"):
 		quests.complete_quest("moonleaf_gathering")
 		player.add_experience(50)
 		player.add_gold(25)
-		hud.show_dialogue("Старейшина Элиан", "Ты принёс все три! Пусть древние звёзды хранят тебя. Прими эти монеты и знания.")
+		_show_dialogue("Старейшина Элиан", "Ты принёс все три! Пусть древние звёзды хранят тебя. Прими эти монеты и знания.")
 	else:
-		hud.show_dialogue("Старейшина Элиан", "Лунные листья растут вдоль старой тропы. Будь осторожен — слизни стали агрессивнее.")
+		_show_dialogue("Старейшина Элиан", "Лунные листья растут вдоль старой тропы. Будь осторожен — слизни стали агрессивнее.")
 	_refresh_hud()
 
 func _on_herb_interacted(source: Node2D) -> void:
