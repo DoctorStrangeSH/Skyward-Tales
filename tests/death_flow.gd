@@ -17,7 +17,7 @@ func _run() -> void:
 		fail("could not create pre-death save")
 		return
 	game.player.take_damage(999)
-	if not game.game_over or not game.hud.defeat_visible or not get_tree().paused:
+	if not game.game_over or not game.hud.defeat_visible or not paused:
 		fail("death did not open defeat screen and pause world")
 		return
 	if game.save_game():
@@ -29,7 +29,7 @@ func _run() -> void:
 	if not game.load_game():
 		fail("load from defeat screen failed")
 		return
-	if game.game_over or game.hud.defeat_visible or get_tree().paused:
+	if game.game_over or game.hud.defeat_visible or paused:
 		fail("successful recovery did not resume gameplay")
 		return
 	if game.player.health != 64:
@@ -43,7 +43,7 @@ func _run() -> void:
 	if game.load_game():
 		fail("load unexpectedly succeeded without save")
 		return
-	if not get_tree().paused or not game.hud.defeat_visible:
+	if not paused or not game.hud.defeat_visible:
 		fail("failed load should not dismiss defeat screen")
 		return
 	if not game.hud.defeat_restart_requested.is_connected(game._restart_run):
@@ -53,5 +53,5 @@ func _run() -> void:
 		fail("main menu button is not connected")
 		return
 	print("DEATH FLOW TEST OK: one-shot death, pause, safe save, recovery, missing-save handling")
-	get_tree().paused = false
+	paused = false
 	quit(0)
