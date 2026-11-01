@@ -38,6 +38,9 @@ jobs:
       - name: Test loot and consumable inventory
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/loot_inventory.gd
+      - name: Test inventory panel and item interaction
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/inventory_window.gd
       - name: Headless gameplay smoke test
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --quit-after 120
