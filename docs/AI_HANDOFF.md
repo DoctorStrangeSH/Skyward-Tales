@@ -285,3 +285,8 @@ Talent progression is implemented in commit `4eeaa5374ea5a6bc454b13558f48bf1e8d7
 ## Elemental resistances
 
 `SlimeEnemy.elemental_multipliers` maps fire/ice/lightning to factors (clamped 0.25..2), used by `take_elemental_damage` for bolts, DoT and reaction damage. `apply_burning` and `apply_slow` also scale status duration. Wolves weak to fire (1.25) and resist ice (0.8). Shamans resist fire (0.75) and weak to lightning (1.3); Guardian overrides with fire 0.65, ice 1.25, lightning 1.0. `MagicBolt` determines damage element from spell ID and applies resistance both on first hit and chain hops; physical hits unchanged. Test in `tests/elemental_resistances.gd`; watch CI and manual balance.
+
+
+## Bestiary
+
+`data/bestiary.json` contains Russian names, habitats, attacks, weaknesses and resistances. `main.gd` discovers enemies within 180 px in `_process`, stores `discovered_enemies` in world save snapshot, and toggles `GameHud.toggle_bestiary` with K. Undiscovered entries show `???`, known entries show details; inventory is closed when bestiary opens. `tests/bestiary.gd` added to CI. Confirm CI and manual 640x360 layout.

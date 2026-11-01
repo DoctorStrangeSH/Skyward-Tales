@@ -29,10 +29,13 @@ var guardian_defeated: bool = false
 var game_over: bool = false
 var talent_definitions: Dictionary = {}
 var pending_level_choices: Array[int] = []
+var bestiary_entries: Dictionary = {}
+var discovered_enemies: Dictionary = {}
 
 func _ready() -> void:
 	_load_spell_definitions()
 	_load_talent_definitions()
+	_load_bestiary_entries()
 	world = get_node("World") as Node2D
 	quests = QuestManager.new()
 	player = PLAYER_SCENE.instantiate() as PlayerCharacter
@@ -63,6 +66,15 @@ func _ready() -> void:
 		hud.show_message("Добро пожаловать в Skyward Tales! Найдите старейшину.", 5.0)
 	_refresh_hud()
 
+func _load_bestiary_entries() -> void:
+	var file := FileAccess.open("res://data/bestiary.json", FileAccess.READ)
+	if file == null:
+		push_warning("Каталог бестиария не найден.")
+		return
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if parsed is Dictionary:
+		bestiary_entries = parsed
+
 func _load_talent_definitions() -> void:
 	var file := FileAccess.open("res://data/talents.json", FileAccess.READ)
 	if file == null:
@@ -86,20 +98,49 @@ func _process(delta: float) -> void:
 	if player == null or hud == null or game_over:
 		return
 	_update_spell_hud()
+	_discover_nearby_enemies()
 	hud.update_dodge(player.dodge_cooldown_left, player.dodge_cooldown, player.dodge_time_left > 0.0)
 	nearby_interactable = _find_nearest_interactable()
-	if hud.dialogue_visible or hud.inventory_open:
+	if hud.dialogue_visible or hud.inventory_open or hud.bestiary_visible:
 		hud.set_prompt("")
 	elif nearby_interactable != null:
 		var prompt := "E — поговорить" if nearby_interactable is WorldNpc else ("E — перейти" if nearby_interactable is RegionGate else ("E — подобрать" if nearby_interactable is WorldLoot else "E — собрать"))
 		hud.set_prompt(prompt)
 	else:
-		hud.set_prompt("WASD — ходьба   Shift — рывок   1/2/3 — магия   ЛКМ — каст   E — подбор   Q/R — зелья   F6/F9 — сейв/загрузка")
+		hud.set_prompt("WASD — ходьба   Shift — рывок   1/2/3 — магия   ЛКМ — каст   E — подбор   Q/R — зелья   K — бестиарий   F6/F9 — сейв/загрузка")
+
+func _discover_nearby_enemies() -> void:
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if not enemy is SlimeEnemy or enemy.is_queued_for_deletion():
+			continue
+		if player.global_position.distance_squared_to(enemy.global_position) > 180.0 * 180.0:
+			continue
+		var kind: String = _enemy_kind(enemy)
+		if not discovered_enemies.has(kind):
+			discovered_enemies[kind] = true
+			hud.show_message("Бестиарий: %s! Откройте книгу клавишей K." % str(bestiary_entries.get(kind, {}).get("name", kind)), 2.5)
+
+func _enemy_kind(enemy: SlimeEnemy) -> String:
+	if enemy is GroveGuardian:
+		return "guardian"
+	if enemy is ForestShaman:
+		return "shaman"
+	if enemy is ForestWolf:
+		return "wolf"
+	return "slime"
 
 func _input(event: InputEvent) -> void:
 	if game_over or (hud != null and (hud.talent_visible or hud.defeat_visible)):
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_K and not get_tree().paused and not hud.dialogue_visible:
+			if hud.inventory_open:
+				hud.toggle_inventory(player)
+			hud.toggle_bestiary(bestiary_entries, discovered_enemies)
+			get_viewport().set_input_as_handled()
+			return
+		if hud.bestiary_visible:
+			return
 		if event.keycode == KEY_F6 and not get_tree().paused and not hud.dialogue_visible:
 			save_game()
 			get_viewport().set_input_as_handled()
@@ -137,7 +178,7 @@ func _input(event: InputEvent) -> void:
 			_try_interact()
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("cast_spell"):
-		if not get_tree().paused and not hud.dialogue_visible and not hud.inventory_open:
+		if not get_tree().paused and not hud.dialogue_visible and not hud.inventory_open and not hud.bestiary_visible:
 			_cast_spell()
 		get_viewport().set_input_as_handled()
 
@@ -520,7 +561,7 @@ func make_save_snapshot() -> Dictionary:
 			"talents": player.talents.duplicate(true)
 		},
 		"quest": {"states": quests.states.duplicate(true), "active": quests.active_quest_id},
-		"world": {"region": current_region, "enemies": alive_enemies, "herbs": herbs, "loot": loot_items, "defeated": defeated_enemies, "guardian_defeated": guardian_defeated},
+		"world": {"region": current_region, "enemies": alive_enemies, "herbs": herbs, "loot": loot_items, "defeated": defeated_enemies, "guardian_defeated": guardian_defeated, "discovered": discovered_enemies.duplicate(true)},
 		"magic": selected_spell_id
 	}
 
@@ -571,6 +612,7 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 	if not world_data.get("enemies") is Array or not world_data.get("herbs") is Array or not world_data.get("loot") is Array:
 		return false
 	guardian_defeated = bool(world_data.get("guardian_defeated", false))
+	discovered_enemies = world_data.get("discovered", {}).duplicate(true)
 	var saved_region: String = str(world_data.get("region", "greenreach"))
 	_set_region(saved_region, _read_position(character.get("position"), Vector2(130, 210)), false)
 	for quest_id in quest_data["states"]:
@@ -640,6 +682,8 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 	cast_cooldown_total = 0.0
 	if hud.inventory_open:
 		hud.toggle_inventory(player)
+	if hud.bestiary_visible:
+		hud.toggle_bestiary(bestiary_entries, discovered_enemies)
 	player.stats_changed.emit()
 	_refresh_hud()
 	hud.show_message("Прогресс загружен!", 2.0)
