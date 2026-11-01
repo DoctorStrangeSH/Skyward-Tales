@@ -1,43 +1,44 @@
 #!/usr/bin/env python3
-"""Validate the directional sprite PNGs inside assets/sprites/sprite_sheets.zip.
-
-Uses only Python's standard library; checks archive members and PNG IHDR dimensions.
-Expected atlas size: 4 columns × 8 rows × 32 pixels = 128 × 256.
-"""
-from pathlib import Path
+"""Validate committed 8-direction PNG atlases without external packages."""
+import pathlib
 import struct
 import sys
-import zipfile
+import zlib
 
-ARCHIVE = Path("assets/sprites/sprite_sheets.zip")
-EXPECTED = {
-    "hero_8dir_walk.png": (128, 256),
-    "forest_slime_8dir.png": (128, 256),
-    "fireball_8dir.png": (128, 256),
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+SHEETS = {
+    "hero": ROOT / "assets/sprites/characters/hero_8dir_walk.png",
+    "slime": ROOT / "assets/sprites/enemies/forest_slime_true8.png",
+    "fireball": ROOT / "assets/sprites/magic/fireball_8dir.png",
 }
+EXPECTED_SIZE = (128, 256)
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 
-def png_dimensions(data: bytes) -> tuple[int, int]:
-    if data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
-        raise ValueError("not a PNG with an IHDR header")
-    return struct.unpack(">II", data[16:24])
-
-def main() -> int:
-    if not ARCHIVE.is_file():
-        print(f"Missing sprite archive: {ARCHIVE}", file=sys.stderr)
-        return 1
-    with zipfile.ZipFile(ARCHIVE) as archive:
-        names = set(archive.namelist())
-        missing = set(EXPECTED) - names
-        if missing:
-            print("Missing archive entries: " + ", ".join(sorted(missing)), file=sys.stderr)
-            return 1
-        for name, expected in EXPECTED.items():
-            actual = png_dimensions(archive.read(name))
-            if actual != expected:
-                print(f"{name}: expected {expected}, got {actual}", file=sys.stderr)
-                return 1
-            print(f"OK {name}: {actual[0]}×{actual[1]}")
+def verify_png(filename):
+    data = filename.read_bytes()
+    if not data.startswith(PNG_SIGNATURE):
+        raise ValueError(f"{filename} is not a PNG")
+    if len(data) < 33 or data[12:16] != b"IHDR":
+        raise ValueError(f"{filename} lacks PNG IHDR")
+    width, height, depth, mode = struct.unpack(">IIBB", data[16:26])
+    if (width, height) != EXPECTED_SIZE or depth != 8 or mode != 6:
+        raise ValueError(f"{filename}: expected RGBA 128x256 8bit, got {(width,height,depth,mode)}")
+    # Reject truncated PNG or stray data after IEND; actual anatomical views need visual QA.
+    if data[-12:] != b"\x00\x00\x00\x00IEND\xaeB\x60\x82":
+        raise ValueError(f"{filename}: missing PNG terminator")
+    print(f"OK: {filename.relative_to(ROOT)} (128x256 RGBA, 4x8 frames)")
+    
+def main():
+    for filename in SHEETS.values():
+        if not filename.is_file():
+            raise FileNotFoundError(filename)
+        verify_png(filename)
+    print("NOTE: Back-facing anatomy requires visual inspection; dimensions alone cannot prove this.")
     return 0
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        sys.exit(main())
+    except (ValueError, FileNotFoundError) as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        sys.exit(1)
