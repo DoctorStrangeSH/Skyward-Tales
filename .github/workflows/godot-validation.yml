@@ -1,0 +1,22 @@
+name: Godot validation
+on:
+  push:
+    branches: [main, feat/godot-rpg-foundation]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate PNG atlas dimensions and transparency
+        run: python3 tools/validate_sprite_atlases.py
+      - name: Import project with Godot 4.3
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.3 godot --headless --path . --editor --import --quit
+      - name: Headless gameplay smoke test
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.3 godot --headless --path . --quit-after 120
