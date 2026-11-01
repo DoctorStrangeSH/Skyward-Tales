@@ -84,7 +84,7 @@ func _process(delta: float) -> void:
 		hud.set_prompt("WASD — ходьба   Shift — рывок   1/2/3 — магия   ЛКМ — каст   E — подбор   Q/R — зелья   F6/F9 — сейв/загрузка")
 
 func _input(event: InputEvent) -> void:
-	if game_over:
+	if game_over or (hud != null and (hud.talent_visible or hud.defeat_visible)):
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_F6 and not get_tree().paused and not hud.dialogue_visible:
