@@ -10,6 +10,10 @@ var dialogue_label: Label
 var spell_label: Label
 var spell_cooldown_bar: ProgressBar
 var inventory_label: Label
+var inventory_panel: PanelContainer
+var inventory_list: VBoxContainer
+var inventory_open: bool = false
+signal inventory_use_requested(item_id: String)
 var message_time: float = 0.0
 var dialogue_visible: bool = false
 
@@ -72,6 +76,20 @@ func _ready() -> void:
 	root.add_child(prompt_label)
 	prompt_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
+	# Interactive panel only intercepts clicks while opened.
+	inventory_panel = PanelContainer.new()
+	inventory_panel.position = Vector2(190, 48)
+	inventory_panel.custom_minimum_size = Vector2(275, 220)
+	inventory_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	inventory_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.045, 0.06, 0.09, 0.97)))
+	root.add_child(inventory_panel)
+	var contents := VBoxContainer.new()
+	inventory_panel.add_child(contents)
+	contents.add_child(_make_label("СУМКА  [I — закрыть]", 13, Color(1.0, 0.88, 0.56)))
+	inventory_list = VBoxContainer.new()
+	contents.add_child(inventory_list)
+	inventory_panel.visible = false
+
 	dialogue_panel = PanelContainer.new()
 	dialogue_panel.position = Vector2(140, 246)
 	dialogue_panel.custom_minimum_size = Vector2(360, 100)
@@ -97,12 +115,39 @@ func _unhandled_input(event: InputEvent) -> void:
 		show_message("ПАУЗА — Esc, чтобы продолжить" if paused else "Продолжаем приключение", 2.0)
 		get_viewport().set_input_as_handled()
 
+func toggle_inventory(player: PlayerCharacter) -> void:
+	inventory_open = not inventory_open
+	inventory_panel.visible = inventory_open
+	if inventory_open:
+		refresh_inventory(player)
+
+func refresh_inventory(player: PlayerCharacter) -> void:
+	if inventory_list == null:
+		return
+	for child in inventory_list.get_children():
+		inventory_list.remove_child(child)
+		child.queue_free()
+	var order: Array[String] = ["health_potion", "mana_potion"]
+	var names: Dictionary = {"health_potion": "Зелье здоровья", "mana_potion": "Зелье маны"}
+	var descriptions: Dictionary = {"health_potion": "+35 HP", "mana_potion": "+25 MP"}
+	for item_id in order:
+		var count: int = int(player.inventory.get(item_id, 0))
+		var button := Button.new()
+		button.mouse_filter = Control.MOUSE_FILTER_STOP
+		button.text = "%s ×%d — %s" % [names[item_id], count, descriptions[item_id]]
+		button.tooltip_text = "Нажмите, чтобы использовать."
+		button.disabled = count <= 0
+		button.pressed.connect(func() -> void: inventory_use_requested.emit(item_id))
+		inventory_list.add_child(button)
+
 func update_status(player: PlayerCharacter, quests: QuestManager) -> void:
 	status_label.text = "УР. %d   HP %d/%d   МАНА %d/%d   ЗОЛОТО %d" % [
 		player.level, player.health, player.max_health, player.mana, player.max_mana, player.gold
 	]
 	quest_label.text = "ЗАДАНИЕ: " + quests.get_active_summary()
-	inventory_label.text = "Q: Здоровье ×%d   R: Мана ×%d" % [int(player.inventory.get("health_potion", 0)), int(player.inventory.get("mana_potion", 0))]
+	inventory_label.text = "I: Сумка   Q: HP ×%d   R: MP ×%d" % [int(player.inventory.get("health_potion", 0)), int(player.inventory.get("mana_potion", 0))]
+	if inventory_open:
+		refresh_inventory(player)
 
 func update_spell(spell_name: String, mana_cost: int, current_mana: int, remaining: float, total: float) -> void:
 	if spell_label == null or spell_cooldown_bar == null:

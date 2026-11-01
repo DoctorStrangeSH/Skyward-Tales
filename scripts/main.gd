@@ -29,6 +29,7 @@ func _ready() -> void:
 
 	hud = GameHud.new()
 	add_child(hud)
+	hud.inventory_use_requested.connect(_on_inventory_use)
 
 	_spawn_elder()
 	_spawn_herb(Vector2(370, 155))
@@ -56,7 +57,7 @@ func _process(delta: float) -> void:
 		return
 	_update_spell_hud()
 	nearby_interactable = _find_nearest_interactable()
-	if hud.dialogue_visible:
+	if hud.dialogue_visible or hud.inventory_open:
 		hud.set_prompt("")
 	elif nearby_interactable != null:
 		var prompt := "E — поговорить" if nearby_interactable is WorldNpc else ("E — подобрать" if nearby_interactable is WorldLoot else "E — собрать")
@@ -66,6 +67,12 @@ func _process(delta: float) -> void:
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_I and not get_tree().paused and not hud.dialogue_visible:
+			hud.toggle_inventory(player)
+			get_viewport().set_input_as_handled()
+			return
+		if hud.inventory_open:
+			return
 		if event.keycode == KEY_Q:
 			_use_consumable("health_potion", "Зелье здоровья")
 		elif event.keycode == KEY_R:
@@ -85,7 +92,7 @@ func _input(event: InputEvent) -> void:
 			_try_interact()
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("cast_spell"):
-		if not get_tree().paused and not hud.dialogue_visible:
+		if not get_tree().paused and not hud.dialogue_visible and not hud.inventory_open:
 			_cast_spell()
 		get_viewport().set_input_as_handled()
 
@@ -176,6 +183,10 @@ func _spawn_loot(drop_position: Vector2, item_id: String) -> void:
 func _on_loot_collected(item_id: String, amount: int) -> void:
 	player.add_item(item_id, amount)
 	hud.show_message("Получено: %s ×%d" % [("Зелье здоровья" if item_id == "health_potion" else "Зелье маны"), amount], 2.0)
+
+func _on_inventory_use(item_id: String) -> void:
+	var label: String = "Зелье здоровья" if item_id == "health_potion" else "Зелье маны"
+	_use_consumable(item_id, label)
 
 func _use_consumable(item_id: String, label: String) -> void:
 	if hud == null or hud.dialogue_visible or get_tree().paused:
