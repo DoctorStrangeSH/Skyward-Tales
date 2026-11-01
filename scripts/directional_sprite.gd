@@ -37,7 +37,7 @@ func configure(texture_path: String, frames: int = 4, directions: int = 8, visua
 func set_direction_vector(direction: Vector2) -> void:
 	if direction.length_squared() < 0.0001:
 		return
-	var octant := posmod(int(round(direction.angle() / (PI / 4.0))), 8)
+	var octant: int = posmod(int(round(direction.angle() / (PI / 4.0))), 8)
 	# atan2 uses screen coordinates: right, down-right, down, ...
 	var row_for_octant := [2, 1, 0, 7, 6, 5, 4, 3]
 	var next_direction := int(row_for_octant[octant])
