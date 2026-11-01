@@ -14,9 +14,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: Validate PNG atlas dimensions and transparency
         run: python3 tools/validate_sprite_atlases.py
-      - name: Import project with Godot 4.3
+      - name: Import project with Godot 4.7.2
         run: |
-          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.3 godot --headless --path . --editor --import --quit
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --editor --import --quit
       - name: Headless gameplay smoke test
         run: |
-          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.3 godot --headless --path . --quit-after 120
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --quit-after 120

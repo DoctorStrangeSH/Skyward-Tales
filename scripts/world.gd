@@ -11,7 +11,7 @@ func _ready() -> void:
 func _draw() -> void:
 	for y in range(MAP_HEIGHT):
 		for x in range(MAP_WIDTH):
-			var variation := abs(x * 928371 + y * 1237 + x * y * 17) % 7
+			var variation: int = absi(x * 928371 + y * 1237 + x * y * 17) % 7
 			var base := Color(0.20, 0.39, 0.24)
 			if variation == 0:
 				base = Color(0.22, 0.42, 0.25)
