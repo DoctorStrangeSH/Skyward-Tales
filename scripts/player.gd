@@ -21,6 +21,7 @@ var facing: Vector2 = Vector2.DOWN
 var visual: DirectionalSprite
 var mana_regen_accumulator: float = 0.0
 var inventory: Dictionary = {}
+var equipment: Dictionary = {"weapon": "", "armor": "", "amulet": ""}
 
 func _ready() -> void:
 	add_to_group("player")
@@ -54,7 +55,7 @@ func _physics_process(_delta: float) -> void:
 	visual.set_moving(moving)
 
 func take_damage(amount: int) -> void:
-	health = maxi(0, health - amount)
+	health = maxi(0, health - maxi(1, amount - get_armor()))
 	stats_changed.emit()
 
 func spend_mana(amount: int) -> bool:
@@ -80,6 +81,39 @@ func add_experience(amount: int) -> void:
 func add_gold(amount: int) -> void:
 	gold += amount
 	stats_changed.emit()
+
+func get_armor() -> int:
+	return 4 if equipment.get("armor", "") == "leather_armor" else 0
+
+func get_spell_bonus() -> int:
+	return 5 if equipment.get("weapon", "") == "apprentice_staff" else 0
+
+func equip_item(item_id: String) -> bool:
+	var slot: String = ""
+	var old_max_mana: int = max_mana
+	match item_id:
+		"apprentice_staff":
+			slot = "weapon"
+		"leather_armor":
+			slot = "armor"
+		"mana_amulet":
+			slot = "amulet"
+		_:
+			return false
+	if int(inventory.get(item_id, 0)) < 1 or equipment.get(slot, "") == item_id:
+		return false
+	var previous: String = str(equipment.get(slot, ""))
+	inventory[item_id] = int(inventory[item_id]) - 1
+	if int(inventory[item_id]) <= 0:
+		inventory.erase(item_id)
+	if not previous.is_empty():
+		add_item(previous)
+	equipment[slot] = item_id
+	if slot == "amulet":
+		max_mana += 20
+		mana = mini(max_mana, mana + 20)
+	stats_changed.emit()
+	return true
 
 func add_item(item_id: String, amount: int = 1) -> void:
 	if amount <= 0:

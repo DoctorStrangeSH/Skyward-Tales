@@ -169,13 +169,14 @@ func _on_herb_interacted(source: Node2D) -> void:
 func _on_enemy_defeated(xp_reward: int, death_position: Vector2) -> void:
 	player.add_experience(xp_reward)
 	defeated_enemies += 1
-	_spawn_loot(death_position, "health_potion" if defeated_enemies % 2 == 1 else "mana_potion")
+	var drops: Array[String] = ["apprentice_staff", "leather_armor", "mana_amulet"]
+	_spawn_loot(death_position, drops[(defeated_enemies - 1) % 3] if defeated_enemies <= 3 else ("health_potion" if defeated_enemies % 2 == 1 else "mana_potion"))
 	hud.show_message("Слизень побеждён! +%d опыта" % xp_reward, 1.5)
 
 func _spawn_loot(drop_position: Vector2, item_id: String) -> void:
 	var loot := LOOT_SCRIPT.new() as WorldLoot
 	loot.item_id = item_id
-	loot.item_name = "Зелье здоровья" if item_id == "health_potion" else "Зелье маны"
+	loot.item_name = item_id
 	loot.position = drop_position
 	add_child(loot)
 	loot.collected.connect(_on_loot_collected)
@@ -185,6 +186,12 @@ func _on_loot_collected(item_id: String, amount: int) -> void:
 	hud.show_message("Получено: %s ×%d" % [("Зелье здоровья" if item_id == "health_potion" else "Зелье маны"), amount], 2.0)
 
 func _on_inventory_use(item_id: String) -> void:
+	if item_id in ["apprentice_staff", "leather_armor", "mana_amulet"]:
+		if player.equip_item(item_id):
+			hud.show_message("Предмет экипирован!", 1.5)
+		else:
+			hud.show_message("Невозможно экипировать.", 1.5)
+		return
 	var label: String = "Зелье здоровья" if item_id == "health_potion" else "Зелье маны"
 	_use_consumable(item_id, label)
 
@@ -216,7 +223,7 @@ func _cast_spell() -> void:
 		return
 	var spell: Dictionary = spell_definitions.get(selected_spell_id, {})
 	var mana_cost := int(spell.get("mana_cost", 8))
-	var spell_damage := int(spell.get("damage", 18))
+	var spell_damage := int(spell.get("damage", 18)) + player.get_spell_bonus()
 	if not player.spend_mana(mana_cost):
 		hud.show_message("Недостаточно маны.", 1.2)
 		return
