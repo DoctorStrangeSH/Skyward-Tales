@@ -88,8 +88,8 @@ func _spawn_herb(spawn_position: Vector2) -> void:
 
 func _spawn_slime(spawn_position: Vector2) -> void:
 	var slime := ENEMY_SCRIPT.new() as SlimeEnemy
+	slime.position = spawn_position
 	add_child(slime)
-	slime.global_position = spawn_position
 	slime.defeated.connect(_on_enemy_defeated)
 
 func _find_nearest_interactable() -> Node2D:
