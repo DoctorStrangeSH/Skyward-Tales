@@ -7,6 +7,8 @@ const COLLECTIBLE_SCRIPT := preload("res://scripts/collectible.gd")
 const ENEMY_SCRIPT := preload("res://scripts/enemy.gd")
 const LOOT_SCRIPT := preload("res://scripts/loot.gd")
 const SAVE_SCRIPT := preload("res://scripts/save_system.gd")
+const GATE_SCRIPT := preload("res://scripts/region_gate.gd")
+const WOLF_SCRIPT := preload("res://scripts/forest_wolf.gd")
 
 var player: PlayerCharacter
 var hud: GameHud
@@ -19,9 +21,12 @@ var selected_spell_id: String = "fireball"
 var cast_cooldown_total: float = 0.0
 var defeated_enemies: int = 0
 var save_path: String = SAVE_SCRIPT.SAVE_PATH
+var world: Node2D
+var current_region: String = "greenreach"
 
 func _ready() -> void:
 	_load_spell_definitions()
+	world = get_node("World") as Node2D
 	quests = QuestManager.new()
 	player = PLAYER_SCENE.instantiate() as PlayerCharacter
 	add_child(player)
@@ -37,13 +42,7 @@ func _ready() -> void:
 	hud.pause_load_requested.connect(load_game)
 	hud.pause_menu_requested.connect(_go_to_title)
 
-	_spawn_elder()
-	_spawn_herb(Vector2(370, 155))
-	_spawn_herb(Vector2(515, 310))
-	_spawn_herb(Vector2(700, 190))
-	_spawn_slime(Vector2(475, 350))
-	_spawn_slime(Vector2(790, 300))
-	_spawn_slime(Vector2(990, 250))
+	_populate_region()
 
 	if get_tree().has_meta("skyward_continue") and bool(get_tree().get_meta("skyward_continue")):
 		get_tree().remove_meta("skyward_continue")
@@ -70,7 +69,7 @@ func _process(delta: float) -> void:
 	if hud.dialogue_visible or hud.inventory_open:
 		hud.set_prompt("")
 	elif nearby_interactable != null:
-		var prompt := "E — поговорить" if nearby_interactable is WorldNpc else ("E — подобрать" if nearby_interactable is WorldLoot else "E — собрать")
+		var prompt := "E — поговорить" if nearby_interactable is WorldNpc else ("E — перейти" if nearby_interactable is RegionGate else ("E — подобрать" if nearby_interactable is WorldLoot else "E — собрать"))
 		hud.set_prompt(prompt)
 	else:
 		hud.set_prompt("WASD — ходьба   1/2/3 — магия   ЛКМ — каст   E — подбор   Q/R — зелья   F6/F9 — сейв/загрузка")
@@ -114,6 +113,87 @@ func _input(event: InputEvent) -> void:
 			_cast_spell()
 		get_viewport().set_input_as_handled()
 
+func _populate_region() -> void:
+	if current_region == "moonlit_grove":
+		_spawn_grove_warden()
+		_spawn_herb(Vector2(330, 315), "spirit_blossom", "Духовный цветок")
+		_spawn_herb(Vector2(680, 505), "spirit_blossom", "Духовный цветок")
+		_spawn_herb(Vector2(1080, 390), "spirit_blossom", "Духовный цветок")
+		_spawn_wolf(Vector2(470, 430))
+		_spawn_wolf(Vector2(900, 290))
+		_spawn_gate("greenreach", Vector2(1120, 205), Vector2(1080, 205), "Возврат к Зелёным Пределам")
+	else:
+		_spawn_elder()
+		_spawn_herb(Vector2(370, 155))
+		_spawn_herb(Vector2(515, 310))
+		_spawn_herb(Vector2(700, 190))
+		_spawn_slime(Vector2(475, 350))
+		_spawn_slime(Vector2(790, 300))
+		_spawn_slime(Vector2(990, 250))
+		_spawn_gate("moonlit_grove", Vector2(1120, 205), Vector2(140, 430), "Тропа в Зачарованный лес")
+
+func _clear_region_actors() -> void:
+	for node in get_children():
+		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is RegionGate or node is MagicBolt:
+			remove_child(node)
+			node.queue_free()
+	elder = null
+	nearby_interactable = null
+
+func _set_region(region_id: String, arrival: Vector2, notify: bool = true) -> void:
+	current_region = "moonlit_grove" if region_id == "moonlit_grove" else "greenreach"
+	_clear_region_actors()
+	if world != null and world.has_method("configure_region"):
+		world.configure_region(current_region)
+	_populate_region()
+	player.global_position = arrival
+	if notify and hud != null:
+		hud.show_message("Локация: " + ("Зачарованный лес" if current_region == "moonlit_grove" else "Зелёные Пределы"), 2.5)
+	_refresh_hud()
+
+func _spawn_gate(target_region: String, gate_position: Vector2, arrival: Vector2, label: String) -> void:
+	var gate := GATE_SCRIPT.new() as RegionGate
+	gate.target_region = target_region
+	gate.arrival_position = arrival
+	gate.display_name = label
+	add_child(gate)
+	gate.global_position = gate_position
+	gate.travel_requested.connect(_on_region_travel)
+
+func _on_region_travel(target_region: String, arrival: Vector2) -> void:
+	if target_region == "moonlit_grove" and not quests.is_completed("moonleaf_gathering"):
+		hud.show_message("Сначала помогите старейшине с лунными листьями.", 2.5)
+		return
+	if target_region == "moonlit_grove" and not quests.states["grove_spirits"]["started"]:
+		# The quest is accepted from the grove warden, not automatically on entry.
+		pass
+	_set_region(target_region, arrival)
+
+func _spawn_grove_warden() -> void:
+	var warden := NPC_SCRIPT.new() as WorldNpc
+	warden.display_name = "Хранительница Илара"
+	add_child(warden)
+	warden.global_position = Vector2(250, 420)
+	warden.interacted.connect(_on_grove_warden_interacted)
+
+func _on_grove_warden_interacted(_source: Node2D) -> void:
+	if quests.is_completed("grove_spirits"):
+		_show_dialogue("Хранительница Илара", "Духи снова поют. Лес запомнит твою доброту.")
+	elif quests.active_quest_id.is_empty() or quests.active_quest_id == "grove_spirits":
+		if not quests.states["grove_spirits"]["started"]:
+			quests.start_quest("grove_spirits")
+			_show_dialogue("Хранительница Илара", "Лес теряет свой свет. Собери три духовных цветка у старых камней и принеси их мне.")
+		elif quests.is_ready_to_complete("grove_spirits"):
+			quests.complete_quest("grove_spirits")
+			player.add_experience(90)
+			player.add_gold(50)
+			_show_dialogue("Хранительница Илара", "Ты вернул лесу его сияние. Прими эту награду.")
+		else:
+			_show_dialogue("Хранительница Илара", "Ищи духовные цветы вдоль древней тропы. Их свет виден даже в сумерках.")
+	else:
+		_show_dialogue("Хранительница Илара", "Заверши начатое дело, прежде чем браться за новое.")
+	_refresh_hud()
+
 func _spawn_elder() -> void:
 	elder = NPC_SCRIPT.new() as WorldNpc
 	elder.display_name = "Старейшина Элиан"
@@ -121,11 +201,19 @@ func _spawn_elder() -> void:
 	elder.global_position = Vector2(250, 205)
 	elder.interacted.connect(_on_elder_interacted)
 
-func _spawn_herb(spawn_position: Vector2) -> void:
+func _spawn_herb(spawn_position: Vector2, item_id: String = "moonleaf", label: String = "Лунный лист") -> void:
 	var herb := COLLECTIBLE_SCRIPT.new() as WorldCollectible
+	herb.item_id = item_id
+	herb.display_name = label
 	add_child(herb)
 	herb.global_position = spawn_position
 	herb.interacted.connect(_on_herb_interacted)
+
+func _spawn_wolf(spawn_position: Vector2) -> void:
+	var wolf := WOLF_SCRIPT.new() as ForestWolf
+	wolf.position = spawn_position
+	add_child(wolf)
+	wolf.defeated.connect(func(xp: int) -> void: _on_enemy_defeated(xp, wolf.global_position))
 
 func _spawn_slime(spawn_position: Vector2) -> void:
 	var slime := ENEMY_SCRIPT.new() as SlimeEnemy
@@ -160,7 +248,7 @@ func _show_dialogue(speaker: String, message: String) -> void:
 
 func _on_elder_interacted(_source: Node2D) -> void:
 	if quests.is_completed("moonleaf_gathering"):
-		_show_dialogue("Старейшина Элиан", "Ты помог нашему поселению. Но лес хранит куда больше тайн, чем кажется...")
+		_show_dialogue("Старейшина Элиан", "Ты помог нашему поселению. На востоке есть тропа в Зачарованный лес. Найди хранительницу Илару — возможно, ей нужна помощь.")
 	elif quests.active_quest_id.is_empty():
 		quests.start_quest("moonleaf_gathering")
 		_show_dialogue("Старейшина Элиан", "Юный странник, ночной туман отравляет наш лес. Принеси мне три лунных листа — они растут вдоль старой тропы. Я щедро тебя отблагодарю.")
@@ -174,14 +262,18 @@ func _on_elder_interacted(_source: Node2D) -> void:
 	_refresh_hud()
 
 func _on_herb_interacted(source: Node2D) -> void:
-	if quests.active_quest_id == "moonleaf_gathering" and not quests.is_completed("moonleaf_gathering"):
+	var herb := source as WorldCollectible
+	var required_quest: String = "grove_spirits" if current_region == "moonlit_grove" else "moonleaf_gathering"
+	if herb == null:
+		return
+	if quests.active_quest_id == required_quest and not quests.is_completed(required_quest):
 		quests.add_progress("moonleaf_gathering", 1)
 		source.queue_free()
-		hud.show_message("Лунный лист собран.", 1.5)
-		if quests.is_ready_to_complete("moonleaf_gathering"):
-			hud.show_message("Собраны все листья! Вернитесь к старейшине.", 3.0)
+		hud.show_message(herb.display_name + " собран.", 1.5)
+		if quests.is_ready_to_complete(required_quest):
+			hud.show_message("Все предметы собраны! Вернитесь к хранителю.", 3.0)
 	else:
-		hud.show_message("Лунный лист. Поговорите со старейшиной, чтобы узнать, зачем он нужен.", 2.5)
+		hud.show_message(herb.display_name + ". Поговорите с местным хранителем, чтобы узнать, зачем он нужен.", 2.5)
 	_refresh_hud()
 
 func _on_enemy_defeated(xp_reward: int, death_position: Vector2) -> void:
@@ -293,7 +385,7 @@ func make_save_snapshot() -> Dictionary:
 		if node is SlimeEnemy:
 			alive_enemies.append({"position": _position_array(node.global_position), "hp": node.health, "home": _position_array(node.home_position)})
 		elif node is WorldCollectible:
-			herbs.append(_position_array(node.global_position))
+			herbs.append({"position": _position_array(node.global_position), "id": node.item_id, "name": node.display_name})
 		elif node is WorldLoot:
 			loot_items.append({"position": _position_array(node.global_position), "id": node.item_id, "amount": node.amount})
 	return {
@@ -308,7 +400,7 @@ func make_save_snapshot() -> Dictionary:
 			"equipment": player.equipment.duplicate(true)
 		},
 		"quest": {"states": quests.states.duplicate(true), "active": quests.active_quest_id},
-		"world": {"enemies": alive_enemies, "herbs": herbs, "loot": loot_items, "defeated": defeated_enemies},
+		"world": {"region": current_region, "enemies": alive_enemies, "herbs": herbs, "loot": loot_items, "defeated": defeated_enemies},
 		"magic": selected_spell_id
 	}
 
@@ -339,6 +431,13 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 		return false
 	if not world_data.get("enemies") is Array or not world_data.get("herbs") is Array or not world_data.get("loot") is Array:
 		return false
+	var saved_region: String = str(world_data.get("region", "greenreach"))
+	_set_region(saved_region, _read_position(character.get("position"), Vector2(130, 210)), false)
+	# Clear the freshly generated region actors before restoring the saved population.
+	_clear_region_actors()
+	_populate_region()
+	_clear_region_actors()
+	_populate_region()
 	for quest_id in quest_data["states"]:
 		if quests.states.has(quest_id) and quest_data["states"][quest_id] is Dictionary:
 			quests.states[quest_id] = quest_data["states"][quest_id].duplicate(true)
@@ -359,12 +458,18 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 		if node is SlimeEnemy or node is WorldCollectible or node is WorldLoot or node is MagicBolt:
 			remove_child(node)
 			node.queue_free()
-	for herb_pos in world_data["herbs"]:
-		_spawn_herb(_read_position(herb_pos, Vector2.ZERO))
+	for herb_data in world_data["herbs"]:
+		if herb_data is Dictionary:
+			_spawn_herb(_read_position(herb_data.get("position"), Vector2.ZERO), str(herb_data.get("id", "moonleaf")), str(herb_data.get("name", "Лунный лист")))
+		else:
+			_spawn_herb(_read_position(herb_data, Vector2.ZERO))
 	for enemy_data in world_data["enemies"]:
 		if not enemy_data is Dictionary:
 			continue
-		_spawn_slime(_read_position(enemy_data.get("position"), Vector2(475, 350)))
+		if current_region == "moonlit_grove":
+			_spawn_wolf(_read_position(enemy_data.get("position"), Vector2(475, 430)))
+		else:
+			_spawn_slime(_read_position(enemy_data.get("position"), Vector2(475, 350)))
 		var enemy: SlimeEnemy = get_child(get_child_count() - 1) as SlimeEnemy
 		if enemy != null:
 			enemy.health = clampi(int(enemy_data.get("hp", enemy.max_health)), 1, enemy.max_health)
