@@ -196,3 +196,7 @@ PNG-спрайты должны храниться в `assets/sprites/sprite_she
 ## Боевой интерфейс
 
 В `scripts/hud.gd` добавлены `spell_label`, `spell_cooldown_bar` и `update_spell(name, mana_cost, mana, remaining, total)`. В `scripts/main.gd` введены `cast_cooldown_total`, `_update_spell_hud()` вызывается после смены магии, после каста и каждый кадр. HUD показывает имя выбранной магии, стоимость MP, текст отката и полосу готовности; все новые Controls имеют MOUSE_FILTER_IGNORE. Тестировать Godot 4.7.2; UI остаётся временным и приоритет ниже игровых механик.
+
+## Добыча и зелья
+
+В `scripts/loot.gd` WorldLoot — подбираемый предмет с сигналом `collected`. При убийстве слизня `main.gd` создаёт зелье в месте появления врага (временная логика; точное место смерти надо поправить позже). `PlayerCharacter.inventory` — словарь item_id → количество; `add_item` и `use_item` проверяют количество и лимиты восстановления. Q: health_potion +35 HP; R: mana_potion +25 MP. Количество отображает `GameHud.update_status`. Никаких сохранений инвентаря пока нет. Следующий ИИ должен протестировать в Godot 4.7, проверить что зелья не расходуются при полном ресурсе и создать регрессионные тесты.
