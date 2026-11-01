@@ -41,3 +41,7 @@ The runtime no longer requires ZIP extraction: hero, slime, fireball are committ
 - `res://assets/sprites/magic/fireball_8dir.png`
 
 All 8 rows MUST represent actual orientations for characters and enemies: down, down-right, right, up-right, up, up-left, left, down-left. Rear `up` shows a true back with no eyes, mouth, or other frontal facial features; rear diagonal rows show the rear three-quarter anatomy. Do not rotate front-facing art to fake back views. All PNG atlases: 128x256 px, 32x32 px cells, 4 columns x 8 rows, RGBA. Current art is an initial playable pixel-art pass and needs further visual polish against approved concept art.
+
+## REJECTED ART — user review, 2026-11-01
+
+All current placeholder PNG visuals (hero, slime, fireball) are **REJECTED** by the user for visual quality. Do not use them as a visual-quality benchmark and do not mark art milestone complete. Keep them only as temporary runtime assets until they are replaced with approved, carefully pixel-edited, richly detailed, transparent RGBA sheets. Prioritize matching the user's previously approved fantasy reference, high-quality silhouettes, lighting, sprite consistency and accurate true back/side directional anatomy. Validate in-game at the actual camera scale before accepting new art.

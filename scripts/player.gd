@@ -19,6 +19,7 @@ var experience_to_next: int = 40
 var gold: int = 0
 var facing: Vector2 = Vector2.DOWN
 var visual: DirectionalSprite
+var mana_regen_accumulator: float = 0.0
 
 func _ready() -> void:
 	add_to_group("player")
@@ -32,6 +33,16 @@ func _ready() -> void:
 	add_child(visual)
 
 func _physics_process(_delta: float) -> void:
+	# Recover mana slowly so casting remains testable during exploration.
+	if mana < max_mana:
+		mana_regen_accumulator += _delta * 4.0
+		if mana_regen_accumulator >= 1.0:
+			var recovered: int = mini(int(mana_regen_accumulator), max_mana - mana)
+			mana += recovered
+			mana_regen_accumulator -= float(recovered)
+			stats_changed.emit()
+	else:
+		mana_regen_accumulator = 0.0
 	var direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	var moving := direction.length_squared() > 0.01
 	if moving:

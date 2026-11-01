@@ -59,7 +59,8 @@ func _process(delta: float) -> void:
 	else:
 		hud.set_prompt("WASD — движение   ЛКМ — магия   E — взаимодействие   Esc — пауза")
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
+	# _input receives mouse clicks even when a Control overlays the world.
 	if event.is_action_pressed("interact"):
 		if hud.dialogue_visible:
 			hud.close_dialogue()
@@ -68,7 +69,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			_try_interact()
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("cast_spell"):
-		if not hud.dialogue_visible:
+		if not get_tree().paused and not hud.dialogue_visible:
 			_cast_spell()
 		get_viewport().set_input_as_handled()
 
@@ -162,6 +163,9 @@ func _cast_spell() -> void:
 	if direction.length_squared() < 0.01:
 		direction = player.facing
 	var bolt := BOLT_SCENE.instantiate() as MagicBolt
+	if bolt == null:
+		push_error("Не удалось создать огненный шар")
+		return
 	bolt.speed = float(spell.get("projectile_speed", 255))
 	bolt.setup(direction, spell_damage)
 	add_child(bolt)
