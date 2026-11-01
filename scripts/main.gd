@@ -6,6 +6,7 @@ const NPC_SCRIPT := preload("res://scripts/npc.gd")
 const COLLECTIBLE_SCRIPT := preload("res://scripts/collectible.gd")
 const ENEMY_SCRIPT := preload("res://scripts/enemy.gd")
 const LOOT_SCRIPT := preload("res://scripts/loot.gd")
+const SAVE_SCRIPT := preload("res://scripts/save_system.gd")
 
 var player: PlayerCharacter
 var hud: GameHud
@@ -17,6 +18,7 @@ var cast_cooldown_remaining: float = 0.0
 var selected_spell_id: String = "fireball"
 var cast_cooldown_total: float = 0.0
 var defeated_enemies: int = 0
+var save_path: String = SAVE_SCRIPT.SAVE_PATH
 
 func _ready() -> void:
 	_load_spell_definitions()
@@ -64,10 +66,18 @@ func _process(delta: float) -> void:
 		var prompt := "E — поговорить" if nearby_interactable is WorldNpc else ("E — подобрать" if nearby_interactable is WorldLoot else "E — собрать")
 		hud.set_prompt(prompt)
 	else:
-		hud.set_prompt("WASD — ходьба   1/2/3 — магия   ЛКМ — каст   E — подбор   Q/R — зелья")
+		hud.set_prompt("WASD — ходьба   1/2/3 — магия   ЛКМ — каст   E — подбор   Q/R — зелья   F6/F9 — сейв/загрузка")
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_F6 and not get_tree().paused and not hud.dialogue_visible:
+			save_game()
+			get_viewport().set_input_as_handled()
+			return
+		if event.keycode == KEY_F9 and not get_tree().paused and not hud.dialogue_visible:
+			load_game()
+			get_viewport().set_input_as_handled()
+			return
 		if event.keycode == KEY_I and not get_tree().paused and not hud.dialogue_visible:
 			hud.toggle_inventory(player)
 			get_viewport().set_input_as_handled()
@@ -257,3 +267,117 @@ func _cast_spell() -> void:
 func _refresh_hud() -> void:
 	if hud != null and player != null and quests != null:
 		hud.update_status(player, quests)
+
+func _position_array(pos: Vector2) -> Array[float]:
+	return [pos.x, pos.y]
+
+func _read_position(value: Variant, fallback: Vector2) -> Vector2:
+	if value is Array and value.size() == 2:
+		return Vector2(float(value[0]), float(value[1]))
+	return fallback
+
+func make_save_snapshot() -> Dictionary:
+	var alive_enemies: Array = []
+	var herbs: Array = []
+	var loot_items: Array = []
+	for node in get_children():
+		if node.is_queued_for_deletion():
+			continue
+		if node is SlimeEnemy:
+			alive_enemies.append({"position": _position_array(node.global_position), "hp": node.health, "home": _position_array(node.home_position)})
+		elif node is WorldCollectible:
+			herbs.append(_position_array(node.global_position))
+		elif node is WorldLoot:
+			loot_items.append({"position": _position_array(node.global_position), "id": node.item_id, "amount": node.amount})
+	return {
+		"player": {
+			"position": _position_array(player.global_position),
+			"health": player.health, "max_health": player.max_health,
+			"mana": player.mana, "max_mana": player.max_mana,
+			"level": player.level, "experience": player.experience,
+			"experience_to_next": player.experience_to_next,
+			"gold": player.gold,
+			"inventory": player.inventory.duplicate(true),
+			"equipment": player.equipment.duplicate(true)
+		},
+		"quest": {"states": quests.states.duplicate(true), "active": quests.active_quest_id},
+		"world": {"enemies": alive_enemies, "herbs": herbs, "loot": loot_items, "defeated": defeated_enemies},
+		"magic": selected_spell_id
+	}
+
+func save_game() -> bool:
+	var success: bool = SAVE_SCRIPT.save_snapshot(make_save_snapshot(), save_path)
+	if hud != null:
+		hud.show_message("Игра сохранена (F9 — загрузить)" if success else "Ошибка сохранения!", 2.0)
+	return success
+
+func load_game() -> bool:
+	var data: Dictionary = SAVE_SCRIPT.load_snapshot(save_path)
+	if data.is_empty():
+		if hud != null:
+			hud.show_message("Сохранение не найдено или повреждено.", 2.0)
+		return false
+	return restore_save_snapshot(data)
+
+func restore_save_snapshot(data: Dictionary) -> bool:
+	if not data.get("player") is Dictionary or not data.get("quest") is Dictionary or not data.get("world") is Dictionary:
+		return false
+	var character: Dictionary = data["player"]
+	var quest_data: Dictionary = data["quest"]
+	var world_data: Dictionary = data["world"]
+	# Validate structure before changing existing game state.
+	if not character.get("inventory") is Dictionary or not character.get("equipment") is Dictionary:
+		return false
+	if not quest_data.get("states") is Dictionary:
+		return false
+	if not world_data.get("enemies") is Array or not world_data.get("herbs") is Array or not world_data.get("loot") is Array:
+		return false
+	for quest_id in quest_data["states"]:
+		if quests.states.has(quest_id) and quest_data["states"][quest_id] is Dictionary:
+			quests.states[quest_id] = quest_data["states"][quest_id].duplicate(true)
+	quests.active_quest_id = str(quest_data.get("active", ""))
+	player.level = maxi(1, int(character.get("level", 1)))
+	player.experience = maxi(0, int(character.get("experience", 0)))
+	player.experience_to_next = maxi(1, int(character.get("experience_to_next", 40)))
+	player.gold = maxi(0, int(character.get("gold", 0)))
+	player.max_health = maxi(1, int(character.get("max_health", 100)))
+	player.max_mana = maxi(1, int(character.get("max_mana", 60)))
+	player.health = clampi(int(character.get("health", player.max_health)), 0, player.max_health)
+	player.mana = clampi(int(character.get("mana", player.max_mana)), 0, player.max_mana)
+	player.inventory = character["inventory"].duplicate(true)
+	player.equipment = character["equipment"].duplicate(true)
+	player.global_position = _read_position(character.get("position"), Vector2(130, 210))
+	# Recreate dynamic world state; queued old nodes must be removed from scene tree immediately.
+	for node in get_children():
+		if node is SlimeEnemy or node is WorldCollectible or node is WorldLoot or node is MagicBolt:
+			remove_child(node)
+			node.queue_free()
+	for herb_pos in world_data["herbs"]:
+		_spawn_herb(_read_position(herb_pos, Vector2.ZERO))
+	for enemy_data in world_data["enemies"]:
+		if not enemy_data is Dictionary:
+			continue
+		_spawn_slime(_read_position(enemy_data.get("position"), Vector2(475, 350)))
+		var enemy: SlimeEnemy = get_child(get_child_count() - 1) as SlimeEnemy
+		if enemy != null:
+			enemy.health = clampi(int(enemy_data.get("hp", enemy.max_health)), 1, enemy.max_health)
+			enemy.home_position = _read_position(enemy_data.get("home"), enemy.global_position)
+	for loot_data in world_data["loot"]:
+		if not loot_data is Dictionary:
+			continue
+		_spawn_loot(_read_position(loot_data.get("position"), Vector2.ZERO), str(loot_data.get("id", "health_potion")))
+		var drop: WorldLoot = get_child(get_child_count() - 1) as WorldLoot
+		if drop != null:
+			drop.amount = maxi(1, int(loot_data.get("amount", 1)))
+	defeated_enemies = maxi(0, int(world_data.get("defeated", 0)))
+	var spell_id: String = str(data.get("magic", "fireball"))
+	if spell_definitions.has(spell_id):
+		selected_spell_id = spell_id
+	cast_cooldown_remaining = 0.0
+	cast_cooldown_total = 0.0
+	if hud.inventory_open:
+		hud.toggle_inventory(player)
+	player.stats_changed.emit()
+	_refresh_hud()
+	hud.show_message("Прогресс загружен!", 2.0)
+	return true
