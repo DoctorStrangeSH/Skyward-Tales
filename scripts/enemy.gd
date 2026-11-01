@@ -26,8 +26,8 @@ func _ready() -> void:
 	add_child(shape_node)
 	visual = DIRECTIONAL_SPRITE_SCRIPT.new() as DirectionalSprite
 	visual.name = "DirectionalVisual"
-	visual.configure(SLIME_SHEET, 4, 8, 1.25, 5.5)
-	visual.offset = Vector2(0.0, -18.0)
+	visual.configure(SLIME_SHEET, 4, 8, 1.5, 5.5)
+	visual.offset = Vector2(0.0, -14.0)
 	visual.set_direction_vector(Vector2.DOWN)
 	add_child(visual)
 
@@ -36,7 +36,6 @@ func _physics_process(delta: float) -> void:
 	var player := get_tree().get_first_node_in_group("player") as Node2D
 	if player == null:
 		return
-	# Pause enemy AI while the player is reading a dialogue.
 	if not player.is_physics_processing():
 		velocity = Vector2.ZERO
 		visual.set_moving(false)
