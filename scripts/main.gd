@@ -13,6 +13,7 @@ var elder: WorldNpc
 var nearby_interactable: Node2D
 var spell_definitions: Dictionary = {}
 var cast_cooldown_remaining: float = 0.0
+var selected_spell_id: String = "fireball"
 
 func _ready() -> void:
 	_load_spell_definitions()
@@ -57,9 +58,14 @@ func _process(delta: float) -> void:
 		var prompt := "E — поговорить" if nearby_interactable is WorldNpc else "E — собрать"
 		hud.set_prompt(prompt)
 	else:
-		hud.set_prompt("WASD — движение   ЛКМ — магия   E — взаимодействие   Esc — пауза")
+		hud.set_prompt("WASD — ходьба   1/2 — магия   ЛКМ — каст   E — действие")
 
 func _input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_1:
+			select_spell("fireball")
+		elif event.keycode == KEY_2:
+			select_spell("frostbolt")
 	# _input receives mouse clicks even when a Control overlays the world.
 	if event.is_action_pressed("interact"):
 		if hud.dialogue_visible:
@@ -150,10 +156,17 @@ func _on_enemy_defeated(xp_reward: int) -> void:
 func _on_level_up(new_level: int) -> void:
 	hud.show_message("НОВЫЙ УРОВЕНЬ: %d! Здоровье и мана восстановлены." % new_level, 3.0)
 
+func select_spell(spell_id: String) -> void:
+	if not spell_definitions.has(spell_id):
+		return
+	selected_spell_id = spell_id
+	var data: Dictionary = spell_definitions[spell_id]
+	hud.show_message("Магия: " + str(data.get("name", spell_id)), 1.5)
+
 func _cast_spell() -> void:
 	if cast_cooldown_remaining > 0.0:
 		return
-	var spell: Dictionary = spell_definitions.get("fireball", {})
+	var spell: Dictionary = spell_definitions.get(selected_spell_id, {})
 	var mana_cost := int(spell.get("mana_cost", 8))
 	var spell_damage := int(spell.get("damage", 18))
 	if not player.spend_mana(mana_cost):
@@ -168,6 +181,7 @@ func _cast_spell() -> void:
 		return
 	bolt.speed = float(spell.get("projectile_speed", 255))
 	bolt.setup(direction, spell_damage)
+	bolt.configure_effect(selected_spell_id, float(spell.get("slow_multiplier", 1.0)), float(spell.get("slow_duration", 0.0)))
 	add_child(bolt)
 	bolt.global_position = player.global_position + direction * 12.0
 	cast_cooldown_remaining = float(spell.get("cooldown", 0.25))

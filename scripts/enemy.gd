@@ -12,6 +12,8 @@ const SLIME_SHEET := "res://assets/sprites/enemies/forest_slime_true8.png"
 
 var health: int
 var attack_cooldown: float = 0.0
+var slow_time_left: float = 0.0
+var slow_factor: float = 1.0
 var visual: DirectionalSprite
 
 func _ready() -> void:
@@ -81,6 +83,9 @@ func _avoid_world_obstacles(desired: Vector2) -> Vector2:
 	return Vector2.ZERO
 
 func _physics_process(delta: float) -> void:
+	slow_time_left = maxf(0.0, slow_time_left - delta)
+	if slow_time_left <= 0.0:
+		slow_factor = 1.0
 	attack_cooldown = maxf(0.0, attack_cooldown - delta)
 	var player := get_tree().get_first_node_in_group("player") as Node2D
 	if player == null or not player.is_physics_processing():
@@ -108,13 +113,17 @@ func _physics_process(delta: float) -> void:
 				desired = home_offset.normalized()
 	if desired.length_squared() > 0.001:
 		var steered: Vector2 = _avoid_world_obstacles(desired)
-		velocity = steered * move_speed
+		velocity = steered * move_speed * slow_factor
 		visual.set_direction_vector(steered if steered.length_squared() > 0.01 else desired)
 		visual.set_moving(steered.length_squared() > 0.01)
 		move_and_slide()
 	else:
 		velocity = Vector2.ZERO
 		visual.set_moving(false)
+
+func apply_slow(multiplier: float, duration: float) -> void:
+	slow_factor = minf(slow_factor, clampf(multiplier, 0.1, 1.0))
+	slow_time_left = maxf(slow_time_left, duration)
 
 func take_damage(amount: int) -> void:
 	health -= amount
