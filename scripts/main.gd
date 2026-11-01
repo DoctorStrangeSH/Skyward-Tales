@@ -2,6 +2,7 @@ extends Node2D
 
 const PLAYER_SCENE := preload("res://scenes/player.tscn")
 const BOLT_SCENE := preload("res://scenes/magic_bolt.tscn")
+const SPRITE_ARCHIVE := preload("res://scripts/sprite_archive.gd")
 const NPC_SCRIPT := preload("res://scripts/npc.gd")
 const COLLECTIBLE_SCRIPT := preload("res://scripts/collectible.gd")
 const ENEMY_SCRIPT := preload("res://scripts/enemy.gd")
@@ -15,6 +16,7 @@ var spell_definitions: Dictionary = {}
 var cast_cooldown_remaining: float = 0.0
 
 func _ready() -> void:
+	SPRITE_ARCHIVE.extract_if_needed()
 	_load_spell_definitions()
 	quests = QuestManager.new()
 	player = PLAYER_SCENE.instantiate() as PlayerCharacter
@@ -152,7 +154,7 @@ func _on_level_up(new_level: int) -> void:
 func _cast_spell() -> void:
 	if cast_cooldown_remaining > 0.0:
 		return
-	var spell: Dictionary = spell_definitions.get("arcane_bolt", {})
+	var spell: Dictionary = spell_definitions.get("fireball", {})
 	var mana_cost := int(spell.get("mana_cost", 8))
 	var spell_damage := int(spell.get("damage", 18))
 	if not player.spend_mana(mana_cost):
@@ -164,8 +166,8 @@ func _cast_spell() -> void:
 	var bolt := BOLT_SCENE.instantiate() as MagicBolt
 	bolt.speed = float(spell.get("projectile_speed", 255))
 	bolt.setup(direction, spell_damage)
-	bolt.global_position = player.global_position + direction * 12.0
 	add_child(bolt)
+	bolt.global_position = player.global_position + direction * 12.0
 	cast_cooldown_remaining = float(spell.get("cooldown", 0.25))
 
 func _refresh_hud() -> void:
