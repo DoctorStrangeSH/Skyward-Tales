@@ -9,6 +9,7 @@ var dialogue_panel: PanelContainer
 var dialogue_label: Label
 var spell_label: Label
 var spell_cooldown_bar: ProgressBar
+var inventory_label: Label
 var message_time: float = 0.0
 var dialogue_visible: bool = false
 
@@ -53,6 +54,11 @@ func _ready() -> void:
 	spell_cooldown_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	spell_box.add_child(spell_cooldown_bar)
 
+	inventory_label = _make_label("Q: Здоровье ×0   R: Мана ×0", 10, Color(0.92, 0.87, 0.77))
+	inventory_label.position = Vector2(12, 144)
+	inventory_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(inventory_label)
+
 	message_label = _make_label("", 12, Color(1.0, 0.91, 0.62))
 	message_label.position = Vector2(180, 18)
 	message_label.size = Vector2(450, 28)
@@ -96,6 +102,7 @@ func update_status(player: PlayerCharacter, quests: QuestManager) -> void:
 		player.level, player.health, player.max_health, player.mana, player.max_mana, player.gold
 	]
 	quest_label.text = "ЗАДАНИЕ: " + quests.get_active_summary()
+	inventory_label.text = "Q: Здоровье ×%d   R: Мана ×%d" % [int(player.inventory.get("health_potion", 0)), int(player.inventory.get("mana_potion", 0))]
 
 func update_spell(spell_name: String, mana_cost: int, current_mana: int, remaining: float, total: float) -> void:
 	if spell_label == null or spell_cooldown_bar == null:

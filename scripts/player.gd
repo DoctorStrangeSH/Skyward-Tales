@@ -20,6 +20,7 @@ var gold: int = 0
 var facing: Vector2 = Vector2.DOWN
 var visual: DirectionalSprite
 var mana_regen_accumulator: float = 0.0
+var inventory: Dictionary = {}
 
 func _ready() -> void:
 	add_to_group("player")
@@ -79,3 +80,29 @@ func add_experience(amount: int) -> void:
 func add_gold(amount: int) -> void:
 	gold += amount
 	stats_changed.emit()
+
+func add_item(item_id: String, amount: int = 1) -> void:
+	if amount <= 0:
+		return
+	inventory[item_id] = int(inventory.get(item_id, 0)) + amount
+	stats_changed.emit()
+
+func use_item(item_id: String) -> bool:
+	if int(inventory.get(item_id, 0)) <= 0:
+		return false
+	match item_id:
+		"health_potion":
+			if health >= max_health:
+				return false
+			health = mini(max_health, health + 35)
+		"mana_potion":
+			if mana >= max_mana:
+				return false
+			mana = mini(max_mana, mana + 25)
+		_:
+			return false
+	inventory[item_id] = int(inventory[item_id]) - 1
+	if int(inventory[item_id]) <= 0:
+		inventory.erase(item_id)
+	stats_changed.emit()
+	return true

@@ -5,6 +5,7 @@ const BOLT_SCENE := preload("res://scenes/magic_bolt.tscn")
 const NPC_SCRIPT := preload("res://scripts/npc.gd")
 const COLLECTIBLE_SCRIPT := preload("res://scripts/collectible.gd")
 const ENEMY_SCRIPT := preload("res://scripts/enemy.gd")
+const LOOT_SCRIPT := preload("res://scripts/loot.gd")
 
 var player: PlayerCharacter
 var hud: GameHud
@@ -15,6 +16,7 @@ var spell_definitions: Dictionary = {}
 var cast_cooldown_remaining: float = 0.0
 var selected_spell_id: String = "fireball"
 var cast_cooldown_total: float = 0.0
+var defeated_enemies: int = 0
 
 func _ready() -> void:
 	_load_spell_definitions()
@@ -57,14 +59,18 @@ func _process(delta: float) -> void:
 	if hud.dialogue_visible:
 		hud.set_prompt("")
 	elif nearby_interactable != null:
-		var prompt := "E — поговорить" if nearby_interactable is WorldNpc else "E — собрать"
+		var prompt := "E — поговорить" if nearby_interactable is WorldNpc else ("E — подобрать" if nearby_interactable is WorldLoot else "E — собрать")
 		hud.set_prompt(prompt)
 	else:
-		hud.set_prompt("WASD — ходьба   1/2/3 — магия   ЛКМ — каст   E — действие")
+		hud.set_prompt("WASD — ходьба   1/2/3 — магия   ЛКМ — каст   E — подбор   Q/R — зелья")
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_1:
+		if event.keycode == KEY_Q:
+			_use_consumable("health_potion", "Зелье здоровья")
+		elif event.keycode == KEY_R:
+			_use_consumable("mana_potion", "Зелье маны")
+		elif event.keycode == KEY_1:
 			select_spell("fireball")
 		elif event.keycode == KEY_2:
 			select_spell("frostbolt")
@@ -100,7 +106,7 @@ func _spawn_slime(spawn_position: Vector2) -> void:
 	var slime := ENEMY_SCRIPT.new() as SlimeEnemy
 	slime.position = spawn_position
 	add_child(slime)
-	slime.defeated.connect(_on_enemy_defeated)
+	slime.defeated.connect(func(xp: int) -> void: _on_enemy_defeated(xp, spawn_position))
 
 func _find_nearest_interactable() -> Node2D:
 	var nearest: Node2D = null
@@ -153,9 +159,31 @@ func _on_herb_interacted(source: Node2D) -> void:
 		hud.show_message("Лунный лист. Поговорите со старейшиной, чтобы узнать, зачем он нужен.", 2.5)
 	_refresh_hud()
 
-func _on_enemy_defeated(xp_reward: int) -> void:
+func _on_enemy_defeated(xp_reward: int, death_position: Vector2) -> void:
 	player.add_experience(xp_reward)
+	defeated_enemies += 1
+	_spawn_loot(death_position, "health_potion" if defeated_enemies % 2 == 1 else "mana_potion")
 	hud.show_message("Слизень побеждён! +%d опыта" % xp_reward, 1.5)
+
+func _spawn_loot(drop_position: Vector2, item_id: String) -> void:
+	var loot := LOOT_SCRIPT.new() as WorldLoot
+	loot.item_id = item_id
+	loot.item_name = "Зелье здоровья" if item_id == "health_potion" else "Зелье маны"
+	loot.position = drop_position
+	add_child(loot)
+	loot.collected.connect(_on_loot_collected)
+
+func _on_loot_collected(item_id: String, amount: int) -> void:
+	player.add_item(item_id, amount)
+	hud.show_message("Получено: %s ×%d" % [("Зелье здоровья" if item_id == "health_potion" else "Зелье маны"), amount], 2.0)
+
+func _use_consumable(item_id: String, label: String) -> void:
+	if hud == null or hud.dialogue_visible or get_tree().paused:
+		return
+	if player.use_item(item_id):
+		hud.show_message("Использовано: " + label, 1.5)
+	else:
+		hud.show_message("Нет зелья или восстановление не требуется.", 1.5)
 
 func _on_level_up(new_level: int) -> void:
 	hud.show_message("НОВЫЙ УРОВЕНЬ: %d! Здоровье и мана восстановлены." % new_level, 3.0)
