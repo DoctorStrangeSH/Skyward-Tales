@@ -47,6 +47,9 @@ jobs:
       - name: Test grove guardian boss phases and victory
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/grove_guardian.gd
+      - name: Test fire burning damage and persistence
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/fire_burning.gd
       - name: Test ice magic and slow expiration
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/frost_magic.gd

@@ -265,3 +265,8 @@ PNG-спрайты должны храниться в `assets/sprites/sprite_she
 
 
 Talent progression is implemented in commit `4eeaa5374ea5a6bc454b13558f48bf1e8d7cb733`; Godot 4.7.2 CI run `41321517591` passed. Manual UI and balance QA remains.
+
+
+## Fire burning DoT
+
+`data/spells.json` defines `fireball.burn_damage=3`, `burn_duration=2.0`. `MagicBolt.configure_burning()` injects effect, and `_on_body_entered` calls `apply_burning()` only for surviving enemies. `SlimeEnemy` owns `burn_time_left`, `burn_tick_timer`, `burn_damage`; `_update_burning(delta)` ticks every 0.5 seconds, refreshes on repeat without stacking, and uses `take_damage` for regular defeat signals. `take_damage` ignores already-dead enemies to prevent duplicate rewards. `main.gd` includes burn fields per enemy in save/restore. `tests/fire_burning.gd` is in Godot 4.7.2 CI; check run and manually verify balance. Art is still temporary.

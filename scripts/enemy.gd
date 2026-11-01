@@ -15,6 +15,10 @@ var health: int
 var attack_cooldown: float = 0.0
 var slow_time_left: float = 0.0
 var slow_factor: float = 1.0
+var burn_time_left: float = 0.0
+var burn_tick_interval: float = 0.5
+var burn_tick_timer: float = 0.0
+var burn_damage: int = 0
 var visual: DirectionalSprite
 var combat_feedback: EnemyCombatFeedback
 
@@ -119,6 +123,9 @@ func _avoid_world_obstacles(desired: Vector2, delta: float = 0.016) -> Vector2:
 	return Vector2.ZERO
 
 func _physics_process(delta: float) -> void:
+	_update_burning(delta)
+	if is_queued_for_deletion():
+		return
 	slow_time_left = maxf(0.0, slow_time_left - delta)
 	if slow_time_left <= 0.0:
 		slow_factor = 1.0
@@ -216,11 +223,37 @@ func _update_special_attack(delta: float, player: Node2D) -> bool:
 		return true
 	return false
 
+func apply_burning(damage_per_tick: int, duration: float) -> void:
+	if health <= 0 or duration <= 0.0 or damage_per_tick <= 0:
+		return
+	# Repeated hits refresh the effect rather than stacking hidden damage instances.
+	burn_damage = maxi(burn_damage, damage_per_tick)
+	burn_time_left = maxf(burn_time_left, duration)
+	if burn_tick_timer <= 0.0:
+		burn_tick_timer = burn_tick_interval
+
+func _update_burning(delta: float) -> void:
+	if burn_time_left <= 0.0 or health <= 0:
+		return
+	var elapsed: float = minf(maxf(delta, 0.0), burn_time_left)
+	burn_time_left = maxf(0.0, burn_time_left - elapsed)
+	burn_tick_timer -= elapsed
+	while burn_tick_timer <= 0.0 and health > 0:
+		take_damage(burn_damage)
+		burn_tick_timer += burn_tick_interval
+		if is_queued_for_deletion():
+			break
+	if burn_time_left <= 0.0:
+		burn_damage = 0
+		burn_tick_timer = 0.0
+
 func apply_slow(multiplier: float, duration: float) -> void:
 	slow_factor = minf(slow_factor, clampf(multiplier, 0.1, 1.0))
 	slow_time_left = maxf(slow_time_left, duration)
 
 func take_damage(amount: int) -> void:
+	if health <= 0:
+		return
 	health -= amount
 	if combat_feedback != null:
 		combat_feedback.set_health(health, max_health)
