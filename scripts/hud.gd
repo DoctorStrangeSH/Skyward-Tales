@@ -127,14 +127,15 @@ func refresh_inventory(player: PlayerCharacter) -> void:
 	for child in inventory_list.get_children():
 		inventory_list.remove_child(child)
 		child.queue_free()
-	var order: Array[String] = ["health_potion", "mana_potion"]
-	var names: Dictionary = {"health_potion": "Зелье здоровья", "mana_potion": "Зелье маны"}
-	var descriptions: Dictionary = {"health_potion": "+35 HP", "mana_potion": "+25 MP"}
+	var order: Array[String] = ["health_potion", "mana_potion", "apprentice_staff", "leather_armor", "mana_amulet"]
+	var names: Dictionary = {"health_potion": "Зелье здоровья", "mana_potion": "Зелье маны", "apprentice_staff": "Посох ученика", "leather_armor": "Кожаная броня", "mana_amulet": "Амулет маны"}
+	var descriptions: Dictionary = {"health_potion": "+35 HP", "mana_potion": "+25 MP", "apprentice_staff": "+5 урона магией", "leather_armor": "-4 получаемого урона", "mana_amulet": "+20 макс. маны"}
 	for item_id in order:
 		var count: int = int(player.inventory.get(item_id, 0))
 		var button := Button.new()
 		button.mouse_filter = Control.MOUSE_FILTER_STOP
-		button.text = "%s ×%d — %s" % [names[item_id], count, descriptions[item_id]]
+		var equipped: bool = item_id in player.equipment.values()
+		button.text = "%s ×%d — %s%s" % [names[item_id], count, descriptions[item_id], " [НАДЕТО]" if equipped else ""]
 		button.tooltip_text = "Нажмите, чтобы использовать."
 		button.disabled = count <= 0
 		button.pressed.connect(func() -> void: inventory_use_requested.emit(item_id))
