@@ -33,6 +33,9 @@ func _ready() -> void:
 	add_child(hud)
 	hud.inventory_use_requested.connect(_on_inventory_use)
 	hud.inventory_unequip_requested.connect(_on_inventory_unequip)
+	hud.pause_save_requested.connect(save_game)
+	hud.pause_load_requested.connect(load_game)
+	hud.pause_menu_requested.connect(_go_to_title)
 
 	_spawn_elder()
 	_spawn_herb(Vector2(370, 155))
@@ -42,7 +45,11 @@ func _ready() -> void:
 	_spawn_slime(Vector2(790, 300))
 	_spawn_slime(Vector2(990, 250))
 
-	hud.show_message("Добро пожаловать в Skyward Tales! Найдите старейшину.", 5.0)
+	if get_tree().has_meta("skyward_continue") and bool(get_tree().get_meta("skyward_continue")):
+		get_tree().remove_meta("skyward_continue")
+		load_game()
+	else:
+		hud.show_message("Добро пожаловать в Skyward Tales! Найдите старейшину.", 5.0)
 	_refresh_hud()
 
 func _load_spell_definitions() -> void:
@@ -381,3 +388,7 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 	_refresh_hud()
 	hud.show_message("Прогресс загружен!", 2.0)
 	return true
+
+func _go_to_title() -> void:
+	get_tree().paused = false
+	get_tree().change_scene_to_file("res://scenes/title_menu.tscn")
