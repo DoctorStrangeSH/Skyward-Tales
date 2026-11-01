@@ -14,7 +14,7 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	visual = DIRECTIONAL_SPRITE_SCRIPT.new() as DirectionalSprite
 	visual.name = "DirectionalVisual"
-	visual.configure(FIREBALL_SHEET, 4, 8, 1.5, 16.0)
+	visual.configure(FIREBALL_SHEET, 4, 8, 1.8, 16.0)
 	visual.set_direction_vector(direction)
 	visual.set_moving(true)
 	add_child(visual)

@@ -26,8 +26,8 @@ func _ready() -> void:
 	mana = max_mana
 	visual = DIRECTIONAL_SPRITE_SCRIPT.new() as DirectionalSprite
 	visual.name = "DirectionalVisual"
-	visual.configure(HERO_SHEET, 4, 8, 1.45, 8.0)
-	visual.offset = Vector2(0.0, -18.0)
+	visual.configure(HERO_SHEET, 4, 8, 1.8, 8.0)
+	visual.offset = Vector2(0.0, -14.0)
 	visual.set_direction_vector(facing)
 	add_child(visual)
 
