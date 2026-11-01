@@ -4,7 +4,7 @@ class_name SlimeEnemy
 signal defeated(xp_reward: int)
 
 const DIRECTIONAL_SPRITE_SCRIPT := preload("res://scripts/directional_sprite.gd")
-const SLIME_SHEET := "user://SkywardTales/sprites/forest_slime_8dir.png"
+const SLIME_SHEET := "res://assets/sprites/enemies/forest_slime_true8.png"
 
 @export var max_health: int = 32
 @export var move_speed: float = 38.0

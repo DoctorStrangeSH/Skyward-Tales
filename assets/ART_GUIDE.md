@@ -23,10 +23,11 @@ Use polished, readable fantasy pixel art with warm highlights, rich but controll
 Frames are read left-to-right within each direction row. This order is shared by `DirectionalSprite` and all directional sheets.
 
 ## Current sheets
-The PNG files are packed into `assets/sprites/sprite_sheets.zip` and extracted at startup to `user://SkywardTales/sprites/` by `scripts/sprite_archive.gd`.
+Hero and fireball PNGs are expected inside `assets/sprites/sprite_sheets.zip` and extracted at startup to `user://SkywardTales/sprites/` by `scripts/sprite_archive.gd`.
 
 - `hero_8dir_walk.png` — 32×32 cells, 4 frames × 8 directions.
-- `forest_slime_8dir.png` — 32×32 cells, 4 poses × 8 directions; the round slime poses are rotated to face movement.
+- `assets/sprites/enemies/forest_slime_true8.png` — настоящий атлас PNG 32×32 × (4 кадра × 8 направлений), включая **вид сзади без лица**; подключён напрямую как `res://`.
+- Старый `forest_slime_8dir.png` в архиве — устаревшая версия, не использовать для новых врагов.
 - `fireball_8dir.png` — 32×32 cells, 4 flight frames × 8 directions.
 
 See `assets/sprites/asset_manifest.json` for machine-readable layout metadata.

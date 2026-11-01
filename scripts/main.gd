@@ -16,7 +16,8 @@ var spell_definitions: Dictionary = {}
 var cast_cooldown_remaining: float = 0.0
 
 func _ready() -> void:
-	SPRITE_ARCHIVE.extract_if_needed()
+	if FileAccess.file_exists("res://assets/sprites/sprite_sheets.zip"):
+		SPRITE_ARCHIVE.extract_if_needed()
 	_load_spell_definitions()
 	quests = QuestManager.new()
 	player = PLAYER_SCENE.instantiate() as PlayerCharacter
