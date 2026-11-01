@@ -27,9 +27,12 @@ var world: Node2D
 var current_region: String = "greenreach"
 var guardian_defeated: bool = false
 var game_over: bool = false
+var talent_definitions: Dictionary = {}
+var pending_level_choices: Array[int] = []
 
 func _ready() -> void:
 	_load_spell_definitions()
+	_load_talent_definitions()
 	world = get_node("World") as Node2D
 	quests = QuestManager.new()
 	player = PLAYER_SCENE.instantiate() as PlayerCharacter
@@ -49,6 +52,7 @@ func _ready() -> void:
 	hud.defeat_restart_requested.connect(_restart_run)
 	hud.defeat_load_requested.connect(_load_from_defeat)
 	hud.defeat_menu_requested.connect(_go_to_title)
+	hud.talent_selected.connect(_on_talent_selected)
 
 	_populate_region()
 
@@ -58,6 +62,15 @@ func _ready() -> void:
 	else:
 		hud.show_message("Добро пожаловать в Skyward Tales! Найдите старейшину.", 5.0)
 	_refresh_hud()
+
+func _load_talent_definitions() -> void:
+	var file := FileAccess.open("res://data/talents.json", FileAccess.READ)
+	if file == null:
+		push_warning("Каталог талантов не найден.")
+		return
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if parsed is Dictionary:
+		talent_definitions = parsed
 
 func _load_spell_definitions() -> void:
 	var file := FileAccess.open("res://data/spells.json", FileAccess.READ)
@@ -363,7 +376,50 @@ func _use_consumable(item_id: String, label: String) -> void:
 		hud.show_message("Нет зелья или восстановление не требуется.", 1.5)
 
 func _on_level_up(new_level: int) -> void:
-	hud.show_message("НОВЫЙ УРОВЕНЬ: %d! Здоровье и мана восстановлены." % new_level, 3.0)
+	pending_level_choices.append(new_level)
+	if hud != null and not game_over:
+		hud.show_message("НОВЫЙ УРОВЕНЬ: %d! Здоровье и мана восстановлены." % new_level, 2.5)
+		_present_next_level_choice()
+
+func _present_next_level_choice() -> void:
+	if pending_level_choices.is_empty() or game_over or hud == null or hud.talent_visible:
+		return
+	var available: Array[Dictionary] = []
+	for talent_id in talent_definitions:
+		var definition: Dictionary = talent_definitions[talent_id]
+		var rank: int = int(player.talents.get(talent_id, 0))
+		var maximum: int = int(definition.get("max_rank", 3))
+		if rank < maximum:
+			available.append({
+				"id": str(talent_id),
+				"name": str(definition.get("name", talent_id)),
+				"description": str(definition.get("description", "")),
+				"rank": rank,
+				"max_rank": maximum
+			})
+	if available.is_empty():
+		pending_level_choices.clear()
+		hud.show_message("Все таланты изучены. Следующий уровень принесёт новые возможности.", 3.0)
+		return
+	available.shuffle()
+	var choices: Array[Dictionary] = []
+	for index in range(mini(3, available.size())):
+		choices.append(available[index])
+	hud.show_talent_choices(choices)
+	get_tree().paused = true
+
+func _on_talent_selected(talent_id: String) -> void:
+	if not hud.talent_visible or not player.apply_talent(talent_id):
+		return
+	if not pending_level_choices.is_empty():
+		pending_level_choices.pop_front()
+	hud.hide_talent_choices()
+	if pending_level_choices.is_empty():
+		get_tree().paused = false
+		hud.show_message("Талант изучен: " + str(talent_definitions.get(talent_id, {}).get("name", talent_id)), 2.5)
+	else:
+		_present_next_level_choice()
+	_refresh_hud()
 
 func _update_spell_hud() -> void:
 	var spell: Dictionary = spell_definitions.get(selected_spell_id, {})
@@ -382,7 +438,7 @@ func _cast_spell() -> void:
 		return
 	var spell: Dictionary = spell_definitions.get(selected_spell_id, {})
 	var mana_cost := int(spell.get("mana_cost", 8))
-	var spell_damage := int(spell.get("damage", 18)) + player.get_spell_bonus()
+	var spell_damage := int(spell.get("damage", 18)) + player.get_spell_bonus(selected_spell_id)
 	if not player.spend_mana(mana_cost):
 		hud.show_message("Недостаточно маны.", 1.2)
 		return
@@ -401,7 +457,7 @@ func _cast_spell() -> void:
 	bolt.chain_damage_factor = float(spell.get("chain_damage_factor", 0.65))
 	add_child(bolt)
 	bolt.global_position = player.global_position + direction * 12.0
-	cast_cooldown_total = float(spell.get("cooldown", 0.25))
+	cast_cooldown_total = float(spell.get("cooldown", 0.25)) * player.get_cooldown_multiplier()
 	cast_cooldown_remaining = cast_cooldown_total
 	_update_spell_hud()
 
@@ -422,7 +478,9 @@ func _on_player_died() -> void:
 	if game_over:
 		return
 	game_over = true
+	pending_level_choices.clear()
 	if hud != null:
+		hud.hide_talent_choices()
 		hud.show_defeat(not SAVE_SCRIPT.load_snapshot(save_path).is_empty())
 	get_tree().paused = true
 
@@ -457,7 +515,8 @@ func make_save_snapshot() -> Dictionary:
 			"experience_to_next": player.experience_to_next,
 			"gold": player.gold,
 			"inventory": player.inventory.duplicate(true),
-			"equipment": player.equipment.duplicate(true)
+			"equipment": player.equipment.duplicate(true),
+			"talents": player.talents.duplicate(true)
 		},
 		"quest": {"states": quests.states.duplicate(true), "active": quests.active_quest_id},
 		"world": {"region": current_region, "enemies": alive_enemies, "herbs": herbs, "loot": loot_items, "defeated": defeated_enemies, "guardian_defeated": guardian_defeated},
@@ -504,7 +563,7 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 	var quest_data: Dictionary = data["quest"]
 	var world_data: Dictionary = data["world"]
 	# Validate structure before changing existing game state.
-	if not character.get("inventory") is Dictionary or not character.get("equipment") is Dictionary:
+	if not character.get("inventory") is Dictionary or not character.get("equipment") is Dictionary or (character.has("talents") and not character.get("talents") is Dictionary):
 		return false
 	if not quest_data.get("states") is Dictionary:
 		return false
@@ -527,6 +586,10 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 	player.mana = clampi(int(character.get("mana", player.max_mana)), 0, player.max_mana)
 	player.inventory = character["inventory"].duplicate(true)
 	player.equipment = character["equipment"].duplicate(true)
+	player.talents = character.get("talents", {}).duplicate(true)
+	pending_level_choices.clear()
+	if hud.talent_visible:
+		hud.hide_talent_choices()
 	player.global_position = _read_position(character.get("position"), Vector2(130, 210))
 	# Recreate dynamic world state; queued old nodes must be removed from scene tree immediately.
 	for node in get_children():

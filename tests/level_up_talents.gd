@@ -38,9 +38,9 @@ func _run() -> void:
 		return
 	if not _require(int(game.player.talents.get(chosen_id, 0)) == 1, "chosen talent rank was not recorded"):
 		return
-	if chosen_id == "vitality" and not _require(game.player.max_health == 115, "vitality did not increase max health"):
+	if chosen_id == "vitality" and not _require(game.player.max_health == 125, "vitality did not increase max health"):
 		return
-	if chosen_id == "mana_well" and not _require(game.player.max_mana == 72, "mana well did not increase max mana"):
+	if chosen_id == "mana_well" and not _require(game.player.max_mana == 77, "mana well did not increase max mana"):
 		return
 	if chosen_id == "swift_cast" and not _require(game.player.get_cooldown_multiplier() < 1.0, "swift cast did not reduce cooldown"):
 		return

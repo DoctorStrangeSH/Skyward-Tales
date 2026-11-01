@@ -29,6 +29,7 @@ var dodge_cooldown_left: float = 0.0
 var dodge_direction: Vector2 = Vector2.DOWN
 var inventory: Dictionary = {}
 var equipment: Dictionary = {"weapon": "", "armor": "", "amulet": ""}
+var talents: Dictionary = {}
 
 func _ready() -> void:
 	add_to_group("player")
@@ -117,8 +118,36 @@ func add_gold(amount: int) -> void:
 func get_armor() -> int:
 	return 4 if equipment.get("armor", "") == "leather_armor" else 0
 
-func get_spell_bonus() -> int:
-	return 5 if equipment.get("weapon", "") == "apprentice_staff" else 0
+func get_spell_bonus(spell_id: String = "") -> int:
+	var bonus: int = 5 if equipment.get("weapon", "") == "apprentice_staff" else 0
+	bonus += int(talents.get("arcane_power", 0)) * 3
+	if spell_id == "frostbolt":
+		bonus += int(talents.get("frost_lore", 0)) * 3
+	elif spell_id == "chain_lightning":
+		bonus += int(talents.get("storm_focus", 0)) * 3
+	return bonus
+
+func get_cooldown_multiplier() -> float:
+	return maxf(0.70, pow(0.92, float(talents.get("swift_cast", 0))))
+
+func apply_talent(talent_id: String) -> bool:
+	var current_rank: int = int(talents.get(talent_id, 0))
+	if current_rank >= 3:
+		return false
+	match talent_id:
+		"arcane_power", "frost_lore", "storm_focus", "vitality", "mana_well", "swift_cast":
+			talents[talent_id] = current_rank + 1
+		_:
+			return false
+	match talent_id:
+		"vitality":
+			max_health += 15
+			health = mini(max_health, health + 15)
+		"mana_well":
+			max_mana += 12
+			mana = mini(max_mana, mana + 12)
+	stats_changed.emit()
+	return true
 
 func _slot_for_item(item_id: String) -> String:
 	match item_id:
