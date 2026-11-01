@@ -11,6 +11,8 @@ var lifetime: float = 2.0
 var spell_id: String = "fireball"
 var slow_multiplier: float = 1.0
 var slow_duration: float = 0.0
+var burn_damage: int = 0
+var burn_duration: float = 0.0
 var chain_targets: int = 0
 var chain_radius: float = 0.0
 var chain_damage_factor: float = 0.65
@@ -42,6 +44,10 @@ func configure_effect(new_spell_id: String, new_slow_multiplier: float, new_slow
 	if visual != null:
 		visual.modulate = Color(0.38, 0.82, 1.0) if spell_id == "frostbolt" else (Color(0.78, 0.66, 1.0) if spell_id == "chain_lightning" else Color.WHITE)
 
+func configure_burning(damage_per_tick: int, duration: float) -> void:
+	burn_damage = maxi(0, damage_per_tick)
+	burn_duration = maxf(0.0, duration)
+
 func _physics_process(delta: float) -> void:
 	global_position += direction * speed * delta
 	lifetime -= delta
@@ -51,6 +57,8 @@ func _physics_process(delta: float) -> void:
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("enemies") and body.has_method("take_damage"):
 		body.take_damage(damage)
+		if spell_id == "fireball" and burn_duration > 0.0 and body.has_method("apply_burning") and not body.is_queued_for_deletion():
+			body.apply_burning(burn_damage, burn_duration)
 		if spell_id == "chain_lightning":
 			_apply_chain_lightning(body)
 		if spell_id == "frostbolt" and body.has_method("apply_slow") and slow_duration > 0.0:

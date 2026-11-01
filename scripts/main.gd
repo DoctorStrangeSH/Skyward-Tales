@@ -452,6 +452,7 @@ func _cast_spell() -> void:
 	bolt.speed = float(spell.get("projectile_speed", 255))
 	bolt.setup(direction, spell_damage)
 	bolt.configure_effect(selected_spell_id, float(spell.get("slow_multiplier", 1.0)), float(spell.get("slow_duration", 0.0)))
+	bolt.configure_burning(int(spell.get("burn_damage", 0)), float(spell.get("burn_duration", 0.0)))
 	bolt.chain_targets = int(spell.get("chain_targets", 0))
 	bolt.chain_radius = float(spell.get("chain_radius", 0.0))
 	bolt.chain_damage_factor = float(spell.get("chain_damage_factor", 0.65))
@@ -501,7 +502,7 @@ func make_save_snapshot() -> Dictionary:
 			continue
 		if node is SlimeEnemy:
 			var kind: String = "guardian" if node is GroveGuardian else ("shaman" if node is ForestShaman else ("wolf" if node is ForestWolf else "slime"))
-			alive_enemies.append({"position": _position_array(node.global_position), "hp": node.health, "home": _position_array(node.home_position), "kind": kind})
+			alive_enemies.append({"position": _position_array(node.global_position), "hp": node.health, "home": _position_array(node.home_position), "kind": kind, "burn_remaining": node.burn_time_left, "burn_tick": node.burn_tick_timer, "burn_damage": node.burn_damage})
 		elif node is WorldCollectible:
 			herbs.append({"position": _position_array(node.global_position), "id": node.item_id, "name": node.display_name})
 		elif node is WorldLoot:
@@ -621,6 +622,9 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 				enemy.move_speed = 44.0
 				enemy.attack_cooldown_duration = 1.2
 			enemy.home_position = _read_position(enemy_data.get("home"), enemy.global_position)
+			enemy.burn_time_left = maxf(0.0, float(enemy_data.get("burn_remaining", 0.0)))
+			enemy.burn_damage = maxi(0, int(enemy_data.get("burn_damage", 0)))
+			enemy.burn_tick_timer = clampf(float(enemy_data.get("burn_tick", 0.5)), 0.001, enemy.burn_tick_interval)
 	for loot_data in world_data["loot"]:
 		if not loot_data is Dictionary:
 			continue
