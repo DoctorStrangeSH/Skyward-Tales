@@ -16,6 +16,10 @@ var equipment_list: VBoxContainer
 var inventory_open: bool = false
 signal inventory_use_requested(item_id: String)
 signal inventory_unequip_requested(slot: String)
+signal pause_save_requested
+signal pause_load_requested
+signal pause_menu_requested
+var pause_panel: PanelContainer
 var message_time: float = 0.0
 var dialogue_visible: bool = false
 
@@ -95,6 +99,21 @@ func _ready() -> void:
 	contents.add_child(inventory_list)
 	inventory_panel.visible = false
 
+	pause_panel = PanelContainer.new()
+	pause_panel.position = Vector2(200, 65)
+	pause_panel.custom_minimum_size = Vector2(240, 210)
+	pause_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	pause_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.04, 0.06, 0.09, 0.98)))
+	root.add_child(pause_panel)
+	var pause_box := VBoxContainer.new()
+	pause_panel.add_child(pause_box)
+	pause_box.add_child(_make_label("ПАУЗА", 16, Color(0.96, 0.87, 0.65)))
+	_pause_button(pause_box, "Продолжить", func() -> void: _set_paused(false))
+	_pause_button(pause_box, "Сохранить", func() -> void: pause_save_requested.emit())
+	_pause_button(pause_box, "Загрузить", func() -> void: pause_load_requested.emit())
+	_pause_button(pause_box, "Главное меню", func() -> void: pause_menu_requested.emit())
+	pause_panel.visible = false
+
 	dialogue_panel = PanelContainer.new()
 	dialogue_panel.position = Vector2(140, 246)
 	dialogue_panel.custom_minimum_size = Vector2(360, 100)
@@ -115,10 +134,19 @@ func _process(delta: float) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause"):
-		var paused := not get_tree().paused
-		get_tree().paused = paused
-		show_message("ПАУЗА — Esc, чтобы продолжить" if paused else "Продолжаем приключение", 2.0)
+		_set_paused(not get_tree().paused)
 		get_viewport().set_input_as_handled()
+
+func _pause_button(parent: VBoxContainer, label: String, callback: Callable) -> void:
+	var button := Button.new()
+	button.text = label
+	button.mouse_filter = Control.MOUSE_FILTER_STOP
+	button.pressed.connect(callback)
+	parent.add_child(button)
+
+func _set_paused(paused: bool) -> void:
+	get_tree().paused = paused
+	pause_panel.visible = paused
 
 func toggle_inventory(player: PlayerCharacter) -> void:
 	inventory_open = not inventory_open
