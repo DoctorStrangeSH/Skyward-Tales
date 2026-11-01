@@ -88,30 +88,50 @@ func get_armor() -> int:
 func get_spell_bonus() -> int:
 	return 5 if equipment.get("weapon", "") == "apprentice_staff" else 0
 
-func equip_item(item_id: String) -> bool:
-	var slot: String = ""
-	var old_max_mana: int = max_mana
+func _slot_for_item(item_id: String) -> String:
 	match item_id:
 		"apprentice_staff":
-			slot = "weapon"
+			return "weapon"
 		"leather_armor":
-			slot = "armor"
+			return "armor"
 		"mana_amulet":
-			slot = "amulet"
-		_:
-			return false
-	if int(inventory.get(item_id, 0)) < 1 or equipment.get(slot, "") == item_id:
+			return "amulet"
+	return ""
+
+func equip_item(item_id: String) -> bool:
+	var slot: String = _slot_for_item(item_id)
+	if slot.is_empty() or int(inventory.get(item_id, 0)) <= 0:
+		return false
+	if str(equipment.get(slot, "")) == item_id:
 		return false
 	var previous: String = str(equipment.get(slot, ""))
+	# Remove old equipment bonuses before installing replacement.
+	if slot == "amulet" and previous == "mana_amulet":
+		max_mana -= 20
+		mana = mini(mana, max_mana)
 	inventory[item_id] = int(inventory[item_id]) - 1
 	if int(inventory[item_id]) <= 0:
 		inventory.erase(item_id)
 	if not previous.is_empty():
-		add_item(previous)
+		inventory[previous] = int(inventory.get(previous, 0)) + 1
 	equipment[slot] = item_id
-	if slot == "amulet":
+	if slot == "amulet" and item_id == "mana_amulet":
 		max_mana += 20
 		mana = mini(max_mana, mana + 20)
+	stats_changed.emit()
+	return true
+
+func unequip_slot(slot: String) -> bool:
+	if not equipment.has(slot):
+		return false
+	var item_id: String = str(equipment[slot])
+	if item_id.is_empty():
+		return false
+	if slot == "amulet" and item_id == "mana_amulet":
+		max_mana -= 20
+		mana = mini(mana, max_mana)
+	equipment[slot] = ""
+	inventory[item_id] = int(inventory.get(item_id, 0)) + 1
 	stats_changed.emit()
 	return true
 

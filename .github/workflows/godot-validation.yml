@@ -44,6 +44,9 @@ jobs:
       - name: Test equipment bonuses and spell damage
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/equipment.gd
+      - name: Test equipment slots and removal
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/equipment_unequip.gd
       - name: Headless gameplay smoke test
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --quit-after 120
