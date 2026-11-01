@@ -7,6 +7,8 @@ var message_label: Label
 var prompt_label: Label
 var dialogue_panel: PanelContainer
 var dialogue_label: Label
+var spell_label: Label
+var spell_cooldown_bar: ProgressBar
 var message_time: float = 0.0
 var dialogue_visible: bool = false
 
@@ -30,6 +32,26 @@ func _ready() -> void:
 	status_box.add_child(status_label)
 	quest_label = _make_label("ЗАДАНИЕ: Поговорите со старейшиной", 10, Color(0.83, 0.88, 0.72))
 	status_box.add_child(quest_label)
+
+	# Compact battle information, without introducing mouse-blocking controls.
+	var spell_panel := PanelContainer.new()
+	spell_panel.position = Vector2(10, 83)
+	spell_panel.custom_minimum_size = Vector2(230, 49)
+	spell_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	spell_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.055, 0.075, 0.09, 0.88)))
+	root.add_child(spell_panel)
+	var spell_box := VBoxContainer.new()
+	spell_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	spell_panel.add_child(spell_box)
+	spell_label = _make_label("1 🔥 ОГНЕННЫЙ ШАР", 11, Color(0.98, 0.89, 0.70))
+	spell_box.add_child(spell_label)
+	spell_cooldown_bar = ProgressBar.new()
+	spell_cooldown_bar.custom_minimum_size = Vector2(210, 8)
+	spell_cooldown_bar.max_value = 1.0
+	spell_cooldown_bar.value = 1.0
+	spell_cooldown_bar.show_percentage = false
+	spell_cooldown_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	spell_box.add_child(spell_cooldown_bar)
 
 	message_label = _make_label("", 12, Color(1.0, 0.91, 0.62))
 	message_label.position = Vector2(180, 18)
@@ -74,6 +96,18 @@ func update_status(player: PlayerCharacter, quests: QuestManager) -> void:
 		player.level, player.health, player.max_health, player.mana, player.max_mana, player.gold
 	]
 	quest_label.text = "ЗАДАНИЕ: " + quests.get_active_summary()
+
+func update_spell(spell_name: String, mana_cost: int, current_mana: int, remaining: float, total: float) -> void:
+	if spell_label == null or spell_cooldown_bar == null:
+		return
+	var ready: bool = remaining <= 0.001
+	var enough_mana: bool = current_mana >= mana_cost
+	var state: String = "ГОТОВО" if ready else ("ОТКАТ %.1fс" % remaining)
+	if not enough_mana:
+		state = "НЕТ МАНЫ"
+	spell_label.text = "%s  •  %d MP  •  %s" % [spell_name, mana_cost, state]
+	spell_label.modulate = Color.WHITE if ready and enough_mana else Color(0.73, 0.8, 0.88)
+	spell_cooldown_bar.value = 1.0 if total <= 0.0 else clampf(1.0 - remaining / total, 0.0, 1.0)
 
 func show_message(message: String, duration: float = 3.0) -> void:
 	message_label.text = message
