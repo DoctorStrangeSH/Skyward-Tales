@@ -14,6 +14,7 @@ func _ready() -> void:
 	attack_lunge_duration = 0.22
 	attack_lunge_speed = 270.0
 	attack_hit_radius = 20.0
+	elemental_multipliers = {"fire": 1.25, "ice": 0.8}
 	# Temporary tint distinguishes the wolf until its dedicated atlas is ready.
 	base_visual_tint = Color(0.78, 0.88, 0.72)
 	super._ready()

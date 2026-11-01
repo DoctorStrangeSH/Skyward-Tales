@@ -280,3 +280,8 @@ Talent progression is implemented in commit `4eeaa5374ea5a6bc454b13558f48bf1e8d7
 ## Elemental status visuals
 
 `EnemyCombatFeedback` renders orange embers when burning, an icy ring during slow, and short localized labels for steam and electric reactions. `SlimeEnemy._refresh_elemental_feedback` synchronizes statuses after application, expiration and reactions. `ForestShaman` now calls `_update_burning` and feedback refresh in its overridden physics loop, so shamans and guardian suffer DoT consistently. CI test: `tests/elemental_visuals.gd`. Manual visual QA outstanding.
+
+
+## Elemental resistances
+
+`SlimeEnemy.elemental_multipliers` maps fire/ice/lightning to factors (clamped 0.25..2), used by `take_elemental_damage` for bolts, DoT and reaction damage. `apply_burning` and `apply_slow` also scale status duration. Wolves weak to fire (1.25) and resist ice (0.8). Shamans resist fire (0.75) and weak to lightning (1.3); Guardian overrides with fire 0.65, ice 1.25, lightning 1.0. `MagicBolt` determines damage element from spell ID and applies resistance both on first hit and chain hops; physical hits unchanged. Test in `tests/elemental_resistances.gd`; watch CI and manual balance.
