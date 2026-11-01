@@ -17,6 +17,9 @@ jobs:
       - name: Import project with Godot 4.7.2
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --editor --import --quit
+      - name: Test spell casting, 8-way sprites and enemy damage
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/magic_smoke.gd
       - name: Headless gameplay smoke test
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --quit-after 120
