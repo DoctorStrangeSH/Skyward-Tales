@@ -26,6 +26,7 @@ var save_path: String = SAVE_SCRIPT.SAVE_PATH
 var world: Node2D
 var current_region: String = "greenreach"
 var guardian_defeated: bool = false
+var game_over: bool = false
 
 func _ready() -> void:
 	_load_spell_definitions()
@@ -36,6 +37,7 @@ func _ready() -> void:
 	player.global_position = Vector2(130, 210)
 	player.stats_changed.connect(_refresh_hud)
 	player.level_up.connect(_on_level_up)
+	player.died.connect(_on_player_died)
 
 	hud = GameHud.new()
 	add_child(hud)
@@ -44,6 +46,9 @@ func _ready() -> void:
 	hud.pause_save_requested.connect(save_game)
 	hud.pause_load_requested.connect(load_game)
 	hud.pause_menu_requested.connect(_go_to_title)
+	hud.defeat_restart_requested.connect(_restart_run)
+	hud.defeat_load_requested.connect(_load_from_defeat)
+	hud.defeat_menu_requested.connect(_go_to_title)
 
 	_populate_region()
 
@@ -65,7 +70,7 @@ func _load_spell_definitions() -> void:
 
 func _process(delta: float) -> void:
 	cast_cooldown_remaining = maxf(0.0, cast_cooldown_remaining - delta)
-	if player == null or hud == null:
+	if player == null or hud == null or game_over:
 		return
 	_update_spell_hud()
 	hud.update_dodge(player.dodge_cooldown_left, player.dodge_cooldown, player.dodge_time_left > 0.0)
@@ -79,6 +84,8 @@ func _process(delta: float) -> void:
 		hud.set_prompt("WASD — ходьба   Shift — рывок   1/2/3 — магия   ЛКМ — каст   E — подбор   Q/R — зелья   F6/F9 — сейв/загрузка")
 
 func _input(event: InputEvent) -> void:
+	if game_over:
+		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_F6 and not get_tree().paused and not hud.dialogue_visible:
 			save_game()
@@ -410,6 +417,23 @@ func _read_position(value: Variant, fallback: Vector2) -> Vector2:
 		return Vector2(float(value[0]), float(value[1]))
 	return fallback
 
+
+func _on_player_died() -> void:
+	if game_over:
+		return
+	game_over = true
+	if hud != null:
+		hud.show_defeat(not SAVE_SCRIPT.load_snapshot(save_path).is_empty())
+	get_tree().paused = true
+
+func _restart_run() -> void:
+	get_tree().paused = false
+	game_over = false
+	get_tree().change_scene_to_file("res://scenes/main.tscn")
+
+func _load_from_defeat() -> void:
+	load_game()
+
 func make_save_snapshot() -> Dictionary:
 	var alive_enemies: Array = []
 	var herbs: Array = []
@@ -441,6 +465,10 @@ func make_save_snapshot() -> Dictionary:
 	}
 
 func save_game() -> bool:
+	if game_over:
+		if hud != null:
+			hud.set_defeat_message("После поражения нельзя перезаписать сохранение. Загрузите прежний прогресс или начните заново.")
+		return false
 	var success: bool = SAVE_SCRIPT.save_snapshot(make_save_snapshot(), save_path)
 	if hud != null:
 		hud.show_message("Игра сохранена (F9 — загрузить)" if success else "Ошибка сохранения!", 2.0)
@@ -449,10 +477,25 @@ func save_game() -> bool:
 func load_game() -> bool:
 	var data: Dictionary = SAVE_SCRIPT.load_snapshot(save_path)
 	if data.is_empty():
-		if hud != null:
+		if game_over and hud != null:
+			hud.set_defeat_message("Сохранение не найдено или повреждено. Можно начать новое приключение.")
+		elif hud != null:
 			hud.show_message("Сохранение не найдено или повреждено.", 2.0)
 		return false
-	return restore_save_snapshot(data)
+	var recovering_from_defeat: bool = game_over
+	if recovering_from_defeat:
+		get_tree().paused = false
+		game_over = false
+	var restored: bool = restore_save_snapshot(data)
+	if restored:
+		if hud != null:
+			hud.hide_defeat()
+	elif recovering_from_defeat:
+		game_over = true
+		get_tree().paused = true
+		if hud != null:
+			hud.set_defeat_message("Не удалось восстановить сохранение. Попробуйте начать заново.")
+	return restored
 
 func restore_save_snapshot(data: Dictionary) -> bool:
 	if not data.get("player") is Dictionary or not data.get("quest") is Dictionary or not data.get("world") is Dictionary:
@@ -480,7 +523,7 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 	player.gold = maxi(0, int(character.get("gold", 0)))
 	player.max_health = maxi(1, int(character.get("max_health", 100)))
 	player.max_mana = maxi(1, int(character.get("max_mana", 60)))
-	player.health = clampi(int(character.get("health", player.max_health)), 0, player.max_health)
+	player.health = clampi(int(character.get("health", player.max_health)), 1, player.max_health)
 	player.mana = clampi(int(character.get("mana", player.max_mana)), 0, player.max_mana)
 	player.inventory = character["inventory"].duplicate(true)
 	player.equipment = character["equipment"].duplicate(true)

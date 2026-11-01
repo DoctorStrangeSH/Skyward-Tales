@@ -254,3 +254,7 @@ PNG-спрайты должны храниться в `assets/sprites/sprite_she
 ## Боевой feedback
 
 `scripts/enemy_combat_feedback.gd` — общий Node2D с полосой HP, числами урона через draw_string и кольцом предупреждения. `SlimeEnemy` создаёт feedback в `_ready`, обновляет при получении урона и состояниях WINDUP/LUNGE. `GroveGuardian` отмечает elite и сигнализирует о начале второй фазы. Добавлен `tests/combat_feedback.gd` в CI. Графика временная, проверить визуально.
+
+## Смерть героя / Game Over
+
+`PlayerCharacter.died` испускается однократно при переходе HP > 0 к 0. `main.gd._on_player_died` устанавливает `game_over`, показывает HUD defeat и ставит SceneTree на паузу; HUD работает в PROCESS_MODE_ALWAYS. `GameHud` предоставляет сигналы `defeat_restart_requested`, `defeat_load_requested`, `defeat_menu_requested`. Restart загружает `scenes/main.tscn`, меню ведёт в title, load снимает паузу только при наличии валидного сейва и успешном restore. Сохранение после смерти запрещено, старые сейвы с 0 HP при загрузке восстанавливаются с 1 HP. `tests/death_flow.gd` покрывает смерть, блокировку save, recovery load и отсутствие сейва; тест включён в Godot 4.7.2 CI.

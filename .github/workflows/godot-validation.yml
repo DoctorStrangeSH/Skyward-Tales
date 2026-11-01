@@ -71,6 +71,9 @@ jobs:
       - name: Test save/load of quest, equipment and world
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/save_load.gd
+      - name: Test player death, defeat screen and recovery
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/death_flow.gd
       - name: Test title menu and pause controls
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/title_menu.gd

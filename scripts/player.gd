@@ -3,6 +3,7 @@ class_name PlayerCharacter
 
 signal stats_changed
 signal level_up(new_level: int)
+signal died
 
 const DIRECTIONAL_SPRITE_SCRIPT := preload("res://scripts/directional_sprite.gd")
 const HERO_SHEET := "res://assets/sprites/characters/hero_8dir_walk.png"
@@ -83,8 +84,11 @@ func _physics_process(_delta: float) -> void:
 func take_damage(amount: int) -> void:
 	if dodge_time_left > 0.0 or health <= 0:
 		return
+	var previous_health: int = health
 	health = maxi(0, health - maxi(1, amount - get_armor()))
 	stats_changed.emit()
+	if previous_health > 0 and health <= 0:
+		died.emit()
 
 func spend_mana(amount: int) -> bool:
 	if mana < amount:

@@ -21,7 +21,14 @@ signal inventory_unequip_requested(slot: String)
 signal pause_save_requested
 signal pause_load_requested
 signal pause_menu_requested
+signal defeat_restart_requested
+signal defeat_load_requested
+signal defeat_menu_requested
 var pause_panel: PanelContainer
+var defeat_panel: PanelContainer
+var defeat_hint_label: Label
+var defeat_load_button: Button
+var defeat_visible: bool = false
 var message_time: float = 0.0
 var dialogue_visible: bool = false
 
@@ -135,6 +142,33 @@ func _ready() -> void:
 	_pause_button(pause_box, "Главное меню", func() -> void: pause_menu_requested.emit())
 	pause_panel.visible = false
 
+	defeat_panel = PanelContainer.new()
+	defeat_panel.position = Vector2(150, 66)
+	defeat_panel.custom_minimum_size = Vector2(340, 228)
+	defeat_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	defeat_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.055, 0.035, 0.045, 0.99)))
+	root.add_child(defeat_panel)
+	var defeat_box := VBoxContainer.new()
+	defeat_box.add_theme_constant_override("separation", 9)
+	defeat_panel.add_child(defeat_box)
+	var defeat_title := _make_label("ПУТЕШЕСТВИЕ ПРЕРВАНО", 17, Color(1.0, 0.56, 0.48))
+	defeat_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	defeat_box.add_child(defeat_title)
+	var defeat_description := _make_label("Герой пал в бою. Но это ещё не конец истории.", 11, Color(0.91, 0.87, 0.82))
+	defeat_description.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	defeat_box.add_child(defeat_description)
+	defeat_hint_label = _make_label("Выберите, как продолжить.", 10, Color(0.76, 0.82, 0.87))
+	defeat_hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	defeat_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	defeat_box.add_child(defeat_hint_label)
+	_pause_button(defeat_box, "Начать заново", func() -> void: defeat_restart_requested.emit())
+	defeat_load_button = Button.new()
+	defeat_load_button.text = "Загрузить сохранение"
+	defeat_load_button.pressed.connect(func() -> void: defeat_load_requested.emit())
+	defeat_box.add_child(defeat_load_button)
+	_pause_button(defeat_box, "Главное меню", func() -> void: defeat_menu_requested.emit())
+	defeat_panel.visible = false
+
 	dialogue_panel = PanelContainer.new()
 	dialogue_panel.position = Vector2(140, 246)
 	dialogue_panel.custom_minimum_size = Vector2(360, 100)
@@ -154,6 +188,8 @@ func _process(delta: float) -> void:
 			message_label.text = ""
 
 func _unhandled_input(event: InputEvent) -> void:
+	if defeat_visible:
+		return
 	if event.is_action_pressed("pause"):
 		_set_paused(not get_tree().paused)
 		get_viewport().set_input_as_handled()
@@ -166,6 +202,8 @@ func _pause_button(parent: VBoxContainer, label: String, callback: Callable) -> 
 	parent.add_child(button)
 
 func _set_paused(paused: bool) -> void:
+	if defeat_visible and not paused:
+		return
 	get_tree().paused = paused
 	pause_panel.visible = paused
 
@@ -234,6 +272,28 @@ func update_dodge(remaining: float, cooldown: float, dodging: bool) -> void:
 	dodge_label.text = "SHIFT — УКЛОНЕНИЕ" if dodging else ("SHIFT — ГОТОВО" if remaining <= 0.001 else "SHIFT — ОТКАТ %.1fс" % remaining)
 	dodge_label.modulate = Color(0.65, 0.95, 1.0) if remaining <= 0.001 else Color(0.67, 0.73, 0.8)
 	dodge_cooldown_bar.value = 1.0 if cooldown <= 0.0 else clampf(1.0 - remaining / cooldown, 0.0, 1.0)
+
+func show_defeat(can_load: bool) -> void:
+	defeat_visible = true
+	pause_panel.visible = false
+	inventory_panel.visible = false
+	inventory_open = false
+	dialogue_panel.visible = false
+	dialogue_visible = false
+	defeat_load_button.disabled = not can_load
+	defeat_hint_label.text = "Сохранение найдено. Можно вернуться к последней записи." if can_load else "Сохранений пока нет. Начните новое приключение."
+	defeat_panel.visible = true
+
+func set_defeat_message(message: String) -> void:
+	if defeat_hint_label != null:
+		defeat_hint_label.text = message
+
+func hide_defeat() -> void:
+	defeat_visible = false
+	if defeat_panel != null:
+		defeat_panel.visible = false
+	if get_tree().paused:
+		get_tree().paused = false
 
 func show_message(message: String, duration: float = 3.0) -> void:
 	message_label.text = message
