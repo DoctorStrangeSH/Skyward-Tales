@@ -12,8 +12,10 @@ var spell_cooldown_bar: ProgressBar
 var inventory_label: Label
 var inventory_panel: PanelContainer
 var inventory_list: VBoxContainer
+var equipment_list: VBoxContainer
 var inventory_open: bool = false
 signal inventory_use_requested(item_id: String)
+signal inventory_unequip_requested(slot: String)
 var message_time: float = 0.0
 var dialogue_visible: bool = false
 
@@ -86,6 +88,9 @@ func _ready() -> void:
 	var contents := VBoxContainer.new()
 	inventory_panel.add_child(contents)
 	contents.add_child(_make_label("СУМКА  [I — закрыть]", 13, Color(1.0, 0.88, 0.56)))
+	contents.add_child(_make_label("Экипировка (клик — снять)", 10, Color(0.91, 0.90, 0.75)))
+	equipment_list = VBoxContainer.new()
+	contents.add_child(equipment_list)
 	inventory_list = VBoxContainer.new()
 	contents.add_child(inventory_list)
 	inventory_panel.visible = false
@@ -127,6 +132,18 @@ func refresh_inventory(player: PlayerCharacter) -> void:
 	for child in inventory_list.get_children():
 		inventory_list.remove_child(child)
 		child.queue_free()
+	for child in equipment_list.get_children():
+		equipment_list.remove_child(child)
+		child.queue_free()
+	var slots: Dictionary = {"weapon": "Оружие", "armor": "Броня", "amulet": "Амулет"}
+	var gear_names: Dictionary = {"apprentice_staff": "Посох ученика", "leather_armor": "Кожаная броня", "mana_amulet": "Амулет маны"}
+	for slot in ["weapon", "armor", "amulet"]:
+		var equipped_item: String = str(player.equipment.get(slot, ""))
+		var slot_button := Button.new()
+		slot_button.text = "%s: %s" % [slots[slot], gear_names.get(equipped_item, "Пусто")]
+		slot_button.disabled = equipped_item.is_empty()
+		slot_button.pressed.connect(func() -> void: inventory_unequip_requested.emit(slot))
+		equipment_list.add_child(slot_button)
 	var order: Array[String] = ["health_potion", "mana_potion", "apprentice_staff", "leather_armor", "mana_amulet"]
 	var names: Dictionary = {"health_potion": "Зелье здоровья", "mana_potion": "Зелье маны", "apprentice_staff": "Посох ученика", "leather_armor": "Кожаная броня", "mana_amulet": "Амулет маны"}
 	var descriptions: Dictionary = {"health_potion": "+35 HP", "mana_potion": "+25 MP", "apprentice_staff": "+5 урона магией", "leather_armor": "-4 получаемого урона", "mana_amulet": "+20 макс. маны"}

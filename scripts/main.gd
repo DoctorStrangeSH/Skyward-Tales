@@ -30,6 +30,7 @@ func _ready() -> void:
 	hud = GameHud.new()
 	add_child(hud)
 	hud.inventory_use_requested.connect(_on_inventory_use)
+	hud.inventory_unequip_requested.connect(_on_inventory_unequip)
 
 	_spawn_elder()
 	_spawn_herb(Vector2(370, 155))
@@ -183,7 +184,14 @@ func _spawn_loot(drop_position: Vector2, item_id: String) -> void:
 
 func _on_loot_collected(item_id: String, amount: int) -> void:
 	player.add_item(item_id, amount)
-	hud.show_message("Получено: %s ×%d" % [("Зелье здоровья" if item_id == "health_potion" else "Зелье маны"), amount], 2.0)
+	var names: Dictionary = {"health_potion": "Зелье здоровья", "mana_potion": "Зелье маны", "apprentice_staff": "Посох ученика", "leather_armor": "Кожаная броня", "mana_amulet": "Амулет маны"}
+	hud.show_message("Получено: %s ×%d" % [names.get(item_id, item_id), amount], 2.0)
+
+func _on_inventory_unequip(slot: String) -> void:
+	if hud.dialogue_visible or get_tree().paused:
+		return
+	if player.unequip_slot(slot):
+		hud.show_message("Экипировка снята.", 1.5)
 
 func _on_inventory_use(item_id: String) -> void:
 	if item_id in ["apprentice_staff", "leather_armor", "mana_amulet"]:
