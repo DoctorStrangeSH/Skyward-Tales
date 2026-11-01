@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "archive": "assets/sprites/sprite_sheets.zip",
+  "direction_order": ["down", "down_right", "right", "up_right", "up", "up_left", "left", "down_left"],
+  "frames_per_direction": 4,
+  "sheets": {
+    "hero_8dir_walk.png": {"cell_size": [40, 40], "columns": 4, "rows": 8, "animation": "walk", "notes": "Four walk frames per direction. Frame zero is the idle pose."},
+    "forest_slime_8dir.png": {"cell_size": [40, 40], "columns": 4, "rows": 8, "animation": "idle_move", "notes": "Four slime poses rotated into eight facing directions."},
+    "fireball_8dir.png": {"cell_size": [40, 40], "columns": 4, "rows": 8, "animation": "flight", "notes": "Four flight frames pre-rotated into eight directions; do not rotate Sprite2D again."}
+  }
+}
