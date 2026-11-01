@@ -68,6 +68,7 @@ func _process(delta: float) -> void:
 	if player == null or hud == null:
 		return
 	_update_spell_hud()
+	hud.update_dodge(player.dodge_cooldown_left, player.dodge_cooldown, player.dodge_time_left > 0.0)
 	nearby_interactable = _find_nearest_interactable()
 	if hud.dialogue_visible or hud.inventory_open:
 		hud.set_prompt("")

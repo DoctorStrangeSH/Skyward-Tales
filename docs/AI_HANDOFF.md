@@ -246,3 +246,7 @@ PNG-спрайты должны храниться в `assets/sprites/sprite_she
 ## Боевой рывок героя
 
 `PlayerCharacter.start_dodge()` по Shift (обработка `main.gd`) запускает 0,20 s движение на скорости 260 px/s по WASD либо `facing`, с `move_and_slide`, invulnerability в `take_damage` и cooldown 0,85s. В `project.godot` добавлена карта действия `dodge`, текущий ввод через KEY_SHIFT. Спрайт временно подсвечивается голубым. `tests/player_dodge.gd` включён в CI; проверить результат, затем вручную испытать в бою.
+
+## Индикатор рывка / багфикc сумки
+
+`GameHud.update_dodge(remaining, cooldown, dodging)` обновляет под полосой магии новую компактную панель SHIFT, а `main.gd._process` передаёт туда актуальные таймеры игрока. Для `ancient_relic` добавлено название в словарь `names` внутри `GameHud.refresh_inventory`; иначе наличие трофея приводило к обращению к отсутствующему ключу и ломало перерисовку сумки. CI тест `tests/dodge_hud.gd` проверяет готовность/откат и русское название. Требуется ручной UI QA и проверка CI Godot 4.7.2.

@@ -9,6 +9,8 @@ var dialogue_panel: PanelContainer
 var dialogue_label: Label
 var spell_label: Label
 var spell_cooldown_bar: ProgressBar
+var dodge_label: Label
+var dodge_cooldown_bar: ProgressBar
 var inventory_label: Label
 var inventory_panel: PanelContainer
 var inventory_list: VBoxContainer
@@ -64,8 +66,27 @@ func _ready() -> void:
 	spell_cooldown_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	spell_box.add_child(spell_cooldown_bar)
 
+	var dodge_panel := PanelContainer.new()
+	dodge_panel.position = Vector2(10, 137)
+	dodge_panel.custom_minimum_size = Vector2(230, 38)
+	dodge_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dodge_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.055, 0.075, 0.09, 0.88)))
+	root.add_child(dodge_panel)
+	var dodge_box := VBoxContainer.new()
+	dodge_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dodge_panel.add_child(dodge_box)
+	dodge_label = _make_label("SHIFT — РЫВОК: ГОТОВО", 10, Color(0.65, 0.90, 1.0))
+	dodge_box.add_child(dodge_label)
+	dodge_cooldown_bar = ProgressBar.new()
+	dodge_cooldown_bar.custom_minimum_size = Vector2(210, 7)
+	dodge_cooldown_bar.max_value = 1.0
+	dodge_cooldown_bar.value = 1.0
+	dodge_cooldown_bar.show_percentage = false
+	dodge_cooldown_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dodge_box.add_child(dodge_cooldown_bar)
+
 	inventory_label = _make_label("Q: Здоровье ×0   R: Мана ×0", 10, Color(0.92, 0.87, 0.77))
-	inventory_label.position = Vector2(12, 144)
+	inventory_label.position = Vector2(12, 187)
 	inventory_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(inventory_label)
 
@@ -173,7 +194,7 @@ func refresh_inventory(player: PlayerCharacter) -> void:
 		slot_button.pressed.connect(func() -> void: inventory_unequip_requested.emit(slot))
 		equipment_list.add_child(slot_button)
 	var order: Array[String] = ["health_potion", "mana_potion", "apprentice_staff", "leather_armor", "mana_amulet", "ancient_relic"]
-	var names: Dictionary = {"health_potion": "Зелье здоровья", "mana_potion": "Зелье маны", "apprentice_staff": "Посох ученика", "leather_armor": "Кожаная броня", "mana_amulet": "Амулет маны"}
+	var names: Dictionary = {"health_potion": "Зелье здоровья", "mana_potion": "Зелье маны", "apprentice_staff": "Посох ученика", "leather_armor": "Кожаная броня", "mana_amulet": "Амулет маны", "ancient_relic": "Древний артефакт"}
 	var descriptions: Dictionary = {"health_potion": "+35 HP", "mana_potion": "+25 MP", "apprentice_staff": "+5 урона магией", "leather_armor": "-4 получаемого урона", "mana_amulet": "+20 макс. маны", "ancient_relic": "Трофей победы над хранителем"}
 	for item_id in order:
 		var count: int = int(player.inventory.get(item_id, 0))
@@ -206,6 +227,13 @@ func update_spell(spell_name: String, mana_cost: int, current_mana: int, remaini
 	spell_label.text = "%s  •  %d MP  •  %s" % [spell_name, mana_cost, state]
 	spell_label.modulate = Color.WHITE if ready and enough_mana else Color(0.73, 0.8, 0.88)
 	spell_cooldown_bar.value = 1.0 if total <= 0.0 else clampf(1.0 - remaining / total, 0.0, 1.0)
+
+func update_dodge(remaining: float, cooldown: float, dodging: bool) -> void:
+	if dodge_label == null or dodge_cooldown_bar == null:
+		return
+	dodge_label.text = "SHIFT — УКЛОНЕНИЕ" if dodging else ("SHIFT — ГОТОВО" if remaining <= 0.001 else "SHIFT — ОТКАТ %.1fс" % remaining)
+	dodge_label.modulate = Color(0.65, 0.95, 1.0) if remaining <= 0.001 else Color(0.67, 0.73, 0.8)
+	dodge_cooldown_bar.value = 1.0 if cooldown <= 0.0 else clampf(1.0 - remaining / cooldown, 0.0, 1.0)
 
 func show_message(message: String, duration: float = 3.0) -> void:
 	message_label.text = message
