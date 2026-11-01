@@ -242,3 +242,7 @@ PNG-спрайты должны храниться в `assets/sprites/sprite_she
 ## Мини-босс Древний хранитель
 
 `GroveGuardian` extends ForestShaman (`scripts/grove_guardian.gd`), 160 HP. Фаза 1: одиночная сфера, фаза 2 при <= 50% HP: тройной веер, скорость и частота атаки повышаются. Появляется в `moonlit_grove` после завершения `grove_spirits`; убитый босс даёт 100 XP + 100 золота, предмет `ancient_relic` (нерасходуемый трофей). `main.gd` сохраняет `world.guardian_defeated` и `kind=guardian`. Ручной QA и CI ещё нужны.
+
+## Боевой рывок героя
+
+`PlayerCharacter.start_dodge()` по Shift (обработка `main.gd`) запускает 0,20 s движение на скорости 260 px/s по WASD либо `facing`, с `move_and_slide`, invulnerability в `take_damage` и cooldown 0,85s. В `project.godot` добавлена карта действия `dodge`, текущий ввод через KEY_SHIFT. Спрайт временно подсвечивается голубым. `tests/player_dodge.gd` включён в CI; проверить результат, затем вручную испытать в бою.
