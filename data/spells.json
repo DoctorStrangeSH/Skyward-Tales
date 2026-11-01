@@ -18,5 +18,17 @@
     "school": "ice",
     "slow_multiplier": 0.4,
     "slow_duration": 2.5
+  },
+  "chain_lightning": {
+    "name": "Цепная молния",
+    "description": "Первое попадание поражает цель, затем молния перескакивает ещё на двух ближайших врагов в радиусе 150 px от предыдущей цели. На каждом прыжке урон уменьшается.",
+    "mana_cost": 18,
+    "damage": 15,
+    "projectile_speed": 330,
+    "cooldown": 0.8,
+    "school": "lightning",
+    "chain_targets": 2,
+    "chain_radius": 150,
+    "chain_damage_factor": 0.7
   }
 }
