@@ -58,7 +58,7 @@ func _process(delta: float) -> void:
 		var prompt := "E — поговорить" if nearby_interactable is WorldNpc else "E — собрать"
 		hud.set_prompt(prompt)
 	else:
-		hud.set_prompt("WASD — ходьба   1/2 — магия   ЛКМ — каст   E — действие")
+		hud.set_prompt("WASD — ходьба   1/2/3 — магия   ЛКМ — каст   E — действие")
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
@@ -66,6 +66,8 @@ func _input(event: InputEvent) -> void:
 			select_spell("fireball")
 		elif event.keycode == KEY_2:
 			select_spell("frostbolt")
+		elif event.keycode == KEY_3:
+			select_spell("chain_lightning")
 	# _input receives mouse clicks even when a Control overlays the world.
 	if event.is_action_pressed("interact"):
 		if hud.dialogue_visible:
@@ -182,6 +184,9 @@ func _cast_spell() -> void:
 	bolt.speed = float(spell.get("projectile_speed", 255))
 	bolt.setup(direction, spell_damage)
 	bolt.configure_effect(selected_spell_id, float(spell.get("slow_multiplier", 1.0)), float(spell.get("slow_duration", 0.0)))
+	bolt.chain_targets = int(spell.get("chain_targets", 0))
+	bolt.chain_radius = float(spell.get("chain_radius", 0.0))
+	bolt.chain_damage_factor = float(spell.get("chain_damage_factor", 0.65))
 	add_child(bolt)
 	bolt.global_position = player.global_position + direction * 12.0
 	cast_cooldown_remaining = float(spell.get("cooldown", 0.25))
