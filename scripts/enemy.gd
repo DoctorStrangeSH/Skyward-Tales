@@ -19,6 +19,7 @@ var burn_time_left: float = 0.0
 var burn_tick_interval: float = 0.5
 var burn_tick_timer: float = 0.0
 var burn_damage: int = 0
+var elemental_multipliers: Dictionary = {}
 var visual: DirectionalSprite
 var combat_feedback: EnemyCombatFeedback
 
@@ -228,12 +229,19 @@ func _refresh_elemental_feedback() -> void:
 	if combat_feedback != null:
 		combat_feedback.set_statuses(burn_time_left > 0.0, slow_time_left > 0.0)
 
+func take_elemental_damage(amount: int, element: String) -> void:
+	var multiplier: float = clampf(float(elemental_multipliers.get(element, 1.0)), 0.25, 2.0)
+	take_damage(maxi(1, int(round(float(amount) * multiplier))))
+
+func get_status_duration_multiplier(element: String) -> float:
+	return clampf(float(elemental_multipliers.get(element, 1.0)), 0.25, 2.0)
+
 func apply_burning(damage_per_tick: int, duration: float) -> void:
 	if health <= 0 or duration <= 0.0 or damage_per_tick <= 0:
 		return
 	# Repeated hits refresh the effect rather than stacking hidden damage instances.
 	burn_damage = maxi(burn_damage, damage_per_tick)
-	burn_time_left = maxf(burn_time_left, duration)
+	burn_time_left = maxf(burn_time_left, duration * get_status_duration_multiplier("fire"))
 	if burn_tick_timer <= 0.0:
 		burn_tick_timer = burn_tick_interval
 	_refresh_elemental_feedback()
@@ -245,7 +253,7 @@ func _update_burning(delta: float) -> void:
 	burn_time_left = maxf(0.0, burn_time_left - elapsed)
 	burn_tick_timer -= elapsed
 	while burn_tick_timer <= 0.0 and health > 0:
-		take_damage(burn_damage)
+		take_elemental_damage(burn_damage, "fire")
 		burn_tick_timer += burn_tick_interval
 		if is_queued_for_deletion():
 			break
@@ -262,7 +270,7 @@ func react_to_spell(spell_id: String) -> int:
 		burn_damage = 0
 		if combat_feedback != null:
 			combat_feedback.show_reaction("ПАР!")
-		take_damage(8)
+		take_elemental_damage(8, "ice")
 		_refresh_elemental_feedback()
 		return 8
 	if spell_id == "chain_lightning" and slow_time_left > 0.0:
@@ -270,14 +278,14 @@ func react_to_spell(spell_id: String) -> int:
 		slow_factor = 1.0
 		if combat_feedback != null:
 			combat_feedback.show_reaction("РАЗРЯД!")
-		take_damage(6)
+		take_elemental_damage(6, "lightning")
 		_refresh_elemental_feedback()
 		return 6
 	return 0
 
 func apply_slow(multiplier: float, duration: float) -> void:
 	slow_factor = minf(slow_factor, clampf(multiplier, 0.1, 1.0))
-	slow_time_left = maxf(slow_time_left, duration)
+	slow_time_left = maxf(slow_time_left, duration * get_status_duration_multiplier("ice"))
 	_refresh_elemental_feedback()
 
 func take_damage(amount: int) -> void:

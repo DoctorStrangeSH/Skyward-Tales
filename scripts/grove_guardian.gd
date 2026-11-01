@@ -5,6 +5,7 @@ var enraged: bool = false
 
 func _ready() -> void:
 	super._ready()
+	elemental_multipliers = {"fire": 0.65, "ice": 1.25, "lightning": 1.0}
 	max_health = 160
 	health = max_health
 	xp_reward = 100

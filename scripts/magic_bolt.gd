@@ -56,7 +56,7 @@ func _physics_process(delta: float) -> void:
 
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("enemies") and body.has_method("take_damage"):
-		body.take_damage(damage)
+		body.take_elemental_damage(damage, _element_for_spell()) if body.has_method("take_elemental_damage") else body.take_damage(damage)
 		if not body.is_queued_for_deletion() and body.has_method("react_to_spell"):
 			body.react_to_spell(spell_id)
 		if spell_id == "fireball" and burn_duration > 0.0 and body.has_method("apply_burning") and not body.is_queued_for_deletion():
@@ -68,6 +68,13 @@ func _on_body_entered(body: Node2D) -> void:
 		queue_free()
 	elif body is StaticBody2D:
 		queue_free()
+
+func _element_for_spell() -> String:
+	match spell_id:
+		"fireball": return "fire"
+		"frostbolt": return "ice"
+		"chain_lightning": return "lightning"
+	return "arcane"
 
 func _apply_chain_lightning(first_target: Node2D) -> void:
 	# Each hop originates at the last struck enemy; never hit the same enemy twice.
@@ -91,7 +98,7 @@ func _apply_chain_lightning(first_target: Node2D) -> void:
 			break
 		next_damage = maxi(1, int(round(float(next_damage) * chain_damage_factor)))
 		var destination: Vector2 = closest.global_position
-		closest.take_damage(next_damage)
+		closest.take_elemental_damage(next_damage, "lightning") if closest.has_method("take_elemental_damage") else closest.take_damage(next_damage)
 		if not closest.is_queued_for_deletion() and closest.has_method("react_to_spell"):
 			closest.react_to_spell("chain_lightning")
 		# Visual tether is temporary; it doesn't affect damage or target selection.
