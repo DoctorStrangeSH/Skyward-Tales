@@ -32,6 +32,7 @@ func _ready() -> void:
 	visual.configure(SLIME_SHEET, 4, 8, 1.5, 5.5)
 	visual.offset = Vector2(0.0, -14.0)
 	visual.set_direction_vector(Vector2.DOWN)
+	visual.modulate = base_visual_tint
 	add_child(visual)
 
 enum BrainState { IDLE, CHASE, RETURN, RETREAT }

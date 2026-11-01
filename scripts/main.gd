@@ -278,7 +278,7 @@ func _on_enemy_defeated(xp_reward: int, death_position: Vector2) -> void:
 	defeated_enemies += 1
 	var drops: Array[String] = ["apprentice_staff", "leather_armor", "mana_amulet"]
 	_spawn_loot(death_position, drops[(defeated_enemies - 1) % 3] if defeated_enemies <= 3 else ("health_potion" if defeated_enemies % 2 == 1 else "mana_potion"))
-	hud.show_message("Слизень побеждён! +%d опыта" % xp_reward, 1.5)
+	hud.show_message("Противник побеждён! +%d опыта" % xp_reward, 1.5)
 
 func _spawn_loot(drop_position: Vector2, item_id: String) -> void:
 	var loot := LOOT_SCRIPT.new() as WorldLoot
