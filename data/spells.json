@@ -7,5 +7,16 @@
     "projectile_speed": 255,
     "cooldown": 0.25,
     "school": "fire"
+  },
+  "frostbolt": {
+    "name": "Ледяная стрела",
+    "description": "Наносит урон и снижает скорость противника на 60% в течение 2.5 секунд.",
+    "mana_cost": 12,
+    "damage": 10,
+    "projectile_speed": 220,
+    "cooldown": 0.55,
+    "school": "ice",
+    "slow_multiplier": 0.4,
+    "slow_duration": 2.5
   }
 }
