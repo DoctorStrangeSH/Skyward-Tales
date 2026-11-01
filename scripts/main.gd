@@ -9,6 +9,7 @@ const LOOT_SCRIPT := preload("res://scripts/loot.gd")
 const SAVE_SCRIPT := preload("res://scripts/save_system.gd")
 const GATE_SCRIPT := preload("res://scripts/region_gate.gd")
 const WOLF_SCRIPT := preload("res://scripts/forest_wolf.gd")
+const SHAMAN_SCRIPT := preload("res://scripts/forest_shaman.gd")
 
 var player: PlayerCharacter
 var hud: GameHud
@@ -121,6 +122,7 @@ func _populate_region() -> void:
 		_spawn_herb(Vector2(1080, 390), "spirit_blossom", "Духовный цветок")
 		_spawn_wolf(Vector2(470, 430))
 		_spawn_wolf(Vector2(900, 290))
+		_spawn_shaman(Vector2(730, 360))
 		_spawn_gate("greenreach", Vector2(1120, 205), Vector2(1080, 205), "Возврат к Зелёным Пределам")
 	else:
 		_spawn_elder()
@@ -134,7 +136,7 @@ func _populate_region() -> void:
 
 func _clear_region_actors() -> void:
 	for node in get_children():
-		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is RegionGate or node is MagicBolt:
+		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is RegionGate or node is MagicBolt or node is EnemyMagicOrb:
 			remove_child(node)
 			node.queue_free()
 	elder = null
@@ -205,6 +207,12 @@ func _spawn_herb(spawn_position: Vector2, item_id: String = "moonleaf", label: S
 	add_child(herb)
 	herb.global_position = spawn_position
 	herb.interacted.connect(_on_herb_interacted)
+
+func _spawn_shaman(spawn_position: Vector2) -> void:
+	var shaman := SHAMAN_SCRIPT.new() as ForestShaman
+	shaman.position = spawn_position
+	add_child(shaman)
+	shaman.defeated.connect(func(xp: int) -> void: _on_enemy_defeated(xp, shaman.global_position))
 
 func _spawn_wolf(spawn_position: Vector2) -> void:
 	var wolf := WOLF_SCRIPT.new() as ForestWolf
@@ -380,7 +388,7 @@ func make_save_snapshot() -> Dictionary:
 		if node.is_queued_for_deletion():
 			continue
 		if node is SlimeEnemy:
-			alive_enemies.append({"position": _position_array(node.global_position), "hp": node.health, "home": _position_array(node.home_position)})
+			alive_enemies.append({"position": _position_array(node.global_position), "hp": node.health, "home": _position_array(node.home_position), "kind": ("shaman" if node is ForestShaman else ("wolf" if node is ForestWolf else "slime"))})
 		elif node is WorldCollectible:
 			herbs.append({"position": _position_array(node.global_position), "id": node.item_id, "name": node.display_name})
 		elif node is WorldLoot:
@@ -447,7 +455,7 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 	player.global_position = _read_position(character.get("position"), Vector2(130, 210))
 	# Recreate dynamic world state; queued old nodes must be removed from scene tree immediately.
 	for node in get_children():
-		if node is SlimeEnemy or node is WorldCollectible or node is WorldLoot or node is MagicBolt:
+		if node is SlimeEnemy or node is WorldCollectible or node is WorldLoot or node is MagicBolt or node is EnemyMagicOrb:
 			remove_child(node)
 			node.queue_free()
 	for herb_data in world_data["herbs"]:
@@ -458,7 +466,10 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 	for enemy_data in world_data["enemies"]:
 		if not enemy_data is Dictionary:
 			continue
-		if current_region == "moonlit_grove":
+		var enemy_kind: String = str(enemy_data.get("kind", "wolf" if current_region == "moonlit_grove" else "slime"))
+		if enemy_kind == "shaman":
+			_spawn_shaman(_read_position(enemy_data.get("position"), Vector2(730, 360)))
+		elif enemy_kind == "wolf":
 			_spawn_wolf(_read_position(enemy_data.get("position"), Vector2(475, 430)))
 		else:
 			_spawn_slime(_read_position(enemy_data.get("position"), Vector2(475, 350)))
