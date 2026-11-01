@@ -14,6 +14,7 @@ var nearby_interactable: Node2D
 var spell_definitions: Dictionary = {}
 var cast_cooldown_remaining: float = 0.0
 var selected_spell_id: String = "fireball"
+var cast_cooldown_total: float = 0.0
 
 func _ready() -> void:
 	_load_spell_definitions()
@@ -51,6 +52,7 @@ func _process(delta: float) -> void:
 	cast_cooldown_remaining = maxf(0.0, cast_cooldown_remaining - delta)
 	if player == null or hud == null:
 		return
+	_update_spell_hud()
 	nearby_interactable = _find_nearest_interactable()
 	if hud.dialogue_visible:
 		hud.set_prompt("")
@@ -158,12 +160,17 @@ func _on_enemy_defeated(xp_reward: int) -> void:
 func _on_level_up(new_level: int) -> void:
 	hud.show_message("НОВЫЙ УРОВЕНЬ: %d! Здоровье и мана восстановлены." % new_level, 3.0)
 
+func _update_spell_hud() -> void:
+	var spell: Dictionary = spell_definitions.get(selected_spell_id, {})
+	hud.update_spell(str(spell.get("name", selected_spell_id)), int(spell.get("mana_cost", 0)), player.mana, cast_cooldown_remaining, cast_cooldown_total)
+
 func select_spell(spell_id: String) -> void:
 	if not spell_definitions.has(spell_id):
 		return
 	selected_spell_id = spell_id
 	var data: Dictionary = spell_definitions[spell_id]
 	hud.show_message("Магия: " + str(data.get("name", spell_id)), 1.5)
+	_update_spell_hud()
 
 func _cast_spell() -> void:
 	if cast_cooldown_remaining > 0.0:
@@ -189,7 +196,9 @@ func _cast_spell() -> void:
 	bolt.chain_damage_factor = float(spell.get("chain_damage_factor", 0.65))
 	add_child(bolt)
 	bolt.global_position = player.global_position + direction * 12.0
-	cast_cooldown_remaining = float(spell.get("cooldown", 0.25))
+	cast_cooldown_total = float(spell.get("cooldown", 0.25))
+	cast_cooldown_remaining = cast_cooldown_total
+	_update_spell_hud()
 
 func _refresh_hud() -> void:
 	if hud != null and player != null and quests != null:
