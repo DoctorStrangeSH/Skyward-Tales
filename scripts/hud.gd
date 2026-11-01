@@ -33,6 +33,9 @@ var defeat_visible: bool = false
 var talent_panel: PanelContainer
 var talent_list: VBoxContainer
 var talent_visible: bool = false
+var bestiary_panel: PanelContainer
+var bestiary_list: VBoxContainer
+var bestiary_visible: bool = false
 var message_time: float = 0.0
 var dialogue_visible: bool = false
 
@@ -194,6 +197,24 @@ func _ready() -> void:
 	talent_box.add_child(talent_list)
 	talent_panel.visible = false
 
+	bestiary_panel = PanelContainer.new()
+	bestiary_panel.position = Vector2(110, 22)
+	bestiary_panel.custom_minimum_size = Vector2(420, 310)
+	bestiary_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	bestiary_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.045, 0.06, 0.08, 0.98)))
+	root.add_child(bestiary_panel)
+	var bestiary_box := VBoxContainer.new()
+	bestiary_box.add_theme_constant_override("separation", 8)
+	bestiary_panel.add_child(bestiary_box)
+	bestiary_box.add_child(_make_label("БЕСТИАРИЙ  [K — закрыть]", 15, Color(1.0, 0.87, 0.57)))
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(400, 265)
+	bestiary_box.add_child(scroll)
+	bestiary_list = VBoxContainer.new()
+	bestiary_list.custom_minimum_size = Vector2(382, 0)
+	scroll.add_child(bestiary_list)
+	bestiary_panel.visible = false
+
 	dialogue_panel = PanelContainer.new()
 	dialogue_panel.position = Vector2(140, 246)
 	dialogue_panel.custom_minimum_size = Vector2(360, 100)
@@ -213,7 +234,7 @@ func _process(delta: float) -> void:
 			message_label.text = ""
 
 func _unhandled_input(event: InputEvent) -> void:
-	if defeat_visible or talent_visible:
+	if defeat_visible or talent_visible or bestiary_visible:
 		return
 	if event.is_action_pressed("pause"):
 		_set_paused(not get_tree().paused)
@@ -298,6 +319,25 @@ func update_dodge(remaining: float, cooldown: float, dodging: bool) -> void:
 	dodge_label.modulate = Color(0.65, 0.95, 1.0) if remaining <= 0.001 else Color(0.67, 0.73, 0.8)
 	dodge_cooldown_bar.value = 1.0 if cooldown <= 0.0 else clampf(1.0 - remaining / cooldown, 0.0, 1.0)
 
+func toggle_bestiary(entries: Dictionary, discovered: Dictionary) -> void:
+	bestiary_visible = not bestiary_visible
+	bestiary_panel.visible = bestiary_visible
+	if not bestiary_visible:
+		return
+	for child in bestiary_list.get_children():
+		bestiary_list.remove_child(child)
+		child.queue_free()
+	for id in entries:
+		var entry: Dictionary = entries[id]
+		var seen: bool = bool(discovered.get(id, false))
+		var name_label := _make_label(str(entry.get("name", id)) if seen else "??? — Не обнаружен", 12, Color(1.0, 0.88, 0.65))
+		bestiary_list.add_child(name_label)
+		if seen:
+			var detail := _make_label("Место: %s\nАтака: %s\nСлабость: %s\nЗащита: %s" % [str(entry.get("habitat", "")), str(entry.get("attack", "")), str(entry.get("weakness", "")), str(entry.get("resistance", ""))], 9, Color(0.81, 0.88, 0.9))
+			detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			detail.custom_minimum_size = Vector2(365, 70)
+			bestiary_list.add_child(detail)
+
 func show_talent_choices(choices: Array[Dictionary]) -> void:
 	for child in talent_list.get_children():
 		talent_list.remove_child(child)
@@ -326,6 +366,9 @@ func hide_talent_choices() -> void:
 
 func show_defeat(can_load: bool) -> void:
 	defeat_visible = true
+	if bestiary_visible:
+		bestiary_panel.visible = false
+		bestiary_visible = false
 	hide_talent_choices()
 	pause_panel.visible = false
 	inventory_panel.visible = false

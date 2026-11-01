@@ -50,6 +50,9 @@ jobs:
       - name: Test fire burning damage and persistence
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/fire_burning.gd
+      - name: Test bestiary discovery and persistence
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/bestiary.gd
       - name: Test enemy elemental resistances and vulnerabilities
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/elemental_resistances.gd
