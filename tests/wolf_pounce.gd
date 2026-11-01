@@ -2,6 +2,8 @@ extends SceneTree
 
 class DummyTarget extends CharacterBody2D:
 	var health: int = 100
+	func _physics_process(_delta: float) -> void:
+		pass
 	func take_damage(amount: int) -> void:
 		health = maxi(0, health - amount)
 
