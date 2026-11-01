@@ -4,6 +4,7 @@ class_name SlimeEnemy
 signal defeated(xp_reward: int)
 
 const DIRECTIONAL_SPRITE_SCRIPT := preload("res://scripts/directional_sprite.gd")
+const FEEDBACK_SCRIPT := preload("res://scripts/enemy_combat_feedback.gd")
 const SLIME_SHEET := "res://assets/sprites/enemies/forest_slime_true8.png"
 
 @export var max_health: int = 32
@@ -15,6 +16,7 @@ var attack_cooldown: float = 0.0
 var slow_time_left: float = 0.0
 var slow_factor: float = 1.0
 var visual: DirectionalSprite
+var combat_feedback: EnemyCombatFeedback
 
 func _ready() -> void:
 	add_to_group("enemies")
@@ -34,6 +36,9 @@ func _ready() -> void:
 	visual.set_direction_vector(Vector2.DOWN)
 	visual.modulate = base_visual_tint
 	add_child(visual)
+	combat_feedback = FEEDBACK_SCRIPT.new() as EnemyCombatFeedback
+	combat_feedback.set_health(health, max_health)
+	add_child(combat_feedback)
 
 enum BrainState { IDLE, CHASE, RETURN, RETREAT }
 
@@ -166,11 +171,14 @@ func _start_special_attack(direction: Vector2) -> void:
 	velocity = Vector2.ZERO
 	visual.set_moving(false)
 	visual.modulate = Color(1.0, 0.58, 0.34) if attack_state == AttackState.WINDUP else Color(1.0, 0.88, 0.62)
+	combat_feedback.set_warning(attack_state == AttackState.WINDUP)
 
 func _cancel_special_attack() -> void:
 	attack_state = AttackState.NONE
 	attack_timer = 0.0
 	attack_has_hit = false
+	if combat_feedback != null:
+		combat_feedback.set_warning(false)
 	if visual != null:
 		visual.modulate = base_visual_tint
 
@@ -186,6 +194,7 @@ func _update_special_attack(delta: float, player: Node2D) -> bool:
 		visual.set_moving(false)
 		if attack_timer <= 0.0:
 			attack_state = AttackState.LUNGE
+			combat_feedback.set_warning(false)
 			attack_timer = attack_lunge_duration
 			visual.modulate = Color(1.0, 0.88, 0.62)
 		return true
@@ -213,6 +222,9 @@ func apply_slow(multiplier: float, duration: float) -> void:
 
 func take_damage(amount: int) -> void:
 	health -= amount
+	if combat_feedback != null:
+		combat_feedback.set_health(health, max_health)
+		combat_feedback.show_damage(amount)
 	if health <= 0:
 		defeated.emit(xp_reward)
 		queue_free()

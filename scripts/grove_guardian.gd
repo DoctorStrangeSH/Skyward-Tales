@@ -18,12 +18,15 @@ func _ready() -> void:
 	base_visual_tint = Color(0.97, 0.67, 0.29)
 	visual.modulate = base_visual_tint
 	visual.scale = Vector2.ONE * 2.4
+	combat_feedback.elite = true
+	combat_feedback.set_health(health, max_health)
 
 func take_damage(amount: int) -> void:
 	if health <= 0:
 		return
 	if not enraged and health - amount <= max_health / 2 and health - amount > 0:
 		enraged = true
+		combat_feedback.set_warning(true)
 		move_speed = 44.0
 		attack_cooldown_duration = 1.2
 		base_visual_tint = Color(1.0, 0.35, 0.36)

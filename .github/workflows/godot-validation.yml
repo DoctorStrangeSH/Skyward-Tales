@@ -23,6 +23,9 @@ jobs:
       - name: Test dodge HUD and unique relic inventory
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/dodge_hud.gd
+      - name: Test enemy health bars, damage numbers and warnings
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/combat_feedback.gd
       - name: Test player dodge and invulnerability
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/player_dodge.gd
