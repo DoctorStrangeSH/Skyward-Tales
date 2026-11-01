@@ -234,3 +234,7 @@ PNG-спрайты должны храниться в `assets/sprites/sprite_she
 ## Steering с кратковременным обходом препятствий
 
 В `scripts/enemy.gd` `_has_world_obstacle` проверяет статический world layer 4; `_avoid_world_obstacles(desired, delta)` ищет обход под углами 90°, 63°, 135° и сохраняет найденное направление на 0.35 s, уменьшая колебания у стволов. Если ни одно направление не свободно, возвращает ZERO. Логика общая для SlimeEnemy и ForestWolf; это НЕ гарантированная навигация вокруг сложных стен. `tests/enemy_steering.gd` включён в GitHub Actions Godot 4.7.2. Следующим ИИ проверить CI и ручной QA.
+
+## Лесной шаман
+
+`ForestShaman` наследует SlimeEnemy, но переопределяет `_physics_process`: держится на расстоянии, отступает ниже 90px и стреляет в пределах 240px раз в 1.7s при отсутствии препятствий world layer 4. `EnemyMagicOrb` — отдельный Area2D на collision_mask 5 (player 1 + world 4), урон 9, блокировка повторного попадания. В `main.gd` шаман появляется в moonlit_grove, удаляется при смене региона, сохраняется с `kind=shaman` и восстанавливается через `_spawn_shaman`. Текущий спрайт временно перекрашен. `tests/forest_shaman.gd` запускается через GitHub Actions Godot 4.7.2; обязательно сверить CI.

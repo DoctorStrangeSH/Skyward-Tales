@@ -32,6 +32,9 @@ jobs:
       - name: Test wolf telegraphed pounce and cooldown
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/wolf_pounce.gd
+      - name: Test forest shaman and enemy projectile
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/forest_shaman.gd
       - name: Test ice magic and slow expiration
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/frost_magic.gd
