@@ -1,11 +1,47 @@
 {
   "version": 1,
-  "archive": "assets/sprites/sprite_sheets.zip",
-  "direction_order": ["down", "down_right", "right", "up_right", "up", "up_left", "left", "down_left"],
+  "archive": null,
+  "direction_order": [
+    "down",
+    "down_right",
+    "right",
+    "up_right",
+    "up",
+    "up_left",
+    "left",
+    "down_left"
+  ],
   "frames_per_direction": 4,
   "sheets": {
-    "hero_8dir_walk.png": {"cell_size": [32, 32], "columns": 4, "rows": 8, "animation": "walk", "notes": "Four walk frames per direction. Frame zero is the idle pose."},
-    "enemies/forest_slime_true8.png": {"cell_size": [32, 32], "columns": 4, "rows": 8, "animation": "idle_move", "notes": "Direct res:// PNG. Genuine anatomical rear and rear-quarter views, no eyes on back."},
-    "fireball_8dir.png": {"cell_size": [32, 32], "columns": 4, "rows": 8, "animation": "flight", "notes": "Four flight frames pre-rotated into eight directions; do not rotate Sprite2D again."}
+    "characters/hero_8dir_walk.png": {
+      "cell_size": [
+        32,
+        32
+      ],
+      "columns": 4,
+      "rows": 8,
+      "animation": "walk",
+      "notes": "Committed standalone true-8 PNG; 4 frames each facing."
+    },
+    "enemies/forest_slime_true8.png": {
+      "cell_size": [
+        32,
+        32
+      ],
+      "columns": 4,
+      "rows": 8,
+      "animation": "move",
+      "notes": "Committed standalone true-8 PNG; rear row faceless."
+    },
+    "magic/fireball_8dir.png": {
+      "cell_size": [
+        32,
+        32
+      ],
+      "columns": 4,
+      "rows": 8,
+      "animation": "flight",
+      "notes": "Committed standalone PNG with directional flame heads."
+    }
   }
 }

@@ -2,7 +2,6 @@ extends Node2D
 
 const PLAYER_SCENE := preload("res://scenes/player.tscn")
 const BOLT_SCENE := preload("res://scenes/magic_bolt.tscn")
-const SPRITE_ARCHIVE := preload("res://scripts/sprite_archive.gd")
 const NPC_SCRIPT := preload("res://scripts/npc.gd")
 const COLLECTIBLE_SCRIPT := preload("res://scripts/collectible.gd")
 const ENEMY_SCRIPT := preload("res://scripts/enemy.gd")
@@ -16,8 +15,6 @@ var spell_definitions: Dictionary = {}
 var cast_cooldown_remaining: float = 0.0
 
 func _ready() -> void:
-	if FileAccess.file_exists("res://assets/sprites/sprite_sheets.zip"):
-		SPRITE_ARCHIVE.extract_if_needed()
 	_load_spell_definitions()
 	quests = QuestManager.new()
 	player = PLAYER_SCENE.instantiate() as PlayerCharacter
