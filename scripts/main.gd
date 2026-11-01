@@ -164,9 +164,6 @@ func _on_region_travel(target_region: String, arrival: Vector2) -> void:
 	if target_region == "moonlit_grove" and not quests.is_completed("moonleaf_gathering"):
 		hud.show_message("Сначала помогите старейшине с лунными листьями.", 2.5)
 		return
-	if target_region == "moonlit_grove" and not quests.states["grove_spirits"]["started"]:
-		# The quest is accepted from the grove warden, not automatically on entry.
-		pass
 	_set_region(target_region, arrival)
 
 func _spawn_grove_warden() -> void:
@@ -267,7 +264,7 @@ func _on_herb_interacted(source: Node2D) -> void:
 	if herb == null:
 		return
 	if quests.active_quest_id == required_quest and not quests.is_completed(required_quest):
-		quests.add_progress("moonleaf_gathering", 1)
+		quests.add_progress(required_quest, 1)
 		source.queue_free()
 		hud.show_message(herb.display_name + " собран.", 1.5)
 		if quests.is_ready_to_complete(required_quest):
@@ -433,11 +430,6 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 		return false
 	var saved_region: String = str(world_data.get("region", "greenreach"))
 	_set_region(saved_region, _read_position(character.get("position"), Vector2(130, 210)), false)
-	# Clear the freshly generated region actors before restoring the saved population.
-	_clear_region_actors()
-	_populate_region()
-	_clear_region_actors()
-	_populate_region()
 	for quest_id in quest_data["states"]:
 		if quests.states.has(quest_id) and quest_data["states"][quest_id] is Dictionary:
 			quests.states[quest_id] = quest_data["states"][quest_id].duplicate(true)
