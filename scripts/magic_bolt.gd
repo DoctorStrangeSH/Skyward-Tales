@@ -57,6 +57,8 @@ func _physics_process(delta: float) -> void:
 func _on_body_entered(body: Node2D) -> void:
 	if body.is_in_group("enemies") and body.has_method("take_damage"):
 		body.take_damage(damage)
+		if not body.is_queued_for_deletion() and body.has_method("react_to_spell"):
+			body.react_to_spell(spell_id)
 		if spell_id == "fireball" and burn_duration > 0.0 and body.has_method("apply_burning") and not body.is_queued_for_deletion():
 			body.apply_burning(burn_damage, burn_duration)
 		if spell_id == "chain_lightning":
@@ -90,6 +92,8 @@ func _apply_chain_lightning(first_target: Node2D) -> void:
 		next_damage = maxi(1, int(round(float(next_damage) * chain_damage_factor)))
 		var destination: Vector2 = closest.global_position
 		closest.take_damage(next_damage)
+		if not closest.is_queued_for_deletion() and closest.has_method("react_to_spell"):
+			closest.react_to_spell("chain_lightning")
 		# Visual tether is temporary; it doesn't affect damage or target selection.
 		_spawn_lightning_flash(origin, destination)
 		hit.append(closest)
