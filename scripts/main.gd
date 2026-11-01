@@ -75,7 +75,7 @@ func _process(delta: float) -> void:
 		var prompt := "E — поговорить" if nearby_interactable is WorldNpc else ("E — перейти" if nearby_interactable is RegionGate else ("E — подобрать" if nearby_interactable is WorldLoot else "E — собрать"))
 		hud.set_prompt(prompt)
 	else:
-		hud.set_prompt("WASD — ходьба   1/2/3 — магия   ЛКМ — каст   E — подбор   Q/R — зелья   F6/F9 — сейв/загрузка")
+		hud.set_prompt("WASD — ходьба   Shift — рывок   1/2/3 — магия   ЛКМ — каст   E — подбор   Q/R — зелья   F6/F9 — сейв/загрузка")
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
@@ -85,6 +85,10 @@ func _input(event: InputEvent) -> void:
 			return
 		if event.keycode == KEY_F9 and not get_tree().paused and not hud.dialogue_visible:
 			load_game()
+			get_viewport().set_input_as_handled()
+			return
+		if event.keycode == KEY_SHIFT and not get_tree().paused and not hud.dialogue_visible and not hud.inventory_open:
+			player.start_dodge()
 			get_viewport().set_input_as_handled()
 			return
 		if event.keycode == KEY_I and not get_tree().paused and not hud.dialogue_visible:

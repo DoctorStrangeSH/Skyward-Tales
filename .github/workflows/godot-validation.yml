@@ -20,6 +20,9 @@ jobs:
       - name: Test spell casting, 8-way sprites and enemy damage
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/magic_smoke.gd
+      - name: Test player dodge and invulnerability
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/player_dodge.gd
       - name: Test world collisions and collision masks
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/world_collisions.gd

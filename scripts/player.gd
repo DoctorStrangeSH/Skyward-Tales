@@ -10,6 +10,9 @@ const HERO_SHEET := "res://assets/sprites/characters/hero_8dir_walk.png"
 @export var move_speed: float = 92.0
 @export var max_health: int = 100
 @export var max_mana: int = 60
+@export var dodge_speed: float = 260.0
+@export var dodge_duration: float = 0.20
+@export var dodge_cooldown: float = 0.85
 
 var health: int = 100
 var mana: int = 60
@@ -20,6 +23,9 @@ var gold: int = 0
 var facing: Vector2 = Vector2.DOWN
 var visual: DirectionalSprite
 var mana_regen_accumulator: float = 0.0
+var dodge_time_left: float = 0.0
+var dodge_cooldown_left: float = 0.0
+var dodge_direction: Vector2 = Vector2.DOWN
 var inventory: Dictionary = {}
 var equipment: Dictionary = {"weapon": "", "armor": "", "amulet": ""}
 
@@ -34,7 +40,27 @@ func _ready() -> void:
 	visual.set_direction_vector(facing)
 	add_child(visual)
 
+func start_dodge() -> bool:
+	if dodge_time_left > 0.0 or dodge_cooldown_left > 0.0 or health <= 0:
+		return false
+	var input_direction: Vector2 = Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	dodge_direction = input_direction.normalized() if input_direction.length_squared() > 0.01 else facing.normalized()
+	dodge_time_left = dodge_duration
+	dodge_cooldown_left = dodge_cooldown
+	visual.modulate = Color(0.55, 0.94, 1.0, 0.72)
+	return true
+
 func _physics_process(_delta: float) -> void:
+	dodge_cooldown_left = maxf(0.0, dodge_cooldown_left - _delta)
+	if dodge_time_left > 0.0:
+		dodge_time_left = maxf(0.0, dodge_time_left - _delta)
+		velocity = dodge_direction * dodge_speed
+		move_and_slide()
+		visual.set_direction_vector(dodge_direction)
+		visual.set_moving(true)
+		if dodge_time_left <= 0.0:
+			visual.modulate = Color.WHITE
+		return
 	# Recover mana slowly so casting remains testable during exploration.
 	if mana < max_mana:
 		mana_regen_accumulator += _delta * 4.0
@@ -55,6 +81,8 @@ func _physics_process(_delta: float) -> void:
 	visual.set_moving(moving)
 
 func take_damage(amount: int) -> void:
+	if dodge_time_left > 0.0 or health <= 0:
+		return
 	health = maxi(0, health - maxi(1, amount - get_armor()))
 	stats_changed.emit()
 
