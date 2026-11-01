@@ -18,7 +18,11 @@ func _ready() -> void:
 	super._ready()
 
 func _physics_process(delta: float) -> void:
+	_update_burning(delta)
+	if is_queued_for_deletion():
+		return
 	slow_time_left = maxf(0.0, slow_time_left - delta)
+	_refresh_elemental_feedback()
 	if slow_time_left <= 0.0:
 		slow_factor = 1.0
 	attack_cooldown = maxf(0.0, attack_cooldown - delta)

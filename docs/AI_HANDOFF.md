@@ -275,3 +275,8 @@ Talent progression is implemented in commit `4eeaa5374ea5a6bc454b13558f48bf1e8d7
 ## Elemental reactions
 
 `SlimeEnemy.react_to_spell(spell_id)` consumes a pre-existing status: `frostbolt` on burning enemy consumes burn and deals 8 bonus damage before a fresh slow is applied; `chain_lightning` on slowed enemy consumes slow and deals 6 extra damage. `MagicBolt` invokes it after direct hit on survivors and also on every lightning chain hop. No reaction should apply to already defeated enemies. `tests/elemental_reactions.gd` is added to CI. Manual VFX still needed.
+
+
+## Elemental status visuals
+
+`EnemyCombatFeedback` renders orange embers when burning, an icy ring during slow, and short localized labels for steam and electric reactions. `SlimeEnemy._refresh_elemental_feedback` synchronizes statuses after application, expiration and reactions. `ForestShaman` now calls `_update_burning` and feedback refresh in its overridden physics loop, so shamans and guardian suffer DoT consistently. CI test: `tests/elemental_visuals.gd`. Manual visual QA outstanding.
