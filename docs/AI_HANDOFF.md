@@ -250,3 +250,7 @@ PNG-спрайты должны храниться в `assets/sprites/sprite_she
 ## Индикатор рывка / багфикc сумки
 
 `GameHud.update_dodge(remaining, cooldown, dodging)` обновляет под полосой магии новую компактную панель SHIFT, а `main.gd._process` передаёт туда актуальные таймеры игрока. Для `ancient_relic` добавлено название в словарь `names` внутри `GameHud.refresh_inventory`; иначе наличие трофея приводило к обращению к отсутствующему ключу и ломало перерисовку сумки. CI тест `tests/dodge_hud.gd` проверяет готовность/откат и русское название. Требуется ручной UI QA и проверка CI Godot 4.7.2.
+
+## Боевой feedback
+
+`scripts/enemy_combat_feedback.gd` — общий Node2D с полосой HP, числами урона через draw_string и кольцом предупреждения. `SlimeEnemy` создаёт feedback в `_ready`, обновляет при получении урона и состояниях WINDUP/LUNGE. `GroveGuardian` отмечает elite и сигнализирует о начале второй фазы. Добавлен `tests/combat_feedback.gd` в CI. Графика временная, проверить визуально.
