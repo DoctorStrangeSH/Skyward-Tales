@@ -124,6 +124,7 @@ func _avoid_world_obstacles(desired: Vector2, delta: float = 0.016) -> Vector2:
 
 func _physics_process(delta: float) -> void:
 	_update_burning(delta)
+	_refresh_elemental_feedback()
 	if is_queued_for_deletion():
 		return
 	slow_time_left = maxf(0.0, slow_time_left - delta)
@@ -223,6 +224,10 @@ func _update_special_attack(delta: float, player: Node2D) -> bool:
 		return true
 	return false
 
+func _refresh_elemental_feedback() -> void:
+	if combat_feedback != null:
+		combat_feedback.set_statuses(burn_time_left > 0.0, slow_time_left > 0.0)
+
 func apply_burning(damage_per_tick: int, duration: float) -> void:
 	if health <= 0 or duration <= 0.0 or damage_per_tick <= 0:
 		return
@@ -231,6 +236,7 @@ func apply_burning(damage_per_tick: int, duration: float) -> void:
 	burn_time_left = maxf(burn_time_left, duration)
 	if burn_tick_timer <= 0.0:
 		burn_tick_timer = burn_tick_interval
+	_refresh_elemental_feedback()
 
 func _update_burning(delta: float) -> void:
 	if burn_time_left <= 0.0 or health <= 0:
@@ -246,6 +252,7 @@ func _update_burning(delta: float) -> void:
 	if burn_time_left <= 0.0:
 		burn_damage = 0
 		burn_tick_timer = 0.0
+	_refresh_elemental_feedback()
 
 func react_to_spell(spell_id: String) -> int:
 	# Consume existing statuses before applying the new spell's effect.
@@ -253,18 +260,25 @@ func react_to_spell(spell_id: String) -> int:
 		burn_time_left = 0.0
 		burn_tick_timer = 0.0
 		burn_damage = 0
+		if combat_feedback != null:
+			combat_feedback.show_reaction("ПАР!")
 		take_damage(8)
+		_refresh_elemental_feedback()
 		return 8
 	if spell_id == "chain_lightning" and slow_time_left > 0.0:
 		slow_time_left = 0.0
 		slow_factor = 1.0
+		if combat_feedback != null:
+			combat_feedback.show_reaction("РАЗРЯД!")
 		take_damage(6)
+		_refresh_elemental_feedback()
 		return 6
 	return 0
 
 func apply_slow(multiplier: float, duration: float) -> void:
 	slow_factor = minf(slow_factor, clampf(multiplier, 0.1, 1.0))
 	slow_time_left = maxf(slow_time_left, duration)
+	_refresh_elemental_feedback()
 
 func take_damage(amount: int) -> void:
 	if health <= 0:
