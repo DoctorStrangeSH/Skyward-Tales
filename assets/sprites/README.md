@@ -1,17 +1,17 @@
-# Directional sprite sheets
+# Спрайты Skyward Tales
 
-The game expects one ZIP archive at this exact path:
+В репозитории теперь находятся отдельные растровые PNG с прозрачным фоном:
 
-`assets/sprites/sprite_sheets.zip`
+- `characters/hero_8dir_walk.png` — ходьба героя.
+- `enemies/forest_slime_true8.png` — слизень с настоящим видом спереди, сзади и сбоку.
+- `magic/fireball_8dir.png` — огненный шар в восьми направлениях.
 
-The archive must contain these three PNG files at its root:
+Все изображения имеют 128×256 px, каждый кадр 32×32 px (4 кадра × 8 строк направлений).
 
-- `hero_8dir_walk.png`
-- `forest_slime_8dir.png`
-- `fireball_8dir.png`
+Порядок строк: down, down_right, right, up_right, up, up_left, left, down_left.
 
-Each PNG is a 4-column × 8-row atlas with 32×32 cells. Direction rows are ordered down, down-right, right, up-right, up, up-left, left, down-left.
+Больше не требуется `sprite_sheets.zip` и извлечение через `ZIPReader`. Сцены используют путь `res://assets/sprites/...` напрямую.
 
-The archive is extracted automatically by `scripts/sprite_archive.gd` into `user://SkywardTales/sprites/` before the player and enemies are spawned.
+Проверка из корня репозитория: `python3 tools/validate_sprite_atlases.py`. Проверка импорта и запуска выполняется через GitHub Actions `Godot validation`.
 
-**Repository upload note:** the archive has been prepared for this milestone but is not yet present in this branch. Add the supplied `sprite_sheets.zip` file here before running the game with the new art. The expected path is `assets/sprites/sprite_sheets.zip`.
+**Важно:** это стартовые игровые PNG, а не финальный детализированный стиль. Для новой графики обязательно сохранить реальный вид сзади без глаз/рта в строке `up`, а также правильные задние диагонали.
