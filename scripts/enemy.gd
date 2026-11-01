@@ -27,6 +27,10 @@ func _physics_process(delta: float) -> void:
 	var player := get_tree().get_first_node_in_group("player") as Node2D
 	if player == null:
 		return
+	# Pause enemy AI while the player is reading a dialogue.
+	if not player.is_physics_processing():
+		velocity = Vector2.ZERO
+		return
 	var offset := player.global_position - global_position
 	if offset.length() > 18.0:
 		velocity = offset.normalized() * move_speed

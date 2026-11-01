@@ -12,6 +12,7 @@ var quests: QuestManager
 var elder: WorldNpc
 var nearby_interactable: Node2D
 var spell_definitions: Dictionary = {}
+var cast_cooldown_remaining: float = 0.0
 
 func _ready() -> void:
 	_load_spell_definitions()
@@ -45,7 +46,8 @@ func _load_spell_definitions() -> void:
 	if parsed is Dictionary:
 		spell_definitions = parsed
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	cast_cooldown_remaining = maxf(0.0, cast_cooldown_remaining - delta)
 	if player == null or hud == null:
 		return
 	nearby_interactable = _find_nearest_interactable()
@@ -148,6 +150,8 @@ func _on_level_up(new_level: int) -> void:
 	hud.show_message("НОВЫЙ УРОВЕНЬ: %d! Здоровье и мана восстановлены." % new_level, 3.0)
 
 func _cast_spell() -> void:
+	if cast_cooldown_remaining > 0.0:
+		return
 	var spell: Dictionary = spell_definitions.get("arcane_bolt", {})
 	var mana_cost := int(spell.get("mana_cost", 8))
 	var spell_damage := int(spell.get("damage", 18))
@@ -162,6 +166,7 @@ func _cast_spell() -> void:
 	bolt.setup(direction, spell_damage)
 	bolt.global_position = player.global_position + direction * 12.0
 	add_child(bolt)
+	cast_cooldown_remaining = float(spell.get("cooldown", 0.25))
 
 func _refresh_hud() -> void:
 	if hud != null and player != null and quests != null:

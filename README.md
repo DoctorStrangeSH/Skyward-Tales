@@ -37,7 +37,7 @@ See [docs/ROADMAP.md](docs/ROADMAP.md) for milestones and [docs/AI_HANDOFF.md](d
 - WASD / Arrow keys — move
 - E — interact / collect
 - Left mouse button — cast the equipped spell
-- Esc — pause / close dialogue
+- Esc — pause; E — close dialogue
 
 ## Development principles
 
