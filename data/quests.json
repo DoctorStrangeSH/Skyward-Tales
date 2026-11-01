@@ -1,0 +1,12 @@
+[
+  {
+    "id": "moonleaf_gathering",
+    "title": "Три лунных листа",
+    "description": "Соберите три лунных листа и вернитесь к старейшине Элиану.",
+    "target": 3,
+    "reward": {
+      "experience": 50,
+      "gold": 25
+    }
+  }
+]

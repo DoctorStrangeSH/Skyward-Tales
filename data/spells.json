@@ -1,0 +1,11 @@
+{
+  "arcane_bolt": {
+    "name": "Чародейский снаряд",
+    "description": "Быстрый сгусток чистой магии. Надёжное заклинание для начала пути.",
+    "mana_cost": 8,
+    "damage": 18,
+    "projectile_speed": 255,
+    "cooldown": 0.25,
+    "school": "arcane"
+  }
+}

@@ -11,8 +11,10 @@ var hud: GameHud
 var quests: QuestManager
 var elder: WorldNpc
 var nearby_interactable: Node2D
+var spell_definitions: Dictionary = {}
 
 func _ready() -> void:
+	_load_spell_definitions()
 	quests = QuestManager.new()
 	player = PLAYER_SCENE.instantiate() as PlayerCharacter
 	add_child(player)
@@ -33,6 +35,15 @@ func _ready() -> void:
 
 	hud.show_message("Добро пожаловать в Skyward Tales! Найдите старейшину.", 5.0)
 	_refresh_hud()
+
+func _load_spell_definitions() -> void:
+	var file := FileAccess.open("res://data/spells.json", FileAccess.READ)
+	if file == null:
+		push_warning("Каталог заклинаний не найден — используются значения по умолчанию.")
+		return
+	var parsed = JSON.parse_string(file.get_as_text())
+	if parsed is Dictionary:
+		spell_definitions = parsed
 
 func _process(_delta: float) -> void:
 	if player == null or hud == null:
@@ -130,14 +141,18 @@ func _on_level_up(new_level: int) -> void:
 	hud.show_message("НОВЫЙ УРОВЕНЬ: %d! Здоровье и мана восстановлены." % new_level, 3.0)
 
 func _cast_spell() -> void:
-	if not player.spend_mana(8):
+	var spell: Dictionary = spell_definitions.get("arcane_bolt", {})
+	var mana_cost := int(spell.get("mana_cost", 8))
+	var spell_damage := int(spell.get("damage", 18))
+	if not player.spend_mana(mana_cost):
 		hud.show_message("Недостаточно маны.", 1.2)
 		return
 	var direction := (get_global_mouse_position() - player.global_position).normalized()
 	if direction.length_squared() < 0.01:
 		direction = player.facing
 	var bolt := BOLT_SCENE.instantiate() as MagicBolt
-	bolt.setup(direction, 18)
+	bolt.speed = float(spell.get("projectile_speed", 255))
+	bolt.setup(direction, spell_damage)
 	bolt.global_position = player.global_position + direction * 12.0
 	add_child(bolt)
 
