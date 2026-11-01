@@ -23,6 +23,9 @@ jobs:
       - name: Test world collisions and collision masks
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/world_collisions.gd
+      - name: Test obstacle steering and stable detour
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/enemy_steering.gd
       - name: Test enemy AI state transitions
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/slime_ai.gd

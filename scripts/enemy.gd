@@ -61,6 +61,8 @@ var attack_has_hit: bool = false
 var home_position: Vector2
 var brain_state: BrainState = BrainState.IDLE
 var steering_side: int = 1
+var steering_detour_time: float = 0.0
+var steering_detour_direction: Vector2 = Vector2.ZERO
 
 func _choose_state(distance_to_player: float) -> void:
 	if brain_state == BrainState.RETREAT:
@@ -78,24 +80,37 @@ func _choose_state(distance_to_player: float) -> void:
 		elif brain_state == BrainState.IDLE and global_position.distance_to(home_position) > return_tolerance:
 			brain_state = BrainState.RETURN
 
-func _avoid_world_obstacles(desired: Vector2) -> Vector2:
+func _has_world_obstacle(direction: Vector2, distance: float) -> bool:
+	if direction.length_squared() < 0.0001:
+		return false
+	var origin: Vector2 = global_position
+	var query := PhysicsRayQueryParameters2D.create(origin, origin + direction.normalized() * distance, 4)
+	query.exclude = [get_rid()]
+	return not get_world_2d().direct_space_state.intersect_ray(query).is_empty()
+
+func _avoid_world_obstacles(desired: Vector2, delta: float = 0.016) -> Vector2:
 	if desired.length_squared() < 0.0001:
-		return desired
-	# Query only the static world layer so the slime doesn't steer around its prey.
-	var space: PhysicsDirectSpaceState2D = get_world_2d().direct_space_state
+		steering_detour_time = 0.0
+		return Vector2.ZERO
 	var forward: Vector2 = desired.normalized()
-	var ray := PhysicsRayQueryParameters2D.create(global_position, global_position + forward * 24.0, 4)
-	ray.exclude = [get_rid()]
-	if space.intersect_ray(ray).is_empty():
+	# Maintain a detour direction briefly to avoid oscillating at the same tree corner.
+	if steering_detour_time > 0.0:
+		steering_detour_time = maxf(0.0, steering_detour_time - delta)
+		if not _has_world_obstacle(steering_detour_direction, 22.0):
+			return steering_detour_direction
+		steering_detour_time = 0.0
+	if not _has_world_obstacle(forward, 26.0):
 		return forward
-	# Slide around a blocked path by trying two diagonals (rather than pushing into walls).
-	for side in [steering_side, -steering_side]:
-		var candidate: Vector2 = forward.rotated(float(side) * PI / 2.5)
-		var probe := PhysicsRayQueryParameters2D.create(global_position, global_position + candidate * 26.0, 4)
-		probe.exclude = [get_rid()]
-		if space.intersect_ray(probe).is_empty():
-			steering_side = side
-			return candidate
+	# Prefer wide lateral clearance, then try intermediate angles.
+	for angle in [PI * 0.5, PI * 0.35, PI * 0.75]:
+		for side in [steering_side, -steering_side]:
+			var candidate: Vector2 = forward.rotated(float(side) * angle)
+			if not _has_world_obstacle(candidate, 32.0):
+				steering_side = side
+				steering_detour_direction = candidate
+				steering_detour_time = 0.35
+				return candidate
+	# Do not push into a solid obstacle if neither side is safe.
 	return Vector2.ZERO
 
 func _physics_process(delta: float) -> void:
@@ -134,7 +149,7 @@ func _physics_process(delta: float) -> void:
 			else:
 				desired = home_offset.normalized()
 	if desired.length_squared() > 0.001:
-		var steered: Vector2 = _avoid_world_obstacles(desired)
+		var steered: Vector2 = _avoid_world_obstacles(desired, delta)
 		velocity = steered * move_speed * slow_factor
 		visual.set_direction_vector(steered if steered.length_squared() > 0.01 else desired)
 		visual.set_moving(steered.length_squared() > 0.01)
