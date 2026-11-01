@@ -31,3 +31,13 @@ Hero and fireball PNGs are expected inside `assets/sprites/sprite_sheets.zip` an
 - `fireball_8dir.png` — 32×32 cells, 4 flight frames × 8 directions.
 
 See `assets/sprites/asset_manifest.json` for machine-readable layout metadata.
+
+## Runtime PNG paths and true eight views
+
+The runtime no longer requires ZIP extraction: hero, slime, fireball are committed as standalone PNGs. Paths:
+
+- `res://assets/sprites/characters/hero_8dir_walk.png`
+- `res://assets/sprites/enemies/forest_slime_true8.png`
+- `res://assets/sprites/magic/fireball_8dir.png`
+
+All 8 rows MUST represent actual orientations for characters and enemies: down, down-right, right, up-right, up, up-left, left, down-left. Rear `up` shows a true back with no eyes, mouth, or other frontal facial features; rear diagonal rows show the rear three-quarter anatomy. Do not rotate front-facing art to fake back views. All PNG atlases: 128x256 px, 32x32 px cells, 4 columns x 8 rows, RGBA. Current art is an initial playable pixel-art pass and needs further visual polish against approved concept art.

@@ -5,7 +5,7 @@ signal stats_changed
 signal level_up(new_level: int)
 
 const DIRECTIONAL_SPRITE_SCRIPT := preload("res://scripts/directional_sprite.gd")
-const HERO_SHEET := "user://SkywardTales/sprites/hero_8dir_walk.png"
+const HERO_SHEET := "res://assets/sprites/characters/hero_8dir_walk.png"
 
 @export var move_speed: float = 92.0
 @export var max_health: int = 100

@@ -2,7 +2,7 @@ extends Area2D
 class_name MagicBolt
 
 const DIRECTIONAL_SPRITE_SCRIPT := preload("res://scripts/directional_sprite.gd")
-const FIREBALL_SHEET := "user://SkywardTales/sprites/fireball_8dir.png"
+const FIREBALL_SHEET := "res://assets/sprites/magic/fireball_8dir.png"
 
 @export var speed: float = 255.0
 var direction: Vector2 = Vector2.RIGHT
