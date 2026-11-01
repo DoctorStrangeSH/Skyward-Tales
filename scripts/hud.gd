@@ -24,11 +24,15 @@ signal pause_menu_requested
 signal defeat_restart_requested
 signal defeat_load_requested
 signal defeat_menu_requested
+signal talent_selected(talent_id: String)
 var pause_panel: PanelContainer
 var defeat_panel: PanelContainer
 var defeat_hint_label: Label
 var defeat_load_button: Button
 var defeat_visible: bool = false
+var talent_panel: PanelContainer
+var talent_list: VBoxContainer
+var talent_visible: bool = false
 var message_time: float = 0.0
 var dialogue_visible: bool = false
 
@@ -169,6 +173,27 @@ func _ready() -> void:
 	_pause_button(defeat_box, "Главное меню", func() -> void: defeat_menu_requested.emit())
 	defeat_panel.visible = false
 
+	talent_panel = PanelContainer.new()
+	talent_panel.position = Vector2(128, 35)
+	talent_panel.custom_minimum_size = Vector2(384, 290)
+	talent_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	talent_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.035, 0.055, 0.085, 0.99)))
+	root.add_child(talent_panel)
+	var talent_box := VBoxContainer.new()
+	talent_box.add_theme_constant_override("separation", 8)
+	talent_panel.add_child(talent_box)
+	var talent_title := _make_label("НОВЫЙ УРОВЕНЬ — ВЫБЕРИТЕ ТАЛАНТ", 14, Color(1.0, 0.87, 0.58))
+	talent_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	talent_box.add_child(talent_title)
+	var talent_subtitle := _make_label("Выбор изменит ваш стиль игры. Каждый талант можно усилить до III ранга.", 10, Color(0.77, 0.83, 0.88))
+	talent_subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	talent_subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	talent_box.add_child(talent_subtitle)
+	talent_list = VBoxContainer.new()
+	talent_list.add_theme_constant_override("separation", 7)
+	talent_box.add_child(talent_list)
+	talent_panel.visible = false
+
 	dialogue_panel = PanelContainer.new()
 	dialogue_panel.position = Vector2(140, 246)
 	dialogue_panel.custom_minimum_size = Vector2(360, 100)
@@ -188,7 +213,7 @@ func _process(delta: float) -> void:
 			message_label.text = ""
 
 func _unhandled_input(event: InputEvent) -> void:
-	if defeat_visible:
+	if defeat_visible or talent_visible:
 		return
 	if event.is_action_pressed("pause"):
 		_set_paused(not get_tree().paused)
@@ -202,7 +227,7 @@ func _pause_button(parent: VBoxContainer, label: String, callback: Callable) -> 
 	parent.add_child(button)
 
 func _set_paused(paused: bool) -> void:
-	if defeat_visible and not paused:
+	if (defeat_visible or talent_visible) and not paused:
 		return
 	get_tree().paused = paused
 	pause_panel.visible = paused
@@ -273,8 +298,35 @@ func update_dodge(remaining: float, cooldown: float, dodging: bool) -> void:
 	dodge_label.modulate = Color(0.65, 0.95, 1.0) if remaining <= 0.001 else Color(0.67, 0.73, 0.8)
 	dodge_cooldown_bar.value = 1.0 if cooldown <= 0.0 else clampf(1.0 - remaining / cooldown, 0.0, 1.0)
 
+func show_talent_choices(choices: Array[Dictionary]) -> void:
+	for child in talent_list.get_children():
+		talent_list.remove_child(child)
+		child.queue_free()
+	for choice in choices:
+		var talent_id: String = str(choice.get("id", ""))
+		var rank: int = int(choice.get("rank", 0))
+		var entry := VBoxContainer.new()
+		var button := Button.new()
+		button.text = "%s   РАНГ %d → %d" % [str(choice.get("name", talent_id)), rank, rank + 1]
+		button.custom_minimum_size = Vector2(340, 34)
+		button.tooltip_text = str(choice.get("description", ""))
+		button.pressed.connect(func() -> void: talent_selected.emit(talent_id))
+		entry.add_child(button)
+		var description := _make_label(str(choice.get("description", "")), 9, Color(0.78, 0.84, 0.89))
+		description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		entry.add_child(description)
+		talent_list.add_child(entry)
+	talent_visible = true
+	talent_panel.visible = true
+
+func hide_talent_choices() -> void:
+	talent_visible = false
+	if talent_panel != null:
+		talent_panel.visible = false
+
 func show_defeat(can_load: bool) -> void:
 	defeat_visible = true
+	hide_talent_choices()
 	pause_panel.visible = false
 	inventory_panel.visible = false
 	inventory_open = false
