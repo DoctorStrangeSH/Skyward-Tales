@@ -8,5 +8,15 @@
       "experience": 50,
       "gold": 25
     }
+  },
+  {
+    "id": "grove_spirits",
+    "title": "Шёпот Зачарованного леса",
+    "description": "Соберите три духовных цветка и вернитесь к хранительнице Иларе.",
+    "target": 3,
+    "reward": {
+      "experience": 90,
+      "gold": 50
+    }
   }
 ]
