@@ -57,6 +57,7 @@ Skyward Tales — 2D top-down pixel-art fantasy RPG с исследование�
 - `data/spells.json` — определение огненного шара; его цена маны, урон, скорость и перезарядка читаются в `main.gd`.
 - `assets/sprites/sprite_sheets.zip` — ожидаемый путь PNG-атласов героя, слизня и огненного шара; ZIP ещё требуется загрузить в GitHub.
 - `assets/sprites/asset_manifest.json` — размеры кадров, порядок направлений и имена анимаций.
+- `tools/validate_sprite_atlases.py` — проверка содержимого ZIP и размеров PNG-атласов стандартной библиотекой Python.
 - `assets/ART_GUIDE.md` — художественные правила и требования к новым наборам.
 - `docs/ROADMAP.md` — этапы и статусы.
 
