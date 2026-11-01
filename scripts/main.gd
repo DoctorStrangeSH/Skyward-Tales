@@ -10,6 +10,7 @@ const SAVE_SCRIPT := preload("res://scripts/save_system.gd")
 const GATE_SCRIPT := preload("res://scripts/region_gate.gd")
 const WOLF_SCRIPT := preload("res://scripts/forest_wolf.gd")
 const SHAMAN_SCRIPT := preload("res://scripts/forest_shaman.gd")
+const GUARDIAN_SCRIPT := preload("res://scripts/grove_guardian.gd")
 
 var player: PlayerCharacter
 var hud: GameHud
@@ -24,6 +25,7 @@ var defeated_enemies: int = 0
 var save_path: String = SAVE_SCRIPT.SAVE_PATH
 var world: Node2D
 var current_region: String = "greenreach"
+var guardian_defeated: bool = false
 
 func _ready() -> void:
 	_load_spell_definitions()
@@ -123,6 +125,8 @@ func _populate_region() -> void:
 		_spawn_wolf(Vector2(470, 430))
 		_spawn_wolf(Vector2(900, 290))
 		_spawn_shaman(Vector2(730, 360))
+		if quests.is_completed("grove_spirits") and not guardian_defeated:
+			_spawn_guardian(Vector2(1020, 580))
 		_spawn_gate("greenreach", Vector2(1120, 205), Vector2(1080, 205), "Возврат к Зелёным Пределам")
 	else:
 		_spawn_elder()
@@ -186,6 +190,7 @@ func _on_grove_warden_interacted(_source: Node2D) -> void:
 			quests.complete_quest("grove_spirits")
 			player.add_experience(90)
 			player.add_gold(50)
+			_spawn_guardian(Vector2(1020, 580))
 			_show_dialogue("Хранительница Илара", "Ты вернул лесу его сияние. Прими эту награду.")
 		else:
 			_show_dialogue("Хранительница Илара", "Ищи духовные цветы вдоль древней тропы. Их свет виден даже в сумерках.")
@@ -207,6 +212,26 @@ func _spawn_herb(spawn_position: Vector2, item_id: String = "moonleaf", label: S
 	add_child(herb)
 	herb.global_position = spawn_position
 	herb.interacted.connect(_on_herb_interacted)
+
+func _spawn_guardian(spawn_position: Vector2) -> void:
+	if guardian_defeated:
+		return
+	for actor in get_children():
+		if actor is GroveGuardian and not actor.is_queued_for_deletion():
+			return
+	var boss := GUARDIAN_SCRIPT.new() as GroveGuardian
+	boss.position = spawn_position
+	add_child(boss)
+	boss.defeated.connect(func(xp: int) -> void: _on_guardian_defeated(xp, boss.global_position))
+
+func _on_guardian_defeated(xp: int, death_position: Vector2) -> void:
+	if guardian_defeated:
+		return
+	guardian_defeated = true
+	player.add_experience(xp)
+	player.add_gold(100)
+	_spawn_loot(death_position, "ancient_relic")
+	hud.show_message("Хранитель побеждён! +100 золота. Древний артефакт ждёт!", 3.5)
 
 func _spawn_shaman(spawn_position: Vector2) -> void:
 	var shaman := SHAMAN_SCRIPT.new() as ForestShaman
@@ -298,7 +323,7 @@ func _spawn_loot(drop_position: Vector2, item_id: String) -> void:
 
 func _on_loot_collected(item_id: String, amount: int) -> void:
 	player.add_item(item_id, amount)
-	var names: Dictionary = {"health_potion": "Зелье здоровья", "mana_potion": "Зелье маны", "apprentice_staff": "Посох ученика", "leather_armor": "Кожаная броня", "mana_amulet": "Амулет маны"}
+	var names: Dictionary = {"health_potion": "Зелье здоровья", "mana_potion": "Зелье маны", "apprentice_staff": "Посох ученика", "leather_armor": "Кожаная броня", "mana_amulet": "Амулет маны", "ancient_relic": "Древний артефакт"}
 	hud.show_message("Получено: %s ×%d" % [names.get(item_id, item_id), amount], 2.0)
 
 func _on_inventory_unequip(slot: String) -> void:
@@ -308,7 +333,7 @@ func _on_inventory_unequip(slot: String) -> void:
 		hud.show_message("Экипировка снята.", 1.5)
 
 func _on_inventory_use(item_id: String) -> void:
-	if item_id in ["apprentice_staff", "leather_armor", "mana_amulet"]:
+	if item_id in ["apprentice_staff", "leather_armor", "mana_amulet"] :
 		if player.equip_item(item_id):
 			hud.show_message("Предмет экипирован!", 1.5)
 		else:
@@ -388,7 +413,8 @@ func make_save_snapshot() -> Dictionary:
 		if node.is_queued_for_deletion():
 			continue
 		if node is SlimeEnemy:
-			alive_enemies.append({"position": _position_array(node.global_position), "hp": node.health, "home": _position_array(node.home_position), "kind": ("shaman" if node is ForestShaman else ("wolf" if node is ForestWolf else "slime"))})
+			var kind: String = "guardian" if node is GroveGuardian else ("shaman" if node is ForestShaman else ("wolf" if node is ForestWolf else "slime"))
+			alive_enemies.append({"position": _position_array(node.global_position), "hp": node.health, "home": _position_array(node.home_position), "kind": kind})
 		elif node is WorldCollectible:
 			herbs.append({"position": _position_array(node.global_position), "id": node.item_id, "name": node.display_name})
 		elif node is WorldLoot:
@@ -405,7 +431,7 @@ func make_save_snapshot() -> Dictionary:
 			"equipment": player.equipment.duplicate(true)
 		},
 		"quest": {"states": quests.states.duplicate(true), "active": quests.active_quest_id},
-		"world": {"region": current_region, "enemies": alive_enemies, "herbs": herbs, "loot": loot_items, "defeated": defeated_enemies},
+		"world": {"region": current_region, "enemies": alive_enemies, "herbs": herbs, "loot": loot_items, "defeated": defeated_enemies, "guardian_defeated": guardian_defeated},
 		"magic": selected_spell_id
 	}
 
@@ -436,6 +462,7 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 		return false
 	if not world_data.get("enemies") is Array or not world_data.get("herbs") is Array or not world_data.get("loot") is Array:
 		return false
+	guardian_defeated = bool(world_data.get("guardian_defeated", false))
 	var saved_region: String = str(world_data.get("region", "greenreach"))
 	_set_region(saved_region, _read_position(character.get("position"), Vector2(130, 210)), false)
 	for quest_id in quest_data["states"]:
@@ -467,7 +494,9 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 		if not enemy_data is Dictionary:
 			continue
 		var enemy_kind: String = str(enemy_data.get("kind", "wolf" if current_region == "moonlit_grove" else "slime"))
-		if enemy_kind == "shaman":
+		if enemy_kind == "guardian":
+			_spawn_guardian(_read_position(enemy_data.get("position"), Vector2(1020, 580)))
+		elif enemy_kind == "shaman":
 			_spawn_shaman(_read_position(enemy_data.get("position"), Vector2(730, 360)))
 		elif enemy_kind == "wolf":
 			_spawn_wolf(_read_position(enemy_data.get("position"), Vector2(475, 430)))
@@ -476,6 +505,10 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 		var enemy: SlimeEnemy = get_child(get_child_count() - 1) as SlimeEnemy
 		if enemy != null:
 			enemy.health = clampi(int(enemy_data.get("hp", enemy.max_health)), 1, enemy.max_health)
+			if enemy is GroveGuardian and enemy.health <= enemy.max_health / 2:
+				(enemy as GroveGuardian).enraged = true
+				enemy.move_speed = 44.0
+				enemy.attack_cooldown_duration = 1.2
 			enemy.home_position = _read_position(enemy_data.get("home"), enemy.global_position)
 	for loot_data in world_data["loot"]:
 		if not loot_data is Dictionary:
