@@ -247,6 +247,21 @@ func _update_burning(delta: float) -> void:
 		burn_damage = 0
 		burn_tick_timer = 0.0
 
+func react_to_spell(spell_id: String) -> int:
+	# Consume existing statuses before applying the new spell's effect.
+	if spell_id == "frostbolt" and burn_time_left > 0.0:
+		burn_time_left = 0.0
+		burn_tick_timer = 0.0
+		burn_damage = 0
+		take_damage(8)
+		return 8
+	if spell_id == "chain_lightning" and slow_time_left > 0.0:
+		slow_time_left = 0.0
+		slow_factor = 1.0
+		take_damage(6)
+		return 6
+	return 0
+
 func apply_slow(multiplier: float, duration: float) -> void:
 	slow_factor = minf(slow_factor, clampf(multiplier, 0.1, 1.0))
 	slow_time_left = maxf(slow_time_left, duration)
