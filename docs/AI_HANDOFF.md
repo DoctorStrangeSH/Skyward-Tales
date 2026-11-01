@@ -262,3 +262,6 @@ PNG-спрайты должны храниться в `assets/sprites/sprite_she
 ## Прокачка: выбор талантов
 
 `data/talents.json` содержит 6 талантов (max rank 3). `PlayerCharacter.talents` хранит ранги; `apply_talent(id)` применяет эффекты. `get_spell_bonus(spell_id)` учитывает общий Arcane Power +3/rank и school bonuses Frost Lore / Storm Focus +3/rank; `get_cooldown_multiplier()` учитывает Swift Cast (8%/rank); Vitality даёт +15 max HP/heal, Mana Well +12 max MP/refill. `main.gd` собирает очередь `pending_level_choices` (важно при получении нескольких уровней одним XP событием), выбирает три случайных незакрытых таланта и ставит игру на паузу. HUD выдаёт сигнал `talent_selected`; после каждого выбора открывает следующий уровень или снимает паузу. Сейв содержит `player.talents`, старые сейвы без этого поля продолжают работать. `tests/level_up_talents.gd` проверяет окно, три выбора, применение, паузу и сохранение. Ручной UX QA ещё нужен.
+
+
+Talent progression is implemented in commit `4eeaa5374ea5a6bc454b13558f48bf1e8d7cb733`; Godot 4.7.2 CI run `41321517591` passed. Manual UI and balance QA remains.
