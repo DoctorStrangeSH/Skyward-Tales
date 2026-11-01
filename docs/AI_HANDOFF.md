@@ -238,3 +238,7 @@ PNG-спрайты должны храниться в `assets/sprites/sprite_she
 ## Лесной шаман
 
 `ForestShaman` наследует SlimeEnemy, но переопределяет `_physics_process`: держится на расстоянии, отступает ниже 90px и стреляет в пределах 240px раз в 1.7s при отсутствии препятствий world layer 4. `EnemyMagicOrb` — отдельный Area2D на collision_mask 5 (player 1 + world 4), урон 9, блокировка повторного попадания. В `main.gd` шаман появляется в moonlit_grove, удаляется при смене региона, сохраняется с `kind=shaman` и восстанавливается через `_spawn_shaman`. Текущий спрайт временно перекрашен. `tests/forest_shaman.gd` запускается через GitHub Actions Godot 4.7.2; обязательно сверить CI.
+
+## Мини-босс Древний хранитель
+
+`GroveGuardian` extends ForestShaman (`scripts/grove_guardian.gd`), 160 HP. Фаза 1: одиночная сфера, фаза 2 при <= 50% HP: тройной веер, скорость и частота атаки повышаются. Появляется в `moonlit_grove` после завершения `grove_spirits`; убитый босс даёт 100 XP + 100 золота, предмет `ancient_relic` (нерасходуемый трофей). `main.gd` сохраняет `world.guardian_defeated` и `kind=guardian`. Ручной QA и CI ещё нужны.
