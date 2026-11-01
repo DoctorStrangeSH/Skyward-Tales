@@ -29,6 +29,9 @@ jobs:
       - name: Test ice magic and slow expiration
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/frost_magic.gd
+      - name: Test chain lightning targeting and diminishing damage
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/chain_lightning.gd
       - name: Headless gameplay smoke test
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --quit-after 120

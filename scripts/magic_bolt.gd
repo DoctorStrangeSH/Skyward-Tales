@@ -95,6 +95,6 @@ func _spawn_lightning_flash(from_point: Vector2, to_point: Vector2) -> void:
 	flash.add_point((from_point + to_point) * 0.5 + Vector2(0, -4))
 	flash.add_point(to_point)
 	flash.top_level = true
-	get_tree().current_scene.add_child(flash)
+	get_parent().add_child(flash)
 	var timer := get_tree().create_timer(0.14, false)
 	timer.timeout.connect(flash.queue_free)
