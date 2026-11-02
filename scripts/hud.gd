@@ -502,26 +502,10 @@ func refresh_inventory(player: PlayerCharacter) -> void:
 		var empty_message: String = "Сумка пуста." if available_item_ids.is_empty() else "Нет предметов в этой категории."
 		inventory_list.add_child(_make_label(empty_message, 10, Color(0.78, 0.82, 0.85)))
 	for item_id in item_ids:
-		var count: int = int(player.inventory.get(item_id, 0))
-		var button := Button.new()
-		button.mouse_filter = Control.MOUSE_FILTER_STOP
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		var equipped: bool = item_id in player.equipment.values()
-		var definition: Dictionary = player.get_item_definition(item_id)
-		var item_name: String = _inventory_item_name(player, item_id)
-		var description: String = str(INVENTORY_FALLBACK_DESCRIPTIONS.get(item_id, player.get_item_description(item_id)))
-		var rarity: String = str(definition.get("rarity", ""))
-		var rarity_label: String = " • " + str(INVENTORY_RARITY_NAMES.get(rarity, rarity)).to_lower() if not rarity.is_empty() else ""
-		var can_equip: bool = not str(definition.get("slot", "")).is_empty()
-		var can_consume: bool = INVENTORY_CONSUMABLE_IDS.has(item_id)
-		var action_hint: String = "Клик: экипировать" if can_equip else ("Клик: использовать" if can_consume else "Этот предмет нельзя использовать.")
-		button.text = "%s ×%d — %s%s%s" % [item_name, count, description, rarity_label, " [НАДЕТО]" if equipped else ""]
-		button.tooltip_text = (description + "\n" if not description.is_empty() else "") + action_hint
-		if can_equip:
-			button.tooltip_text += "\nНаведение: сравнить характеристики"
-			button.mouse_entered.connect(func() -> void: _show_equipment_comparison(player, item_id))
-		button.disabled = count <= 0 or not (can_equip or can_consume)
-		button.pressed.connect(func() -> void: inventory_use_requested.emit(item_id))
+		var button := InventoryItemButton.new()
+		button.configure(player, item_id, INVENTORY_FALLBACK_NAMES, INVENTORY_FALLBACK_DESCRIPTIONS, INVENTORY_RARITY_NAMES, INVENTORY_CONSUMABLE_IDS)
+		button.use_requested.connect(func(requested_id: String) -> void: inventory_use_requested.emit(requested_id))
+		button.compare_requested.connect(func(requested_id: String) -> void: _show_equipment_comparison(player, requested_id))
 		inventory_list.add_child(button)
 
 func update_status(player: PlayerCharacter, quests: QuestManager) -> void:
