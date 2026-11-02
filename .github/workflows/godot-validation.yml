@@ -50,6 +50,9 @@ jobs:
       - name: Test fire burning damage and persistence
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/fire_burning.gd
+      - name: Test treasure chests and persistent rewards
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/treasure_chests.gd
       - name: Test full region map and quest summary
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/world_map.gd

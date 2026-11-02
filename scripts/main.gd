@@ -6,6 +6,7 @@ const NPC_SCRIPT := preload("res://scripts/npc.gd")
 const COLLECTIBLE_SCRIPT := preload("res://scripts/collectible.gd")
 const ENEMY_SCRIPT := preload("res://scripts/enemy.gd")
 const LOOT_SCRIPT := preload("res://scripts/loot.gd")
+const CHEST_SCRIPT := preload("res://scripts/treasure_chest.gd")
 const SAVE_SCRIPT := preload("res://scripts/save_system.gd")
 const GATE_SCRIPT := preload("res://scripts/region_gate.gd")
 const WOLF_SCRIPT := preload("res://scripts/forest_wolf.gd")
@@ -32,6 +33,7 @@ var pending_level_choices: Array[int] = []
 var bestiary_entries: Dictionary = {}
 var discovered_enemies: Dictionary = {}
 var discovered_landmarks: Dictionary = {}
+var opened_chests: Dictionary = {}
 
 func _ready() -> void:
 	_load_spell_definitions()
@@ -210,6 +212,8 @@ func _input(event: InputEvent) -> void:
 func _populate_region() -> void:
 	if current_region == "moonlit_grove":
 		_spawn_grove_warden()
+		_spawn_chest("grove_moon_pool", Vector2(565, 215), 35, "mana_potion", 2)
+		_spawn_chest("grove_ancient_stones", Vector2(975, 640), 60, "health_potion", 1)
 		_spawn_herb(Vector2(330, 315), "spirit_blossom", "Духовный цветок")
 		_spawn_herb(Vector2(680, 505), "spirit_blossom", "Духовный цветок")
 		_spawn_herb(Vector2(1080, 390), "spirit_blossom", "Духовный цветок")
@@ -221,6 +225,8 @@ func _populate_region() -> void:
 		_spawn_gate("greenreach", Vector2(1120, 205), Vector2(1080, 205), "Возврат к Зелёным Пределам")
 	else:
 		_spawn_elder()
+		_spawn_chest("greenreach_ruins", Vector2(960, 175), 45, "health_potion", 2)
+		_spawn_chest("greenreach_woodland", Vector2(660, 460), 30, "mana_potion", 1)
 		_spawn_herb(Vector2(370, 155))
 		_spawn_herb(Vector2(515, 310))
 		_spawn_herb(Vector2(700, 190))
@@ -231,7 +237,7 @@ func _populate_region() -> void:
 
 func _clear_region_actors() -> void:
 	for node in get_children():
-		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is RegionGate or node is MagicBolt or node is EnemyMagicOrb:
+		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is MagicBolt or node is EnemyMagicOrb:
 			remove_child(node)
 			node.queue_free()
 	elder = null
@@ -247,6 +253,28 @@ func _set_region(region_id: String, arrival: Vector2, notify: bool = true) -> vo
 	if notify and hud != null:
 		hud.show_message("Локация: " + ("Зачарованный лес" if current_region == "moonlit_grove" else "Зелёные Пределы"), 2.5)
 	_refresh_hud()
+
+func _spawn_chest(id: String, at_position: Vector2, gold: int, item: String, amount: int) -> void:
+	var chest := CHEST_SCRIPT.new() as TreasureChest
+	chest.chest_id = id
+	chest.gold_reward = gold
+	chest.item_reward = item
+	chest.item_amount = amount
+	chest.is_opened = bool(opened_chests.get(id, false))
+	chest.position = at_position
+	add_child(chest)
+	if chest.is_opened:
+		chest.remove_from_group("interactables")
+	chest.opened.connect(_on_chest_opened)
+
+func _on_chest_opened(id: String, gold: int, item: String, amount: int) -> void:
+	if opened_chests.has(id):
+		return
+	opened_chests[id] = true
+	player.add_gold(gold)
+	if not item.is_empty() and amount > 0:
+		player.add_item(item, amount)
+	hud.show_message("Тайник открыт! +%d золота, %s ×%d" % [gold, item, amount], 3.0)
 
 func _spawn_gate(target_region: String, gate_position: Vector2, arrival: Vector2, label: String) -> void:
 	var gate := GATE_SCRIPT.new() as RegionGate
@@ -586,7 +614,7 @@ func make_save_snapshot() -> Dictionary:
 			"talents": player.talents.duplicate(true)
 		},
 		"quest": {"states": quests.states.duplicate(true), "active": quests.active_quest_id},
-		"world": {"region": current_region, "enemies": alive_enemies, "herbs": herbs, "loot": loot_items, "defeated": defeated_enemies, "guardian_defeated": guardian_defeated, "discovered": discovered_enemies.duplicate(true), "landmarks": discovered_landmarks.duplicate(true)},
+		"world": {"region": current_region, "enemies": alive_enemies, "herbs": herbs, "loot": loot_items, "defeated": defeated_enemies, "guardian_defeated": guardian_defeated, "discovered": discovered_enemies.duplicate(true), "landmarks": discovered_landmarks.duplicate(true), "opened_chests": opened_chests.duplicate(true)},
 		"magic": selected_spell_id
 	}
 
@@ -639,6 +667,7 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 	guardian_defeated = bool(world_data.get("guardian_defeated", false))
 	discovered_enemies = world_data.get("discovered", {}).duplicate(true)
 	discovered_landmarks = world_data.get("landmarks", {}).duplicate(true)
+	opened_chests = world_data.get("opened_chests", {}).duplicate(true)
 	var saved_region: String = str(world_data.get("region", "greenreach"))
 	_set_region(saved_region, _read_position(character.get("position"), Vector2(130, 210)), false)
 	for quest_id in quest_data["states"]:
