@@ -137,6 +137,9 @@ jobs:
       - name: Test player death, defeat screen and recovery
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/death_flow.gd
+      - name: Test modular talent choice panel
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/talent_choice_panel.gd
       - name: Test level-up talent choices and persistence
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/level_up_talents.gd
