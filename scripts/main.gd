@@ -663,18 +663,12 @@ func load_game() -> bool:
 	return restored
 
 func restore_save_snapshot(data: Dictionary) -> bool:
-	if not data.get("player") is Dictionary or not data.get("quest") is Dictionary or not data.get("world") is Dictionary:
+	# Validate the entire payload before changing any player, quest, or world state.
+	if not SAVE_SCRIPT.validate_snapshot(data):
 		return false
 	var character: Dictionary = data["player"]
 	var quest_data: Dictionary = data["quest"]
 	var world_data: Dictionary = data["world"]
-	# Validate structure before changing existing game state.
-	if not character.get("inventory") is Dictionary or not character.get("equipment") is Dictionary or (character.has("talents") and not character.get("talents") is Dictionary):
-		return false
-	if not quest_data.get("states") is Dictionary:
-		return false
-	if not world_data.get("enemies") is Array or not world_data.get("herbs") is Array or not world_data.get("loot") is Array:
-		return false
 	guardian_defeated = bool(world_data.get("guardian_defeated", false))
 	discovered_enemies = world_data.get("discovered", {}).duplicate(true)
 	discovered_landmarks = world_data.get("landmarks", {}).duplicate(true)
