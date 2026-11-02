@@ -290,3 +290,8 @@ Talent progression is implemented in commit `4eeaa5374ea5a6bc454b13558f48bf1e8d7
 ## Bestiary
 
 `data/bestiary.json` contains Russian names, habitats, attacks, weaknesses and resistances. `main.gd` discovers enemies within 180 px in `_process`, stores `discovered_enemies` in world save snapshot, and toggles `GameHud.toggle_bestiary` with K. Undiscovered entries show `???`, known entries show details; inventory is closed when bestiary opens. `tests/bestiary.gd` added to CI. Confirm CI and manual 640x360 layout.
+
+
+## Мини-карта
+
+`scripts/world_minimap.gd` — самостоятельный `Control` без внешней графики. Отрисовывает текущий регион (внутренние координаты 1280×864, виджет 132×108 в правом верхнем углу), линию маршрута, положение героя и маркеры известных NPC/переходов. `GameHud.minimap` создаётся при инициализации HUD. `main.gd._update_minimap` обнаруживает NPC и RegionGate в радиусе 150 px и обновляет `discovered_landmarks` по регионам. Сохранение: `world.landmarks`, загрузка обратно совместима с предыдущими файлами. CI тест `tests/minimap.gd` проверяет координаты, обнаружение, save/restore и переключение регионов; требуется ручной QA.

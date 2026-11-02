@@ -36,6 +36,7 @@ var talent_visible: bool = false
 var bestiary_panel: PanelContainer
 var bestiary_list: VBoxContainer
 var bestiary_visible: bool = false
+var minimap: WorldMinimap
 var message_time: float = 0.0
 var dialogue_visible: bool = false
 
@@ -59,6 +60,10 @@ func _ready() -> void:
 	status_box.add_child(status_label)
 	quest_label = _make_label("ЗАДАНИЕ: Поговорите со старейшиной", 10, Color(0.83, 0.88, 0.72))
 	status_box.add_child(quest_label)
+
+	minimap = preload("res://scripts/world_minimap.gd").new() as WorldMinimap
+	minimap.position = Vector2(498, 8)
+	root.add_child(minimap)
 
 	# Compact battle information, without introducing mouse-blocking controls.
 	var spell_panel := PanelContainer.new()
