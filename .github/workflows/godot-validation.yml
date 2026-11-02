@@ -113,6 +113,9 @@ jobs:
       - name: Test equipment comparison formatting
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/inventory_comparison_formatter.gd
+      - name: Test equipment comparison panel component
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/equipment_comparison_panel.gd
       - name: Test equipment comparison and relic effects
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/equipment_comparison.gd

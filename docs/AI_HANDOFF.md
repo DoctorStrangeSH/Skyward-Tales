@@ -405,3 +405,11 @@ Equipment milestone verification: Godot 4.7.2 workflow run `41443674839` complet
 - `GameHud.refresh_inventory()` по-прежнему управляет составом списка, фильтрацией и сортировкой; теперь создаёт компоненты и пересылает их сигналы в существующие `inventory_use_requested` и `_show_equipment_comparison()`. Публичные сигналы GameHud и сохранения не менялись.
 - `tests/inventory_item_button.gd` проверяет создание компонента в HUD, русские подписи, подсказки, сигналы выбора и наведения. Добавлен шаг CI; сохраняются существующие тесты `inventory_filter_sort.gd` и `equipment_comparison.gd`.
 - Исходный HEAD для инкремента: `b5b229e27da31b29a6ce0a0907f3cc46d2597875`. После коммита получить live HEAD и проверить CI. Не сливать PR #1 без ручной QA.
+
+
+## 18. Отдельная панель сравнения экипировки — 2026-11-02
+
+- Создан `scripts/equipment_comparison_panel.gd` (`EquipmentComparisonPanel extends PanelContainer`), в котором находятся создание UI и таблицы характеристик. Используется прежний `InventoryComparisonFormatter`.
+- `GameHud._show_equipment_comparison()` теперь делегирует `show_item()`; ссылки `comparison_panel`, `comparison_title`, `comparison_subtitle`, `comparison_grid`, `comparison_description` сохраняются для старых тестов/вызовов.
+- `tests/equipment_comparison_panel.gd` проверяет компонент, совместимые ссылки, заголовок и скрытие для неэкипируемых предметов. CI запускает его дополнительно к `tests/equipment_comparison.gd`.
+- Исходный HEAD до инкремента: `82ddece3aa19bc231099426f9df6eab1bd62a130`. Проверить текущий CI на новом HEAD. PR #1 не сливать без ручного QA.
