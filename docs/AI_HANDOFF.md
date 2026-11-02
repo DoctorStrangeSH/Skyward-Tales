@@ -413,3 +413,11 @@ Equipment milestone verification: Godot 4.7.2 workflow run `41443674839` complet
 - `GameHud._show_equipment_comparison()` теперь делегирует `show_item()`; ссылки `comparison_panel`, `comparison_title`, `comparison_subtitle`, `comparison_grid`, `comparison_description` сохраняются для старых тестов/вызовов.
 - `tests/equipment_comparison_panel.gd` проверяет компонент, совместимые ссылки, заголовок и скрытие для неэкипируемых предметов. CI запускает его дополнительно к `tests/equipment_comparison.gd`.
 - Исходный HEAD до инкремента: `82ddece3aa19bc231099426f9df6eab1bd62a130`. Проверить текущий CI на новом HEAD. PR #1 не сливать без ручного QA.
+
+
+## 19. Контейнер окна инвентаря — 2026-11-02
+
+- Создан `scripts/inventory_window.gd` (`InventoryWindow extends PanelContainer`) — создание геометрии окна, списка экипировки, кнопок фильтра и сортировки, прокрутки и списка предметов.
+- `GameHud._ready()` создаёт `InventoryWindow`, сохраняет прежние ссылки `inventory_panel`, `inventory_list`, `equipment_list`, `inventory_filter`, `inventory_sort`, и перенаправляет сигналы `filter_selected` / `sort_selected` существующим обработчикам.
+- Логика наполнения, экипировки и сохранений не менялась. `tests/inventory_window.gd` проверяет структуру, алиасы, видимость, сигналы фильтров и сортировки. Старые тесты инвентаря остаются в CI.
+- Исходный HEAD `bfddc9be6e69d8c0deae85eb1bb6386300176819`. После нового коммита проверить GitHub Actions, затем продолжить безопасный вынос наполнения списков. PR #1 оставлять Draft до ручной QA.

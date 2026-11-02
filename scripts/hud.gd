@@ -19,6 +19,7 @@ var dodge_label: Label
 var dodge_cooldown_bar: ProgressBar
 var inventory_label: Label
 var inventory_panel: PanelContainer
+var inventory_view: InventoryWindow
 var inventory_list: VBoxContainer
 var equipment_list: VBoxContainer
 var inventory_filter: OptionButton
@@ -165,48 +166,16 @@ func _ready() -> void:
 	root.add_child(prompt_label)
 	prompt_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	# Interactive panel only intercepts clicks while opened.
-	inventory_panel = PanelContainer.new()
-	inventory_panel.position = Vector2(8, 30)
-	inventory_panel.custom_minimum_size = Vector2(286, 300)
-	inventory_panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	inventory_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.045, 0.06, 0.09, 0.97)))
-	root.add_child(inventory_panel)
-	var contents := VBoxContainer.new()
-	inventory_panel.add_child(contents)
-	contents.add_child(_make_label("СУМКА  [I — закрыть]", 13, Color(1.0, 0.88, 0.56)))
-	contents.add_child(_make_label("Экипировка (клик — снять)", 10, Color(0.91, 0.90, 0.75)))
-	equipment_list = VBoxContainer.new()
-	contents.add_child(equipment_list)
-	var inventory_controls := HBoxContainer.new()
-	inventory_controls.add_theme_constant_override("separation", 4)
-	contents.add_child(inventory_controls)
-	inventory_filter = OptionButton.new()
-	inventory_filter.custom_minimum_size = Vector2(118, 26)
-	inventory_filter.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	inventory_filter.add_item("Все предметы", 0)
-	inventory_filter.add_item("Экипировка", 1)
-	inventory_filter.add_item("Расходники", 2)
-	inventory_filter.tooltip_text = "Фильтр содержимого сумки"
-	inventory_filter.item_selected.connect(_on_inventory_filter_selected)
-	inventory_controls.add_child(inventory_filter)
-	inventory_sort = OptionButton.new()
-	inventory_sort.custom_minimum_size = Vector2(118, 26)
-	inventory_sort.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	inventory_sort.add_item("Порядок", 0)
-	inventory_sort.add_item("По названию", 1)
-	inventory_sort.add_item("По редкости", 2)
-	inventory_sort.tooltip_text = "Порядок отображения предметов"
-	inventory_sort.item_selected.connect(_on_inventory_sort_selected)
-	inventory_controls.add_child(inventory_sort)
-	var inventory_scroll := ScrollContainer.new()
-	inventory_scroll.custom_minimum_size = Vector2(250, 90)
-	inventory_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	contents.add_child(inventory_scroll)
-	inventory_list = VBoxContainer.new()
-	inventory_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	inventory_scroll.add_child(inventory_list)
-	inventory_panel.visible = false
+	# Keep public HUD references for existing save, input and regression code.
+	inventory_view = InventoryWindow.new()
+	root.add_child(inventory_view)
+	inventory_panel = inventory_view
+	inventory_list = inventory_view.item_list
+	equipment_list = inventory_view.equipment_list
+	inventory_filter = inventory_view.filter_button
+	inventory_sort = inventory_view.sort_button
+	inventory_view.filter_selected.connect(_on_inventory_filter_selected)
+	inventory_view.sort_selected.connect(_on_inventory_sort_selected)
 
 	comparison_view = EquipmentComparisonPanel.new()
 	root.add_child(comparison_view)
