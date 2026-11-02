@@ -295,3 +295,8 @@ Talent progression is implemented in commit `4eeaa5374ea5a6bc454b13558f48bf1e8d7
 ## Мини-карта
 
 `scripts/world_minimap.gd` — самостоятельный `Control` без внешней графики. Отрисовывает текущий регион (внутренние координаты 1280×864, виджет 132×108 в правом верхнем углу), линию маршрута, положение героя и маркеры известных NPC/переходов. `GameHud.minimap` создаётся при инициализации HUD. `main.gd._update_minimap` обнаруживает NPC и RegionGate в радиусе 150 px и обновляет `discovered_landmarks` по регионам. Сохранение: `world.landmarks`, загрузка обратно совместима с предыдущими файлами. CI тест `tests/minimap.gd` проверяет координаты, обнаружение, save/restore и переключение регионов; требуется ручной QA.
+
+
+## Full region map
+
+`GameHud.open_world_map(region,hero,landmarks,quest)` presents a scaled `WorldMinimap` inside a 452×345 modal with quest summary. `M` from `main.gd` opens it, closing bestiary or inventory first; HUD processes M during pause and closes it with `close_world_map()` to resume. No unvisited POIs revealed: the existing `discovered_landmarks` drives both map views. Tests: `tests/world_map.gd`, CI updated. Manual 640×360 UX QA remains.
