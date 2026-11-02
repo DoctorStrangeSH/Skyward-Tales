@@ -300,3 +300,8 @@ Talent progression is implemented in commit `4eeaa5374ea5a6bc454b13558f48bf1e8d7
 ## Full region map
 
 `GameHud.open_world_map(region,hero,landmarks,quest)` presents a scaled `WorldMinimap` inside a 452×345 modal with quest summary. `M` from `main.gd` opens it, closing bestiary or inventory first; HUD processes M during pause and closes it with `close_world_map()` to resume. No unvisited POIs revealed: the existing `discovered_landmarks` drives both map views. Tests: `tests/world_map.gd`, CI updated. Manual 640×360 UX QA remains.
+
+
+## Treasure chests
+
+`TreasureChest` (`scripts/treasure_chest.gd`) is a simple interactable node with `opened` signal and one-shot state. `main.gd` defines four static chest placements and rewards in two regions; `opened_chests` persists in `world.opened_chests`, restored before `_set_region` repopulates actors; old saves default to unopened. Chest state is not encoded as world loot. `tests/treasure_chests.gd` covers one-time reward, save/restore and region transitions. Manual collision and visual placement QA pending.
