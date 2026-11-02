@@ -389,3 +389,11 @@ Equipment milestone verification: Godot 4.7.2 workflow run `41443674839` complet
 - `GameHud._format_comparison_value()` и `_format_comparison_delta()` сохранены как совместимые обёртки. Формирование строк и логика округления не менялись; сигналы и структура UI не менялись.
 - Создан `tests/inventory_comparison_formatter.gd`, включён отдельным шагом CI. Проверяет числа, длительность, знаки и делегирование HUD.
 - Исходный HEAD до изменения `86a615d62c5fd59818d68ed343935a377d9eddbd`. Получить live HEAD и проверить текущий CI, затем записать результаты в handoff. Draft PR #1 не сливать без ручного QA.
+
+
+## 16. Выделение логики сортировки инвентаря — 2026-11-02
+
+- Создан `scripts/inventory_item_order.gd` (`InventoryItemOrder`): чистые правила классификации предметов, получения отображаемого имени, ранга редкости и сортировки.
+- Методы `GameHud._inventory_item_category()`, `_inventory_item_name()`, `_inventory_rarity_rank()`, `_sort_inventory_items()` оставлены совместимыми обёртками. Сигналы, кнопки, визуальный порядок по умолчанию и игровая логика не изменены.
+- Создан `tests/inventory_item_order.gd`: категории, русские названия, сортировка по редкости, алфавиту и сохранение исходного порядка. CI запускает его дополнительно к старому `tests/inventory_filter_sort.gd`.
+- Исходный HEAD перед этим инкрементом: `aaf49f98e6afc1f774f10a66d318c73195dbfe09`. Перед следующей работой проверь live HEAD и CI. PR #1 не сливать до ручной проверки.

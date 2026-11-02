@@ -101,6 +101,9 @@ jobs:
       - name: Test data-driven equipment catalog and inventory UI
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/equipment_data_driven.gd
+      - name: Test inventory item ordering and category rules
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/inventory_item_order.gd
       - name: Test inventory filters and sorting
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/inventory_filter_sort.gd
