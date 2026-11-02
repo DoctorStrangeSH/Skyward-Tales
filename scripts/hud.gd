@@ -447,39 +447,16 @@ func _on_inventory_sort_selected(index: int) -> void:
 		refresh_inventory(inventory_player)
 
 func _inventory_item_category(player: PlayerCharacter, item_id: String) -> String:
-	if not str(player.get_item_definition(item_id).get("slot", "")).is_empty():
-		return "equipment"
-	if INVENTORY_CONSUMABLE_IDS.has(item_id):
-		return "consumable"
-	return "other"
+	return InventoryItemOrder.category(player, item_id, INVENTORY_CONSUMABLE_IDS)
 
 func _inventory_item_name(player: PlayerCharacter, item_id: String) -> String:
-	return str(INVENTORY_FALLBACK_NAMES.get(item_id, player.get_item_name(item_id)))
+	return InventoryItemOrder.display_name(player, item_id, INVENTORY_FALLBACK_NAMES)
 
 func _inventory_rarity_rank(player: PlayerCharacter, item_id: String) -> int:
-	match str(player.get_item_definition(item_id).get("rarity", "")):
-		"rare":
-			return 3
-		"uncommon":
-			return 2
-		"common":
-			return 1
-		_:
-			return 0
+	return InventoryItemOrder.rarity_rank(player, item_id)
 
 func _sort_inventory_items(player: PlayerCharacter, item_ids: Array[String]) -> void:
-	if inventory_sort_index == 1:
-		item_ids.sort_custom(func(a: String, b: String) -> bool:
-			return _inventory_item_name(player, a).to_lower() < _inventory_item_name(player, b).to_lower()
-		)
-	elif inventory_sort_index == 2:
-		item_ids.sort_custom(func(a: String, b: String) -> bool:
-			var rank_a: int = _inventory_rarity_rank(player, a)
-			var rank_b: int = _inventory_rarity_rank(player, b)
-			if rank_a != rank_b:
-				return rank_a > rank_b
-			return _inventory_item_name(player, a).to_lower() < _inventory_item_name(player, b).to_lower()
-		)
+	InventoryItemOrder.sort_items(player, item_ids, inventory_sort_index, INVENTORY_FALLBACK_NAMES)
 
 func refresh_inventory(player: PlayerCharacter) -> void:
 	if inventory_list == null:
