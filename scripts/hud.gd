@@ -151,7 +151,7 @@ func _ready() -> void:
 	# Interactive panel only intercepts clicks while opened.
 	inventory_panel = PanelContainer.new()
 	inventory_panel.position = Vector2(190, 48)
-	inventory_panel.custom_minimum_size = Vector2(275, 220)
+	inventory_panel.custom_minimum_size = Vector2(275, 260)
 	inventory_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	inventory_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.045, 0.06, 0.09, 0.97)))
 	root.add_child(inventory_panel)
@@ -161,8 +161,13 @@ func _ready() -> void:
 	contents.add_child(_make_label("Экипировка (клик — снять)", 10, Color(0.91, 0.90, 0.75)))
 	equipment_list = VBoxContainer.new()
 	contents.add_child(equipment_list)
+	var inventory_scroll := ScrollContainer.new()
+	inventory_scroll.custom_minimum_size = Vector2(250, 105)
+	inventory_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	contents.add_child(inventory_scroll)
 	inventory_list = VBoxContainer.new()
-	contents.add_child(inventory_list)
+	inventory_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	inventory_scroll.add_child(inventory_list)
 	inventory_panel.visible = false
 
 	pause_panel = PanelContainer.new()
@@ -328,23 +333,40 @@ func refresh_inventory(player: PlayerCharacter) -> void:
 		slot_button.disabled = equipped_item.is_empty()
 		slot_button.pressed.connect(func() -> void: inventory_unequip_requested.emit(slot))
 		equipment_list.add_child(slot_button)
-	var order: Array[String] = ["health_potion", "mana_potion", "apprentice_staff", "leather_armor", "mana_amulet", "pyromancer_core", "frost_heart", "storm_eye", "ancient_relic", "starlight_essence"]
+	var preferred_order: Array[String] = ["health_potion", "mana_potion", "apprentice_staff", "leather_armor", "mana_amulet", "pyromancer_core", "frost_heart", "storm_eye", "ancient_relic", "starlight_essence"]
 	var fallback_names: Dictionary = {"health_potion": "Зелье здоровья", "mana_potion": "Зелье маны", "ancient_relic": "Древний артефакт", "starlight_essence": "Звёздная эссенция"}
 	var fallback_descriptions: Dictionary = {"health_potion": "+35 HP", "mana_potion": "+25 MP", "ancient_relic": "Трофей победы над хранителем", "starlight_essence": "Постоянно +5 к максимальной мане"}
 	var rarity_names: Dictionary = {"common": "ОБЫЧНЫЙ", "uncommon": "НЕОБЫЧНЫЙ", "rare": "РЕДКИЙ"}
-	for item_id in order:
+	var item_ids: Array[String] = []
+	for item_id in preferred_order:
+		if int(player.inventory.get(item_id, 0)) > 0:
+			item_ids.append(item_id)
+	var additional_item_ids: Array[String] = []
+	for key in player.inventory.keys():
+		var item_id: String = str(key)
+		if not preferred_order.has(item_id) and int(player.inventory.get(item_id, 0)) > 0:
+			additional_item_ids.append(item_id)
+	additional_item_ids.sort()
+	item_ids.append_array(additional_item_ids)
+	if item_ids.is_empty():
+		inventory_list.add_child(_make_label("Сумка пуста.", 10, Color(0.78, 0.82, 0.85)))
+	for item_id in item_ids:
 		var count: int = int(player.inventory.get(item_id, 0))
 		var button := Button.new()
 		button.mouse_filter = Control.MOUSE_FILTER_STOP
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var equipped: bool = item_id in player.equipment.values()
 		var definition: Dictionary = player.get_item_definition(item_id)
 		var item_name: String = str(fallback_names.get(item_id, player.get_item_name(item_id)))
 		var description: String = str(fallback_descriptions.get(item_id, player.get_item_description(item_id)))
 		var rarity: String = str(definition.get("rarity", ""))
 		var rarity_label: String = " • " + str(rarity_names.get(rarity, rarity)).to_lower() if not rarity.is_empty() else ""
+		var can_equip: bool = not str(definition.get("slot", "")).is_empty()
+		var can_consume: bool = item_id in ["health_potion", "mana_potion", "starlight_essence"]
+		var action_hint: String = "Клик: экипировать" if can_equip else ("Клик: использовать" if can_consume else "Этот предмет нельзя использовать.")
 		button.text = "%s ×%d — %s%s%s" % [item_name, count, description, rarity_label, " [НАДЕТО]" if equipped else ""]
-		button.tooltip_text = "Нажмите, чтобы экипировать или использовать."
-		button.disabled = count <= 0 or item_id == "ancient_relic"
+		button.tooltip_text = (description + "\n" if not description.is_empty() else "") + action_hint
+		button.disabled = count <= 0 or not (can_equip or can_consume)
 		button.pressed.connect(func() -> void: inventory_use_requested.emit(item_id))
 		inventory_list.add_child(button)
 func update_status(player: PlayerCharacter, quests: QuestManager) -> void:

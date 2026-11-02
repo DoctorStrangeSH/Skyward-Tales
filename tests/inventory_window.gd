@@ -12,8 +12,8 @@ func _run() -> void:
 	player.add_item("health_potion", 2)
 	player.take_damage(50)
 	hud.toggle_inventory(player)
-	if not hud.inventory_open or not hud.inventory_panel.visible or hud.inventory_list.get_child_count() < 2:
-		push_error("INVENTORY TEST FAILED: panel did not open or populate")
+	if not hud.inventory_open or not hud.inventory_panel.visible or hud.inventory_list.get_child_count() != 1:
+		push_error("INVENTORY TEST FAILED: panel did not open or show only owned items")
 		quit(1)
 		return
 	hud.inventory_use_requested.emit("health_potion")
