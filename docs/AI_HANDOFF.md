@@ -421,3 +421,10 @@ Equipment milestone verification: Godot 4.7.2 workflow run `41443674839` complet
 - `GameHud._ready()` создаёт `InventoryWindow`, сохраняет прежние ссылки `inventory_panel`, `inventory_list`, `equipment_list`, `inventory_filter`, `inventory_sort`, и перенаправляет сигналы `filter_selected` / `sort_selected` существующим обработчикам.
 - Логика наполнения, экипировки и сохранений не менялась. `tests/inventory_window.gd` проверяет структуру, алиасы, видимость, сигналы фильтров и сортировки. Старые тесты инвентаря остаются в CI.
 - Исходный HEAD `bfddc9be6e69d8c0deae85eb1bb6386300176819`. После нового коммита проверить GitHub Actions, затем продолжить безопасный вынос наполнения списков. PR #1 оставлять Draft до ручной QA.
+
+
+## 20. Наполнение инвентаря вынесено из HUD — 2026-11-02
+
+- `InventoryWindow.populate()` создаёт кнопки четырёх слотов, формирует упорядоченный список предметов с фильтрацией и добавляет `InventoryItemButton`. `GameHud.refresh_inventory()` оставлен как совместимая точка входа: сохраняет player, скрывает сравнение, делегирует populate.
+- Новые сигналы окна `use_requested`, `compare_requested`, `unequip_requested` пересылаются в существующие сигналы/методы GameHud. Поведение инвентаря, идентификаторы предметов, формат сохранений не менялись.
+- `tests/inventory_window_population.gd` — интеграционная проверка слотов, предметов, hover, фильтра. Остальные тесты не удалены. Исходный HEAD `96c252390d9c972d01b09917aa309592e7edb9dc`; следующий ИИ обязан сверить live HEAD и итог CI. Не сливать Draft PR #1.

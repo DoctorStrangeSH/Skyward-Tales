@@ -176,6 +176,9 @@ func _ready() -> void:
 	inventory_sort = inventory_view.sort_button
 	inventory_view.filter_selected.connect(_on_inventory_filter_selected)
 	inventory_view.sort_selected.connect(_on_inventory_sort_selected)
+	inventory_view.use_requested.connect(func(id: String) -> void: inventory_use_requested.emit(id))
+	inventory_view.compare_requested.connect(func(id: String) -> void: _show_equipment_comparison(inventory_player, id))
+	inventory_view.unequip_requested.connect(func(slot: String) -> void: inventory_unequip_requested.emit(slot))
 
 	comparison_view = EquipmentComparisonPanel.new()
 	root.add_child(comparison_view)
@@ -379,49 +382,7 @@ func refresh_inventory(player: PlayerCharacter) -> void:
 	inventory_player = player
 	if comparison_panel != null:
 		comparison_panel.visible = false
-	for child in inventory_list.get_children():
-		inventory_list.remove_child(child)
-		child.queue_free()
-	for child in equipment_list.get_children():
-		equipment_list.remove_child(child)
-		child.queue_free()
-	var slots: Dictionary = {"weapon": "Оружие", "armor": "Броня", "amulet": "Амулет", "relic": "Реликвия"}
-	for slot in ["weapon", "armor", "amulet", "relic"]:
-		var equipped_item: String = str(player.equipment.get(slot, ""))
-		var slot_button := Button.new()
-		slot_button.text = "%s: %s" % [slots[slot], player.get_item_name(equipped_item) if not equipped_item.is_empty() else "Пусто"]
-		slot_button.disabled = equipped_item.is_empty()
-		slot_button.pressed.connect(func() -> void: inventory_unequip_requested.emit(slot))
-		equipment_list.add_child(slot_button)
-	var available_item_ids: Array[String] = []
-	for item_id in INVENTORY_PREFERRED_ORDER:
-		if int(player.inventory.get(item_id, 0)) > 0:
-			available_item_ids.append(item_id)
-	var additional_item_ids: Array[String] = []
-	for key in player.inventory.keys():
-		var item_id: String = str(key)
-		if not INVENTORY_PREFERRED_ORDER.has(item_id) and int(player.inventory.get(item_id, 0)) > 0:
-			additional_item_ids.append(item_id)
-	additional_item_ids.sort()
-	available_item_ids.append_array(additional_item_ids)
-	var item_ids: Array[String] = []
-	for item_id in available_item_ids:
-		var category: String = _inventory_item_category(player, item_id)
-		if inventory_filter_index == 1 and category != "equipment":
-			continue
-		if inventory_filter_index == 2 and category != "consumable":
-			continue
-		item_ids.append(item_id)
-	_sort_inventory_items(player, item_ids)
-	if item_ids.is_empty():
-		var empty_message: String = "Сумка пуста." if available_item_ids.is_empty() else "Нет предметов в этой категории."
-		inventory_list.add_child(_make_label(empty_message, 10, Color(0.78, 0.82, 0.85)))
-	for item_id in item_ids:
-		var button := InventoryItemButton.new()
-		button.configure(player, item_id, INVENTORY_FALLBACK_NAMES, INVENTORY_FALLBACK_DESCRIPTIONS, INVENTORY_RARITY_NAMES, INVENTORY_CONSUMABLE_IDS)
-		button.use_requested.connect(func(requested_id: String) -> void: inventory_use_requested.emit(requested_id))
-		button.compare_requested.connect(func(requested_id: String) -> void: _show_equipment_comparison(player, requested_id))
-		inventory_list.add_child(button)
+	inventory_view.populate(player, inventory_filter_index, inventory_sort_index, INVENTORY_PREFERRED_ORDER, INVENTORY_FALLBACK_NAMES, INVENTORY_FALLBACK_DESCRIPTIONS, INVENTORY_RARITY_NAMES, INVENTORY_CONSUMABLE_IDS)
 
 func update_status(player: PlayerCharacter, quests: QuestManager) -> void:
 	status_label.text = "УР. %d   HP %d/%d   МАНА %d/%d   ЗОЛОТО %d" % [

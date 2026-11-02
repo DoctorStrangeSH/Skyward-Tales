@@ -3,6 +3,9 @@ class_name InventoryWindow
 
 signal filter_selected(index: int)
 signal sort_selected(index: int)
+signal use_requested(item_id: String)
+signal compare_requested(item_id: String)
+signal unequip_requested(slot: String)
 
 var equipment_list: VBoxContainer
 var item_list: VBoxContainer
@@ -61,3 +64,48 @@ func _label(value: String, font_size: int, color: Color) -> Label:
 	result.add_theme_color_override("font_color", color)
 	result.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return result
+
+func populate(player: PlayerCharacter, filter_index: int, sort_index: int, preferred_order: Array, fallback_names: Dictionary, fallback_descriptions: Dictionary, rarity_names: Dictionary, consumable_ids: Array) -> void:
+	for child in item_list.get_children():
+		item_list.remove_child(child)
+		child.queue_free()
+	for child in equipment_list.get_children():
+		equipment_list.remove_child(child)
+		child.queue_free()
+	var slots: Dictionary = {"weapon": "Оружие", "armor": "Броня", "amulet": "Амулет", "relic": "Реликвия"}
+	for slot in ["weapon", "armor", "amulet", "relic"]:
+		var equipped_item: String = str(player.equipment.get(slot, ""))
+		var slot_button := Button.new()
+		slot_button.text = "%s: %s" % [slots[slot], player.get_item_name(equipped_item) if not equipped_item.is_empty() else "Пусто"]
+		slot_button.disabled = equipped_item.is_empty()
+		slot_button.pressed.connect(func() -> void: unequip_requested.emit(slot))
+		equipment_list.add_child(slot_button)
+	var available_item_ids: Array[String] = []
+	for item_id in preferred_order:
+		if int(player.inventory.get(item_id, 0)) > 0:
+			available_item_ids.append(item_id)
+	var additional_item_ids: Array[String] = []
+	for key in player.inventory.keys():
+		var item_id: String = str(key)
+		if not preferred_order.has(item_id) and int(player.inventory.get(item_id, 0)) > 0:
+			additional_item_ids.append(item_id)
+	additional_item_ids.sort()
+	available_item_ids.append_array(additional_item_ids)
+	var item_ids: Array[String] = []
+	for item_id in available_item_ids:
+		var category_name: String = InventoryItemOrder.category(player, item_id, consumable_ids)
+		if filter_index == 1 and category_name != "equipment":
+			continue
+		if filter_index == 2 and category_name != "consumable":
+			continue
+		item_ids.append(item_id)
+	InventoryItemOrder.sort_items(player, item_ids, sort_index, fallback_names)
+	if item_ids.is_empty():
+		var empty_message: String = "Сумка пуста." if available_item_ids.is_empty() else "Нет предметов в этой категории."
+		item_list.add_child(_label(empty_message, 10, Color(0.78, 0.82, 0.85)))
+	for item_id in item_ids:
+		var button := InventoryItemButton.new()
+		button.configure(player, item_id, fallback_names, fallback_descriptions, rarity_names, consumable_ids)
+		button.use_requested.connect(func(requested_id: String) -> void: use_requested.emit(requested_id))
+		button.compare_requested.connect(func(requested_id: String) -> void: compare_requested.emit(requested_id))
+		item_list.add_child(button)
