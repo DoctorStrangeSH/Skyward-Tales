@@ -7,6 +7,7 @@ signal died
 
 const DIRECTIONAL_SPRITE_SCRIPT := preload("res://scripts/directional_sprite.gd")
 const HERO_SHEET := "res://assets/sprites/characters/hero_8dir_walk.png"
+const EQUIPMENT_DATA_PATH := "res://data/equipment.json"
 
 @export var move_speed: float = 92.0
 @export var max_health: int = 100
@@ -28,11 +29,13 @@ var dodge_time_left: float = 0.0
 var dodge_cooldown_left: float = 0.0
 var dodge_direction: Vector2 = Vector2.DOWN
 var inventory: Dictionary = {}
-var equipment: Dictionary = {"weapon": "", "armor": "", "amulet": ""}
+var equipment: Dictionary = {"weapon": "", "armor": "", "amulet": "", "relic": ""}
 var talents: Dictionary = {}
 var starlight_essence_used: int = 0
+var equipment_definitions: Dictionary = {}
 
 func _ready() -> void:
+	_load_equipment_definitions()
 	add_to_group("player")
 	health = max_health
 	mana = max_mana
@@ -116,17 +119,64 @@ func add_gold(amount: int) -> void:
 	gold += amount
 	stats_changed.emit()
 
+func _load_equipment_definitions() -> void:
+	var file := FileAccess.open(EQUIPMENT_DATA_PATH, FileAccess.READ)
+	if file == null:
+		push_error("Не удалось открыть каталог экипировки: " + EQUIPMENT_DATA_PATH)
+		return
+	var parsed: Variant = JSON.parse_string(file.get_as_text())
+	if parsed is Dictionary and parsed.get("items", {}) is Dictionary:
+		equipment_definitions = parsed["items"].duplicate(true)
+	else:
+		push_error("Некорректный каталог экипировки: " + EQUIPMENT_DATA_PATH)
+
+func get_item_definition(item_id: String) -> Dictionary:
+	var definition: Variant = equipment_definitions.get(item_id, {})
+	return definition if definition is Dictionary else {}
+
+func get_item_name(item_id: String) -> String:
+	return str(get_item_definition(item_id).get("name", item_id))
+
+func get_item_description(item_id: String) -> String:
+	return str(get_item_definition(item_id).get("description", ""))
+
+func _equipment_stat(item_id: String, stat: String) -> int:
+	return int(get_item_definition(item_id).get(stat, 0))
+
+func _equipped_stat(stat: String) -> int:
+	var total: int = 0
+	for item_id in equipment.values():
+		total += _equipment_stat(str(item_id), stat)
+	return total
+
 func get_armor() -> int:
-	return 4 if equipment.get("armor", "") == "leather_armor" else 0
+	return _equipped_stat("armor")
 
 func get_spell_bonus(spell_id: String = "") -> int:
-	var bonus: int = 5 if equipment.get("weapon", "") == "apprentice_staff" else 0
+	var bonus: int = 0
+	for item_id in equipment.values():
+		var spell_bonuses: Variant = get_item_definition(str(item_id)).get("spell_bonus", {})
+		if spell_bonuses is Dictionary:
+			bonus += int(spell_bonuses.get("*", 0))
+			bonus += int(spell_bonuses.get(spell_id, 0))
 	bonus += int(talents.get("arcane_power", 0)) * 3
 	if spell_id == "frostbolt":
 		bonus += int(talents.get("frost_lore", 0)) * 3
 	elif spell_id == "chain_lightning":
 		bonus += int(talents.get("storm_focus", 0)) * 3
 	return bonus
+
+func get_burn_damage_bonus() -> int:
+	return _equipped_stat("burn_damage_bonus")
+
+func get_slow_duration_bonus() -> float:
+	var total: float = 0.0
+	for item_id in equipment.values():
+		total += float(get_item_definition(str(item_id)).get("slow_duration_bonus", 0.0))
+	return total
+
+func get_chain_targets_bonus() -> int:
+	return _equipped_stat("chain_targets_bonus")
 
 func get_cooldown_multiplier() -> float:
 	return maxf(0.70, pow(0.92, float(talents.get("swift_cast", 0))))
@@ -151,35 +201,24 @@ func apply_talent(talent_id: String) -> bool:
 	return true
 
 func _slot_for_item(item_id: String) -> String:
-	match item_id:
-		"apprentice_staff":
-			return "weapon"
-		"leather_armor":
-			return "armor"
-		"mana_amulet":
-			return "amulet"
-	return ""
+	return str(get_item_definition(item_id).get("slot", ""))
 
 func equip_item(item_id: String) -> bool:
 	var slot: String = _slot_for_item(item_id)
-	if slot.is_empty() or int(inventory.get(item_id, 0)) <= 0:
+	if slot.is_empty() or not equipment.has(slot) or int(inventory.get(item_id, 0)) <= 0:
 		return false
 	if str(equipment.get(slot, "")) == item_id:
 		return false
 	var previous: String = str(equipment.get(slot, ""))
-	# Remove old equipment bonuses before installing replacement.
-	if slot == "amulet" and previous == "mana_amulet":
-		max_mana -= 20
-		mana = mini(mana, max_mana)
+	var mana_delta: int = _equipment_stat(item_id, "max_mana") - _equipment_stat(previous, "max_mana")
 	inventory[item_id] = int(inventory[item_id]) - 1
 	if int(inventory[item_id]) <= 0:
 		inventory.erase(item_id)
 	if not previous.is_empty():
 		inventory[previous] = int(inventory.get(previous, 0)) + 1
 	equipment[slot] = item_id
-	if slot == "amulet" and item_id == "mana_amulet":
-		max_mana += 20
-		mana = mini(max_mana, mana + 20)
+	max_mana = maxi(1, max_mana + mana_delta)
+	mana = clampi(mana + maxi(0, mana_delta), 0, max_mana)
 	stats_changed.emit()
 	return true
 
@@ -189,14 +228,13 @@ func unequip_slot(slot: String) -> bool:
 	var item_id: String = str(equipment[slot])
 	if item_id.is_empty():
 		return false
-	if slot == "amulet" and item_id == "mana_amulet":
-		max_mana -= 20
-		mana = mini(mana, max_mana)
 	equipment[slot] = ""
+	var mana_delta: int = _equipment_stat(item_id, "max_mana")
+	max_mana = maxi(1, max_mana - mana_delta)
+	mana = mini(mana, max_mana)
 	inventory[item_id] = int(inventory.get(item_id, 0)) + 1
 	stats_changed.emit()
 	return true
-
 func add_item(item_id: String, amount: int = 1) -> void:
 	if amount <= 0:
 		return

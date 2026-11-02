@@ -9,6 +9,10 @@ func _run() -> void:
 		push_error("RARITY TEST: reward thresholds")
 		quit(1)
 		return
+	if chest_script.roll_bonus(0.94)["item"] != "starlight_essence" or chest_script.roll_bonus(0.95)["item"] != "pyromancer_core" or chest_script.roll_bonus(0.97)["item"] != "frost_heart" or chest_script.roll_bonus(0.99)["item"] != "storm_eye":
+		push_error("RARITY TEST: rare item pool")
+		quit(1)
+		return
 	var game: Node2D = load("res://scenes/main.tscn").instantiate()
 	root.add_child(game)
 	await process_frame
@@ -23,7 +27,7 @@ func _run() -> void:
 		return
 	chest.rng.seed = 1234
 	chest.interact()
-	var bonus_count: int = int(game.player.inventory.get("health_potion", 0)) + int(game.player.inventory.get("mana_amulet", 0)) + int(game.player.inventory.get("starlight_essence", 0))
+	var bonus_count: int = int(game.player.inventory.get("health_potion", 0)) + int(game.player.inventory.get("mana_amulet", 0)) + int(game.player.inventory.get("starlight_essence", 0)) + int(game.player.inventory.get("pyromancer_core", 0)) + int(game.player.inventory.get("frost_heart", 0)) + int(game.player.inventory.get("storm_eye", 0))
 	if bonus_count != 3:
 		push_error("RARITY TEST: base loot and bonus not delivered")
 		quit(1)

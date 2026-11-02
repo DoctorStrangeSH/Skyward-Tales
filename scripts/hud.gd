@@ -320,29 +320,33 @@ func refresh_inventory(player: PlayerCharacter) -> void:
 	for child in equipment_list.get_children():
 		equipment_list.remove_child(child)
 		child.queue_free()
-	var slots: Dictionary = {"weapon": "Оружие", "armor": "Броня", "amulet": "Амулет"}
-	var gear_names: Dictionary = {"apprentice_staff": "Посох ученика", "leather_armor": "Кожаная броня", "mana_amulet": "Амулет маны", "ancient_relic": "Древний артефакт", "starlight_essence": "Звёздная эссенция"}
-	for slot in ["weapon", "armor", "amulet"]:
+	var slots: Dictionary = {"weapon": "Оружие", "armor": "Броня", "amulet": "Амулет", "relic": "Реликвия"}
+	for slot in ["weapon", "armor", "amulet", "relic"]:
 		var equipped_item: String = str(player.equipment.get(slot, ""))
 		var slot_button := Button.new()
-		slot_button.text = "%s: %s" % [slots[slot], gear_names.get(equipped_item, "Пусто")]
+		slot_button.text = "%s: %s" % [slots[slot], player.get_item_name(equipped_item) if not equipped_item.is_empty() else "Пусто"]
 		slot_button.disabled = equipped_item.is_empty()
 		slot_button.pressed.connect(func() -> void: inventory_unequip_requested.emit(slot))
 		equipment_list.add_child(slot_button)
-	var order: Array[String] = ["health_potion", "mana_potion", "apprentice_staff", "leather_armor", "mana_amulet", "ancient_relic", "starlight_essence"]
-	var names: Dictionary = {"health_potion": "Зелье здоровья", "mana_potion": "Зелье маны", "apprentice_staff": "Посох ученика", "leather_armor": "Кожаная броня", "mana_amulet": "Амулет маны", "ancient_relic": "Древний артефакт"}
-	var descriptions: Dictionary = {"health_potion": "+35 HP", "mana_potion": "+25 MP", "apprentice_staff": "+5 урона магией", "leather_armor": "-4 получаемого урона", "mana_amulet": "+20 макс. маны", "ancient_relic": "Трофей победы над хранителем", "starlight_essence": "Постоянно +5 к максимальной мане"}
+	var order: Array[String] = ["health_potion", "mana_potion", "apprentice_staff", "leather_armor", "mana_amulet", "pyromancer_core", "frost_heart", "storm_eye", "ancient_relic", "starlight_essence"]
+	var fallback_names: Dictionary = {"health_potion": "Зелье здоровья", "mana_potion": "Зелье маны", "ancient_relic": "Древний артефакт", "starlight_essence": "Звёздная эссенция"}
+	var fallback_descriptions: Dictionary = {"health_potion": "+35 HP", "mana_potion": "+25 MP", "ancient_relic": "Трофей победы над хранителем", "starlight_essence": "Постоянно +5 к максимальной мане"}
+	var rarity_names: Dictionary = {"common": "ОБЫЧНЫЙ", "uncommon": "НЕОБЫЧНЫЙ", "rare": "РЕДКИЙ"}
 	for item_id in order:
 		var count: int = int(player.inventory.get(item_id, 0))
 		var button := Button.new()
 		button.mouse_filter = Control.MOUSE_FILTER_STOP
 		var equipped: bool = item_id in player.equipment.values()
-		button.text = "%s ×%d — %s%s" % [names[item_id], count, descriptions[item_id], " [НАДЕТО]" if equipped else ""]
-		button.tooltip_text = "Нажмите, чтобы использовать."
+		var definition: Dictionary = player.get_item_definition(item_id)
+		var item_name: String = str(fallback_names.get(item_id, player.get_item_name(item_id)))
+		var description: String = str(fallback_descriptions.get(item_id, player.get_item_description(item_id)))
+		var rarity: String = str(definition.get("rarity", ""))
+		var rarity_label: String = " • " + str(rarity_names.get(rarity, rarity)).to_lower() if not rarity.is_empty() else ""
+		button.text = "%s ×%d — %s%s%s" % [item_name, count, description, rarity_label, " [НАДЕТО]" if equipped else ""]
+		button.tooltip_text = "Нажмите, чтобы экипировать или использовать."
 		button.disabled = count <= 0 or item_id == "ancient_relic"
 		button.pressed.connect(func() -> void: inventory_use_requested.emit(item_id))
 		inventory_list.add_child(button)
-
 func update_status(player: PlayerCharacter, quests: QuestManager) -> void:
 	status_label.text = "УР. %d   HP %d/%d   МАНА %d/%d   ЗОЛОТО %d" % [
 		player.level, player.health, player.max_health, player.mana, player.max_mana, player.gold

@@ -35,7 +35,7 @@ func _run() -> void:
 	if not _verify(game.hud.inventory_list != null, "inventory not ready"):
 		return
 	game.hud.toggle_inventory(hero)
-	if not _verify(game.hud.equipment_list.get_child_count() == 3, "equipment slots missing"):
+	if not _verify(game.hud.equipment_list.get_child_count() == 4, "equipment slots missing"):
 		return
 	game._on_inventory_unequip("weapon")
 	if not _verify(hero.get_spell_bonus() == 0 and int(hero.inventory.get("apprentice_staff", 0)) == 1, "staff unequip"):
@@ -43,5 +43,10 @@ func _run() -> void:
 	game._on_inventory_unequip("armor")
 	if not _verify(hero.get_armor() == 0, "armor unequip"):
 		return
-	print("UNEQUIP TEST OK: repeated amulet, max mana clamp, equipment slots")
+	hero.add_item("pyromancer_core")
+	if not _verify(hero.equip_item("pyromancer_core") and hero.get_burn_damage_bonus() == 1, "relic equip"):
+		return
+	if not _verify(hero.unequip_slot("relic") and hero.get_burn_damage_bonus() == 0 and int(hero.inventory.get("pyromancer_core", 0)) == 1, "relic unequip"):
+		return
+	print("UNEQUIP TEST OK: repeat amulet, max mana clamp, weapon/armor/relic slots")
 	quit(0)

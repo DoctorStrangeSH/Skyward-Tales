@@ -17,6 +17,8 @@ func _run() -> void:
 	game.save_path = "user://skyward_tales_ci_save.json"
 	game.player.add_item("mana_amulet")
 	game.player.equip_item("mana_amulet")
+	game.player.add_item("storm_eye")
+	game.player.equip_item("storm_eye")
 	game.player.add_item("health_potion", 3)
 	game.player.health = 47
 	game.player.mana = 31
@@ -45,7 +47,7 @@ func _run() -> void:
 		return
 	if not _require(hero.gold == 77 and int(hero.inventory.get("health_potion", 0)) == 3, "items and gold failed"):
 		return
-	if not _require(hero.equipment.get("amulet", "") == "mana_amulet", "equipped amulet failed"):
+	if not _require(hero.equipment.get("amulet", "") == "mana_amulet" and hero.equipment.get("relic", "") == "storm_eye" and hero.get_chain_targets_bonus() == 1, "equipped amulet failed"):
 		return
 	if not _require(hero.global_position.distance_to(Vector2(330,260)) < 0.01, "position failed"):
 		return

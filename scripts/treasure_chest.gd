@@ -27,13 +27,20 @@ func interact() -> void:
 	remove_from_group("interactables")
 
 static func roll_bonus(chance: float) -> Dictionary:
-	# One extra reward: 65% common, 28% uncommon, 7% rare.
+	# 65% common, 28% uncommon, 7% rare; rare tier is split between four finds.
 	var value: float = clampf(chance, 0.0, 0.999999)
 	if value < 0.65:
 		return {"item": "health_potion", "rarity": "common"}
 	if value < 0.93:
 		return {"item": "mana_amulet", "rarity": "uncommon"}
-	return {"item": "starlight_essence", "rarity": "rare"}
+	var rare_roll: float = (value - 0.93) / 0.07
+	if rare_roll < 0.25:
+		return {"item": "starlight_essence", "rarity": "rare"}
+	if rare_roll < 0.50:
+		return {"item": "pyromancer_core", "rarity": "rare"}
+	if rare_roll < 0.75:
+		return {"item": "frost_heart", "rarity": "rare"}
+	return {"item": "storm_eye", "rarity": "rare"}
 
 func _draw() -> void:
 	var wood := Color(0.34, 0.22, 0.13) if is_opened else Color(0.44, 0.27, 0.14)
