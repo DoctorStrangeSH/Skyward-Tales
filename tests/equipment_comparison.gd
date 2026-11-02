@@ -93,8 +93,16 @@ func _run() -> void:
 		return
 
 	var hud: GameHud = game.hud
-	hud._show_equipment_comparison(hero, "frost_heart")
-	if not _require(hud.comparison_panel.visible, "hover comparison panel did not become visible"):
+	hud.toggle_inventory(hero)
+	var frost_button: Button = null
+	for child in hud.inventory_list.get_children():
+		if child is Button and child.text.contains("Сердце ледника"):
+			frost_button = child
+			break
+	if not _require(frost_button != null, "relic candidate was not shown in inventory"):
+		return
+	frost_button.mouse_entered.emit()
+	if not _require(hud.comparison_panel.visible, "hovering an equipment item did not open comparison panel"):
 		return
 	var grid_text: String = ""
 	for child in hud.comparison_grid.get_children():
