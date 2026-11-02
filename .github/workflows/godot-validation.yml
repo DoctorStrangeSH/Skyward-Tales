@@ -101,6 +101,9 @@ jobs:
       - name: Test data-driven equipment catalog and inventory UI
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/equipment_data_driven.gd
+      - name: Test inventory window content population
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/inventory_window_population.gd
       - name: Test inventory window structure and control forwarding
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/inventory_window.gd
