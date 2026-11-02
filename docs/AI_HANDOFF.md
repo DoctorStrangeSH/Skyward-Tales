@@ -428,3 +428,11 @@ Equipment milestone verification: Godot 4.7.2 workflow run `41443674839` complet
 - `InventoryWindow.populate()` создаёт кнопки четырёх слотов, формирует упорядоченный список предметов с фильтрацией и добавляет `InventoryItemButton`. `GameHud.refresh_inventory()` оставлен как совместимая точка входа: сохраняет player, скрывает сравнение, делегирует populate.
 - Новые сигналы окна `use_requested`, `compare_requested`, `unequip_requested` пересылаются в существующие сигналы/методы GameHud. Поведение инвентаря, идентификаторы предметов, формат сохранений не менялись.
 - `tests/inventory_window_population.gd` — интеграционная проверка слотов, предметов, hover, фильтра. Остальные тесты не удалены. Исходный HEAD `96c252390d9c972d01b09917aa309592e7edb9dc`; следующий ИИ обязан сверить live HEAD и итог CI. Не сливать Draft PR #1.
+
+
+## 21. Компонент карты мира — 2026-11-02
+
+- Создан `scripts/world_map_panel.gd` (`WorldMapPanel extends PanelContainer`) — отвечает за визуальную структуру карты, виджет `WorldMinimap`, описание задания и метод `show_region()`.
+- `GameHud.open_world_map()` по-прежнему проверяет запрещающие состояния, устанавливает `world_map_visible` и паузу дерева; `close_world_map()` отменяет паузу. Сохранены алиасы `world_map_panel`, `world_map`, `world_map_quest`.
+- Добавлен тест `tests/world_map_panel.gd`, включён в CI: проверяет компонент, совместимость ссылок, надпись задания, открытие/закрытие и паузу. Текущая версия сохранений не менялась.
+- Исходный HEAD `5dc8eaf5d31e5a08f6bdec52e064da612d660a4b`. Следующий ИИ должен проверить актуальный HEAD, CI и PR #1; не сливать Draft до ручной проверки.
