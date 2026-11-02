@@ -31,6 +31,7 @@ var talent_definitions: Dictionary = {}
 var pending_level_choices: Array[int] = []
 var bestiary_entries: Dictionary = {}
 var discovered_enemies: Dictionary = {}
+var discovered_landmarks: Dictionary = {}
 
 func _ready() -> void:
 	_load_spell_definitions()
@@ -99,6 +100,7 @@ func _process(delta: float) -> void:
 		return
 	_update_spell_hud()
 	_discover_nearby_enemies()
+	_update_minimap()
 	hud.update_dodge(player.dodge_cooldown_left, player.dodge_cooldown, player.dodge_time_left > 0.0)
 	nearby_interactable = _find_nearest_interactable()
 	if hud.dialogue_visible or hud.inventory_open or hud.bestiary_visible:
@@ -108,6 +110,20 @@ func _process(delta: float) -> void:
 		hud.set_prompt(prompt)
 	else:
 		hud.set_prompt("WASD — ходьба   Shift — рывок   1/2/3 — магия   ЛКМ — каст   E — подбор   Q/R — зелья   K — бестиарий   F6/F9 — сейв/загрузка")
+
+func _update_minimap() -> void:
+	var region_markers: Dictionary = discovered_landmarks.get(current_region, {})
+	for actor in get_children():
+		if not (actor is WorldNpc or actor is RegionGate):
+			continue
+		if player.global_position.distance_squared_to(actor.global_position) > 150.0 * 150.0:
+			continue
+		var kind: String = "gate" if actor is RegionGate else "npc"
+		var marker_id: String = "%s_%d_%d" % [kind, int(actor.global_position.x), int(actor.global_position.y)]
+		if not region_markers.has(marker_id):
+			region_markers[marker_id] = {"position": [actor.global_position.x, actor.global_position.y], "kind": kind}
+	discovered_landmarks[current_region] = region_markers
+	hud.minimap.update_map(current_region, player.global_position, region_markers)
 
 func _discover_nearby_enemies() -> void:
 	for enemy in get_tree().get_nodes_in_group("enemies"):
@@ -561,7 +577,7 @@ func make_save_snapshot() -> Dictionary:
 			"talents": player.talents.duplicate(true)
 		},
 		"quest": {"states": quests.states.duplicate(true), "active": quests.active_quest_id},
-		"world": {"region": current_region, "enemies": alive_enemies, "herbs": herbs, "loot": loot_items, "defeated": defeated_enemies, "guardian_defeated": guardian_defeated, "discovered": discovered_enemies.duplicate(true)},
+		"world": {"region": current_region, "enemies": alive_enemies, "herbs": herbs, "loot": loot_items, "defeated": defeated_enemies, "guardian_defeated": guardian_defeated, "discovered": discovered_enemies.duplicate(true), "landmarks": discovered_landmarks.duplicate(true)},
 		"magic": selected_spell_id
 	}
 
@@ -613,6 +629,7 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 		return false
 	guardian_defeated = bool(world_data.get("guardian_defeated", false))
 	discovered_enemies = world_data.get("discovered", {}).duplicate(true)
+	discovered_landmarks = world_data.get("landmarks", {}).duplicate(true)
 	var saved_region: String = str(world_data.get("region", "greenreach"))
 	_set_region(saved_region, _read_position(character.get("position"), Vector2(130, 210)), false)
 	for quest_id in quest_data["states"]:
@@ -685,6 +702,7 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 	if hud.bestiary_visible:
 		hud.toggle_bestiary(bestiary_entries, discovered_enemies)
 	player.stats_changed.emit()
+	_update_minimap()
 	_refresh_hud()
 	hud.show_message("Прогресс загружен!", 2.0)
 	return true
