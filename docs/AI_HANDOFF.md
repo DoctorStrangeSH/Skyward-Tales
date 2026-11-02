@@ -436,3 +436,10 @@ Equipment milestone verification: Godot 4.7.2 workflow run `41443674839` complet
 - `GameHud.open_world_map()` по-прежнему проверяет запрещающие состояния, устанавливает `world_map_visible` и паузу дерева; `close_world_map()` отменяет паузу. Сохранены алиасы `world_map_panel`, `world_map`, `world_map_quest`.
 - Добавлен тест `tests/world_map_panel.gd`, включён в CI: проверяет компонент, совместимость ссылок, надпись задания, открытие/закрытие и паузу. Текущая версия сохранений не менялась.
 - Исходный HEAD `5dc8eaf5d31e5a08f6bdec52e064da612d660a4b`. Следующий ИИ должен проверить актуальный HEAD, CI и PR #1; не сливать Draft до ручной проверки.
+
+
+## 22. Выделен бестиарий — 2026-11-02
+
+- Создан `scripts/bestiary_panel.gd` (`BestiaryPanel extends PanelContainer`), который строит интерфейс и заполняет список скрытых/обнаруженных врагов через `populate()`.
+- `GameHud.toggle_bestiary()` сохраняет контракт и флаг `bestiary_visible`; поля `bestiary_panel` и `bestiary_list` остаются алиасами для существующих тестов и систем. Данные бестиария и сохранения не изменены.
+- `tests/bestiary_panel.gd` проверяет скрытие неизвестных врагов, детализацию обнаруженных и алиасы; прежний `tests/bestiary.gd` сохранён. Проверить Godot CI на новом HEAD; PR #1 сохранять Draft до ручной QA.

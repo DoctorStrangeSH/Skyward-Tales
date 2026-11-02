@@ -62,6 +62,9 @@ jobs:
       - name: Test minimap, landmark discovery and region travel
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/minimap.gd
+      - name: Test modular bestiary panel
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/bestiary_panel.gd
       - name: Test bestiary discovery and persistence
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/bestiary.gd
