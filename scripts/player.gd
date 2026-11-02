@@ -178,6 +178,73 @@ func get_slow_duration_bonus() -> float:
 func get_chain_targets_bonus() -> int:
 	return _equipped_stat("chain_targets_bonus")
 
+func _item_spell_bonus(item_id: String, spell_id: String) -> int:
+	var bonuses: Variant = get_item_definition(item_id).get("spell_bonus", {})
+	if not bonuses is Dictionary:
+		return 0
+	return int(bonuses.get("*", 0)) + int(bonuses.get(spell_id, 0))
+
+func _append_equipment_comparison_stat(stats: Array[Dictionary], label: String, before: float, after: float, unit: String = "") -> void:
+	if is_equal_approx(before, after):
+		return
+	stats.append({
+		"label": label,
+		"before": before,
+		"after": after,
+		"delta": after - before,
+		"unit": unit
+	})
+
+func get_equipment_comparison(item_id: String) -> Dictionary:
+	var candidate: Dictionary = get_item_definition(item_id)
+	var slot: String = str(candidate.get("slot", ""))
+	if slot.is_empty() or not equipment.has(slot):
+		return {}
+	var current_item_id: String = str(equipment.get(slot, ""))
+	var stats: Array[Dictionary] = []
+	var current_definition: Dictionary = get_item_definition(current_item_id)
+
+	_append_equipment_comparison_stat(
+		stats, "Броня", float(get_armor()),
+		float(get_armor() - int(current_definition.get("armor", 0)) + int(candidate.get("armor", 0)))
+	)
+	_append_equipment_comparison_stat(
+		stats, "Максимум маны", float(max_mana),
+		float(max_mana - int(current_definition.get("max_mana", 0)) + int(candidate.get("max_mana", 0)))
+	)
+	for spell_data in [
+		{"id": "fireball", "label": "Огненный шар"},
+		{"id": "frostbolt", "label": "Ледяная стрела"},
+		{"id": "chain_lightning", "label": "Цепная молния"}
+	]:
+		var spell_id: String = str(spell_data["id"])
+		var before_damage: int = get_spell_bonus(spell_id)
+		var after_damage: int = before_damage - _item_spell_bonus(current_item_id, spell_id) + _item_spell_bonus(item_id, spell_id)
+		_append_equipment_comparison_stat(stats, str(spell_data["label"]), float(before_damage), float(after_damage), " урона")
+	_append_equipment_comparison_stat(
+		stats, "Урон горения", float(get_burn_damage_bonus()),
+		float(get_burn_damage_bonus() - int(current_definition.get("burn_damage_bonus", 0)) + int(candidate.get("burn_damage_bonus", 0))),
+		" за тик"
+	)
+	_append_equipment_comparison_stat(
+		stats, "Длительность замедления", get_slow_duration_bonus(),
+		get_slow_duration_bonus() - float(current_definition.get("slow_duration_bonus", 0.0)) + float(candidate.get("slow_duration_bonus", 0.0)),
+		" с"
+	)
+	_append_equipment_comparison_stat(
+		stats, "Прыжки молнии", float(get_chain_targets_bonus()),
+		float(get_chain_targets_bonus() - int(current_definition.get("chain_targets_bonus", 0)) + int(candidate.get("chain_targets_bonus", 0)))
+	)
+	return {
+		"slot": slot,
+		"current_item_id": current_item_id,
+		"candidate_item_id": item_id,
+		"current_name": get_item_name(current_item_id) if not current_item_id.is_empty() else "Пусто",
+		"candidate_name": get_item_name(item_id),
+		"description": get_item_description(item_id),
+		"stats": stats
+	}
+
 func get_cooldown_multiplier() -> float:
 	return maxf(0.70, pow(0.92, float(talents.get("swift_cast", 0))))
 
