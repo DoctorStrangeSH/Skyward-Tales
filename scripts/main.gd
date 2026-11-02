@@ -691,10 +691,10 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 	player.mana = clampi(int(character.get("mana", player.max_mana)), 0, player.max_mana)
 	player.inventory = character["inventory"].duplicate(true)
 	player.equipment = {"weapon": "", "armor": "", "amulet": "", "relic": ""}
-for slot in player.equipment.keys():
-	var saved_item: String = str(character["equipment"].get(slot, ""))
-	if not saved_item.is_empty() and player._slot_for_item(saved_item) == str(slot):
-		player.equipment[slot] = saved_item
+	for slot in player.equipment.keys():
+		var saved_item: String = str(character["equipment"].get(slot, ""))
+		if not saved_item.is_empty() and player._slot_for_item(saved_item) == str(slot):
+			player.equipment[slot] = saved_item
 	player.talents = character.get("talents", {}).duplicate(true)
 	player.starlight_essence_used = maxi(0, int(character.get("starlight_essence_used", 0)))
 	pending_level_choices.clear()
