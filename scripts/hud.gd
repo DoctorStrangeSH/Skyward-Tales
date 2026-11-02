@@ -37,6 +37,10 @@ var bestiary_panel: PanelContainer
 var bestiary_list: VBoxContainer
 var bestiary_visible: bool = false
 var minimap: WorldMinimap
+var world_map_panel: PanelContainer
+var world_map: WorldMinimap
+var world_map_quest: Label
+var world_map_visible: bool = false
 var message_time: float = 0.0
 var dialogue_visible: bool = false
 
@@ -64,6 +68,28 @@ func _ready() -> void:
 	minimap = preload("res://scripts/world_minimap.gd").new() as WorldMinimap
 	minimap.position = Vector2(498, 8)
 	root.add_child(minimap)
+
+	world_map_panel = PanelContainer.new()
+	world_map_panel.position = Vector2(94, 7)
+	world_map_panel.custom_minimum_size = Vector2(452, 345)
+	world_map_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	world_map_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.04, 0.055, 0.075, 0.99)))
+	root.add_child(world_map_panel)
+	var map_box := VBoxContainer.new()
+	map_box.add_theme_constant_override("separation", 7)
+	world_map_panel.add_child(map_box)
+	map_box.add_child(_make_label("КАРТА РЕГИОНА — [M закрыть]", 15, Color(0.99, 0.87, 0.58)))
+	var map_canvas := Control.new()
+	map_canvas.custom_minimum_size = Vector2(428, 268)
+	map_box.add_child(map_canvas)
+	world_map = preload("res://scripts/world_minimap.gd").new() as WorldMinimap
+	world_map.position = Vector2(42, 3)
+	world_map.scale = Vector2(2.4, 2.4)
+	map_canvas.add_child(world_map)
+	world_map_quest = _make_label("Задание: исследуйте мир.", 10, Color(0.83, 0.89, 0.91))
+	world_map_quest.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	map_box.add_child(world_map_quest)
+	world_map_panel.visible = false
 
 	# Compact battle information, without introducing mouse-blocking controls.
 	var spell_panel := PanelContainer.new()
@@ -239,6 +265,11 @@ func _process(delta: float) -> void:
 			message_label.text = ""
 
 func _unhandled_input(event: InputEvent) -> void:
+	if world_map_visible:
+		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_M:
+			close_world_map()
+			get_viewport().set_input_as_handled()
+		return
 	if defeat_visible or talent_visible or bestiary_visible:
 		return
 	if event.is_action_pressed("pause"):
@@ -257,6 +288,22 @@ func _set_paused(paused: bool) -> void:
 		return
 	get_tree().paused = paused
 	pause_panel.visible = paused
+
+func open_world_map(region: String, hero: Vector2, landmarks: Dictionary, quest: String) -> void:
+	if world_map_visible or defeat_visible or talent_visible:
+		return
+	world_map.update_map(region, hero, landmarks)
+	world_map_quest.text = "ЗАДАНИЕ: " + quest
+	world_map_visible = true
+	world_map_panel.visible = true
+	get_tree().paused = true
+
+func close_world_map() -> void:
+	if not world_map_visible:
+		return
+	world_map_visible = false
+	world_map_panel.visible = false
+	get_tree().paused = false
 
 func toggle_inventory(player: PlayerCharacter) -> void:
 	inventory_open = not inventory_open
@@ -371,6 +418,8 @@ func hide_talent_choices() -> void:
 
 func show_defeat(can_load: bool) -> void:
 	defeat_visible = true
+	if world_map_visible:
+		close_world_map()
 	if bestiary_visible:
 		bestiary_panel.visible = false
 		bestiary_visible = false

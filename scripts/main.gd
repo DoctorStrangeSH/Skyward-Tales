@@ -103,13 +103,13 @@ func _process(delta: float) -> void:
 	_update_minimap()
 	hud.update_dodge(player.dodge_cooldown_left, player.dodge_cooldown, player.dodge_time_left > 0.0)
 	nearby_interactable = _find_nearest_interactable()
-	if hud.dialogue_visible or hud.inventory_open or hud.bestiary_visible:
+	if hud.dialogue_visible or hud.inventory_open or hud.bestiary_visible or hud.world_map_visible:
 		hud.set_prompt("")
 	elif nearby_interactable != null:
 		var prompt := "E — поговорить" if nearby_interactable is WorldNpc else ("E — перейти" if nearby_interactable is RegionGate else ("E — подобрать" if nearby_interactable is WorldLoot else "E — собрать"))
 		hud.set_prompt(prompt)
 	else:
-		hud.set_prompt("WASD — ходьба   Shift — рывок   1/2/3 — магия   ЛКМ — каст   E — подбор   Q/R — зелья   K — бестиарий   F6/F9 — сейв/загрузка")
+		hud.set_prompt("WASD — ходьба   Shift — рывок   1/2/3 — магия   ЛКМ — каст   E — подбор   Q/R — зелья   K — бестиарий   M — карта   F6/F9 — сейв/загрузка")
 
 func _update_minimap() -> void:
 	var region_markers: Dictionary = discovered_landmarks.get(current_region, {})
@@ -149,6 +149,15 @@ func _input(event: InputEvent) -> void:
 	if game_over or (hud != null and (hud.talent_visible or hud.defeat_visible)):
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_M and not get_tree().paused and not hud.dialogue_visible:
+			if hud.inventory_open:
+				hud.toggle_inventory(player)
+			if hud.bestiary_visible:
+				hud.toggle_bestiary(bestiary_entries, discovered_enemies)
+			_update_minimap()
+			hud.open_world_map(current_region, player.global_position, discovered_landmarks.get(current_region, {}), quests.get_active_summary())
+			get_viewport().set_input_as_handled()
+			return
 		if event.keycode == KEY_K and not get_tree().paused and not hud.dialogue_visible:
 			if hud.inventory_open:
 				hud.toggle_inventory(player)
