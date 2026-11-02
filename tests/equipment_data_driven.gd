@@ -36,14 +36,16 @@ func _run() -> void:
 		return
 	if not _require(hero.get_spell_bonus("fireball") == 2, "new catalog item bonus was not applied"):
 		return
-	if not _require(game.hud.inventory_list.get_child_count() == 1 and game.hud.inventory_list.get_child(0).text == "Сумка пуста.", "inventory did not refresh after equip"):
+	var empty_label: Label = game.hud.inventory_list.get_child(0) as Label
+	if not _require(game.hud.inventory_list.get_child_count() == 1 and empty_label != null and empty_label.text == "Сумка пуста.", "inventory did not refresh after equip"):
 		return
 	game._on_inventory_unequip("relic")
 	if not _require(str(hero.equipment.get("relic", "")).is_empty(), "new catalog item was not unequipped"):
 		return
 	if not _require(int(hero.inventory.get("test_focus", 0)) == 1, "unequipped item was not returned"):
 		return
-	if not _require(game.hud.inventory_list.get_child_count() == 1 and game.hud.inventory_list.get_child(0).text.contains("Фокус испытания"), "inventory did not refresh after unequip"):
+	var returned_item_button: Button = game.hud.inventory_list.get_child(0) as Button
+	if not _require(game.hud.inventory_list.get_child_count() == 1 and returned_item_button != null and returned_item_button.text.contains("Фокус испытания"), "inventory did not refresh after unequip"):
 		return
 	print("DATA-DRIVEN EQUIPMENT TEST OK: catalog discovery, equip, effect, unequip and UI refresh")
 	quit(0)
