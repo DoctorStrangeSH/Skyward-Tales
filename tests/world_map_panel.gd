@@ -24,10 +24,10 @@ func _run() -> void:
 	hud.open_world_map("greenfields", Vector2(25, 30), {}, "Найти тропу")
 	if not _require(hud.world_map_visible and hud.world_map_panel.visible and hud.world_map_quest.text == "ЗАДАНИЕ: Найти тропу", "map open/quest rendering broken"):
 		return
-	if not _require(get_tree().paused, "world did not pause when map opened"):
+	if not _require(game.get_tree().paused, "world did not pause when map opened"):
 		return
 	hud.close_world_map()
-	if not _require(not hud.world_map_visible and not hud.world_map_panel.visible and not get_tree().paused, "map close did not restore gameplay"):
+	if not _require(not hud.world_map_visible and not hud.world_map_panel.visible and not game.get_tree().paused, "map close did not restore gameplay"):
 		return
 	print("WORLD MAP PANEL OK: component, aliases, pause and quest label")
 	quit(0)
