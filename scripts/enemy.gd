@@ -6,6 +6,10 @@ signal defeated(xp_reward: int)
 const DIRECTIONAL_SPRITE_SCRIPT := preload("res://scripts/directional_sprite.gd")
 const FEEDBACK_SCRIPT := preload("res://scripts/enemy_combat_feedback.gd")
 const SLIME_SHEET := "res://assets/sprites/enemies/forest_slime_true8.png"
+const FIRESTORM_SPREAD_RADIUS := 64.0
+const FIRESTORM_SPREAD_DURATION := 1.0
+const FIRESTORM_REACTION_COOLDOWN := 0.75
+const FIRESTORM_BONUS_DAMAGE := 4
 
 @export var max_health: int = 32
 @export var move_speed: float = 38.0
@@ -19,6 +23,7 @@ var burn_time_left: float = 0.0
 var burn_tick_interval: float = 0.5
 var burn_tick_timer: float = 0.0
 var burn_damage: int = 0
+var firestorm_cooldown_left: float = 0.0
 var elemental_multipliers: Dictionary = {}
 var visual: DirectionalSprite
 var combat_feedback: EnemyCombatFeedback
@@ -247,6 +252,7 @@ func apply_burning(damage_per_tick: int, duration: float) -> void:
 	_refresh_elemental_feedback()
 
 func _update_burning(delta: float) -> void:
+	firestorm_cooldown_left = maxf(0.0, firestorm_cooldown_left - maxf(delta, 0.0))
 	if burn_time_left <= 0.0 or health <= 0:
 		return
 	var elapsed: float = minf(maxf(delta, 0.0), burn_time_left)
@@ -262,8 +268,23 @@ func _update_burning(delta: float) -> void:
 		burn_tick_timer = 0.0
 	_refresh_elemental_feedback()
 
+func _spread_firestorm_burning(damage_per_tick: int, duration: float) -> void:
+	if damage_per_tick <= 0 or duration <= 0.0:
+		return
+	var radius_squared: float = FIRESTORM_SPREAD_RADIUS * FIRESTORM_SPREAD_RADIUS
+	for candidate in get_tree().get_nodes_in_group("enemies"):
+		var nearby := candidate as Node2D
+		if nearby == null or nearby == self or nearby.is_queued_for_deletion():
+			continue
+		if not nearby.has_method("apply_burning"):
+			continue
+		if global_position.distance_squared_to(nearby.global_position) > radius_squared:
+			continue
+		nearby.apply_burning(damage_per_tick, duration)
+
 func react_to_spell(spell_id: String) -> int:
-	# Consume existing statuses before applying the new spell's effect.
+	# Elemental reactions resolve after the direct hit and before the next status is applied.
+	var bonus_damage: int = 0
 	if spell_id == "frostbolt" and burn_time_left > 0.0:
 		burn_time_left = 0.0
 		burn_tick_timer = 0.0
@@ -271,17 +292,30 @@ func react_to_spell(spell_id: String) -> int:
 		if combat_feedback != null:
 			combat_feedback.show_reaction("ПАР!")
 		take_elemental_damage(8, "ice")
+		bonus_damage += 8
+
+	if spell_id == "chain_lightning":
+		if slow_time_left > 0.0:
+			slow_time_left = 0.0
+			slow_factor = 1.0
+			if combat_feedback != null:
+				combat_feedback.show_reaction("РАЗРЯД!")
+			take_elemental_damage(6, "lightning")
+			bonus_damage += 6
+		if health > 0 and burn_time_left > 0.0 and firestorm_cooldown_left <= 0.0:
+			# Firestorm keeps the original burn on its source, but spreads a weaker version.
+			var spread_damage: int = maxi(1, int(ceil(float(burn_damage) * 0.5)))
+			var spread_duration: float = minf(burn_time_left, FIRESTORM_SPREAD_DURATION)
+			firestorm_cooldown_left = FIRESTORM_REACTION_COOLDOWN
+			_spread_firestorm_burning(spread_damage, spread_duration)
+			if combat_feedback != null:
+				combat_feedback.show_reaction("ОГНЕННАЯ БУРЯ!")
+			take_elemental_damage(FIRESTORM_BONUS_DAMAGE, "lightning")
+			bonus_damage += FIRESTORM_BONUS_DAMAGE
+
+	if bonus_damage > 0:
 		_refresh_elemental_feedback()
-		return 8
-	if spell_id == "chain_lightning" and slow_time_left > 0.0:
-		slow_time_left = 0.0
-		slow_factor = 1.0
-		if combat_feedback != null:
-			combat_feedback.show_reaction("РАЗРЯД!")
-		take_elemental_damage(6, "lightning")
-		_refresh_elemental_feedback()
-		return 6
-	return 0
+	return bonus_damage
 
 func apply_slow(multiplier: float, duration: float) -> void:
 	slow_factor = minf(slow_factor, clampf(multiplier, 0.1, 1.0))
