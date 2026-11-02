@@ -24,6 +24,11 @@ var equipment_list: VBoxContainer
 var inventory_filter: OptionButton
 var inventory_sort: OptionButton
 var inventory_player: PlayerCharacter
+var comparison_panel: PanelContainer
+var comparison_title: Label
+var comparison_subtitle: Label
+var comparison_grid: GridContainer
+var comparison_description: Label
 var inventory_filter_index: int = 0
 var inventory_sort_index: int = 0
 var inventory_open: bool = false
@@ -161,8 +166,8 @@ func _ready() -> void:
 
 	# Interactive panel only intercepts clicks while opened.
 	inventory_panel = PanelContainer.new()
-	inventory_panel.position = Vector2(190, 30)
-	inventory_panel.custom_minimum_size = Vector2(275, 300)
+	inventory_panel.position = Vector2(8, 30)
+	inventory_panel.custom_minimum_size = Vector2(286, 300)
 	inventory_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	inventory_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.045, 0.06, 0.09, 0.97)))
 	root.add_child(inventory_panel)
@@ -201,6 +206,32 @@ func _ready() -> void:
 	inventory_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	inventory_scroll.add_child(inventory_list)
 	inventory_panel.visible = false
+
+	comparison_panel = PanelContainer.new()
+	comparison_panel.position = Vector2(300, 30)
+	comparison_panel.custom_minimum_size = Vector2(330, 300)
+	comparison_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	comparison_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.035, 0.055, 0.085, 0.98)))
+	root.add_child(comparison_panel)
+	var comparison_box := VBoxContainer.new()
+	comparison_box.add_theme_constant_override("separation", 7)
+	comparison_panel.add_child(comparison_box)
+	comparison_title = _make_label("СРАВНЕНИЕ ЭКИПИРОВКИ", 12, Color(1.0, 0.87, 0.57))
+	comparison_box.add_child(comparison_title)
+	comparison_subtitle = _make_label("Наведите курсор на предмет слева.", 10, Color(0.82, 0.87, 0.9))
+	comparison_subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	comparison_box.add_child(comparison_subtitle)
+	comparison_grid = GridContainer.new()
+	comparison_grid.columns = 3
+	comparison_grid.add_theme_constant_override("h_separation", 8)
+	comparison_grid.add_theme_constant_override("v_separation", 5)
+	comparison_box.add_child(comparison_grid)
+	comparison_description = _make_label("", 10, Color(0.78, 0.85, 0.9))
+	comparison_description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	comparison_box.add_child(comparison_description)
+	var comparison_hint := _make_label("Зелёный — улучшение   Красный — ухудшение", 9, Color(0.69, 0.75, 0.8))
+	comparison_box.add_child(comparison_hint)
+	comparison_panel.visible = false
 
 	pause_panel = PanelContainer.new()
 	pause_panel.position = Vector2(200, 65)
@@ -345,8 +376,70 @@ func close_world_map() -> void:
 func toggle_inventory(player: PlayerCharacter) -> void:
 	inventory_open = not inventory_open
 	inventory_panel.visible = inventory_open
+	if not inventory_open and comparison_panel != null:
+		comparison_panel.visible = false
 	if inventory_open:
 		refresh_inventory(player)
+
+func _format_comparison_value(value: float, unit: String) -> String:
+	if unit == " с":
+		return "%.2f%s" % [value, unit]
+	return "%d%s" % [roundi(value), unit]
+
+func _format_comparison_delta(value: float, unit: String) -> String:
+	var sign: String = "+" if value > 0.0 else ""
+	if unit == " с":
+		return "%s%.2f%s" % [sign, value, unit]
+	return "%s%d%s" % [sign, roundi(value), unit]
+
+func _comparison_label(text_value: String, color: Color, font_size: int = 9) -> Label:
+	var label := _make_label(text_value, font_size, color)
+	label.custom_minimum_size.x = 82
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	return label
+
+func _show_equipment_comparison(player: PlayerCharacter, item_id: String) -> void:
+	if comparison_panel == null:
+		return
+	var comparison: Dictionary = player.get_equipment_comparison(item_id)
+	if comparison.is_empty():
+		comparison_panel.visible = false
+		return
+	comparison_panel.visible = true
+	comparison_title.text = "СРАВНЕНИЕ: " + str(comparison.get("candidate_name", item_id))
+	var slot_names: Dictionary = {"weapon": "Оружие", "armor": "Броня", "amulet": "Амулет", "relic": "Реликвия"}
+	var current_item_id: String = str(comparison.get("current_item_id", ""))
+	var current_name: String = str(comparison.get("current_name", "Пусто"))
+	comparison_subtitle.text = "%s  •  Сейчас: %s  →  Новый предмет: %s" % [
+		str(slot_names.get(str(comparison.get("slot", "")), "Экипировка")),
+		current_name,
+		str(comparison.get("candidate_name", item_id))
+	]
+	for child in comparison_grid.get_children():
+		comparison_grid.remove_child(child)
+		child.queue_free()
+	comparison_grid.add_child(_comparison_label("Характеристика", Color(0.82, 0.86, 0.9), 8))
+	comparison_grid.add_child(_comparison_label("Сейчас", Color(0.82, 0.86, 0.9), 8))
+	comparison_grid.add_child(_comparison_label("Будет", Color(0.82, 0.86, 0.9), 8))
+	var stats: Array = comparison.get("stats", [])
+	for stat in stats:
+		var label: String = str(stat.get("label", ""))
+		var unit: String = str(stat.get("unit", ""))
+		var before: float = float(stat.get("before", 0.0))
+		var after: float = float(stat.get("after", 0.0))
+		var delta: float = float(stat.get("delta", 0.0))
+		var delta_color: Color = Color(0.52, 0.91, 0.62) if delta > 0.0 else Color(1.0, 0.55, 0.49)
+		comparison_grid.add_child(_comparison_label(label, Color(0.88, 0.89, 0.86)))
+		comparison_grid.add_child(_comparison_label(_format_comparison_value(before, unit), Color(0.82, 0.85, 0.88)))
+		comparison_grid.add_child(_comparison_label("%s (%s)" % [_format_comparison_value(after, unit), _format_comparison_delta(delta, unit)], delta_color))
+	if stats.is_empty():
+		comparison_grid.add_child(_comparison_label("Изменения", Color(0.82, 0.86, 0.9)))
+		comparison_grid.add_child(_comparison_label("—", Color(0.82, 0.85, 0.88)))
+		comparison_grid.add_child(_comparison_label("Без изменений", Color(0.82, 0.85, 0.88)))
+	comparison_description.text = str(comparison.get("description", ""))
+	if current_item_id == item_id:
+		comparison_description.text = "Этот предмет уже надет."
+
 
 func _on_inventory_filter_selected(index: int) -> void:
 	inventory_filter_index = clampi(index, 0, 2)
@@ -397,6 +490,8 @@ func refresh_inventory(player: PlayerCharacter) -> void:
 	if inventory_list == null:
 		return
 	inventory_player = player
+	if comparison_panel != null:
+		comparison_panel.visible = false
 	for child in inventory_list.get_children():
 		inventory_list.remove_child(child)
 		child.queue_free()
@@ -450,6 +545,9 @@ func refresh_inventory(player: PlayerCharacter) -> void:
 		var action_hint: String = "Клик: экипировать" if can_equip else ("Клик: использовать" if can_consume else "Этот предмет нельзя использовать.")
 		button.text = "%s ×%d — %s%s%s" % [item_name, count, description, rarity_label, " [НАДЕТО]" if equipped else ""]
 		button.tooltip_text = (description + "\n" if not description.is_empty() else "") + action_hint
+		if can_equip:
+			button.tooltip_text += "\nНаведение: сравнить характеристики"
+			button.mouse_entered.connect(func() -> void: _show_equipment_comparison(player, item_id))
 		button.disabled = count <= 0 or not (can_equip or can_consume)
 		button.pressed.connect(func() -> void: inventory_use_requested.emit(item_id))
 		inventory_list.add_child(button)
