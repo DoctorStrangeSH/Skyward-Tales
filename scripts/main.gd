@@ -36,9 +36,10 @@ var discovered_landmarks: Dictionary = {}
 var opened_chests: Dictionary = {}
 
 func _ready() -> void:
-	_load_spell_definitions()
-	_load_talent_definitions()
-	_load_bestiary_entries()
+	var catalogs: GameCatalogs = GameCatalogs.new()
+	spell_definitions = catalogs.spells
+	talent_definitions = catalogs.talents
+	bestiary_entries = catalogs.bestiary
 	world = get_node("World") as Node2D
 	quests = QuestManager.new()
 	player = PLAYER_SCENE.instantiate() as PlayerCharacter
@@ -68,33 +69,6 @@ func _ready() -> void:
 	else:
 		hud.show_message("Добро пожаловать в Skyward Tales! Найдите старейшину.", 5.0)
 	_refresh_hud()
-
-func _load_bestiary_entries() -> void:
-	var file := FileAccess.open("res://data/bestiary.json", FileAccess.READ)
-	if file == null:
-		push_warning("Каталог бестиария не найден.")
-		return
-	var parsed: Variant = JSON.parse_string(file.get_as_text())
-	if parsed is Dictionary:
-		bestiary_entries = parsed
-
-func _load_talent_definitions() -> void:
-	var file := FileAccess.open("res://data/talents.json", FileAccess.READ)
-	if file == null:
-		push_warning("Каталог талантов не найден.")
-		return
-	var parsed: Variant = JSON.parse_string(file.get_as_text())
-	if parsed is Dictionary:
-		talent_definitions = parsed
-
-func _load_spell_definitions() -> void:
-	var file := FileAccess.open("res://data/spells.json", FileAccess.READ)
-	if file == null:
-		push_warning("Каталог заклинаний не найден — используются значения по умолчанию.")
-		return
-	var parsed = JSON.parse_string(file.get_as_text())
-	if parsed is Dictionary:
-		spell_definitions = parsed
 
 func _process(delta: float) -> void:
 	cast_cooldown_remaining = maxf(0.0, cast_cooldown_remaining - delta)
