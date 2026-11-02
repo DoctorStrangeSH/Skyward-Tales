@@ -30,6 +30,7 @@ var dodge_direction: Vector2 = Vector2.DOWN
 var inventory: Dictionary = {}
 var equipment: Dictionary = {"weapon": "", "armor": "", "amulet": ""}
 var talents: Dictionary = {}
+var starlight_essence_used: int = 0
 
 func _ready() -> void:
 	add_to_group("player")
@@ -210,6 +211,10 @@ func use_item(item_id: String) -> bool:
 			if health >= max_health:
 				return false
 			health = mini(max_health, health + 35)
+		"starlight_essence":
+			max_mana += 5
+			mana += 5
+			starlight_essence_used += 1
 		"mana_potion":
 			if mana >= max_mana:
 				return false

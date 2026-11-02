@@ -266,6 +266,7 @@ func _spawn_chest(id: String, at_position: Vector2, gold: int, item: String, amo
 	if chest.is_opened:
 		chest.remove_from_group("interactables")
 	chest.opened.connect(_on_chest_opened)
+	chest.bonus_found.connect(_on_chest_bonus)
 
 func _on_chest_opened(id: String, gold: int, item: String, amount: int) -> void:
 	if opened_chests.has(id):
@@ -275,6 +276,12 @@ func _on_chest_opened(id: String, gold: int, item: String, amount: int) -> void:
 	if not item.is_empty() and amount > 0:
 		player.add_item(item, amount)
 	hud.show_message("Тайник открыт! +%d золота, %s ×%d" % [gold, item, amount], 3.0)
+
+func _on_chest_bonus(item_id: String, rarity: String) -> void:
+	player.add_item(item_id)
+	var names: Dictionary = {"health_potion": "Зелье здоровья", "mana_amulet": "Амулет маны", "starlight_essence": "Звёздная эссенция"}
+	var rarities: Dictionary = {"common": "ОБЫЧНАЯ", "uncommon": "НЕОБЫЧНАЯ", "rare": "РЕДКАЯ"}
+	hud.show_message("%s НАХОДКА: %s!" % [str(rarities.get(rarity, rarity)), str(names.get(item_id, item_id))], 3.0)
 
 func _spawn_gate(target_region: String, gate_position: Vector2, arrival: Vector2, label: String) -> void:
 	var gate := GATE_SCRIPT.new() as RegionGate
@@ -458,7 +465,7 @@ func _on_inventory_use(item_id: String) -> void:
 		else:
 			hud.show_message("Невозможно экипировать.", 1.5)
 		return
-	var label: String = "Зелье здоровья" if item_id == "health_potion" else "Зелье маны"
+	var label: String = "Зелье здоровья" if item_id == "health_potion" else ("Звёздная эссенция" if item_id == "starlight_essence" else "Зелье маны")
 	_use_consumable(item_id, label)
 
 func _use_consumable(item_id: String, label: String) -> void:
@@ -611,7 +618,7 @@ func make_save_snapshot() -> Dictionary:
 			"gold": player.gold,
 			"inventory": player.inventory.duplicate(true),
 			"equipment": player.equipment.duplicate(true),
-			"talents": player.talents.duplicate(true)
+			"talents": player.talents.duplicate(true), "starlight_essence_used": player.starlight_essence_used
 		},
 		"quest": {"states": quests.states.duplicate(true), "active": quests.active_quest_id},
 		"world": {"region": current_region, "enemies": alive_enemies, "herbs": herbs, "loot": loot_items, "defeated": defeated_enemies, "guardian_defeated": guardian_defeated, "discovered": discovered_enemies.duplicate(true), "landmarks": discovered_landmarks.duplicate(true), "opened_chests": opened_chests.duplicate(true)},
@@ -685,6 +692,7 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 	player.inventory = character["inventory"].duplicate(true)
 	player.equipment = character["equipment"].duplicate(true)
 	player.talents = character.get("talents", {}).duplicate(true)
+	player.starlight_essence_used = maxi(0, int(character.get("starlight_essence_used", 0)))
 	pending_level_choices.clear()
 	if hud.talent_visible:
 		hud.hide_talent_choices()

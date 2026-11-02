@@ -321,7 +321,7 @@ func refresh_inventory(player: PlayerCharacter) -> void:
 		equipment_list.remove_child(child)
 		child.queue_free()
 	var slots: Dictionary = {"weapon": "Оружие", "armor": "Броня", "amulet": "Амулет"}
-	var gear_names: Dictionary = {"apprentice_staff": "Посох ученика", "leather_armor": "Кожаная броня", "mana_amulet": "Амулет маны", "ancient_relic": "Древний артефакт"}
+	var gear_names: Dictionary = {"apprentice_staff": "Посох ученика", "leather_armor": "Кожаная броня", "mana_amulet": "Амулет маны", "ancient_relic": "Древний артефакт", "starlight_essence": "Звёздная эссенция"}
 	for slot in ["weapon", "armor", "amulet"]:
 		var equipped_item: String = str(player.equipment.get(slot, ""))
 		var slot_button := Button.new()
@@ -329,9 +329,9 @@ func refresh_inventory(player: PlayerCharacter) -> void:
 		slot_button.disabled = equipped_item.is_empty()
 		slot_button.pressed.connect(func() -> void: inventory_unequip_requested.emit(slot))
 		equipment_list.add_child(slot_button)
-	var order: Array[String] = ["health_potion", "mana_potion", "apprentice_staff", "leather_armor", "mana_amulet", "ancient_relic"]
+	var order: Array[String] = ["health_potion", "mana_potion", "apprentice_staff", "leather_armor", "mana_amulet", "ancient_relic", "starlight_essence"]
 	var names: Dictionary = {"health_potion": "Зелье здоровья", "mana_potion": "Зелье маны", "apprentice_staff": "Посох ученика", "leather_armor": "Кожаная броня", "mana_amulet": "Амулет маны", "ancient_relic": "Древний артефакт"}
-	var descriptions: Dictionary = {"health_potion": "+35 HP", "mana_potion": "+25 MP", "apprentice_staff": "+5 урона магией", "leather_armor": "-4 получаемого урона", "mana_amulet": "+20 макс. маны", "ancient_relic": "Трофей победы над хранителем"}
+	var descriptions: Dictionary = {"health_potion": "+35 HP", "mana_potion": "+25 MP", "apprentice_staff": "+5 урона магией", "leather_armor": "-4 получаемого урона", "mana_amulet": "+20 макс. маны", "ancient_relic": "Трофей победы над хранителем", "starlight_essence": "Постоянно +5 к максимальной мане"}
 	for item_id in order:
 		var count: int = int(player.inventory.get(item_id, 0))
 		var button := Button.new()
