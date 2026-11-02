@@ -382,15 +382,10 @@ func toggle_inventory(player: PlayerCharacter) -> void:
 		refresh_inventory(player)
 
 func _format_comparison_value(value: float, unit: String) -> String:
-	if unit == " с":
-		return "%.2f%s" % [value, unit]
-	return "%d%s" % [roundi(value), unit]
+	return InventoryComparisonFormatter.value_text(value, unit)
 
 func _format_comparison_delta(value: float, unit: String) -> String:
-	var sign: String = "+" if value > 0.0 else ""
-	if unit == " с":
-		return "%s%.2f%s" % [sign, value, unit]
-	return "%s%d%s" % [sign, roundi(value), unit]
+	return InventoryComparisonFormatter.delta_text(value, unit)
 
 func _comparison_label(text_value: String, color: Color, font_size: int = 9) -> Label:
 	var label := _make_label(text_value, font_size, color)
