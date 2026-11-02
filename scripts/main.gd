@@ -279,7 +279,7 @@ func _on_chest_opened(id: String, gold: int, item: String, amount: int) -> void:
 
 func _on_chest_bonus(item_id: String, rarity: String) -> void:
 	player.add_item(item_id)
-	var names: Dictionary = {"health_potion": "Зелье здоровья", "mana_amulet": "Амулет маны", "starlight_essence": "Звёздная эссенция"}
+	var names: Dictionary = {"health_potion": "Зелье здоровья", "mana_amulet": "Амулет маны", "starlight_essence": "Звёздная эссенция", "pyromancer_core": "Сердце пироманта", "frost_heart": "Сердце ледника", "storm_eye": "Око бури"}
 	var rarities: Dictionary = {"common": "ОБЫЧНАЯ", "uncommon": "НЕОБЫЧНАЯ", "rare": "РЕДКАЯ"}
 	hud.show_message("%s НАХОДКА: %s!" % [str(rarities.get(rarity, rarity)), str(names.get(item_id, item_id))], 3.0)
 
@@ -459,7 +459,7 @@ func _on_inventory_unequip(slot: String) -> void:
 		hud.show_message("Экипировка снята.", 1.5)
 
 func _on_inventory_use(item_id: String) -> void:
-	if item_id in ["apprentice_staff", "leather_armor", "mana_amulet"] :
+	if item_id in ["apprentice_staff", "leather_armor", "mana_amulet", "pyromancer_core", "frost_heart", "storm_eye"] :
 		if player.equip_item(item_id):
 			hud.show_message("Предмет экипирован!", 1.5)
 		else:
@@ -552,9 +552,9 @@ func _cast_spell() -> void:
 		return
 	bolt.speed = float(spell.get("projectile_speed", 255))
 	bolt.setup(direction, spell_damage)
-	bolt.configure_effect(selected_spell_id, float(spell.get("slow_multiplier", 1.0)), float(spell.get("slow_duration", 0.0)))
-	bolt.configure_burning(int(spell.get("burn_damage", 0)), float(spell.get("burn_duration", 0.0)))
-	bolt.chain_targets = int(spell.get("chain_targets", 0))
+	bolt.configure_effect(selected_spell_id, float(spell.get("slow_multiplier", 1.0)), float(spell.get("slow_duration", 0.0)) + player.get_slow_duration_bonus())
+	bolt.configure_burning(int(spell.get("burn_damage", 0)) + player.get_burn_damage_bonus(), float(spell.get("burn_duration", 0.0)))
+	bolt.chain_targets = int(spell.get("chain_targets", 0)) + player.get_chain_targets_bonus()
 	bolt.chain_radius = float(spell.get("chain_radius", 0.0))
 	bolt.chain_damage_factor = float(spell.get("chain_damage_factor", 0.65))
 	add_child(bolt)
@@ -690,7 +690,11 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 	player.health = clampi(int(character.get("health", player.max_health)), 1, player.max_health)
 	player.mana = clampi(int(character.get("mana", player.max_mana)), 0, player.max_mana)
 	player.inventory = character["inventory"].duplicate(true)
-	player.equipment = character["equipment"].duplicate(true)
+	player.equipment = {"weapon": "", "armor": "", "amulet": "", "relic": ""}
+for slot in player.equipment.keys():
+	var saved_item: String = str(character["equipment"].get(slot, ""))
+	if not saved_item.is_empty() and player._slot_for_item(saved_item) == str(slot):
+		player.equipment[slot] = saved_item
 	player.talents = character.get("talents", {}).duplicate(true)
 	player.starlight_essence_used = maxi(0, int(character.get("starlight_essence_used", 0)))
 	pending_level_choices.clear()
