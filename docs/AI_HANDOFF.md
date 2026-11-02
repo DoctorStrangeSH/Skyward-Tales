@@ -311,7 +311,7 @@ Talent progression is implemented in commit `4eeaa5374ea5a6bc454b13558f48bf1e8d7
 Three rare relics are in the chest rare pool: `pyromancer_core` (+4 fireball damage, +1 burn tick), `frost_heart` (+4 frostbolt damage, +0.75s slow), `storm_eye` (+4 chain lightning damage, +1 chain target). The old `starlight_essence` remains in the rare pool and retains its permanent +5 max mana effect. The rare quality chance remains 7%, divided equally among the four rare rewards. HUD now shows four equipment slots and item names/descriptions/rarity. Save restore initializes all four slots and only copies known slot-compatible items, so old saves without `relic` remain compatible. Tests: `tests/equipment.gd`, `tests/equipment_unequip.gd`, `tests/save_load.gd`, `tests/loot_rarity.gd`.
 
 
-Equipment milestone verification: commit `1b699d1` plus indentation fix `bb851b2`; latest Godot 4.7.2 workflow run `41406683047` completed successfully (38/38 steps). Automated checks passed for rare reward pool, relic stat effects on projectiles, equip/replace/unequip, and save compatibility. Manual visual/balance QA remains with the player.
+Equipment milestone verification: Godot 4.7.2 workflow run `41443674839` completed successfully (39/39 steps). Automated checks passed for rare reward pool, relic stat effects on projectiles, data-driven catalog/UI, equip/replace/unequip, and save compatibility. Manual visual/balance QA remains with the player.
 
 
 ## 10. Система добычи, экипировки и артефактов — 2026-11-02
@@ -320,8 +320,9 @@ Equipment milestone verification: commit `1b699d1` plus indentation fix `bb851b2
 - Редкая вероятность 7% разделена поровну между starlight_essence, pyromancer_core, frost_heart и storm_eye. Звёздная эссенция навсегда увеличивает максимальную ману на 5; состояние использования сохраняется.
 - data/equipment.json — каталог экипировки. Слоты: weapon, armor, amulet, relic. Эффекты: общий/школьный урон, броня, максимальная мана, горение, длительность замедления и число прыжков молнии.
 - PlayerCharacter.equip_item() поддерживает замену и возврат предыдущего предмета в инвентарь; снятие экипировки возвращает предмет. Старые сохранения без слота relic совместимы.
-- Автотесты: tests/loot_rarity.gd, tests/equipment.gd, tests/equipment_unequip.gd, tests/save_load.gd. Последний подтверждённый CI — run 41406683047.
-- Выполнено в коммите f42f6eb: HUD показывает только предметы в сумке, распознаёт экипировку по slot из data/equipment.json, поддерживает новые catalog items без ручного списка ID в main.gd, прокручивает длинный список и обновляет его после экипировки/снятия. Регрессия покрыта tests/equipment_data_driven.gd. Следующее улучшение — сравнение предметов, сортировка/фильтры и расширение эффектов билдов.
+- Автотесты: tests/loot_rarity.gd, tests/equipment.gd, tests/equipment_unequip.gd, tests/equipment_data_driven.gd, tests/save_load.gd. Последний подтверждённый CI — run 41443674839 (39/39 шагов, success).
+- Выполнено в коммите f42f6eb: HUD показывает только предметы в сумке, распознаёт экипировку по slot из data/equipment.json, поддерживает новые catalog items без ручного списка ID в main.gd, прокручивает длинный список и обновляет его после экипировки/снятия. Регрессия покрыта tests/equipment_data_driven.gd.
+- Неиспользуемый scripts/sprite_archive.gd удалён в коммите 6296584 после проверки всех 54 GDScript-файлов, сцен и project.godot — ссылок не осталось. Следующее улучшение — сравнение предметов, сортировка/фильтры, каталог расходников и расширение эффектов билдов.
 
 ## 11. Правила продолжения
 
