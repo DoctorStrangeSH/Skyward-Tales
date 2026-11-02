@@ -397,3 +397,11 @@ Equipment milestone verification: Godot 4.7.2 workflow run `41443674839` complet
 - Методы `GameHud._inventory_item_category()`, `_inventory_item_name()`, `_inventory_rarity_rank()`, `_sort_inventory_items()` оставлены совместимыми обёртками. Сигналы, кнопки, визуальный порядок по умолчанию и игровая логика не изменены.
 - Создан `tests/inventory_item_order.gd`: категории, русские названия, сортировка по редкости, алфавиту и сохранение исходного порядка. CI запускает его дополнительно к старому `tests/inventory_filter_sort.gd`.
 - Исходный HEAD перед этим инкрементом: `aaf49f98e6afc1f774f10a66d318c73195dbfe09`. Перед следующей работой проверь live HEAD и CI. PR #1 не сливать до ручной проверки.
+
+
+## 17. Компонент списка предметов — 2026-11-02
+
+- Создан `scripts/inventory_item_button.gd` (`InventoryItemButton extends Button`), который формирует текст, подсказку, доступность и испускает `use_requested(item_id)` / `compare_requested(item_id)`.
+- `GameHud.refresh_inventory()` по-прежнему управляет составом списка, фильтрацией и сортировкой; теперь создаёт компоненты и пересылает их сигналы в существующие `inventory_use_requested` и `_show_equipment_comparison()`. Публичные сигналы GameHud и сохранения не менялись.
+- `tests/inventory_item_button.gd` проверяет создание компонента в HUD, русские подписи, подсказки, сигналы выбора и наведения. Добавлен шаг CI; сохраняются существующие тесты `inventory_filter_sort.gd` и `equipment_comparison.gd`.
+- Исходный HEAD для инкремента: `b5b229e27da31b29a6ce0a0907f3cc46d2597875`. После коммита получить live HEAD и проверить CI. Не сливать PR #1 без ручной QA.
