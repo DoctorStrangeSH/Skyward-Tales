@@ -133,10 +133,10 @@ CI не заменяет ручную проверку окна игры, UX, в
 ## 9. Текущий Git-контекст на 2026-11-02
 
 - Основная ветка: main; рабочая ветка: feat/godot-rpg-foundation.
-- Последний подтверждённый HEAD до текущего инкремента: a6a449f45e99478fd61e31f1efa701427e23768e. Новый функциональный коммит и CI необходимо записать после проверки; всегда получай live HEAD перед следующей работой.
-- На последнем сравнении рабочая ветка опережала main на 105 коммитов и не отставала (behind 0).
-- PR #1: “feat: playable Skyward Tales RPG foundation and progression”; открыт, Draft, mergeable=true; на последней проверке — 105 коммитов и 77 файлов. Не сливать до ручной проверки UX/баланса в оконном режиме и подтверждения владельца.
-- Последний подтверждённый CI до текущего инкремента: runs 41450203795 и 41450194240, оба success на Godot 4.7.2; новый тест синергии добавлен в `.github/workflows/godot-validation.yml`, дождаться нового run.
+- Последний функциональный коммит: `88ac4c08f30bc668fd2a259991bbd60e6044649a` — синергия «Огненная буря»; текущий документационный sync идёт следом. Перед следующей задачей обязательно получи live HEAD.
+- Рабочая ветка опережает main на 106 коммитов и не отстаёт (behind 0) на момент функционального коммита.
+- PR #1: “feat: playable Skyward Tales RPG foundation and progression”; открыт, Draft, mergeable=true; на момент функционального коммита — 106 коммитов и 78 файлов. Не сливать до ручной проверки UX/баланса в оконном режиме и подтверждения владельца.
+- Godot 4.7.2 CI на функциональном коммите `88ac4c0`: runs 41459686853 и 41459696357, оба success, все 42 job steps пройдены, включая `tests/elemental_synergies.gd`.
 - Неиспользуемый scripts/sprite_archive.gd удалён после проверки всех 54 GDScript-файлов, сцен и project.godot: ссылок не осталось.
 - Поиск issues не вернул открытых задач; PR #1 — единственный найденный pull request.
 - Не переписывать историю, не создавать второй PR для того же инкремента и не сливать Draft без ручного QA.
@@ -270,7 +270,11 @@ Talent progression is implemented in commit `4eeaa5374ea5a6bc454b13558f48bf1e8d7
 
 ## Elemental reactions
 
-`SlimeEnemy.react_to_spell(spell_id)` consumes a pre-existing status: `frostbolt` on burning enemy consumes burn and deals 8 bonus damage before a fresh slow is applied; `chain_lightning` on slowed enemy consumes slow and deals 6 extra damage. `MagicBolt` invokes it after direct hit on survivors and also on every lightning chain hop. No reaction should apply to already defeated enemies. `tests/elemental_reactions.gd` is added to CI. Manual VFX still needed.
+`SlimeEnemy.react_to_spell(spell_id)` consumes a pre-existing status: `frostbolt` on burning enemy consumes burn and deals 8 bonus damage before a fresh slow is applied; `chain_lightning` on slowed enemy consumes slow and deals 6 extra damage. `MagicBolt` invokes it after direct hit on survivors and also on every lightning chain hop. No reaction should apply to already defeated enemies. `tests/elemental_reactions.gd` is in CI.
+
+## Синергия «Огненная буря»
+
+`chain_lightning` hitting a burning enemy triggers a 4-point lightning bonus and spreads weakened burning to other living enemies within 64 px. Spread damage is half the source burn damage (rounded up), duration is at most 1 second, and the source keeps its original burn. A per-enemy 0.75-second cooldown prevents rapid repeat bursts. The reaction label is shown through `EnemyCombatFeedback`; `data/spells.json` documents the interaction. Test `tests/elemental_synergies.gd` covers projectile hit, bonus damage, source status preservation, radius, spread strength/duration, reaction feedback, cooldown and cooldown recovery. Godot 4.7.2 CI runs 41459686853 and 41459696357 both passed (42/42 job steps). Manual visual/balance QA is still required.
 
 
 ## Elemental status visuals
