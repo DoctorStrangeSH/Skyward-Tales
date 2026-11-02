@@ -74,6 +74,9 @@ jobs:
       - name: Test elemental steam and shock reactions
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/elemental_reactions.gd
+      - name: Test firestorm elemental synergy and burn spread
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/elemental_synergies.gd
       - name: Test ice magic and slow expiration
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/frost_magic.gd
