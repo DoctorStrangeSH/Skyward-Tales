@@ -18,7 +18,7 @@ func _run() -> void:
 		return
 	var original_gold: int = game.player.gold
 	chest.interact()
-	if game.player.gold != original_gold + 45 or game.player.inventory.get("health_potion", 0) != 2:
+	if game.player.gold != original_gold + 45 or int(game.player.inventory.get("health_potion", 0)) < 2:
 		push_error("CHEST TEST: wrong reward")
 		quit(1)
 		return

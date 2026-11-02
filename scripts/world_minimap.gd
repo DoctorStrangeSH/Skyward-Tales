@@ -29,7 +29,7 @@ func _draw() -> void:
 	draw_string(ThemeDB.fallback_font, Vector2(7, 16), name, HORIZONTAL_ALIGNMENT_LEFT, 126, 10, Color(0.92, 0.88, 0.64))
 	draw_rect(Rect2(Vector2(8, 25), MAP_SIZE), Color(0.11, 0.27, 0.23) if region_id == "moonlit_grove" else Color(0.18, 0.32, 0.19))
 	# Simple route silhouette, matching each region's general direction.
-	var route: Array[Vector2] = [Vector2(70, 205), Vector2(320, 245), Vector2(630, 255), Vector2(900, 205), Vector2(1120, 205)] if region_id == "greenreach" else [Vector2(40, 430), Vector2(330, 360), Vector2(650, 445), Vector2(960, 365), Vector2(1220, 365)]
+	var route: Array = [Vector2(70, 205), Vector2(320, 245), Vector2(630, 255), Vector2(900, 205), Vector2(1120, 205)] if region_id == "greenreach" else [Vector2(40, 430), Vector2(330, 360), Vector2(650, 445), Vector2(960, 365), Vector2(1220, 365)]
 	for i in range(route.size() - 1):
 		draw_line(_map_point(route[i]), _map_point(route[i + 1]), Color(0.57, 0.45, 0.29), 2.0)
 	for id in known_landmarks:
