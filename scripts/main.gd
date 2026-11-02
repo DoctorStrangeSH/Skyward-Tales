@@ -457,13 +457,16 @@ func _on_inventory_unequip(slot: String) -> void:
 		return
 	if player.unequip_slot(slot):
 		hud.show_message("Экипировка снята.", 1.5)
+		hud.refresh_inventory(player)
 
 func _on_inventory_use(item_id: String) -> void:
-	if item_id in ["apprentice_staff", "leather_armor", "mana_amulet", "pyromancer_core", "frost_heart", "storm_eye"] :
+	var definition: Dictionary = player.get_item_definition(item_id)
+	if not str(definition.get("slot", "")).is_empty():
 		if player.equip_item(item_id):
 			hud.show_message("Предмет экипирован!", 1.5)
 		else:
 			hud.show_message("Невозможно экипировать.", 1.5)
+		hud.refresh_inventory(player)
 		return
 	var label: String = "Зелье здоровья" if item_id == "health_potion" else ("Звёздная эссенция" if item_id == "starlight_essence" else "Зелье маны")
 	_use_consumable(item_id, label)
@@ -473,6 +476,7 @@ func _use_consumable(item_id: String, label: String) -> void:
 		return
 	if player.use_item(item_id):
 		hud.show_message("Использовано: " + label, 1.5)
+		hud.refresh_inventory(player)
 	else:
 		hud.show_message("Нет зелья или восстановление не требуется.", 1.5)
 
