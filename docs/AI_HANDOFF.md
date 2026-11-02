@@ -381,3 +381,11 @@ Equipment milestone verification: Godot 4.7.2 workflow run `41443674839` complet
 - Godot 4.7.2 CI на коммите `7273003c4b3e9cd46dfb8ef5b16a2f5f66a71a72`: runs 41470947947 и 41470957999 — оба success, 43/43 шага; `tests/game_catalogs.gd` прошёл.
 - Проверено, что все 36 файлов `tests/*.gd` включены в workflow ровно по одному разу; отсутствующих и лишних ссылок нет.
 - Не переводить quests/equipment на новый загрузчик без отдельного теста и обоснования.
+
+
+## 15. Безопасное выделение форматирования интерфейса — 2026-11-02
+
+- Создан `scripts/inventory_comparison_formatter.gd` (`InventoryComparisonFormatter`), чистые статические методы `value_text()` и `delta_text()`.
+- `GameHud._format_comparison_value()` и `_format_comparison_delta()` сохранены как совместимые обёртки. Формирование строк и логика округления не менялись; сигналы и структура UI не менялись.
+- Создан `tests/inventory_comparison_formatter.gd`, включён отдельным шагом CI. Проверяет числа, длительность, знаки и делегирование HUD.
+- Исходный HEAD до изменения `86a615d62c5fd59818d68ed343935a377d9eddbd`. Получить live HEAD и проверить текущий CI, затем записать результаты в handoff. Draft PR #1 не сливать без ручного QA.
