@@ -23,14 +23,15 @@ Use polished, readable fantasy pixel art with warm highlights, rich but controll
 Frames are read left-to-right within each direction row. This order is shared by `DirectionalSprite` and all directional sheets.
 
 ## Current sheets
-Hero and fireball PNGs are expected inside `assets/sprites/sprite_sheets.zip` and extracted at startup to `user://SkywardTales/sprites/` by `scripts/sprite_archive.gd`.
+The runtime uses three standalone PNG atlases committed directly to the repository. They are loaded through res://; there is no ZIP archive, startup extraction step, or sprite_archive.gd dependency.
 
-- `hero_8dir_walk.png` — 32×32 cells, 4 frames × 8 directions.
-- `assets/sprites/enemies/forest_slime_true8.png` — настоящий атлас PNG 32×32 × (4 кадра × 8 направлений), включая **вид сзади без лица**; подключён напрямую как `res://`.
-- Старый `forest_slime_8dir.png` в архиве — устаревшая версия, не использовать для новых врагов.
-- `fireball_8dir.png` — 32×32 cells, 4 flight frames × 8 directions.
+- assets/sprites/characters/hero_8dir_walk.png — hero walk, 32×32 cells, 4 frames × 8 directions.
+- assets/sprites/enemies/forest_slime_true8.png — slime movement with true rear and side views, 32×32 cells, 4 frames × 8 directions.
+- assets/sprites/magic/fireball_8dir.png — projectile flight, 32×32 cells, 4 frames × 8 directions.
 
-See `assets/sprites/asset_manifest.json` for machine-readable layout metadata.
+All three are runtime dependencies and must remain until replacement atlases are integrated and their references are migrated. Their current visual quality is explicitly rejected as final art; see the review note below.
+
+See assets/sprites/asset_manifest.json for machine-readable layout metadata.
 
 ## Runtime PNG paths and true eight views
 
