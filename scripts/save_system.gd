@@ -33,7 +33,26 @@ static func load_snapshot(path: String = SAVE_PATH) -> Dictionary:
 	if int(data.get("version", -1)) != VERSION:
 		push_warning("Несовместимая версия сохранения")
 		return {}
-	if not data.has("player") or not data.has("world") or not data.has("quest"):
-		push_warning("Неполное сохранение")
+	if not validate_snapshot(data):
+		push_warning("Неполное или повреждённое сохранение")
 		return {}
 	return data
+
+static func validate_snapshot(data: Dictionary) -> bool:
+	var character: Variant = data.get("player")
+	var quest_data: Variant = data.get("quest")
+	var world_data: Variant = data.get("world")
+	if not character is Dictionary or not quest_data is Dictionary or not world_data is Dictionary:
+		return false
+	var player_data: Dictionary = character
+	var quest_dictionary: Dictionary = quest_data
+	var world_dictionary: Dictionary = world_data
+	if not player_data.get("inventory") is Dictionary or not player_data.get("equipment") is Dictionary:
+		return false
+	if player_data.has("talents") and not player_data.get("talents") is Dictionary:
+		return false
+	if not quest_dictionary.get("states") is Dictionary:
+		return false
+	if not world_dictionary.get("enemies") is Array or not world_dictionary.get("herbs") is Array or not world_dictionary.get("loot") is Array:
+		return false
+	return true
