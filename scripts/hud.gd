@@ -1,6 +1,12 @@
 extends CanvasLayer
 class_name GameHud
 
+const INVENTORY_PREFERRED_ORDER := ["health_potion", "mana_potion", "apprentice_staff", "leather_armor", "mana_amulet", "pyromancer_core", "frost_heart", "storm_eye", "ancient_relic", "starlight_essence"]
+const INVENTORY_FALLBACK_NAMES := {"health_potion": "Зелье здоровья", "mana_potion": "Зелье маны", "ancient_relic": "Древний артефакт", "starlight_essence": "Звёздная эссенция"}
+const INVENTORY_FALLBACK_DESCRIPTIONS := {"health_potion": "+35 HP", "mana_potion": "+25 MP", "ancient_relic": "Трофей победы над хранителем", "starlight_essence": "Постоянно +5 к максимальной мане"}
+const INVENTORY_RARITY_NAMES := {"common": "ОБЫЧНЫЙ", "uncommon": "НЕОБЫЧНЫЙ", "rare": "РЕДКИЙ"}
+const INVENTORY_CONSUMABLE_IDS := ["health_potion", "mana_potion", "starlight_essence"]
+
 var status_label: Label
 var quest_label: Label
 var message_label: Label
@@ -15,6 +21,11 @@ var inventory_label: Label
 var inventory_panel: PanelContainer
 var inventory_list: VBoxContainer
 var equipment_list: VBoxContainer
+var inventory_filter: OptionButton
+var inventory_sort: OptionButton
+var inventory_player: PlayerCharacter
+var inventory_filter_index: int = 0
+var inventory_sort_index: int = 0
 var inventory_open: bool = false
 signal inventory_use_requested(item_id: String)
 signal inventory_unequip_requested(slot: String)
@@ -150,8 +161,8 @@ func _ready() -> void:
 
 	# Interactive panel only intercepts clicks while opened.
 	inventory_panel = PanelContainer.new()
-	inventory_panel.position = Vector2(190, 48)
-	inventory_panel.custom_minimum_size = Vector2(275, 260)
+	inventory_panel.position = Vector2(190, 30)
+	inventory_panel.custom_minimum_size = Vector2(275, 300)
 	inventory_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	inventory_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.045, 0.06, 0.09, 0.97)))
 	root.add_child(inventory_panel)
@@ -161,8 +172,29 @@ func _ready() -> void:
 	contents.add_child(_make_label("Экипировка (клик — снять)", 10, Color(0.91, 0.90, 0.75)))
 	equipment_list = VBoxContainer.new()
 	contents.add_child(equipment_list)
+	var inventory_controls := HBoxContainer.new()
+	inventory_controls.add_theme_constant_override("separation", 4)
+	contents.add_child(inventory_controls)
+	inventory_filter = OptionButton.new()
+	inventory_filter.custom_minimum_size = Vector2(118, 26)
+	inventory_filter.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	inventory_filter.add_item("Все предметы", 0)
+	inventory_filter.add_item("Экипировка", 1)
+	inventory_filter.add_item("Расходники", 2)
+	inventory_filter.tooltip_text = "Фильтр содержимого сумки"
+	inventory_filter.item_selected.connect(_on_inventory_filter_selected)
+	inventory_controls.add_child(inventory_filter)
+	inventory_sort = OptionButton.new()
+	inventory_sort.custom_minimum_size = Vector2(118, 26)
+	inventory_sort.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	inventory_sort.add_item("Порядок", 0)
+	inventory_sort.add_item("По названию", 1)
+	inventory_sort.add_item("По редкости", 2)
+	inventory_sort.tooltip_text = "Порядок отображения предметов"
+	inventory_sort.item_selected.connect(_on_inventory_sort_selected)
+	inventory_controls.add_child(inventory_sort)
 	var inventory_scroll := ScrollContainer.new()
-	inventory_scroll.custom_minimum_size = Vector2(250, 105)
+	inventory_scroll.custom_minimum_size = Vector2(250, 90)
 	inventory_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	contents.add_child(inventory_scroll)
 	inventory_list = VBoxContainer.new()
@@ -316,9 +348,55 @@ func toggle_inventory(player: PlayerCharacter) -> void:
 	if inventory_open:
 		refresh_inventory(player)
 
+func _on_inventory_filter_selected(index: int) -> void:
+	inventory_filter_index = clampi(index, 0, 2)
+	if inventory_open and inventory_player != null:
+		refresh_inventory(inventory_player)
+
+func _on_inventory_sort_selected(index: int) -> void:
+	inventory_sort_index = clampi(index, 0, 2)
+	if inventory_open and inventory_player != null:
+		refresh_inventory(inventory_player)
+
+func _inventory_item_category(player: PlayerCharacter, item_id: String) -> String:
+	if not str(player.get_item_definition(item_id).get("slot", "")).is_empty():
+		return "equipment"
+	if INVENTORY_CONSUMABLE_IDS.has(item_id):
+		return "consumable"
+	return "other"
+
+func _inventory_item_name(player: PlayerCharacter, item_id: String) -> String:
+	return str(INVENTORY_FALLBACK_NAMES.get(item_id, player.get_item_name(item_id)))
+
+func _inventory_rarity_rank(player: PlayerCharacter, item_id: String) -> int:
+	match str(player.get_item_definition(item_id).get("rarity", "")):
+		"rare":
+			return 3
+		"uncommon":
+			return 2
+		"common":
+			return 1
+		_:
+			return 0
+
+func _sort_inventory_items(player: PlayerCharacter, item_ids: Array[String]) -> void:
+	if inventory_sort_index == 1:
+		item_ids.sort_custom(func(a: String, b: String) -> bool:
+			return _inventory_item_name(player, a).to_lower() < _inventory_item_name(player, b).to_lower()
+		)
+	elif inventory_sort_index == 2:
+		item_ids.sort_custom(func(a: String, b: String) -> bool:
+			var rank_a: int = _inventory_rarity_rank(player, a)
+			var rank_b: int = _inventory_rarity_rank(player, b)
+			if rank_a != rank_b:
+				return rank_a > rank_b
+			return _inventory_item_name(player, a).to_lower() < _inventory_item_name(player, b).to_lower()
+		)
+
 func refresh_inventory(player: PlayerCharacter) -> void:
 	if inventory_list == null:
 		return
+	inventory_player = player
 	for child in inventory_list.get_children():
 		inventory_list.remove_child(child)
 		child.queue_free()
@@ -333,23 +411,29 @@ func refresh_inventory(player: PlayerCharacter) -> void:
 		slot_button.disabled = equipped_item.is_empty()
 		slot_button.pressed.connect(func() -> void: inventory_unequip_requested.emit(slot))
 		equipment_list.add_child(slot_button)
-	var preferred_order: Array[String] = ["health_potion", "mana_potion", "apprentice_staff", "leather_armor", "mana_amulet", "pyromancer_core", "frost_heart", "storm_eye", "ancient_relic", "starlight_essence"]
-	var fallback_names: Dictionary = {"health_potion": "Зелье здоровья", "mana_potion": "Зелье маны", "ancient_relic": "Древний артефакт", "starlight_essence": "Звёздная эссенция"}
-	var fallback_descriptions: Dictionary = {"health_potion": "+35 HP", "mana_potion": "+25 MP", "ancient_relic": "Трофей победы над хранителем", "starlight_essence": "Постоянно +5 к максимальной мане"}
-	var rarity_names: Dictionary = {"common": "ОБЫЧНЫЙ", "uncommon": "НЕОБЫЧНЫЙ", "rare": "РЕДКИЙ"}
-	var item_ids: Array[String] = []
-	for item_id in preferred_order:
+	var available_item_ids: Array[String] = []
+	for item_id in INVENTORY_PREFERRED_ORDER:
 		if int(player.inventory.get(item_id, 0)) > 0:
-			item_ids.append(item_id)
+			available_item_ids.append(item_id)
 	var additional_item_ids: Array[String] = []
 	for key in player.inventory.keys():
 		var item_id: String = str(key)
-		if not preferred_order.has(item_id) and int(player.inventory.get(item_id, 0)) > 0:
+		if not INVENTORY_PREFERRED_ORDER.has(item_id) and int(player.inventory.get(item_id, 0)) > 0:
 			additional_item_ids.append(item_id)
 	additional_item_ids.sort()
-	item_ids.append_array(additional_item_ids)
+	available_item_ids.append_array(additional_item_ids)
+	var item_ids: Array[String] = []
+	for item_id in available_item_ids:
+		var category: String = _inventory_item_category(player, item_id)
+		if inventory_filter_index == 1 and category != "equipment":
+			continue
+		if inventory_filter_index == 2 and category != "consumable":
+			continue
+		item_ids.append(item_id)
+	_sort_inventory_items(player, item_ids)
 	if item_ids.is_empty():
-		inventory_list.add_child(_make_label("Сумка пуста.", 10, Color(0.78, 0.82, 0.85)))
+		var empty_message: String = "Сумка пуста." if available_item_ids.is_empty() else "Нет предметов в этой категории."
+		inventory_list.add_child(_make_label(empty_message, 10, Color(0.78, 0.82, 0.85)))
 	for item_id in item_ids:
 		var count: int = int(player.inventory.get(item_id, 0))
 		var button := Button.new()
@@ -357,18 +441,19 @@ func refresh_inventory(player: PlayerCharacter) -> void:
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var equipped: bool = item_id in player.equipment.values()
 		var definition: Dictionary = player.get_item_definition(item_id)
-		var item_name: String = str(fallback_names.get(item_id, player.get_item_name(item_id)))
-		var description: String = str(fallback_descriptions.get(item_id, player.get_item_description(item_id)))
+		var item_name: String = _inventory_item_name(player, item_id)
+		var description: String = str(INVENTORY_FALLBACK_DESCRIPTIONS.get(item_id, player.get_item_description(item_id)))
 		var rarity: String = str(definition.get("rarity", ""))
-		var rarity_label: String = " • " + str(rarity_names.get(rarity, rarity)).to_lower() if not rarity.is_empty() else ""
+		var rarity_label: String = " • " + str(INVENTORY_RARITY_NAMES.get(rarity, rarity)).to_lower() if not rarity.is_empty() else ""
 		var can_equip: bool = not str(definition.get("slot", "")).is_empty()
-		var can_consume: bool = item_id in ["health_potion", "mana_potion", "starlight_essence"]
+		var can_consume: bool = INVENTORY_CONSUMABLE_IDS.has(item_id)
 		var action_hint: String = "Клик: экипировать" if can_equip else ("Клик: использовать" if can_consume else "Этот предмет нельзя использовать.")
 		button.text = "%s ×%d — %s%s%s" % [item_name, count, description, rarity_label, " [НАДЕТО]" if equipped else ""]
 		button.tooltip_text = (description + "\n" if not description.is_empty() else "") + action_hint
 		button.disabled = count <= 0 or not (can_equip or can_consume)
 		button.pressed.connect(func() -> void: inventory_use_requested.emit(item_id))
 		inventory_list.add_child(button)
+
 func update_status(player: PlayerCharacter, quests: QuestManager) -> void:
 	status_label.text = "УР. %d   HP %d/%d   МАНА %d/%d   ЗОЛОТО %d" % [
 		player.level, player.health, player.max_health, player.mana, player.max_mana, player.gold
