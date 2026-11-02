@@ -305,3 +305,8 @@ Talent progression is implemented in commit `4eeaa5374ea5a6bc454b13558f48bf1e8d7
 ## Treasure chests
 
 `TreasureChest` (`scripts/treasure_chest.gd`) is a simple interactable node with `opened` signal and one-shot state. `main.gd` defines four static chest placements and rewards in two regions; `opened_chests` persists in `world.opened_chests`, restored before `_set_region` repopulates actors; old saves default to unopened. Chest state is not encoded as world loot. `tests/treasure_chests.gd` covers one-time reward, save/restore and region transitions. Manual collision and visual placement QA pending.
+
+
+## Loot rarity
+
+`TreasureChest.roll_bonus(chance)` gives exactly one extra item on open: common 65% `health_potion`, uncommon 28% `mana_amulet`, rare 7% `starlight_essence`. Base chest loot is unchanged. `bonus_found(item_id,rarity)` event from chest is handled by `main.gd._on_chest_bonus` and inserts item into inventory. Existing `world.opened_chests` prevents reroll exploitation, even after loading/region changes. `PlayerCharacter.use_item('starlight_essence')` gives permanent +5 max mana; `starlight_essence_used` tracked in player save, and HUD inventory displays it. CI test `tests/loot_rarity.gd` covers chance ranges, one-time extra reward, save/restore and essence. Manual balancing pending.
