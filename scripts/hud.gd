@@ -49,6 +49,7 @@ var defeat_hint_label: Label
 var defeat_load_button: Button
 var defeat_visible: bool = false
 var talent_panel: PanelContainer
+var talent_view: TalentChoicePanel
 var talent_list: VBoxContainer
 var talent_visible: bool = false
 var bestiary_panel: PanelContainer
@@ -216,26 +217,11 @@ func _ready() -> void:
 	_pause_button(defeat_box, "Главное меню", func() -> void: defeat_menu_requested.emit())
 	defeat_panel.visible = false
 
-	talent_panel = PanelContainer.new()
-	talent_panel.position = Vector2(128, 35)
-	talent_panel.custom_minimum_size = Vector2(384, 290)
-	talent_panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	talent_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.035, 0.055, 0.085, 0.99)))
-	root.add_child(talent_panel)
-	var talent_box := VBoxContainer.new()
-	talent_box.add_theme_constant_override("separation", 8)
-	talent_panel.add_child(talent_box)
-	var talent_title := _make_label("НОВЫЙ УРОВЕНЬ — ВЫБЕРИТЕ ТАЛАНТ", 14, Color(1.0, 0.87, 0.58))
-	talent_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	talent_box.add_child(talent_title)
-	var talent_subtitle := _make_label("Выбор изменит ваш стиль игры. Каждый талант можно усилить до III ранга.", 10, Color(0.77, 0.83, 0.88))
-	talent_subtitle.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	talent_subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	talent_box.add_child(talent_subtitle)
-	talent_list = VBoxContainer.new()
-	talent_list.add_theme_constant_override("separation", 7)
-	talent_box.add_child(talent_list)
-	talent_panel.visible = false
+	talent_view = TalentChoicePanel.new()
+	root.add_child(talent_view)
+	talent_panel = talent_view
+	talent_list = talent_view.choice_list
+	talent_view.talent_chosen.connect(func(id: String) -> void: talent_selected.emit(id))
 
 	bestiary_view = BestiaryPanel.new()
 	root.add_child(bestiary_view)
@@ -390,23 +376,7 @@ func toggle_bestiary(entries: Dictionary, discovered: Dictionary) -> void:
 		bestiary_view.populate(entries, discovered)
 
 func show_talent_choices(choices: Array[Dictionary]) -> void:
-	for child in talent_list.get_children():
-		talent_list.remove_child(child)
-		child.queue_free()
-	for choice in choices:
-		var talent_id: String = str(choice.get("id", ""))
-		var rank: int = int(choice.get("rank", 0))
-		var entry := VBoxContainer.new()
-		var button := Button.new()
-		button.text = "%s   РАНГ %d → %d" % [str(choice.get("name", talent_id)), rank, rank + 1]
-		button.custom_minimum_size = Vector2(340, 34)
-		button.tooltip_text = str(choice.get("description", ""))
-		button.pressed.connect(func() -> void: talent_selected.emit(talent_id))
-		entry.add_child(button)
-		var description := _make_label(str(choice.get("description", "")), 9, Color(0.78, 0.84, 0.89))
-		description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		entry.add_child(description)
-		talent_list.add_child(entry)
+	talent_view.populate(choices)
 	talent_visible = true
 	talent_panel.visible = true
 

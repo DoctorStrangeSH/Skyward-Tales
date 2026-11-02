@@ -443,3 +443,11 @@ Equipment milestone verification: Godot 4.7.2 workflow run `41443674839` complet
 - Создан `scripts/bestiary_panel.gd` (`BestiaryPanel extends PanelContainer`), который строит интерфейс и заполняет список скрытых/обнаруженных врагов через `populate()`.
 - `GameHud.toggle_bestiary()` сохраняет контракт и флаг `bestiary_visible`; поля `bestiary_panel` и `bestiary_list` остаются алиасами для существующих тестов и систем. Данные бестиария и сохранения не изменены.
 - `tests/bestiary_panel.gd` проверяет скрытие неизвестных врагов, детализацию обнаруженных и алиасы; прежний `tests/bestiary.gd` сохранён. Проверить Godot CI на новом HEAD; PR #1 сохранять Draft до ручной QA.
+
+
+## 23. Отдельная панель выбора талантов — 2026-11-02
+
+- Создан `scripts/talent_choice_panel.gd` (`TalentChoicePanel extends PanelContainer`), отвечающий за создание и наполнение окна выбора талантов; внутренний сигнал `talent_chosen(id)` передаётся наружу через прежний `GameHud.talent_selected(id)`.
+- `GameHud.show_talent_choices()` и `hide_talent_choices()` сохраняют свои контракты; поля `talent_panel` и `talent_list` оставлены совместимыми алиасами.
+- `tests/talent_choice_panel.gd` проверяет структуру, ранги, подсказки, сигналы, открытие/закрытие. `tests/level_up_talents.gd` по-прежнему запускается в CI.
+- Последний проверенный CI перед этим изменением: run 41507791484, success, 51/51 шаг; исправление `tests/world_map_panel.gd` в commit `2766fad8701f67caeaf3548af48ee6dd9849febd`. Новый CI необходимо проверить отдельно. PR #1 сохранять Draft до ручного QA.
