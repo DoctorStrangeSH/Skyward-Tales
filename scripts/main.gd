@@ -9,6 +9,7 @@ const LOOT_SCRIPT := preload("res://scripts/loot.gd")
 const CHEST_SCRIPT := preload("res://scripts/treasure_chest.gd")
 const SAVE_SCRIPT := preload("res://scripts/save_system.gd")
 const RELATIONSHIP_SCRIPT := preload("res://scripts/npc_relationships.gd")
+const MERCHANT_SHOP_SCRIPT := preload("res://scripts/merchant_shop.gd")
 const GATE_SCRIPT := preload("res://scripts/region_gate.gd")
 const WOLF_SCRIPT := preload("res://scripts/forest_wolf.gd")
 const SHAMAN_SCRIPT := preload("res://scripts/forest_shaman.gd")
@@ -18,6 +19,7 @@ var player: PlayerCharacter
 var hud: GameHud
 var quests: QuestManager
 var relationships: NpcRelationships
+var merchant_shop: MerchantShop
 var elder: WorldNpc
 var nearby_interactable: Node2D
 var spell_definitions: Dictionary = {}
@@ -46,6 +48,7 @@ func _ready() -> void:
 	world = get_node("World") as Node2D
 	quests = QuestManager.new()
 	relationships = RELATIONSHIP_SCRIPT.new()
+	merchant_shop = MERCHANT_SHOP_SCRIPT.new()
 	player = PLAYER_SCENE.instantiate() as PlayerCharacter
 	add_child(player)
 	player.global_position = Vector2(130, 210)
@@ -205,6 +208,7 @@ func _populate_region() -> void:
 	else:
 		_spawn_elder()
 		_spawn_cartographer()
+		_spawn_merchant()
 		var fragments_remaining: int = 0
 		if not quests.is_completed("lost_cartographer_notes"):
 			var fragment_state: Dictionary = quests.states.get("lost_cartographer_notes", {})
@@ -361,6 +365,13 @@ func _on_cartographer_interacted(_source: Node2D) -> void:
 	_refresh_hud()
 
 func _on_dialogue_choice_selected(choice_id: String) -> void:
+	if choice_id.begins_with("merchant_buy:"):
+		_purchase_merchant_item(choice_id.trim_prefix("merchant_buy:"))
+		return
+	if choice_id == "merchant_close":
+		hud.close_dialogue()
+		player.set_physics_process(true)
+		return
 	if quests.is_ready_to_complete("moonleaf_gathering"):
 		_complete_elder_quest_choice(choice_id)
 		return
@@ -418,6 +429,42 @@ func _reveal_elder_cache() -> void:
 	discovered_landmarks["greenreach"] = markers
 	if current_region == "greenreach":
 		_update_minimap()
+
+func _spawn_merchant() -> void:
+	var merchant := NPC_SCRIPT.new() as WorldNpc
+	merchant.display_name = "Торговец Бран"
+	merchant.outfit_color = Color(0.25, 0.48, 0.31)
+	add_child(merchant)
+	merchant.global_position = Vector2(365, 205)
+	merchant.interacted.connect(_on_merchant_interacted)
+
+func _on_merchant_interacted(_source: Node2D) -> void:
+	_show_merchant_menu()
+
+func _show_merchant_menu() -> void:
+	var reputation: int = relationships.get_score("elder")
+	var discount_percent: int = merchant_shop.get_discount_percent(reputation)
+	var choices: Array[Dictionary] = []
+	for offer in merchant_shop.get_offers(reputation):
+		choices.append({
+			"id": "merchant_buy:" + str(offer.get("id", "")),
+			"label": "Купить %s — %d золота" % [str(offer.get("name", "Товар")), int(offer.get("price", 0))]
+		})
+	choices.append({"id": "merchant_close", "label": "Завершить торговлю"})
+	var message := "Добро пожаловать! Чем могу помочь?"
+	if discount_percent > 0:
+		message += "\nЗа помощь поселению действует скидка %d%%." % discount_percent
+	else:
+		message += "\nПомоги поселению — и я предложу лучшие цены."
+	_show_dialogue_choices("Торговец Бран", message, choices)
+
+func _purchase_merchant_item(item_id: String) -> void:
+	var result: Dictionary = merchant_shop.purchase(player, item_id, relationships.get_score("elder"))
+	if bool(result.get("success", false)):
+		hud.show_message("Куплено: %s за %d золота." % [str(result.get("name", item_id)), int(result.get("price", 0))], 2.5)
+	else:
+		hud.show_message(str(result.get("message", "Покупка не удалась.")), 2.5)
+	_show_merchant_menu()
 
 func _spawn_elder() -> void:
 	elder = NPC_SCRIPT.new() as WorldNpc
