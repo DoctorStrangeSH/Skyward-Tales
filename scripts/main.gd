@@ -211,10 +211,11 @@ func _populate_region() -> void:
 		_spawn_merchant()
 		var supply_state: Dictionary = quests.states.get("bran_supply_run", {})
 		if bool(supply_state.get("started", false)) and not quests.is_completed("bran_supply_run"):
-			var supply_remaining: int = 3 - int(supply_state.get("progress", 0))
+			var collected_crates: Array = supply_state.get("collected_crates", [])
 			var supply_positions: Array[Vector2] = [Vector2(445, 470), Vector2(635, 520), Vector2(865, 430)]
-			for index in range(clampi(supply_remaining, 0, supply_positions.size())):
-				_spawn_herb(supply_positions[index], "supply_crate", "Потерянный ящик с припасами")
+			for index in range(supply_positions.size()):
+				if not collected_crates.has(index):
+					_spawn_herb(supply_positions[index], "supply_crate_%d" % index, "Потерянный ящик с припасами")
 		var fragments_remaining: int = 0
 		if not quests.is_completed("lost_cartographer_notes"):
 			var fragment_state: Dictionary = quests.states.get("lost_cartographer_notes", {})
@@ -487,8 +488,9 @@ func _start_merchant_supply_quest() -> void:
 		_show_dialogue("Торговец Бран", "Сначала помоги старейшине и закончи текущее поручение. Тогда поговорим о поставках.")
 		return
 	if quests.start_quest(quest_id):
-		for at in [Vector2(445, 470), Vector2(635, 520), Vector2(865, 430)]:
-			_spawn_herb(at, "supply_crate", "Потерянный ящик с припасами")
+		var supply_positions: Array[Vector2] = [Vector2(445, 470), Vector2(635, 520), Vector2(865, 430)]
+		for index in range(supply_positions.size()):
+			_spawn_herb(supply_positions[index], "supply_crate_%d" % index, "Потерянный ящик с припасами")
 		_show_dialogue("Торговец Бран", "Три ящика с лечебными травами и инструментами пропали на дороге к поселению. Найди их в Зелёных Пределах. Без этих поставок лечебница скоро останется без лекарств.")
 		_refresh_hud()
 
@@ -660,15 +662,20 @@ func _on_herb_interacted(source: Node2D) -> void:
 	var required_quest: String = "grove_spirits" if current_region == "moonlit_grove" else "moonleaf_gathering"
 	if herb == null:
 		return
-	if herb.item_id == "supply_crate":
+	if herb.item_id.begins_with("supply_crate_"):
 		const supply_quest_id := "bran_supply_run"
 		if quests.active_quest_id == supply_quest_id and not quests.is_completed(supply_quest_id):
-			quests.add_progress(supply_quest_id, 1)
-			herb.queue_free()
-			var found: int = int(quests.states[supply_quest_id].get("progress", 0))
-			hud.show_message("Возвращён ящик с припасами: %d/3." % found, 2.0)
-			if quests.is_ready_to_complete(supply_quest_id):
-				hud.show_message("Все три ящика найдены! Вернитесь к Брану.", 3.0)
+			var crate_index := int(herb.item_id.trim_prefix("supply_crate_"))
+			var collected_crates: Array = quests.states[supply_quest_id].get("collected_crates", [])
+			if crate_index >= 0 and crate_index < 3 and not collected_crates.has(crate_index):
+				collected_crates.append(crate_index)
+				quests.states[supply_quest_id]["collected_crates"] = collected_crates
+				quests.add_progress(supply_quest_id, 1)
+				herb.queue_free()
+				var found: int = int(quests.states[supply_quest_id].get("progress", 0))
+				hud.show_message("Возвращён ящик с припасами: %d/3." % found, 2.0)
+				if quests.is_ready_to_complete(supply_quest_id):
+					hud.show_message("Все три ящика найдены! Вернитесь к Брану.", 3.0)
 		else:
 			hud.show_message("Потерянный ящик с припасами. Бран наверняка знает, кому он принадлежит.", 2.5)
 		_refresh_hud()
