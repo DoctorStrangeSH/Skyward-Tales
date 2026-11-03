@@ -382,6 +382,13 @@ func _on_dialogue_choice_selected(choice_id: String) -> void:
 	if choice_id == "hunter_reward:gold" or choice_id == "hunter_reward:supplies":
 		_complete_hunter_quest(choice_id.trim_prefix("hunter_reward:"))
 		return
+	if choice_id == "hunter_craft:mantle":
+		_craft_wolfskin_mantle()
+		return
+	if choice_id == "hunter_craft:later":
+		hud.close_dialogue()
+		player.set_physics_process(true)
+		return
 	if choice_id == "merchant_supply:fair" or choice_id == "merchant_supply:clinic":
 		_complete_merchant_supply_quest(choice_id.trim_prefix("merchant_supply:"))
 		return
@@ -471,7 +478,12 @@ func _spawn_hunter() -> void:
 
 func _on_hunter_interacted(_source: Node2D) -> void:
 	const quest_id := "toren_wolf_hunt"
-	if quests.is_completed(quest_id):
+	if quests.is_completed(quest_id) and int(player.inventory.get("wolf_pelt", 0)) >= 3 and int(player.inventory.get("wolfskin_mantle", 0)) == 0:
+		_show_dialogue_choices("Торен, охотник", "Три волчьи шкуры — отличный материал. Я могу сшить тебе прочную волчью накидку: она защитит от ударов. Отдашь шкуры?", [
+			{"id": "hunter_craft:mantle", "label": "Сшить волчью накидку — 3 шкуры"},
+			{"id": "hunter_craft:later", "label": "Пока оставить шкуры"}
+		])
+	elif quests.is_completed(quest_id):
 		_show_dialogue("Торен, охотник", "Шкуры уже высушены, а тропы снова безопасны. %s." % relationships.get_reaction("toren"))
 	elif quests.is_ready_to_complete(quest_id):
 		_show_dialogue_choices("Торен, охотник", "Три волка больше не угрожают дороге. Какую награду предпочитаешь?", [
@@ -488,6 +500,19 @@ func _on_hunter_interacted(_source: Node2D) -> void:
 		_show_dialogue_choices("Торен, охотник", "Я Торен. Волки спустились из леса и нападают на путников. Поможешь проредить стаю?", [
 			{"id": "hunter_quest_start", "label": "Взяться за охоту"}
 		])
+	_refresh_hud()
+
+func _craft_wolfskin_mantle() -> void:
+	if int(player.inventory.get("wolf_pelt", 0)) < 3 or int(player.inventory.get("wolfskin_mantle", 0)) > 0:
+		hud.show_message("Нужно три волчьи шкуры, а накидка уже может быть только одна.", 3.0)
+		return
+	player.inventory["wolf_pelt"] = int(player.inventory["wolf_pelt"]) - 3
+	if int(player.inventory["wolf_pelt"]) <= 0:
+		player.inventory.erase("wolf_pelt")
+	player.add_item("wolfskin_mantle")
+	hud.close_dialogue()
+	player.set_physics_process(true)
+	hud.show_message("Торен сшил волчью накидку! Она ждёт в инвентаре.", 3.0)
 	_refresh_hud()
 
 func _start_hunter_quest() -> void:
@@ -781,6 +806,7 @@ func _on_wolf_defeated(xp_reward: int, death_position: Vector2) -> void:
 		if quests.is_ready_to_complete("toren_wolf_hunt"):
 			hud.show_message("Стая отступила. Вернись к Торену за наградой.", 3.0)
 	_refresh_hud()
+	_spawn_loot(death_position, "wolf_pelt")
 	_on_enemy_defeated(xp_reward, death_position)
 
 func _on_enemy_defeated(xp_reward: int, death_position: Vector2) -> void:
@@ -811,6 +837,9 @@ func _on_inventory_unequip(slot: String) -> void:
 		hud.refresh_inventory(player)
 
 func _on_inventory_use(item_id: String) -> void:
+	if item_id == "wolf_pelt":
+		hud.show_message("Волчья шкура — материал для охотничьего снаряжения. Соберите три и поговорите с Тореном.", 3.0)
+		return
 	var definition: Dictionary = player.get_item_definition(item_id)
 	if not str(definition.get("slot", "")).is_empty():
 		if player.equip_item(item_id):
