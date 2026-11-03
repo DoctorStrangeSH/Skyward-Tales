@@ -308,6 +308,15 @@ func add_item(item_id: String, amount: int = 1) -> void:
 	inventory[item_id] = int(inventory.get(item_id, 0)) + amount
 	stats_changed.emit()
 
+func remove_item(item_id: String, amount: int = 1) -> bool:
+	if amount <= 0 or int(inventory.get(item_id, 0)) < amount:
+		return false
+	inventory[item_id] = int(inventory[item_id]) - amount
+	if int(inventory[item_id]) <= 0:
+		inventory.erase(item_id)
+	stats_changed.emit()
+	return true
+
 func use_item(item_id: String) -> bool:
 	if int(inventory.get(item_id, 0)) <= 0:
 		return false
