@@ -239,17 +239,29 @@ def herb(kind: str) -> tuple[Canvas, tuple[int, int]]:
     c = Canvas(20, 22)
     _shadow(c, 10, 19, 6, 1.8)
     glow = {"moonleaf": ramp("#f4fff0", "#c8f0d8", "#7fcfae", "#3f8f7a"),
-            "spirit_blossom": ramp("#f4ffff", "#9cfff0", "#3fd6d0", "#1f8a8a")}[kind]
+            "spirit_blossom": ramp("#f4ffff", "#9cfff0", "#3fd6d0", "#1f8a8a"),
+            "echo_crystal": ramp("#f6f0ff", "#d0b8ff", "#9a7aff", "#5a3ac0")}[kind]
     stem = ramp("#8fd862", "#4fa04e", "#2a6a44")
-    for y in range(9, 19):
-        c.put(10, y, stem[1] if y % 3 else stem[2])
+    if kind != "echo_crystal":
+        for y in range(9, 19):
+            c.put(10, y, stem[1] if y % 3 else stem[2])
     # Halo.
     for y in range(0, 16):
         for x in range(0, 20):
             d = ((x - 10) / 9) ** 2 + ((y - 7) / 7) ** 2
             if d <= 1:
                 c.blend(x, y, glow[2][:3] + (int(45 * (1 - d)),))
-    if kind == "moonleaf":
+    if kind == "echo_crystal":
+        # Three faceted shards growing from a stone.
+        for sx, top, w in ((10, 2, 2), (6, 8, 1), (14, 7, 1)):
+            for y in range(top, 18):
+                p = (y - top) / (18 - top)
+                half = max(0, round(w * min(1, p * 2.5 + 0.3)))
+                for x in range(sx - half, sx + half + 1):
+                    c.put(x, y, glow[0] if x < sx else (glow[1] if x == sx else glow[2]))
+        for x in range(4, 17):
+            c.put(x, 18, ramp("#4a4664", "#34304a")[0 if x < 9 else 1])
+    elif kind == "moonleaf":
         for side in (-1, 1):
             for i in range(6):
                 for w in range(3 - abs(i - 3) // 2):
@@ -440,3 +452,68 @@ def marker(kind: str) -> tuple[Canvas, tuple[int, int]]:
     solid.outline(OUTLINE)
     c.px = solid.px
     return c, (5, 14)
+
+
+def crystal_altar(pal, seed: int = 9) -> tuple[Canvas, tuple[int, int]]:
+    """Ancient altar in the cave holding a huge humming crystal."""
+    rng = random.Random(seed)
+    stone, crystal = pal["stone"], pal["crystal"]
+    c = Canvas(64, 70)
+    origin = (32, 64)
+    for y in range(56, 70):
+        for x in range(64):
+            if ((x - 32) / 30) ** 2 + ((y - 63) / 5) ** 2 <= 1:
+                c.blend(x, y, pal["shadow"])
+    _block(c, 10, 50, 44, 12, stone, top=4)
+    _block(c, 16, 42, 32, 10, stone, top=3)
+    for x in range(12, 52, 6):
+        c.put(x, 58, stone[1])
+    # Big central crystal.
+    for y in range(6, 44):
+        p = (y - 6) / 38
+        half = 7 * min(1.0, p * 2.2 + 0.1)
+        for x in range(int(32 - half), int(32 + half) + 1):
+            rel = (x + 0.5 - (32 - half)) / (2 * half + 0.01)
+            level = 0 if rel < 0.25 else (1 if rel < 0.5 else (2 if rel < 0.78 else 3))
+            c.put(x, y, crystal[level])
+    for x, y in ((29, 14), (30, 15), (34, 24), (31, 30)):
+        c.put(x, y, crystal[0])
+    for sx in (22, 42):
+        for y in range(30, 43):
+            c.put(sx, y, crystal[1])
+            c.put(sx + 1, y, crystal[3])
+    c.outline(pal["outline"])
+    for y in range(0, 60):
+        for x in range(64):
+            if c.alpha(x, y) == 255:
+                continue
+            d = ((x - 32) / 30) ** 2 + ((y - 26) / 28) ** 2
+            if d <= 1:
+                c.blend(x, y, crystal[2][:3] + (int(50 * (1 - d)),))
+    for _ in range(10):
+        x, y = rng.randrange(6, 58), rng.randrange(2, 40)
+        if c.alpha(x, y) < 255:
+            c.put(x, y, crystal[0])
+    return c, origin
+
+
+def cave_gate() -> tuple[Canvas, tuple[int, int]]:
+    """Rough rock archway with a violet shimmer."""
+    stone = ramp("#9690b8", "#67638a", "#4a4664", "#34304a", "#221f33")
+    portal = ramp("#f6f0ff", "#d0b8ff", "#9a7aff", "#5a3ac0")
+    c = Canvas(36, 46)
+    _shadow(c, 18, 42, 16, 3)
+    for y in range(10, 42):
+        for x in range(8, 28):
+            c.blend(x, y, portal[2][:3] + (int(150 * (1 - (y - 10) / 40)),))
+    for y in range(4, 43):
+        for x in range(2, 34):
+            inside = ((x - 18) / 10.5) ** 2 + ((y - 30) / 22) ** 2 <= 1 and y > 10
+            ring = ((x - 18) / 16) ** 2 + ((y - 28) / 25) ** 2 <= 1
+            if ring and not inside:
+                lit = (18 - x) * 0.4 + (20 - y) * 0.3
+                c.put(x, y, stone[0] if lit > 5 else (stone[1] if lit > 0 else (stone[2] if lit > -5 else stone[3])))
+    for x, y in ((13, 20), (22, 16), (17, 30), (20, 36)):
+        c.put(x, y, portal[0])
+    _finish(c)
+    return c, (18, 41)

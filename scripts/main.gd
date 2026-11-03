@@ -20,7 +20,8 @@ const ENEMY_SCRIPTS := {
 	"slime": preload("res://scripts/enemy.gd"),
 	"wolf": preload("res://scripts/forest_wolf.gd"),
 	"shaman": preload("res://scripts/forest_shaman.gd"),
-	"guardian": preload("res://scripts/grove_guardian.gd")
+	"guardian": preload("res://scripts/grove_guardian.gd"),
+	"bat": preload("res://scripts/cave_bat.gd")
 }
 const MATERIAL_ITEMS := ["wolf_pelt", "iron_ore"]
 const RARITY_LABELS := {"common": "ОБЫЧНАЯ", "uncommon": "НЕОБЫЧНАЯ", "rare": "РЕДКАЯ"}
@@ -366,6 +367,8 @@ static func enemy_kind(enemy: SlimeEnemy) -> String:
 		return "shaman"
 	if enemy is ForestWolf:
 		return "wolf"
+	if enemy is CaveBat:
+		return "bat"
 	return "slime"
 
 func _enemy_kind(enemy: SlimeEnemy) -> String:
@@ -478,6 +481,9 @@ func _on_hunter_interacted(_source: Node2D) -> void:
 
 func _on_blacksmith_interacted(_source: Node2D) -> void:
 	dialogues.on_blacksmith()
+
+func _on_miner_interacted(_source: Node2D) -> void:
+	dialogues.on_miner()
 
 func _on_dialogue_choice_selected(choice_id: String) -> void:
 	dialogues.handle_choice(choice_id)

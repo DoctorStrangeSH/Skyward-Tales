@@ -103,6 +103,16 @@
     "ancient_relic": {
       "name": "Древний артефакт",
       "description": "Трофей победы над хранителем"
+    },
+    "crystal_lens": {
+      "name": "Хрустальная линза",
+      "description": "+30 к мане и +3 урона цепной молнии",
+      "slot": "amulet",
+      "rarity": "rare",
+      "max_mana": 30,
+      "spell_bonus": {
+        "chain_lightning": 3
+      }
     }
   }
 }

@@ -19,6 +19,10 @@
     "toren": {
       "name": "Торен, охотник",
       "starting_score": 0
+    },
+    "dorn": {
+      "name": "Дорн, рудокоп",
+      "starting_score": 0
     }
   }
 }

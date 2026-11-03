@@ -9,7 +9,7 @@ const MAP_WIDTH := 80
 const MAP_HEIGHT := 54
 const COLLISION_WORLD := 4
 const ART_DIR := "res://assets/world/"
-const PROP_TEXTURES := {"ruins": "ruins.png", "standing_stones": "standing_stones.png"}
+const PROP_TEXTURES := {"ruins": "ruins.png", "standing_stones": "standing_stones.png", "crystal_altar": "crystal_altar.png"}
 
 var region_id: String = "greenreach"
 var terrain: Dictionary = {}
@@ -32,7 +32,10 @@ func map_size() -> Vector2:
 	return Vector2(float(size[0]), float(size[1]))
 
 func is_night() -> bool:
-	return str(terrain.get("style", "day")) == "night"
+	return str(terrain.get("style", "day")) in ["night", "cave"]
+
+func is_cave() -> bool:
+	return str(terrain.get("style", "day")) == "cave"
 
 func _build() -> void:
 	terrain = RegionCatalog.terrain(region_id)
@@ -80,7 +83,13 @@ func _add_ambient() -> void:
 	air.scale_amount_min = 1.0
 	air.scale_amount_max = 2.0 if is_night() else 1.0
 	var gradient := Gradient.new()
-	if is_night():
+	if is_cave():
+		# Crystal motes slowly rising through the dark.
+		air.direction = Vector2.UP
+		air.spread = 25.0
+		gradient.offsets = PackedFloat32Array([0.0, 0.3, 0.7, 1.0])
+		gradient.colors = PackedColorArray([Color(0.8, 0.7, 1, 0), Color(0.85, 0.75, 1, 0.9), Color(0.6, 0.85, 1, 0.6), Color(0.8, 0.7, 1, 0)])
+	elif is_night():
 		gradient.offsets = PackedFloat32Array([0.0, 0.2, 0.5, 0.8, 1.0])
 		gradient.colors = PackedColorArray([Color(0.6, 1, 0.8, 0), Color(0.75, 1, 0.7, 1), Color(0.5, 1, 0.95, 0.2), Color(0.85, 1, 0.6, 1), Color(0.6, 1, 0.8, 0)])
 	else:

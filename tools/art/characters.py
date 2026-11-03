@@ -482,6 +482,14 @@ NPCS = {
                          accent=r4("#e2fffb", "#8ff7ef", "#3fd6d0", "#1f8a8a"), belt=hex_color("#e2fffb"), buckle=None),
 }
 
+NPCS["miner"] = Look(hair=r4("#e8a05a", "#b8643a", "#7a3a2a", "#4a2420"), hair_style="messy",
+                     top=r4("#c9a57a", "#9c7a54", "#73573d", "#4c3a2c"), scarf=False,
+                     apron=r4("#6f7e92", "#4f5a70", "#373e54", "#24283b"),
+                     beard=r4("#f0a860", "#c0743a", "#8a4a2a", "#5a2e20"),
+                     hat="cap", hat_colors=r4("#ffd45c", "#e0962e", "#a8641e", "#6a3a18"),
+                     staff=r4("#c9c2d8", "#8f8aa8", "#5e5a78", "#3a3650"),
+                     accent=r4("#fff6c0", "#ffd45c", "#e0962e", "#8a4a22"), height_bonus=-1)
+
 SHAMAN = Look(hair=r4("#5a6a4a", "#43503a", "#2e382a", "#1e241e"), hair_style="long",
               top=r4("#7ac7a0", "#4f9a7c", "#33705c", "#224a40"), robe=True, scarf=False,
               hat="antlers", hat_colors=r4("#4f9a7c", "#33705c", "#224a40", "#163028"),

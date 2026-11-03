@@ -26,7 +26,8 @@ def _pond_mask(w: int, h: int, pond: dict, seed: int) -> np.ndarray:
 
 def render_ground(terrain: dict, pal: dict, seed: int) -> Canvas:
     w, h = terrain["size"]
-    night = terrain.get("style") == "night"
+    night = terrain.get("style") in ("night", "cave")
+    cave = terrain.get("style") == "cave"
     rng = random.Random(seed)
     grass, dirt, water = pal["grass"], pal["dirt"], pal["water"]
 
@@ -140,7 +141,10 @@ def render_ground(terrain: dict, pal: dict, seed: int) -> Canvas:
         x, y = rng.randrange(w), rng.randrange(h)
         if not free[y, x] or tuft_density[y, x] < rng.random() * 0.9:
             continue
-        _tuft(canvas, x, y, grass, rng)
+        if cave:
+            _crack(canvas, x, y, grass, rng)
+        else:
+            _tuft(canvas, x, y, grass, rng)
     flower_sets = pal["flowers"]
     for _ in range(int(w * h / 3500)):
         cx, cy = rng.randrange(w), rng.randrange(h)
@@ -178,6 +182,17 @@ def _smooth(points: list[tuple[float, float]], iterations: int = 3) -> list[tupl
         result.append(points[-1])
         points = result
     return points
+
+
+def _crack(canvas: Canvas, x: int, y: int, floor, rng: random.Random) -> None:
+    """Cave floor detail: hairline cracks and small pebbles instead of grass."""
+    if rng.random() < 0.5:
+        for i in range(rng.randint(2, 5)):
+            canvas.put(x + i, y + (i // 2) * (1 if rng.random() < 0.5 else -1), floor[0])
+    else:
+        canvas.put(x, y, floor[5])
+        canvas.put(x + 1, y, floor[4])
+        canvas.put(x, y + 1, floor[1])
 
 
 def _tuft(canvas: Canvas, x: int, y: int, grass, rng: random.Random) -> None:
