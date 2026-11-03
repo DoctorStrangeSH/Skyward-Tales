@@ -287,9 +287,8 @@ func _on_grove_warden_interacted(_source: Node2D) -> void:
 			quests.start_quest("grove_spirits")
 			_show_dialogue("Хранительница Илара", "Лес теряет свой свет. Собери три духовных цветка у старых камней и принеси их мне.")
 		elif quests.is_ready_to_complete("grove_spirits"):
-			quests.complete_quest("grove_spirits")
-			player.add_experience(90)
-			player.add_gold(50)
+			if quests.complete_quest("grove_spirits"):
+				_grant_quest_reward("grove_spirits")
 			_spawn_guardian(Vector2(1020, 580))
 			_show_dialogue("Хранительница Илара", "Ты вернул лесу его сияние. Прими эту награду.")
 		else:
@@ -376,6 +375,11 @@ func _show_dialogue(speaker: String, message: String) -> void:
 	player.set_physics_process(false)
 	hud.show_dialogue(speaker, message)
 
+func _grant_quest_reward(quest_id: String) -> void:
+	var reward: Dictionary = quests.get_reward(quest_id)
+	player.add_experience(int(reward.get("experience", 0)))
+	player.add_gold(int(reward.get("gold", 0)))
+
 func _on_elder_interacted(_source: Node2D) -> void:
 	if quests.is_completed("moonleaf_gathering"):
 		_show_dialogue("Старейшина Элиан", "Ты помог нашему поселению. На востоке есть тропа в Зачарованный лес. Найди хранительницу Илару — возможно, ей нужна помощь.")
@@ -383,9 +387,8 @@ func _on_elder_interacted(_source: Node2D) -> void:
 		quests.start_quest("moonleaf_gathering")
 		_show_dialogue("Старейшина Элиан", "Юный странник, ночной туман отравляет наш лес. Принеси мне три лунных листа — они растут вдоль старой тропы. Я щедро тебя отблагодарю.")
 	elif quests.is_ready_to_complete("moonleaf_gathering"):
-		quests.complete_quest("moonleaf_gathering")
-		player.add_experience(50)
-		player.add_gold(25)
+		if quests.complete_quest("moonleaf_gathering"):
+			_grant_quest_reward("moonleaf_gathering")
 		_show_dialogue("Старейшина Элиан", "Ты принёс все три! Пусть древние звёзды хранят тебя. Прими эти монеты и знания.")
 	else:
 		_show_dialogue("Старейшина Элиан", "Лунные листья растут вдоль старой тропы. Будь осторожен — слизни стали агрессивнее.")
