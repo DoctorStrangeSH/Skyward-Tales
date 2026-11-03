@@ -622,3 +622,13 @@ Equipment milestone verification: Godot 4.7.2 workflow run `41443674839` complet
 - Полный workflow Godot 4.7.2 завершился успешно на коммите `b4889be684e852135c45311572bcce7c17cd85f0`: https://github.com/DoctorStrangeSH/Skyward-Tales/actions/runs/41650508216
 - Успешны отдельные шаги `Test wolf pelt crafting and equipment`, `Test blacksmith crafting and equipment` и `Headless gameplay smoke test`.
 - Осталось вручную проверить расположение Борина в деревне, текст/кнопки диалога кузницы и отображение усиленной накидки в инвентаре на разрешении 640×360.
+
+
+## 41. Добыча железа и кузнечное оружие — 2026-11-03
+
+- В `scripts/main.gd` добавлено три жилы `iron_ore_node_01..03` в Зелёных Пределах. Они используют существующий `WorldCollectible` и отдельный рисунок рудной жилы в `scripts/collectible.gd`.
+- Подбор через `_on_herb_interacted()` добавляет `iron_ore` в инвентарь. `gathered_resource_nodes` записывает собранные ID в `world.gathered_resource_nodes` внутри save snapshot; при restore словарь устанавливается до `_set_region()`, поэтому добытые жилы не появляются повторно.
+- В `data/equipment.json` добавлены материал `iron_ore` и оружие `ironbound_staff` (+8 ко всем заклинаниям).
+- В `data/crafting_recipes.json` добавлен `forge_ironbound_staff`: посох ученика + 3 железной руды + 50 золота → железный посох. Борин показывает доступные рецепты только при выполнении требований; обработчик крафта использует общий `CraftingService`.
+- Интеграционный тест `tests/iron_mining_crafting.gd` проверяет три жилы, сбор, save/load без респавна, отказ при нехватке 1 золота без расхода руды, точную стоимость, экипировку и восстановление бонуса оружия. Он включён в `godot-validation.yml`.
+- Дождаться CI после последних изменений и проверить все ошибки. Следующая задача после зелёного CI: проверить экономику/доступность материалов и добавить вторую точку добычи в Зачарованном лесу с редким ресурсом, только если это не ломает баланс.
