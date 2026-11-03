@@ -43,6 +43,8 @@ signal defeat_restart_requested
 signal defeat_load_requested
 signal defeat_menu_requested
 signal talent_selected(talent_id: String)
+signal dialogue_choice_selected(choice_id: String)
+var dialogue_choices_container: VBoxContainer
 var pause_panel: PanelContainer
 var pause_view: PauseMenuPanel
 var defeat_panel: PanelContainer
@@ -207,7 +209,7 @@ func _ready() -> void:
 
 	dialogue_panel = PanelContainer.new()
 	dialogue_panel.position = Vector2(140, 246)
-	dialogue_panel.custom_minimum_size = Vector2(360, 100)
+	dialogue_panel.custom_minimum_size = Vector2(360, 145)
 	dialogue_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.045, 0.06, 0.08, 0.97)))
 	root.add_child(dialogue_panel)
 	dialogue_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -215,6 +217,9 @@ func _ready() -> void:
 	dialogue_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	dialogue_panel.add_child(dialogue_label)
 	dialogue_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dialogue_choices_container = VBoxContainer.new()
+	dialogue_choices_container.add_theme_constant_override("separation", 5)
+	dialogue_panel.add_child(dialogue_choices_container)
 	dialogue_panel.visible = false
 
 func _process(delta: float) -> void:
@@ -396,11 +401,43 @@ func set_prompt(message: String) -> void:
 	prompt_label.text = message
 
 func show_dialogue(speaker: String, message: String) -> void:
+	dialogue_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_clear_dialogue_choices()
 	dialogue_label.text = speaker + "\n" + message + "\n\n[ E — закрыть ]"
 	dialogue_panel.visible = true
 	dialogue_visible = true
 
+func show_dialogue_choices(speaker: String, message: String, choices: Array[Dictionary]) -> void:
+	dialogue_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_clear_dialogue_choices()
+	dialogue_label.text = speaker + "\n" + message
+	for choice in choices:
+		var choice_id: String = str(choice.get("id", ""))
+		var choice_label: String = str(choice.get("label", "Выбрать"))
+		if choice_id.is_empty():
+			continue
+		var button := Button.new()
+		button.text = choice_label
+		button.custom_minimum_size = Vector2(0, 25)
+		button.add_theme_font_size_override("font_size", 10)
+		button.pressed.connect(_on_dialogue_choice_pressed.bind(choice_id))
+		dialogue_choices_container.add_child(button)
+	dialogue_panel.visible = true
+	dialogue_visible = true
+
+func _on_dialogue_choice_pressed(choice_id: String) -> void:
+	dialogue_choice_selected.emit(choice_id)
+
+func _clear_dialogue_choices() -> void:
+	if dialogue_choices_container == null:
+		return
+	for child in dialogue_choices_container.get_children():
+		dialogue_choices_container.remove_child(child)
+		child.queue_free()
+
 func close_dialogue() -> void:
+	dialogue_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_clear_dialogue_choices()
 	dialogue_panel.visible = false
 	dialogue_visible = false
 
