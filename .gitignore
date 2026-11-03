@@ -20,3 +20,6 @@ Thumbs.db
 # Logs / temp
 *.log
 *.tmp
+
+# Python
+__pycache__/

@@ -14,7 +14,9 @@ func _ready() -> void:
 	give_up_radius = 320.0
 	retreat_health_ratio = 0.0
 	elemental_multipliers = {"fire": 0.75, "lightning": 1.3}
-	base_visual_tint = Color(0.55, 0.95, 0.66)
+	if sprite_sheet == SLIME_SHEET:
+		sprite_sheet = "res://assets/sprites/enemies/forest_shaman_8dir.png"
+		sprite_fps = 6.0
 	attack_cooldown_duration = 1.7
 	super._ready()
 

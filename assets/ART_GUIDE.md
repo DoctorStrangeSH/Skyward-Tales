@@ -1,42 +1,64 @@
 # Skyward Tales — Art Guide
 
 ## Visual target
-Use polished, readable fantasy pixel art with warm highlights, rich but controlled palettes, clear silhouettes, and transparent backgrounds. Avoid primitive placeholder shapes for characters, enemies, magic, and interactive props once an authored sprite exists.
+
+Cosy, readable fantasy pixel art in the spirit of modern 16-bit-inspired RPGs:
+warm sunlit greens by day, cool teal/violet moonlight at night, tinted
+outlines (never pure black), light from the top-left, soft blue-purple
+shadows, chibi characters (~26 px tall) and 3/4 top-down scenery.
+All art is original.
+
+## How the art is made
+
+Everything under `assets/world`, `assets/props` and `assets/sprites` is generated
+by code — no hand-edited PNGs:
+
+```bash
+python3 tools/art/build.py              # everything
+python3 tools/art/build.py --only world # or: characters | props
+```
+
+Requires Python 3 with Pillow, numpy and scipy. Output is deterministic.
+`assets/art_manifest.json` records every sprite's size and anchor ("origin").
+
+| Module | What it draws |
+| --- | --- |
+| `tools/art/palettes.py` | Day and night colour ramps |
+| `tools/art/terrain.py` | Region ground: grass, trails (from `data/regions.json`), ponds, flowers |
+| `tools/art/flora.py` | Trees, bushes, the foliage border around each map |
+| `tools/art/props.py` | Ruins, standing stones, chests, herbs, ore, crates, potions, gates |
+| `tools/art/characters.py` | Chibi humanoid rig: hero, NPCs, forest shaman |
+| `tools/art/creatures.py` | Slime, wolf, grove guardian (48 px), spell projectiles |
+
+To change a character, edit its `Look` in `characters.py` (colours, hair
+style, hat, robe, staff…) and rebuild. To move scenery, edit the `terrain`
+section of `data/regions.json` and rebuild: collisions and art read the same data.
 
 ## Runtime rules
-- Use raster PNG sprite sheets, not SVG.
-- Use nearest-neighbour texture filtering (`CanvasItem.TEXTURE_FILTER_NEAREST`).
-- Avoid bilinear filtering, mipmaps, and fractional pixel positioning.
-- Keep source art and processed atlases in version control.
-- Current directional sheets use 8 rows and 4 columns.
 
-## Direction row order
-1. Down
-2. Down-right
-3. Right
-4. Up-right
-5. Up
-6. Up-left
-7. Left
-8. Down-left
+- Nearest-neighbour filtering, no mipmaps, 1 world pixel = 1 viewport pixel.
+- `Main` and `World` are y-sorted: actors walk behind trees and ruins.
+- Ground is drawn at z −100, the foliage border at z 60 (above actors).
+- Directional sheets: 4 frames × 8 rows. Row order: down, down-right, right,
+  up-right, up, up-left, left, down-left. Left-facing rows mirror right-facing
+  ones. Back views (`up`, `up_right`) never show a face.
+- Cell size is 32×32 (guardian 48×48); feet sit at y=30 (guardian y=43).
 
-Frames are read left-to-right within each direction row. This order is shared by `DirectionalSprite` and all directional sheets.
+## Sheets
 
-## Current sheets
-The runtime uses three standalone PNG atlases committed directly to the repository. They are loaded through res://; there is no ZIP archive, startup extraction step, or sprite_archive.gd dependency.
+| File | Cell | Notes |
+| --- | --- | --- |
+| `sprites/characters/hero_8dir_walk.png` | 32 | Walk cycle |
+| `sprites/npcs/<npc_id>.png` | 32 | Idle breathing (NPC ids from `data/regions.json`) |
+| `sprites/enemies/forest_slime_true8.png` | 32 | Squash-and-stretch hop |
+| `sprites/enemies/forest_wolf_8dir.png` | 32 | Trot |
+| `sprites/enemies/forest_shaman_8dir.png` | 32 | Robed walk |
+| `sprites/enemies/grove_guardian_8dir.png` | 48 | Boss walk |
+| `sprites/magic/{fireball,frostbolt,chain_lightning}_8dir.png` | 32 | Flight |
 
-- assets/sprites/characters/hero_8dir_walk.png — hero walk, 32×32 cells, 4 frames × 8 directions.
-- assets/sprites/enemies/forest_slime_true8.png — slime movement with true rear and side views, 32×32 cells, 4 frames × 8 directions.
-- assets/sprites/magic/fireball_8dir.png — projectile flight, 32×32 cells, 4 frames × 8 directions.
+## Next steps for art
 
-All three are runtime dependencies and must remain until replacement atlases are integrated and their references are migrated. Their current visual quality is explicitly rejected as final art; see the review note below.
-
-See assets/sprites/asset_manifest.json for machine-readable layout metadata.
-
-## True eight-view requirements
-
-All 8 rows MUST represent actual orientations for characters and enemies: down, down-right, right, up-right, up, up-left, left, down-left. Rear `up` shows a true back with no eyes, mouth, or other frontal facial features; rear diagonal rows show the rear three-quarter anatomy. Do not rotate front-facing art to fake back views. All PNG atlases: 128x256 px, 32x32 px cells, 4 columns x 8 rows, RGBA. Current art is an initial playable pixel-art pass and needs further visual polish against approved concept art.
-
-## REJECTED ART — user review, 2026-11-01
-
-All current placeholder PNG visuals (hero, slime, fireball) are **REJECTED** by the user for visual quality. Do not use them as a visual-quality benchmark and do not mark art milestone complete. Keep them only as temporary runtime assets until they are replaced with approved, carefully pixel-edited, richly detailed, transparent RGBA sheets. Prioritize matching the user's previously approved fantasy reference, high-quality silhouettes, lighting, sprite consistency and accurate true back/side directional anatomy. Validate in-game at the actual camera scale before accepting new art.
+- Attack / hurt / cast animations (currently feedback is a colour flash).
+- Water shimmer and swaying grass via shaders.
+- Item icons for the inventory.
+- A pixel font for the interface.

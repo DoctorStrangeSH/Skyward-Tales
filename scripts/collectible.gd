@@ -14,20 +14,13 @@ func interact() -> void:
 	interacted.emit(self)
 
 func _draw() -> void:
+	WorldArt.draw_prop(self, "props/%s.png" % art_name())
+
+func art_name() -> String:
 	if item_id.begins_with("iron_ore_node_"):
-		draw_rect(Rect2(-10, -6, 20, 13), Color(0.25, 0.27, 0.29))
-		draw_rect(Rect2(-7, -9, 8, 12), Color(0.48, 0.52, 0.55))
-		draw_rect(Rect2(1, -11, 7, 14), Color(0.67, 0.57, 0.36))
-		draw_rect(Rect2(3, -8, 3, 5), Color(0.86, 0.76, 0.48))
-		return
+		return "ore_node"
 	if item_id.begins_with("supply_crate_"):
-		draw_rect(Rect2(-9, -8, 18, 16), Color(0.43, 0.27, 0.14))
-		draw_rect(Rect2(-9, -8, 18, 3), Color(0.68, 0.48, 0.25))
-		draw_rect(Rect2(-2, -8, 4, 16), Color(0.78, 0.62, 0.34))
-		draw_rect(Rect2(-7, -2, 14, 2), Color(0.23, 0.16, 0.11))
-		return
-	draw_rect(Rect2(-2, -1, 4, 11), Color(0.20, 0.34, 0.17))
-	draw_rect(Rect2(-8, -7, 7, 7), Color(0.47, 0.78, 0.46))
-	draw_rect(Rect2(1, -10, 7, 7), Color(0.60, 0.88, 0.55))
-	draw_rect(Rect2(-5, -5, 4, 3), Color(0.76, 0.93, 0.63))
-	draw_rect(Rect2(3, -8, 3, 3), Color(0.82, 0.96, 0.67))
+		return "supply_crate"
+	if item_id in ["map_fragment", "spirit_blossom"]:
+		return item_id
+	return "moonleaf"

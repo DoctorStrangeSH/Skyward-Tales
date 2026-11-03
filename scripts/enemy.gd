@@ -26,6 +26,11 @@ var burn_damage: int = 0
 var firestorm_cooldown_left: float = 0.0
 var elemental_multipliers: Dictionary = {}
 var visual: DirectionalSprite
+## Subclasses pick their own atlas before calling super._ready().
+var sprite_sheet: String = SLIME_SHEET
+var sprite_scale: float = 1.0
+var sprite_offset: Vector2 = Vector2(0.0, -14.0)
+var sprite_fps: float = 5.5
 var combat_feedback: EnemyCombatFeedback
 
 func _ready() -> void:
@@ -41,8 +46,8 @@ func _ready() -> void:
 	add_child(shape_node)
 	visual = DIRECTIONAL_SPRITE_SCRIPT.new() as DirectionalSprite
 	visual.name = "DirectionalVisual"
-	visual.configure(SLIME_SHEET, 4, 8, 1.5, 5.5)
-	visual.offset = Vector2(0.0, -14.0)
+	visual.configure(sprite_sheet, 4, 8, sprite_scale, sprite_fps)
+	visual.offset = sprite_offset
 	visual.set_direction_vector(Vector2.DOWN)
 	visual.modulate = base_visual_tint
 	add_child(visual)

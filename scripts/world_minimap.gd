@@ -24,7 +24,8 @@ func _map_point(point: Vector2) -> Vector2:
 	return Vector2(8.0, 25.0) + Vector2(clampf(point.x / WORLD_SIZE.x, 0.0, 1.0), clampf(point.y / WORLD_SIZE.y, 0.0, 1.0)) * MAP_SIZE
 
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO, Vector2(132, 108)), Color(0.03, 0.06, 0.08, 0.88))
+	draw_rect(Rect2(Vector2.ZERO, Vector2(132, 108)), Color(0.07, 0.06, 0.11, 0.84))
+	draw_rect(Rect2(Vector2(0, 0), Vector2(132, 108)), Color(0.93, 0.78, 0.47, 0.85), false, 1.0)
 	var name: String = "ЗАЧАРОВАННЫЙ ЛЕС" if region_id == "moonlit_grove" else "ЗЕЛЁНЫЕ ПРЕДЕЛЫ"
 	draw_string(ThemeDB.fallback_font, Vector2(7, 16), name, HORIZONTAL_ALIGNMENT_LEFT, 126, 10, Color(0.92, 0.88, 0.64))
 	draw_rect(Rect2(Vector2(8, 25), MAP_SIZE), Color(0.11, 0.27, 0.23) if region_id == "moonlit_grove" else Color(0.18, 0.32, 0.19))

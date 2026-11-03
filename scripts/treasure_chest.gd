@@ -43,10 +43,4 @@ static func roll_bonus(chance: float) -> Dictionary:
 	return {"item": "storm_eye", "rarity": "rare"}
 
 func _draw() -> void:
-	var wood := Color(0.34, 0.22, 0.13) if is_opened else Color(0.44, 0.27, 0.14)
-	draw_rect(Rect2(-10, -7, 20, 15), Color(0.15, 0.13, 0.16))
-	draw_rect(Rect2(-8, -5, 16, 11), wood)
-	draw_rect(Rect2(-8, -5, 16, 3), Color(0.67, 0.44, 0.20))
-	draw_rect(Rect2(-2, -2, 4, 5), Color(0.14, 0.14, 0.15) if is_opened else Color(0.98, 0.79, 0.38))
-	if is_opened:
-		draw_rect(Rect2(-8, -12, 16, 4), Color(0.30, 0.19, 0.11))
+	WorldArt.draw_prop(self, "props/chest_open.png" if is_opened else "props/chest_closed.png")

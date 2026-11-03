@@ -1,0 +1,370 @@
+{
+ "props/chest_closed.png": {
+  "size": [
+   24,
+   24
+  ],
+  "origin": [
+   12,
+   19
+  ]
+ },
+ "props/chest_open.png": {
+  "size": [
+   24,
+   24
+  ],
+  "origin": [
+   12,
+   19
+  ]
+ },
+ "props/gate_day.png": {
+  "size": [
+   34,
+   44
+  ],
+  "origin": [
+   17,
+   39
+  ]
+ },
+ "props/gate_night.png": {
+  "size": [
+   34,
+   44
+  ],
+  "origin": [
+   17,
+   39
+  ]
+ },
+ "props/health_potion.png": {
+  "size": [
+   14,
+   16
+  ],
+  "origin": [
+   7,
+   13
+  ]
+ },
+ "props/mana_potion.png": {
+  "size": [
+   14,
+   16
+  ],
+  "origin": [
+   7,
+   13
+  ]
+ },
+ "props/map_fragment.png": {
+  "size": [
+   18,
+   16
+  ],
+  "origin": [
+   9,
+   12
+  ]
+ },
+ "props/moonleaf.png": {
+  "size": [
+   20,
+   22
+  ],
+  "origin": [
+   10,
+   18
+  ]
+ },
+ "props/ore_node.png": {
+  "size": [
+   26,
+   22
+  ],
+  "origin": [
+   13,
+   18
+  ]
+ },
+ "props/pouch.png": {
+  "size": [
+   18,
+   18
+  ],
+  "origin": [
+   9,
+   14
+  ]
+ },
+ "props/relic.png": {
+  "size": [
+   18,
+   18
+  ],
+  "origin": [
+   9,
+   14
+  ]
+ },
+ "props/spirit_blossom.png": {
+  "size": [
+   20,
+   22
+  ],
+  "origin": [
+   10,
+   18
+  ]
+ },
+ "props/supply_crate.png": {
+  "size": [
+   22,
+   22
+  ],
+  "origin": [
+   11,
+   18
+  ]
+ },
+ "props/wolf_pelt.png": {
+  "size": [
+   20,
+   14
+  ],
+  "origin": [
+   10,
+   10
+  ]
+ },
+ "sprites/characters/hero_8dir_walk.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "sprites/enemies/forest_shaman_8dir.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "sprites/enemies/forest_slime_true8.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "sprites/enemies/forest_wolf_8dir.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "sprites/enemies/grove_guardian_8dir.png": {
+  "size": [
+   192,
+   384
+  ]
+ },
+ "sprites/magic/chain_lightning_8dir.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "sprites/magic/fireball_8dir.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "sprites/magic/frostbolt_8dir.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "sprites/npcs/blacksmith.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "sprites/npcs/cartographer.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "sprites/npcs/elder.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "sprites/npcs/grove_warden.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "sprites/npcs/hunter.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "sprites/npcs/merchant.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "world/day_bush_0.png": {
+  "size": [
+   28,
+   22
+  ],
+  "origin": [
+   14,
+   18
+  ]
+ },
+ "world/day_bush_1.png": {
+  "size": [
+   28,
+   22
+  ],
+  "origin": [
+   14,
+   18
+  ]
+ },
+ "world/day_tree_0.png": {
+  "size": [
+   72,
+   84
+  ],
+  "origin": [
+   36,
+   76
+  ]
+ },
+ "world/day_tree_1.png": {
+  "size": [
+   72,
+   84
+  ],
+  "origin": [
+   36,
+   76
+  ]
+ },
+ "world/day_tree_2.png": {
+  "size": [
+   56,
+   66
+  ],
+  "origin": [
+   28,
+   58
+  ]
+ },
+ "world/greenreach_canopy.png": {
+  "size": [
+   1280,
+   864
+  ]
+ },
+ "world/greenreach_ground.png": {
+  "size": [
+   1280,
+   864
+  ]
+ },
+ "world/moonlit_grove_canopy.png": {
+  "size": [
+   1280,
+   864
+  ]
+ },
+ "world/moonlit_grove_ground.png": {
+  "size": [
+   1280,
+   864
+  ]
+ },
+ "world/night_bush_0.png": {
+  "size": [
+   28,
+   22
+  ],
+  "origin": [
+   14,
+   18
+  ]
+ },
+ "world/night_bush_1.png": {
+  "size": [
+   28,
+   22
+  ],
+  "origin": [
+   14,
+   18
+  ]
+ },
+ "world/night_tree_0.png": {
+  "size": [
+   72,
+   84
+  ],
+  "origin": [
+   36,
+   76
+  ]
+ },
+ "world/night_tree_1.png": {
+  "size": [
+   72,
+   84
+  ],
+  "origin": [
+   36,
+   76
+  ]
+ },
+ "world/night_tree_2.png": {
+  "size": [
+   56,
+   66
+  ],
+  "origin": [
+   28,
+   58
+  ]
+ },
+ "world/ruins.png": {
+  "size": [
+   108,
+   110
+  ],
+  "origin": [
+   54,
+   104
+  ]
+ },
+ "world/standing_stones.png": {
+  "size": [
+   120,
+   84
+  ],
+  "origin": [
+   60,
+   78
+  ]
+ }
+}
