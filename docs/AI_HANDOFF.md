@@ -639,3 +639,5 @@ Equipment milestone verification: Godot 4.7.2 workflow run `41443674839` complet
 - Первый запуск теста `iron_mining_crafting.gd` завершился ожидаемой регрессионной ошибкой: `queue_free()` удаляет жилу в конце кадра, поэтому тест проверял отсутствие узлов слишком рано.
 - Исправление в коммите `6ad7627083`: после взаимодействия со всеми тремя жилами тест ожидает `process_frame`, затем проверяет исчезновение узлов. Это изменение теста, не игровой логики.
 - Повторный workflow на коммите `6ad7627083bdcfae6f80d2e832d206d9a4d33252` запущен: https://github.com/DoctorStrangeSH/Skyward-Tales/actions/runs/41651996295 . Нужно дождаться результата, особенно `Test iron mining and crafting progression` и `Headless gameplay smoke test`.
+
+- Повторный CI после исправления ожидания кадра завершился успешно на `6ad7627083bdcfae6f80d2e832d206d9a4d33252`: https://github.com/DoctorStrangeSH/Skyward-Tales/actions/runs/41651996295 . Шаги `Test blacksmith crafting and equipment`, `Test iron mining and crafting progression` и `Headless gameplay smoke test` прошли.
