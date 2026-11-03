@@ -368,7 +368,6 @@ func _on_dialogue_choice_selected(choice_id: String) -> void:
 	relationships.adjust("mira", relationship_gain)
 	if relationships.get_score("mira") >= 20:
 		_reveal_cartographer_cache()
-	_show_relationship_change("mira", relationship_gain)
 	player.add_experience(int(reward.get("experience", 0)))
 	player.add_gold(int(reward.get("gold", 0)))
 	var items: Variant = reward.get("items", [])
@@ -378,7 +377,10 @@ func _on_dialogue_choice_selected(choice_id: String) -> void:
 				player.add_item(str(item.get("id", "")), int(item.get("amount", 1)))
 	hud.close_dialogue()
 	player.set_physics_process(true)
-	hud.show_message("Мира вручила вам выбранную награду.", 3.0)
+	if relationships.get_score("mira") >= 20:
+		hud.show_message("Доверие с Мирой: +%d — %s. Тайник отмечен на карте." % [relationship_gain, relationships.get_rank("mira")], 4.0)
+	else:
+		_show_relationship_change("mira", relationship_gain)
 	_refresh_hud()
 
 func _spawn_elder() -> void:
@@ -463,7 +465,6 @@ func _reveal_cartographer_cache() -> void:
 	discovered_landmarks["greenreach"] = markers
 	if current_region == "greenreach":
 		_update_minimap()
-	hud.show_message("Мира открыла на карте тайник картографа!", 3.5)
 
 func _show_relationship_change(npc_id: String, amount: int) -> void:
 	hud.show_message("Отношение: %s (%+d) — %s" % [relationships.get_name(npc_id), amount, relationships.get_rank(npc_id)], 3.0)
