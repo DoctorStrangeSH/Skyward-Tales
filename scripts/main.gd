@@ -92,6 +92,7 @@ func _ready() -> void:
 	player.stats_changed.connect(_refresh_hud)
 	player.level_up.connect(_on_level_up)
 	player.died.connect(_on_player_died)
+	player.second_wind_triggered.connect(func() -> void: hud.show_message("Второе дыхание! Смерть отступила.", 3.0))
 	_apply_camera_limits()
 	StoryText.reset()
 
@@ -107,7 +108,7 @@ func _ready() -> void:
 	hud.defeat_restart_requested.connect(_restart_run)
 	hud.defeat_load_requested.connect(_load_from_defeat)
 	hud.defeat_menu_requested.connect(_go_to_title)
-	hud.talent_selected.connect(_on_talent_selected)
+	hud.skill_learn_requested.connect(learn_skill)
 	hud.dialogue_choice_selected.connect(_on_dialogue_choice_selected)
 
 	_populate_region()
@@ -195,13 +196,26 @@ func _handle_key(keycode: Key) -> bool:
 			hud.open_world_map(current_region, player.global_position, discovered_landmarks.get(current_region, {}), quests.get_active_summary())
 			return true
 		KEY_K when not world_blocked:
+			if hud.skills_visible:
+				hud.toggle_skill_tree(player)
 			if hud.inventory_open:
 				hud.toggle_inventory(player)
 			if hud.journal_visible:
 				hud.toggle_journal(quests)
 			hud.toggle_bestiary(bestiary_entries, discovered_enemies)
 			return true
+		KEY_T when not world_blocked:
+			if hud.inventory_open:
+				hud.toggle_inventory(player)
+			if hud.bestiary_visible:
+				hud.toggle_bestiary(bestiary_entries, discovered_enemies)
+			if hud.journal_visible:
+				hud.toggle_journal(quests)
+			hud.toggle_skill_tree(player)
+			return true
 		KEY_J when not world_blocked:
+			if hud.skills_visible:
+				hud.toggle_skill_tree(player)
 			if hud.inventory_open:
 				hud.toggle_inventory(player)
 			if hud.bestiary_visible:
@@ -643,6 +657,7 @@ func _on_guardian_defeated(xp: int, death_position: Vector2) -> void:
 	player.add_gold(100)
 	_spawn_loot(death_position, "ancient_relic")
 	hud.show_message("Хранитель побеждён! +100 золота. Древний артефакт ждёт!", 3.5)
+	_grant_sky_seal()
 	director.on_boss_defeated("guardian")
 	request_autosave()
 
@@ -653,6 +668,7 @@ func _on_echo_defeated(xp: int, death_position: Vector2) -> void:
 	player.add_experience(xp)
 	_spawn_loot(death_position, "ancient_relic")
 	hud.show_message("Отголосок повержен!", 3.0)
+	_grant_sky_seal()
 	director.on_boss_defeated("echo")
 	request_autosave()
 
@@ -717,48 +733,29 @@ func _use_consumable(item_id: String, label: String = "") -> void:
 # --- Levels and talents --------------------------------------------------
 
 func _on_level_up(new_level: int) -> void:
-	pending_level_choices.append(new_level)
+	# No pause: each level gives a skill point to spend in the tree (T).
 	Vfx.level_up(self, player.global_position)
 	if hud != null and not game_over:
-		hud.show_message("НОВЫЙ УРОВЕНЬ: %d! Здоровье и мана восстановлены." % new_level, 2.5)
-		_present_next_level_choice()
+		hud.show_message("НОВЫЙ УРОВЕНЬ: %d! +1 очко навыков." % new_level, 3.0)
+		hud.show_tip("skill_tree", "Совет: T — дерево навыков. Там тратятся очки и Печати Неба.", 6.0)
+		_refresh_hud()
 
-func _present_next_level_choice() -> void:
-	if pending_level_choices.is_empty() or game_over or hud == null or hud.talent_visible:
-		return
-	var available: Array[Dictionary] = []
-	for talent_id in talent_definitions:
-		var definition: Dictionary = talent_definitions[talent_id]
-		var rank: int = int(player.talents.get(talent_id, 0))
-		var maximum: int = int(definition.get("max_rank", 3))
-		if rank < maximum:
-			available.append({
-				"id": str(talent_id),
-				"name": str(definition.get("name", talent_id)),
-				"description": str(definition.get("description", "")),
-				"rank": rank,
-				"max_rank": maximum
-			})
-	if available.is_empty():
-		pending_level_choices.clear()
-		hud.show_message("Все таланты изучены. Следующий уровень принесёт новые возможности.", 3.0)
-		return
-	available.shuffle()
-	hud.show_talent_choices(available.slice(0, mini(3, available.size())))
-	get_tree().paused = true
-
-func _on_talent_selected(talent_id: String) -> void:
-	if not hud.talent_visible or not player.apply_talent(talent_id):
-		return
-	if not pending_level_choices.is_empty():
-		pending_level_choices.pop_front()
-	hud.hide_talent_choices()
-	if pending_level_choices.is_empty():
-		get_tree().paused = false
-		hud.show_message("Талант изучен: " + str(talent_definitions.get(talent_id, {}).get("name", talent_id)), 2.5)
-	else:
-		_present_next_level_choice()
+## Learns a skill from the tree window; returns false with a message if blocked.
+func learn_skill(skill_id: String) -> bool:
+	var reason := SkillTree.block_reason(player, skill_id)
+	if not reason.is_empty():
+		hud.show_message(reason, 2.5)
+		return false
+	SkillTree.learn(player, skill_id)
+	hud.show_message("Изучено: " + str(SkillTree.definitions()[skill_id].get("name", skill_id)), 2.5)
+	hud.refresh_skill_tree(player)
 	_refresh_hud()
+	return true
+
+## Bosses grant a Sky Seal that unlocks one tier-3 skill.
+func _grant_sky_seal() -> void:
+	player.add_item(SkillTree.SEAL_ITEM)
+	hud.show_message("Получена Печать Неба! Она открывает высший навык ветки (T).", 4.0)
 
 # --- Magic ---------------------------------------------------------------
 
@@ -796,6 +793,13 @@ func _cast_spell() -> void:
 	bolt.chain_targets = int(spell.get("chain_targets", 0)) + player.get_chain_targets_bonus()
 	bolt.chain_radius = float(spell.get("chain_radius", 0.0))
 	bolt.chain_damage_factor = float(spell.get("chain_damage_factor", 0.65))
+	if selected_spell_id == "fireball" and player.has_skill("fire_ultimate"):
+		bolt.explode_radius = 48.0
+	if selected_spell_id == "frostbolt" and player.has_skill("ice_ultimate"):
+		bolt.pierce_left = 2
+		bolt.freeze_on_hit = true
+	if selected_spell_id == "chain_lightning" and player.has_skill("storm_ultimate"):
+		bolt.chain_damage_factor = 1.0
 	add_child(bolt)
 	bolt.global_position = player.global_position + direction * 12.0
 	player.play_cast(direction)
@@ -909,6 +913,8 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 	return true
 
 func _close_books() -> void:
+	if hud.skills_visible:
+		hud.toggle_skill_tree(player)
 	if hud.bestiary_visible:
 		hud.toggle_bestiary(bestiary_entries, discovered_enemies)
 	if hud.journal_visible:

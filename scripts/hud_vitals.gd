@@ -11,6 +11,7 @@ var max_mana: int = 60
 var experience: int = 0
 var experience_to_next: int = 40
 var gold: int = 0
+var skill_points: int = 0
 
 const FRAME := Color(0.07, 0.06, 0.11, 0.86)
 const BORDER := Color(0.93, 0.78, 0.47)
@@ -32,6 +33,7 @@ func set_values(player: PlayerCharacter) -> void:
 	experience = player.experience
 	experience_to_next = maxi(1, player.experience_to_next)
 	gold = player.gold
+	skill_points = SkillTree.available_points(player)
 	queue_redraw()
 
 func _draw() -> void:
@@ -52,6 +54,11 @@ func _draw() -> void:
 	# Experience sliver.
 	draw_rect(Rect2(31, 31, 82, 3), Color(0.12, 0.1, 0.16))
 	draw_rect(Rect2(31, 31, 82.0 * clampf(float(experience) / experience_to_next, 0.0, 1.0), 3), XP)
+	# Unspent skill points: a small star on the level badge.
+	if skill_points > 0:
+		draw_circle(Vector2(25, 31), 6.0, Color(1.0, 0.8, 0.3))
+		draw_string_outline(font, Vector2(22, 34), str(skill_points), HORIZONTAL_ALIGNMENT_LEFT, -1, 8, 2, Color(0.25, 0.15, 0.05))
+		draw_string(font, Vector2(22, 34), str(skill_points), HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color(0.2, 0.1, 0.02))
 	# Gold.
 	draw_circle(Vector2(123, 11), 3.5, Color(1.0, 0.83, 0.36))
 	draw_circle(Vector2(122, 10), 1.2, Color(1.0, 0.96, 0.75))

@@ -51,6 +51,7 @@ static func capture(game: SkywardGame) -> Dictionary:
 			"inventory": player.inventory.duplicate(true),
 			"equipment": player.equipment.duplicate(true),
 			"talents": player.talents.duplicate(true), "starlight_essence_used": player.starlight_essence_used,
+			"bonus_skill_points": player.bonus_skill_points,
 			"hero_name": player.hero_name, "hero_gender": player.hero_gender
 		},
 		"quest": {"states": game.quests.states.duplicate(true), "active": game.quests.active_quest_id},
@@ -116,6 +117,7 @@ static func _apply_player(player: PlayerCharacter, character: Dictionary) -> voi
 		if not saved_item.is_empty() and player._slot_for_item(saved_item) == str(slot):
 			player.equipment[slot] = saved_item
 	player.talents = character.get("talents", {}).duplicate(true)
+	player.bonus_skill_points = maxi(0, int(character.get("bonus_skill_points", 0)))
 	player.starlight_essence_used = maxi(0, int(character.get("starlight_essence_used", 0)))
 	# Saves from before character creation default to Арен.
 	player.set_identity(str(character.get("hero_name", "")), str(character.get("hero_gender", "m")))

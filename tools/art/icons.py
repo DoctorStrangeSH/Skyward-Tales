@@ -198,4 +198,5 @@ def build() -> dict[str, Canvas]:
         "iron_ore": ore(),
         "crystal_lens": lens(),
         "pattern_key": pattern_key(),
+        "sky_seal": essence(),
     }
