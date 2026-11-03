@@ -2,7 +2,8 @@ extends SceneTree
 
 ## Captures in-game screenshots for visual review.
 ## Usage (needs a display, e.g. xvfb-run):
-##   godot --path . --script res://tools/screenshot.gd -- <out_dir> [region] [x,y ...]
+##   godot --path . --script res://tools/screenshot.gd -- <out_dir> [region] [x,y ...] [@npc_id]
+## "@merchant" (or any NPC id) opens that NPC's conversation before capturing.
 ## Saves <out_dir>/<region>_<x>_<y>.png for each camera position.
 
 func _initialize() -> void:
@@ -13,7 +14,11 @@ func _run() -> void:
 	var out_dir: String = args[0] if args.size() > 0 else "user://screenshots"
 	var region: String = args[1] if args.size() > 1 else "greenreach"
 	var points: Array[Vector2] = []
+	var talk_to := ""
 	for index in range(2, args.size()):
+		if args[index].begins_with("@"):
+			talk_to = args[index].substr(1)
+			continue
 		var parts := args[index].split(",")
 		if parts.size() == 2:
 			points.append(Vector2(float(parts[0]), float(parts[1])))
@@ -34,6 +39,10 @@ func _run() -> void:
 		camera.reset_smoothing()
 		for _frame in range(20):
 			await process_frame
+		if not talk_to.is_empty():
+			game.call("_on_%s_interacted" % talk_to, null)
+			for _frame in range(3):
+				await process_frame
 		var image := root.get_viewport().get_texture().get_image()
 		var path := "%s/%s_%d_%d.png" % [out_dir, region, int(point.x), int(point.y)]
 		image.save_png(path)

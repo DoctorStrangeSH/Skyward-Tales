@@ -41,6 +41,8 @@ scripts/
   world.gd               Земля, деревья, декорации и коллизии региона (из regions.json → terrain).
   world_art.gd           Доступ к сгенерированным текстурам и их точкам привязки.
   hud_vitals.gd          Рамка здоровья/маны/опыта/золота.
+  vfx.gd                 Частицы (попадания, гибель, блёстки, уровень) и вспышка урона
+                         (shaders/hit_flash.gdshader).
   directional_sprite.gd  8-направленные атласы (общий кэш текстур).
 data/            Каталоги контента — добавлять контент сюда, а не в код:
   regions.json           NPC, сундуки, травы, руда, враги, босс, ворота, секреты.
@@ -52,7 +54,7 @@ assets/          Сгенерированный арт: world/ (земля, де
 tools/art/       Генератор пиксель-арта (python3 tools/art/build.py).
 tests/           Headless-тесты, по одному на систему.
 tools/validate_sprite_atlases.py — проверка формата атласов.
-tools/screenshot.gd — скриншоты игры: xvfb-run godot --path . --script res://tools/screenshot.gd -- <dir> <region> x,y
+tools/screenshot.gd — скриншоты игры: xvfb-run godot --path . --script res://tools/screenshot.gd -- <dir> <region> x,y [@npc_id]
 ```
 
 Ключевые правила:
