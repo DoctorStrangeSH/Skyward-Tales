@@ -37,6 +37,23 @@
   }
 ,
   {
+    "id": "bran_supply_run",
+    "title": "Потерянные поставки",
+    "description": "Найдите три ящика с припасами на дороге через Зелёные Пределы и вернитесь к торговцу Брану.",
+    "target": 3,
+    "reward": {"experience": 45, "gold": 40},
+    "choices": {
+      "fair": {
+        "label": "Продать припасы торговцу",
+        "reward": {"experience": 45, "gold": 40, "bran_trust": 8}
+      },
+      "clinic": {
+        "label": "Передать часть припасов лечебнице",
+        "reward": {"experience": 45, "gold": 15, "bran_trust": 20, "elder_trust": 10}
+      }
+    }
+  },
+  {
     "id": "lost_cartographer_notes",
     "title": "Страницы, унесённые ветром",
     "description": "Найдите два обрывка полевого дневника Миры и вернитесь к картографу.",
