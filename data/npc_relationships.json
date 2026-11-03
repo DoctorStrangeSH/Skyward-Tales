@@ -15,6 +15,10 @@
     "bran": {
       "name": "Бран, торговец",
       "starting_score": 0
+    },
+    "toren": {
+      "name": "Торен, охотник",
+      "starting_score": 0
     }
   }
 }
