@@ -143,6 +143,9 @@ jobs:
       - name: Test level-up talent choices and persistence
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/level_up_talents.gd
+      - name: Test modular pause menu panel
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/pause_menu_panel.gd
       - name: Test title menu and pause controls
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/title_menu.gd
