@@ -37,7 +37,8 @@ func _draw() -> void:
 		var coordinates: Array = data.get("position", [])
 		if coordinates.size() != 2:
 			continue
-		var color: Color = Color(0.95, 0.81, 0.38) if str(data.get("kind", "")) == "npc" else Color(0.38, 0.83, 0.98)
+		var marker_kind: String = str(data.get("kind", ""))
+		var color: Color = Color(0.95, 0.81, 0.38) if marker_kind == "npc" else (Color(0.82, 0.55, 1.0) if marker_kind == "secret" else Color(0.38, 0.83, 0.98))
 		draw_rect(Rect2(_map_point(Vector2(float(coordinates[0]), float(coordinates[1]))) - Vector2(2, 2), Vector2(4, 4)), color)
 	var hero: Vector2 = _map_point(hero_position)
 	draw_circle(hero, 3.0, Color(1.0, 0.95, 0.9))
