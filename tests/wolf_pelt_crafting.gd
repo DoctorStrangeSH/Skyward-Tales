@@ -19,7 +19,15 @@ func _run() -> void:
 	var game := _new_game()
 	await process_frame
 	game._on_wolf_defeated(8, Vector2(12, 20))
-	if not _verify(int(game.player.inventory.get("wolf_pelt", 0)) == 1, "wolf defeat grants one pelt"):
+	var pelt_drop: WorldLoot = null
+	for actor in game.get_children():
+		if actor is WorldLoot and actor.item_id == "wolf_pelt":
+			pelt_drop = actor
+			break
+	if not _verify(pelt_drop != null, "wolf defeat spawns a wolf pelt pickup"):
+		return
+	pelt_drop.interact()
+	if not _verify(int(game.player.inventory.get("wolf_pelt", 0)) == 1, "collecting the drop adds one pelt to inventory"):
 		return
 	game.player.add_item("wolf_pelt", 2)
 	game.quests.states["toren_wolf_hunt"]["completed"] = true
