@@ -18,6 +18,7 @@ var dialogue_label: Label
 var dialogue_speaker_label: Label
 var dialogue_hint_label: Label
 var dialogue_portrait: TextureRect
+var title_card: Label
 var spell_label: Label
 var spell_cooldown_bar: ProgressBar
 var dodge_label: Label
@@ -451,6 +452,7 @@ func hide_defeat() -> void:
 		get_tree().paused = false
 
 func show_message(message: String, duration: float = 3.0) -> void:
+	message = StoryText.format(message)
 	message_label.text = message
 	message_time = duration
 	if toasts != null:
@@ -481,6 +483,64 @@ func _set_speaker(speaker: String) -> void:
 			break
 	dialogue_portrait.texture = portrait
 	dialogue_portrait.get_parent().visible = portrait != null
+
+func _set_portrait(rel_path: String) -> void:
+	var portrait: Texture2D = null
+	if not rel_path.is_empty():
+		var sheet := WorldArt.texture(rel_path)
+		if sheet != null:
+			var atlas := AtlasTexture.new()
+			atlas.atlas = sheet
+			atlas.region = Rect2(4, 0, 24, 24)
+			portrait = atlas
+	dialogue_portrait.texture = portrait
+	dialogue_portrait.get_parent().visible = portrait != null
+
+## One line of a story scene (StoryScene); E continues.
+func show_scene_line(speaker: String, message: String, portrait_path: String) -> void:
+	dialogue_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_clear_dialogue_choices()
+	dialogue_speaker_label.text = speaker
+	_set_portrait(portrait_path)
+	dialogue_label.text = message
+	dialogue_hint_label.text = "E — дальше"
+	dialogue_panel.visible = true
+	dialogue_visible = true
+	_layout_dialogue()
+
+## Big chapter title in the middle of the screen that fades in and out.
+func show_title_card(text: String, duration: float = 3.0) -> void:
+	var card := Label.new()
+	card.text = text
+	card.add_theme_font_size_override("font_size", 20)
+	card.add_theme_color_override("font_color", Color(1.0, 0.92, 0.7))
+	card.add_theme_color_override("font_outline_color", Color(0.05, 0.04, 0.08))
+	card.add_theme_constant_override("outline_size", 5)
+	card.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	card.position = Vector2(0, 110)
+	card.size = Vector2(640, 40)
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.modulate.a = 0.0
+	dialogue_panel.get_parent().add_child(card)
+	var tween := card.create_tween()
+	tween.tween_property(card, "modulate:a", 1.0, 0.6)
+	tween.tween_interval(maxf(0.2, duration - 1.4))
+	tween.tween_property(card, "modulate:a", 0.0, 0.8)
+	tween.tween_callback(card.queue_free)
+	title_card = card
+
+## Full-screen colour that fades away (screen flashes, fade from black).
+func flash_screen(color: Color, duration: float = 0.4) -> void:
+	var rect := ColorRect.new()
+	rect.color = color
+	rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	rect.size = Vector2(640, 360)
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dialogue_panel.get_parent().add_child(rect)
+	dialogue_panel.get_parent().move_child(rect, 0)
+	var tween := rect.create_tween()
+	tween.tween_property(rect, "modulate:a", 0.0, duration)
+	tween.tween_callback(rect.queue_free)
 
 func _layout_dialogue() -> void:
 	# Grow upwards from the bottom edge so long choice lists stay on screen.

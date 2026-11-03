@@ -451,6 +451,10 @@ def portrait_sheet(look: Look) -> Canvas:
 HERO = Look(cape=r4("#4fa0d8", "#2f72b0", "#244f88", "#1c3560"),
             strap=r4("#c99a5d", "#8f6142", "#5e3d33", "#3f2a2c"))
 
+HERO_F = Look(hair=r4("#f0a0c0", "#c86a98", "#94466e", "#5e2a4a"), hair_style="long",
+              cape=r4("#4fa0d8", "#2f72b0", "#244f88", "#1c3560"),
+              strap=r4("#c99a5d", "#8f6142", "#5e3d33", "#3f2a2c"))
+
 NPCS = {
     "elder": Look(hair=r4("#f4f4f0", "#d5d6dc", "#a5a8b8", "#6c6f85"), hair_style="long",
                   top=r4("#a1d68b", "#6fae63", "#4a8250", "#2f5640"), robe=True, scarf=False,

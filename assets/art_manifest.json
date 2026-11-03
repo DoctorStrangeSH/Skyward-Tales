@@ -265,6 +265,16 @@
    14
   ]
  },
+ "props/sky_shard.png": {
+  "size": [
+   30,
+   28
+  ],
+  "origin": [
+   15,
+   23
+  ]
+ },
  "props/spirit_blossom.png": {
   "size": [
    20,
@@ -302,6 +312,18 @@
   ]
  },
  "sprites/characters/hero_8dir_walk.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "sprites/characters/hero_f_8dir_cast.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "sprites/characters/hero_f_8dir_walk.png": {
   "size": [
    128,
    256

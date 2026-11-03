@@ -63,7 +63,7 @@ func get_reaction(npc_id: String) -> String:
 	var rank := get_rank(npc_id)
 	match rank:
 		"Враждебность":
-			return "Я не забыл твоих поступков и не желаю тебе доверять"
+			return "Я помню твои поступки и не желаю тебе доверять"
 		"Недоверие":
 			return "Мне ещё трудно тебе доверять"
 		"Знакомый":

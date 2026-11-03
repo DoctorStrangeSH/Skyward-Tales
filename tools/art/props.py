@@ -541,3 +541,34 @@ def key_badge() -> tuple[Canvas, tuple[int, int]]:
         c.put(x, 6, ink) if False else None
     c.outline(OUTLINE)
     return c, (6, 12)
+
+
+def sky_shard() -> tuple[Canvas, tuple[int, int]]:
+    """A fallen fragment of a sky island: glowing shard in a scorched crater."""
+    c = Canvas(30, 28)
+    dirt = ramp("#5e3d33", "#3f2a2c", "#2a1b22")
+    for y in range(18, 27):
+        for x in range(1, 29):
+            d = ((x + 0.5 - 15) / 13.5) ** 2 + ((y + 0.5 - 22) / 4.5) ** 2
+            if d <= 1:
+                c.put(x, y, dirt[2] if d < 0.45 else (dirt[1] if d < 0.8 else dirt[0]))
+    glow = ramp("#ffffff", "#d8fbff", "#8fe0ff", "#3a8ac8")
+    for y in range(2, 23):
+        p = (y - 2) / 21
+        half = 5 * min(1.0, p * 2.0 + 0.15)
+        cx = 15 + (1 - p) * 3
+        for x in range(int(cx - half), int(cx + half) + 1):
+            rel = (x + 0.5 - (cx - half)) / (2 * half + 0.01)
+            c.put(x, y, glow[0] if rel < 0.25 else (glow[1] if rel < 0.55 else (glow[2] if rel < 0.85 else glow[3])))
+    for x, y in ((8, 20), (21, 19), (11, 22), (19, 23)):
+        c.put(x, y, glow[2])
+        c.put(x, y - 1, glow[1])
+    _finish(c)
+    for y in range(0, 26):
+        for x in range(30):
+            if c.alpha(x, y) == 255:
+                continue
+            d = ((x + 0.5 - 16) / 15) ** 2 + ((y + 0.5 - 12) / 13) ** 2
+            if d <= 1:
+                c.blend(x, y, glow[2][:3] + (int(55 * (1 - d)),))
+    return c, (15, 23)

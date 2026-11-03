@@ -76,6 +76,8 @@ def build_characters() -> None:
     print("characters")
     save(characters.sheet(characters.HERO), "sprites/characters/hero_8dir_walk.png")
     save(characters.cast_sheet(characters.HERO), "sprites/characters/hero_8dir_cast.png")
+    save(characters.sheet(characters.HERO_F), "sprites/characters/hero_f_8dir_walk.png")
+    save(characters.cast_sheet(characters.HERO_F), "sprites/characters/hero_f_8dir_cast.png")
     for npc_id, look in characters.NPCS.items():
         save(characters.portrait_sheet(look), f"sprites/npcs/{npc_id}.png")
     save(characters.sheet(characters.SHAMAN), "sprites/enemies/forest_shaman_8dir.png")
@@ -97,7 +99,7 @@ def build_props() -> None:
         "health_potion": props.potion("red"), "mana_potion": props.potion("blue"),
         "wolf_pelt": props.pelt(), "relic": props.treasure("relic"), "pouch": props.treasure("pouch"),
         "gate_day": props.gate(False), "gate_night": props.gate(True), "gate_cave": props.cave_gate(),
-        "echo_crystal": props.herb("echo_crystal"),
+        "echo_crystal": props.herb("echo_crystal"), "sky_shard": props.sky_shard(),
         "marker_quest": props.marker("quest"), "marker_ready": props.marker("ready"),
         "marker_service": props.marker("service"), "key_e": props.key_badge(),
     }

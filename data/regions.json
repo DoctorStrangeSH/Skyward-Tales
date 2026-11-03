@@ -226,7 +226,16 @@
         [336, 653],
         [812, 378]
       ]
-    }
+    },
+    "story_objects": [
+      {
+        "id": "sky_shard",
+        "name": "Осколок неба",
+        "quest": "main_prologue",
+        "scene": "shard_inspect",
+        "position": [895, 178]
+      }
+    ]
   },
   "moonlit_grove": {
     "name": "Зачарованный лес",

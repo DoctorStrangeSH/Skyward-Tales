@@ -9,6 +9,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 # (path, cell size): every directional sheet is 4 columns x 8 rows.
 SHEETS = {
     "hero": (ROOT / "assets/sprites/characters/hero_8dir_walk.png", 32),
+    "hero_f": (ROOT / "assets/sprites/characters/hero_f_8dir_walk.png", 32),
     "slime": (ROOT / "assets/sprites/enemies/forest_slime_true8.png", 32),
     "wolf": (ROOT / "assets/sprites/enemies/forest_wolf_8dir.png", 32),
     "shaman": (ROOT / "assets/sprites/enemies/forest_shaman_8dir.png", 32),
