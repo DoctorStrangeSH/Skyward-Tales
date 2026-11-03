@@ -451,3 +451,11 @@ Equipment milestone verification: Godot 4.7.2 workflow run `41443674839` complet
 - `GameHud.show_talent_choices()` и `hide_talent_choices()` сохраняют свои контракты; поля `talent_panel` и `talent_list` оставлены совместимыми алиасами.
 - `tests/talent_choice_panel.gd` проверяет структуру, ранги, подсказки, сигналы, открытие/закрытие. `tests/level_up_talents.gd` по-прежнему запускается в CI.
 - Последний проверенный CI перед этим изменением: run 41507791484, success, 51/51 шаг; исправление `tests/world_map_panel.gd` в commit `2766fad8701f67caeaf3548af48ee6dd9849febd`. Новый CI необходимо проверить отдельно. PR #1 сохранять Draft до ручного QA.
+
+
+## 24. Модульное меню паузы — 2026-11-03
+
+- Создан `scripts/pause_menu_panel.gd` (`PauseMenuPanel extends PanelContainer`); он рисует кнопки «Продолжить», «Сохранить», «Загрузить», «Главное меню» и выдаёт внутренние сигналы.
+- `GameHud._ready()` пересылает внутренние сигналы в прежние `pause_save_requested`, `pause_load_requested`, `pause_menu_requested` и `_set_paused(false)`. Ссылка `pause_panel` сохранена; запреты снятия паузы при поражении/выборе таланта остались в HUD.
+- `tests/pause_menu_panel.gd` проверяет структуру, маршрутизацию сигналов, открытие/закрытие и паузу. Старый тест `tests/title_menu.gd` сохранён; добавлен отдельный шаг CI.
+- Исходный HEAD `ab7d0129cebd33ceabc73ad491466727913b4911`; новый CI необходимо проверить отдельно, так как GitHub ещё не предоставил run для предыдущего коммита на момент ревизии. Draft PR #1 не сливать без ручного QA.

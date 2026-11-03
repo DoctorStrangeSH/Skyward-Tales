@@ -44,6 +44,7 @@ signal defeat_load_requested
 signal defeat_menu_requested
 signal talent_selected(talent_id: String)
 var pause_panel: PanelContainer
+var pause_view: PauseMenuPanel
 var defeat_panel: PanelContainer
 var defeat_hint_label: Label
 var defeat_load_button: Button
@@ -175,20 +176,13 @@ func _ready() -> void:
 	comparison_grid = comparison_view.stats_grid
 	comparison_description = comparison_view.description_label
 
-	pause_panel = PanelContainer.new()
-	pause_panel.position = Vector2(200, 65)
-	pause_panel.custom_minimum_size = Vector2(240, 210)
-	pause_panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	pause_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.04, 0.06, 0.09, 0.98)))
-	root.add_child(pause_panel)
-	var pause_box := VBoxContainer.new()
-	pause_panel.add_child(pause_box)
-	pause_box.add_child(_make_label("ПАУЗА", 16, Color(0.96, 0.87, 0.65)))
-	_pause_button(pause_box, "Продолжить", func() -> void: _set_paused(false))
-	_pause_button(pause_box, "Сохранить", func() -> void: pause_save_requested.emit())
-	_pause_button(pause_box, "Загрузить", func() -> void: pause_load_requested.emit())
-	_pause_button(pause_box, "Главное меню", func() -> void: pause_menu_requested.emit())
-	pause_panel.visible = false
+	pause_view = PauseMenuPanel.new()
+	root.add_child(pause_view)
+	pause_panel = pause_view
+	pause_view.resume_requested.connect(func() -> void: _set_paused(false))
+	pause_view.save_requested.connect(func() -> void: pause_save_requested.emit())
+	pause_view.load_requested.connect(func() -> void: pause_load_requested.emit())
+	pause_view.menu_requested.connect(func() -> void: pause_menu_requested.emit())
 
 	defeat_panel = PanelContainer.new()
 	defeat_panel.position = Vector2(150, 66)
