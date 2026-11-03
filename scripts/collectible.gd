@@ -14,7 +14,7 @@ func interact() -> void:
 	interacted.emit(self)
 
 func _draw() -> void:
-	if item_id == "supply_crate":
+	if item_id.begins_with("supply_crate_"):
 		draw_rect(Rect2(-9, -8, 18, 16), Color(0.43, 0.27, 0.14))
 		draw_rect(Rect2(-9, -8, 18, 3), Color(0.68, 0.48, 0.25))
 		draw_rect(Rect2(-2, -8, 4, 16), Color(0.78, 0.62, 0.34))
