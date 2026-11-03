@@ -85,6 +85,26 @@ static func meteor(parent: Node, to: Vector2) -> void:
 		burst(parent, to, [Color(1, 1, 1), Color(0.7, 0.95, 1.0), Color(0.4, 0.7, 1.0, 0.0)], 30, 120.0, 0.8))
 	tween.tween_callback(trail.queue_free)
 
+## Defeated enemies leave a ghost of their last frame that flattens and fades.
+static func dissolve(parent: Node, sprite: Sprite2D) -> void:
+	if parent == null or sprite == null or not parent.is_inside_tree() or sprite.texture == null:
+		return
+	var ghost := Sprite2D.new()
+	ghost.texture = sprite.texture
+	ghost.hframes = sprite.hframes
+	ghost.vframes = sprite.vframes
+	ghost.frame = sprite.frame
+	ghost.offset = sprite.offset
+	ghost.scale = sprite.global_scale
+	ghost.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	ghost.modulate = Color(1.6, 1.6, 1.6, 0.95)
+	parent.add_child(ghost)
+	ghost.global_position = sprite.global_position
+	var tween := ghost.create_tween().set_parallel(true)
+	tween.tween_property(ghost, "scale", Vector2(ghost.scale.x * 1.35, ghost.scale.y * 0.15), 0.32)
+	tween.tween_property(ghost, "modulate:a", 0.0, 0.32)
+	tween.chain().tween_callback(ghost.queue_free)
+
 ## Gives a CanvasItem a private hit-flash material.
 static func enable_flash(item: CanvasItem) -> void:
 	var material := ShaderMaterial.new()

@@ -29,6 +29,7 @@ var controls_page: VBoxContainer
 var settings_page: VBoxContainer
 var hints_toggle: CheckButton
 var damage_toggle: CheckButton
+var shake_toggle: CheckButton
 
 func _ready() -> void:
 	position = Vector2(190, 40)
@@ -64,6 +65,7 @@ func _ready() -> void:
 	settings_page = _page("НАСТРОЙКИ")
 	hints_toggle = _toggle(settings_page, "Обучающие советы", "hints")
 	damage_toggle = _toggle(settings_page, "Числа урона над врагами", "damage_numbers")
+	shake_toggle = _toggle(settings_page, "Тряска экрана", "screen_shake")
 	_button(settings_page, "Показать советы заново", func() -> void: GameSettings.reset_tips())
 	_button(settings_page, "Назад", func() -> void: show_page(main_page))
 	show_page(main_page)

@@ -21,6 +21,7 @@ func _ready() -> void:
 	super._ready()
 
 func _physics_process(delta: float) -> void:
+	_apply_knockback(delta)
 	_update_burning(delta)
 	if is_queued_for_deletion():
 		return
@@ -45,6 +46,9 @@ func _physics_process(delta: float) -> void:
 			desired = to_player.normalized()
 		if distance <= shooting_distance and attack_cooldown <= 0.0:
 			if not _has_world_obstacle(to_player, distance):
+				# A green flash and a crouch telegraph each spell.
+				Vfx.flash(visual, Color(0.6, 1.0, 0.8), 0.25)
+				_pose("lunge")
 				_shoot_at(player.global_position)
 				attack_cooldown = attack_cooldown_duration
 	elif brain_state == BrainState.RETURN:

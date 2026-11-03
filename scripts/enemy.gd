@@ -31,6 +31,12 @@ var sprite_sheet: String = SLIME_SHEET
 var sprite_scale: float = 1.0
 var sprite_offset: Vector2 = Vector2(0.0, -14.0)
 var sprite_fps: float = 5.5
+## Pushed back by hits; decays quickly. Bosses resist it.
+var knockback: Vector2 = Vector2.ZERO
+var knockback_resist: float = 0.0
+## Elite modifier id from data/elites.json ("" = ordinary enemy).
+var elite_id: String = ""
+var _pose_tween: Tween
 var combat_feedback: EnemyCombatFeedback
 
 func _ready() -> void:
@@ -135,6 +141,7 @@ func _avoid_world_obstacles(desired: Vector2, delta: float = 0.016) -> Vector2:
 	return Vector2.ZERO
 
 func _physics_process(delta: float) -> void:
+	_apply_knockback(delta)
 	_update_burning(delta)
 	_refresh_elemental_feedback()
 	if is_queued_for_deletion():
@@ -187,6 +194,34 @@ func _physics_process(delta: float) -> void:
 func _shape_chase(direction: Vector2, _delta: float) -> Vector2:
 	return direction
 
+## Squash/stretch poses: "windup" crouches, "lunge" stretches, "rest" resets.
+func _pose(kind: String, duration: float = 0.12) -> void:
+	if visual == null or not visual.is_inside_tree():
+		return
+	if _pose_tween != null and _pose_tween.is_valid():
+		_pose_tween.kill()
+	var base := Vector2.ONE * sprite_scale
+	var target := base
+	match kind:
+		"windup":
+			target = Vector2(base.x * 1.22, base.y * 0.78)
+		"lunge":
+			target = Vector2(base.x * 0.82, base.y * 1.2)
+	_pose_tween = visual.create_tween()
+	_pose_tween.tween_property(visual, "scale", target, duration)
+	if kind == "lunge":
+		_pose_tween.tween_property(visual, "scale", base, 0.18)
+
+func apply_knockback(direction: Vector2, strength: float) -> void:
+	knockback += direction.normalized() * strength * (1.0 - clampf(knockback_resist, 0.0, 1.0))
+
+func _apply_knockback(delta: float) -> void:
+	if knockback.length_squared() < 1.0:
+		knockback = Vector2.ZERO
+		return
+	move_and_collide(knockback * delta)
+	knockback = knockback.move_toward(Vector2.ZERO, 700.0 * delta)
+
 func _start_special_attack(direction: Vector2) -> void:
 	attack_direction = direction.normalized()
 	attack_has_hit = false
@@ -196,6 +231,11 @@ func _start_special_attack(direction: Vector2) -> void:
 	visual.set_moving(false)
 	visual.modulate = Color(1.0, 0.58, 0.34) if attack_state == AttackState.WINDUP else Color(1.0, 0.88, 0.62)
 	combat_feedback.set_warning(attack_state == AttackState.WINDUP)
+	if attack_state == AttackState.WINDUP:
+		_pose("windup", attack_windup_duration)
+		combat_feedback.set_telegraph(attack_direction, attack_lunge_speed * attack_lunge_duration)
+	else:
+		_pose("lunge")
 
 func _cancel_special_attack() -> void:
 	attack_state = AttackState.NONE
@@ -203,8 +243,10 @@ func _cancel_special_attack() -> void:
 	attack_has_hit = false
 	if combat_feedback != null:
 		combat_feedback.set_warning(false)
+		combat_feedback.set_telegraph(Vector2.ZERO, 0.0)
 	if visual != null:
 		visual.modulate = base_visual_tint
+		_pose("rest")
 
 func _update_special_attack(delta: float, player: Node2D) -> bool:
 	if attack_state == AttackState.NONE:
@@ -219,6 +261,8 @@ func _update_special_attack(delta: float, player: Node2D) -> bool:
 		if attack_timer <= 0.0:
 			attack_state = AttackState.LUNGE
 			combat_feedback.set_warning(false)
+			combat_feedback.set_telegraph(Vector2.ZERO, 0.0)
+			_pose("lunge")
 			attack_timer = attack_lunge_duration
 			visual.modulate = Color(1.0, 0.88, 0.62)
 		return true
@@ -342,5 +386,6 @@ func take_damage(amount: int) -> void:
 	Vfx.flash(visual)
 	if health <= 0:
 		Vfx.defeat(get_parent(), global_position)
+		Vfx.dissolve(get_parent(), visual)
 		defeated.emit(xp_reward)
 		queue_free()

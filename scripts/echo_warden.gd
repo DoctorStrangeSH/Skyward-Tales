@@ -31,6 +31,8 @@ func _summon_bats() -> void:
 	var parent := get_parent()
 	if parent == null:
 		return
+	if parent.has_method("shake"):
+		parent.shake(4.0, 0.4)
 	for offset in [Vector2(-40, -10), Vector2(40, -10)]:
 		var bat := BAT_SCRIPT.new() as SlimeEnemy
 		bat.position = global_position + offset

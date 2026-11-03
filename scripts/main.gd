@@ -65,6 +65,9 @@ var autosave_enabled: bool = true
 var _autosave_pending: bool = false
 var _session_time: float = 0.0
 var _marker_clock: float = 0.0
+var _shake_time: float = 0.0
+var _shake_duration: float = 0.0
+var _shake_strength: float = 0.0
 
 func _ready() -> void:
 	loot_rng.randomize()
@@ -94,6 +97,7 @@ func _ready() -> void:
 	player.stats_changed.connect(_refresh_hud)
 	player.level_up.connect(_on_level_up)
 	player.died.connect(_on_player_died)
+	player.hurt.connect(func(amount: int) -> void: shake(clampf(1.5 + amount * 0.15, 1.5, 4.0), 0.18))
 	player.second_wind_triggered.connect(func() -> void: hud.show_message("Второе дыхание! Смерть отступила.", 3.0))
 	_apply_camera_limits()
 	StoryText.reset()
@@ -127,8 +131,29 @@ func _ready() -> void:
 		hud.show_tip("controls", "Совет: Esc — пауза, там же управление и настройки.", 6.0)
 	_refresh_hud()
 
+## Camera shake (off when the "Тряска экрана" setting is disabled).
+func shake(strength: float, duration: float) -> void:
+	if not GameSettings.get_bool("screen_shake"):
+		return
+	if strength >= _shake_strength * (_shake_time / maxf(0.01, _shake_duration)):
+		_shake_strength = strength
+		_shake_duration = duration
+		_shake_time = duration
+
+func _update_shake(delta: float) -> void:
+	var camera := player.get_node_or_null("Camera2D") as Camera2D if player != null else null
+	if camera == null:
+		return
+	if _shake_time <= 0.0:
+		camera.offset = Vector2.ZERO
+		return
+	_shake_time = maxf(0.0, _shake_time - delta)
+	var power := _shake_strength * (_shake_time / maxf(0.01, _shake_duration))
+	camera.offset = Vector2(randf_range(-power, power), randf_range(-power, power)).round()
+
 func _process(delta: float) -> void:
 	_session_time += delta
+	_update_shake(delta)
 	cast_cooldown_remaining = maxf(0.0, cast_cooldown_remaining - delta)
 	if player == null or hud == null or game_over:
 		return
@@ -279,7 +304,7 @@ func _populate_region() -> void:
 	for herb_data in layout.get("herbs", []):
 		_spawn_herb(_vec(herb_data.get("position")), str(herb_data.get("id", "moonleaf")), str(herb_data.get("name", "Лунный лист")))
 	for enemy_data in layout.get("enemies", []):
-		spawn_enemy(str(enemy_data.get("kind", "slime")), _vec(enemy_data.get("position")))
+		spawn_enemy(str(enemy_data.get("kind", "slime")), _vec(enemy_data.get("position")), str(enemy_data.get("elite", "?")))
 	var boss: Dictionary = layout.get("boss", {})
 	if not boss.is_empty() and quests.is_completed(str(boss.get("after_quest", ""))):
 		spawn_region_boss()
@@ -467,7 +492,8 @@ func _spawn_npc(npc_data: Dictionary) -> void:
 
 ## Spawns an enemy of the given kind and returns it, or null if it must not
 ## appear (unknown kind, defeated or already present boss).
-func spawn_enemy(kind: String, spawn_position: Vector2) -> SlimeEnemy:
+## elite: "" ordinary, a modifier id, or "?" to roll (story mode only).
+func spawn_enemy(kind: String, spawn_position: Vector2, elite: String = "") -> SlimeEnemy:
 	if not ENEMY_SCRIPTS.has(kind):
 		push_warning("Неизвестный тип противника: " + kind)
 		return null
@@ -485,16 +511,25 @@ func spawn_enemy(kind: String, spawn_position: Vector2) -> SlimeEnemy:
 				return null
 	var enemy := (ENEMY_SCRIPTS[kind] as GDScript).new() as SlimeEnemy
 	enemy.position = spawn_position
+	if elite == "?":
+		elite = EliteModifiers.roll(loot_rng) if director.story_mode() and EliteModifiers.can_be_elite(kind) else ""
+	if not elite.is_empty():
+		EliteModifiers.apply(enemy, elite)
 	add_child(enemy)
+	EliteModifiers.finish(enemy)
 	match kind:
 		"guardian":
 			enemy.defeated.connect(func(xp: int) -> void: _on_guardian_defeated(xp, enemy.global_position))
 		"echo":
 			enemy.defeated.connect(func(xp: int) -> void: _on_echo_defeated(xp, enemy.global_position))
 		"wolf":
-			enemy.defeated.connect(func(xp: int) -> void: _on_wolf_defeated(xp, enemy.global_position))
+			enemy.defeated.connect(func(xp: int) -> void:
+				_on_wolf_defeated(xp, enemy.global_position)
+				_on_elite_defeated(enemy))
 		_:
-			enemy.defeated.connect(func(xp: int) -> void: _on_enemy_defeated(xp, enemy.global_position))
+			enemy.defeated.connect(func(xp: int) -> void:
+				_on_enemy_defeated(xp, enemy.global_position)
+				_on_elite_defeated(enemy))
 	return enemy
 
 func _spawn_guardian(spawn_position: Vector2) -> void:
@@ -659,6 +694,7 @@ func _on_guardian_defeated(xp: int, death_position: Vector2) -> void:
 	player.add_gold(100)
 	_spawn_loot(death_position, "ancient_relic")
 	spawn_generated_loot(death_position + Vector2(14, 6), "rare")
+	shake(5.0, 0.5)
 	hud.show_message("Хранитель побеждён! +100 золота. Древний артефакт ждёт!", 3.5)
 	_grant_sky_seal()
 	director.on_boss_defeated("guardian")
@@ -671,6 +707,7 @@ func _on_echo_defeated(xp: int, death_position: Vector2) -> void:
 	player.add_experience(xp)
 	_spawn_loot(death_position, "ancient_relic")
 	spawn_generated_loot(death_position + Vector2(14, 6), "rare")
+	shake(6.0, 0.6)
 	hud.show_message("Отголосок повержен!", 3.0)
 	_grant_sky_seal()
 	director.on_boss_defeated("echo")
@@ -700,6 +737,13 @@ func _on_enemy_defeated(xp_reward: int, death_position: Vector2) -> void:
 	if loot_rng.randf() < LootGenerator.drop_chance():
 		spawn_generated_loot(death_position + Vector2(10, 4))
 	hud.show_message("Противник побеждён! +%d опыта" % xp_reward, 1.5)
+
+## Elites always leave equipment (uncommon or better).
+func _on_elite_defeated(enemy: SlimeEnemy) -> void:
+	if enemy.elite_id.is_empty():
+		return
+	spawn_generated_loot(enemy.global_position + Vector2(-10, 6), "uncommon")
+	shake(2.5, 0.25)
 
 ## Drops a rolled piece of equipment (bosses pass a minimum rarity).
 func spawn_generated_loot(at: Vector2, minimum_rarity: String = "common") -> String:
