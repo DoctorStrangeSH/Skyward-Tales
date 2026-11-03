@@ -200,6 +200,15 @@ func _populate_region() -> void:
 		_spawn_gate("greenreach", Vector2(1120, 205), Vector2(1080, 205), "Возврат к Зелёным Пределам")
 	else:
 		_spawn_elder()
+		_spawn_cartographer()
+		var fragments_remaining: int = 0
+		if not quests.is_completed("lost_cartographer_notes"):
+			var fragment_state: Dictionary = quests.states.get("lost_cartographer_notes", {})
+			var target: int = int(quests.definitions.get("lost_cartographer_notes", {}).get("target", 2))
+			fragments_remaining = target - (int(fragment_state.get("progress", 0)) if bool(fragment_state.get("started", false)) else 0)
+		var fragment_positions: Array[Vector2] = [Vector2(455, 535), Vector2(610, 585)]
+		for index in range(clampi(fragments_remaining, 0, fragment_positions.size())):
+			_spawn_herb(fragment_positions[index], "map_fragment", "Обрывок полевого дневника")
 		_spawn_chest("greenreach_ruins", Vector2(960, 175), 45, "health_potion", 2)
 		_spawn_chest("greenreach_woodland", Vector2(660, 460), 30, "mana_potion", 1)
 		# Optional exploration find off the main road, remembered by the existing chest save state.
@@ -308,6 +317,32 @@ func _on_grove_warden_interacted(_source: Node2D) -> void:
 		_show_dialogue("Хранительница Илара", "Заверши начатое дело, прежде чем браться за новое.")
 	_refresh_hud()
 
+func _spawn_cartographer() -> void:
+	var cartographer := NPC_SCRIPT.new() as WorldNpc
+	cartographer.display_name = "Мира, картограф"
+	add_child(cartographer)
+	cartographer.global_position = Vector2(205, 485)
+	cartographer.interacted.connect(_on_cartographer_interacted)
+
+func _on_cartographer_interacted(_source: Node2D) -> void:
+	const quest_id := "lost_cartographer_notes"
+	if quests.is_completed(quest_id):
+		_show_dialogue("Мира, картограф", "Теперь я смогу восстановить карту. Спасибо, что помог незнакомке в дороге.")
+	elif not quests.is_completed("moonleaf_gathering"):
+		_show_dialogue("Мира, картограф", "Я ищу страницы своего полевого дневника. Но сначала помоги старейшине Элиану — поселению сейчас нужнее твоя помощь.")
+	elif not quests.active_quest_id.is_empty() and quests.active_quest_id != quest_id:
+		_show_dialogue("Мира, картограф", "Понимаю, у тебя уже есть важное дело. Найди меня, когда освободишься.")
+	elif not bool(quests.states[quest_id]["started"]):
+		quests.start_quest(quest_id)
+		_show_dialogue("Мира, картограф", "Ветер разметал страницы моего полевого дневника возле старого лагеря. Найди два обрывка на поляне и принеси их мне. Там записаны безопасные тропы через лес.")
+	elif quests.is_ready_to_complete(quest_id):
+		if quests.complete_quest(quest_id):
+			_grant_quest_reward(quest_id)
+		_show_dialogue("Мира, картограф", "Все страницы на месте! Теперь я смогу восстановить карту. Прими эту скромную награду — ты её заслужил.")
+	else:
+		_show_dialogue("Мира, картограф", "Ищи страницы у старого лагеря, чуть восточнее от меня. На них нарисованы отметки безопасных троп.")
+	_refresh_hud()
+
 func _spawn_elder() -> void:
 	elder = NPC_SCRIPT.new() as WorldNpc
 	elder.display_name = "Старейшина Элиан"
@@ -409,6 +444,18 @@ func _on_herb_interacted(source: Node2D) -> void:
 	var herb := source as WorldCollectible
 	var required_quest: String = "grove_spirits" if current_region == "moonlit_grove" else "moonleaf_gathering"
 	if herb == null:
+		return
+	if herb.item_id == "map_fragment":
+		const side_quest_id := "lost_cartographer_notes"
+		if quests.active_quest_id == side_quest_id and not quests.is_completed(side_quest_id):
+			quests.add_progress(side_quest_id, 1)
+			herb.queue_free()
+			hud.show_message("Найден обрывок полевого дневника.", 2.0)
+			if quests.is_ready_to_complete(side_quest_id):
+				hud.show_message("Обе страницы найдены! Вернитесь к Мире.", 3.0)
+		else:
+			hud.show_message("Обрывок полевого дневника. Возможно, Мира знает, кому он принадлежит.", 2.5)
+		_refresh_hud()
 		return
 	if quests.active_quest_id == required_quest and not quests.is_completed(required_quest):
 		quests.add_progress(required_quest, 1)

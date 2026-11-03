@@ -155,6 +155,9 @@ jobs:
       - name: Test world map component and pause handling
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/world_map_panel.gd
+      - name: Test cartographer side quest and persistence
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/cartographer_side_quest.gd
       - name: Test optional cartographer cache exploration
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/cartographer_cache.gd
