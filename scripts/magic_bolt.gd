@@ -72,6 +72,8 @@ func _on_body_entered(body: Node2D) -> void:
 		return
 	if body.is_in_group("enemies") and body.has_method("take_damage"):
 		_already_hit.append(body)
+		if body.has_method("apply_knockback"):
+			body.apply_knockback(direction, 90.0)
 		body.take_elemental_damage(damage, _element_for_spell()) if body.has_method("take_elemental_damage") else body.take_damage(damage)
 		if not body.is_queued_for_deletion() and body.has_method("react_to_spell"):
 			body.react_to_spell(spell_id)

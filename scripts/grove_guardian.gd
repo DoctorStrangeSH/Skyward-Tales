@@ -22,6 +22,7 @@ func _ready() -> void:
 	visual.modulate = base_visual_tint
 	combat_feedback.elite = true
 	combat_feedback.bar_y = -46.0
+	knockback_resist = 1.0
 	combat_feedback.set_health(health, max_health)
 
 func take_damage(amount: int) -> void:

@@ -5,7 +5,7 @@ class_name GameSettings
 ## (separate from save games so they survive a new adventure).
 
 const PATH := "user://settings.cfg"
-const DEFAULTS := {"hints": true, "damage_numbers": true}
+const DEFAULTS := {"hints": true, "damage_numbers": true, "screen_shake": true}
 
 static var _config: ConfigFile
 

@@ -33,7 +33,7 @@ static func capture(game: SkywardGame) -> Dictionary:
 		if node is SlimeEnemy:
 			alive_enemies.append({
 				"position": _position_array(node.global_position), "hp": node.health,
-				"home": _position_array(node.home_position), "kind": SkywardGame.enemy_kind(node),
+				"home": _position_array(node.home_position), "kind": SkywardGame.enemy_kind(node), "elite": node.elite_id,
 				"burn_remaining": node.burn_time_left, "burn_tick": node.burn_tick_timer, "burn_damage": node.burn_damage
 			})
 		elif node is WorldCollectible:
@@ -144,7 +144,7 @@ static func _restore_world_actors(game: SkywardGame, world_data: Dictionary) -> 
 		var kind: String = str(enemy_data.get("kind", "slime"))
 		if not FALLBACK_ENEMY_POSITIONS.has(kind):
 			kind = "slime"
-		var enemy := game.spawn_enemy(kind, read_position(enemy_data.get("position"), FALLBACK_ENEMY_POSITIONS[kind]))
+		var enemy := game.spawn_enemy(kind, read_position(enemy_data.get("position"), FALLBACK_ENEMY_POSITIONS[kind]), str(enemy_data.get("elite", "")))
 		if enemy == null:
 			continue
 		enemy.health = clampi(int(enemy_data.get("hp", enemy.max_health)), 1, enemy.max_health)

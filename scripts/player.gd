@@ -39,6 +39,7 @@ var bonus_skill_points: int = 0
 var second_wind_ready_in: float = 0.0
 const SECOND_WIND_COOLDOWN := 90.0
 signal second_wind_triggered
+signal hurt(amount: int)
 var starlight_essence_used: int = 0
 var equipment_definitions: Dictionary = {}
 
@@ -133,6 +134,8 @@ func take_damage(amount: int) -> void:
 		return
 	var previous_health: int = health
 	health = maxi(0, health - maxi(1, amount - get_armor()))
+	if health < previous_health:
+		hurt.emit(previous_health - health)
 	if health <= 0 and has_skill("second_wind") and second_wind_ready_in <= 0.0:
 		# Wanderer's ultimate: survive the blow and recover.
 		health = 1 + int(max_health * 0.3)

@@ -1,0 +1,9 @@
+{
+  "random_chance": 0.1,
+  "kinds": ["slime", "wolf", "shaman", "bat"],
+  "modifiers": {
+    "fierce": {"name": "Свирепый", "color": [1.0, 0.45, 0.35], "damage_mult": 1.5, "health_mult": 1.3},
+    "stone": {"name": "Каменный", "color": [0.78, 0.8, 0.92], "health_mult": 2.0, "speed_mult": 0.85, "knockback_resist": 0.8},
+    "swift": {"name": "Стремительный", "color": [0.5, 0.95, 1.0], "speed_mult": 1.4, "cooldown_mult": 0.7, "health_mult": 1.2}
+  }
+}

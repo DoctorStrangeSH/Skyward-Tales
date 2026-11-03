@@ -288,7 +288,8 @@
       },
       {
         "kind": "wolf",
-        "position": [900, 290]
+        "position": [900, 290],
+        "elite": "fierce"
       },
       {
         "kind": "shaman",
@@ -509,7 +510,8 @@
       },
       {
         "kind": "bat",
-        "position": [1050, 330]
+        "position": [1050, 330],
+        "elite": "swift"
       },
       {
         "kind": "bat",
