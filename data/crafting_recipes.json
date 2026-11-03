@@ -6,10 +6,39 @@
       "gold_cost": 30,
       "unique_output": true,
       "ingredients": [
-        {"item_id": "wolfskin_mantle", "amount": 1},
-        {"item_id": "wolf_pelt", "amount": 2}
+        {
+          "item_id": "wolfskin_mantle",
+          "amount": 1
+        },
+        {
+          "item_id": "wolf_pelt",
+          "amount": 2
+        }
       ],
-      "output": {"item_id": "reinforced_wolf_mantle", "amount": 1}
+      "output": {
+        "item_id": "reinforced_wolf_mantle",
+        "amount": 1
+      }
+    },
+    "forge_ironbound_staff": {
+      "name": "Железный посох",
+      "description": "Укрепить посох ученика железной оправой.",
+      "gold_cost": 50,
+      "unique_output": true,
+      "ingredients": [
+        {
+          "item_id": "apprentice_staff",
+          "amount": 1
+        },
+        {
+          "item_id": "iron_ore",
+          "amount": 3
+        }
+      ],
+      "output": {
+        "item_id": "ironbound_staff",
+        "amount": 1
+      }
     }
   }
 }
