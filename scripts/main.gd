@@ -26,7 +26,7 @@ const REGION_NAMES := {"greenreach": "Зелёные Пределы", "moonlit_g
 const MATERIAL_ITEMS := ["wolf_pelt", "iron_ore"]
 const RARITY_LABELS := {"common": "ОБЫЧНАЯ", "uncommon": "НЕОБЫЧНАЯ", "rare": "РЕДКАЯ"}
 const CARTOGRAPHER_CACHE_ID := "greenreach_cartographer_cache"
-const IDLE_HINT := "WASD — ходьба   Shift — рывок   1/2/3 — магия   ЛКМ — каст   E — подбор   Q/R — зелья   I — сумка   K — бестиарий   M — карта   F6/F9 — сейв/загрузка"
+const IDLE_HINT := "WASD — ходьба   Shift — рывок   1/2/3 — магия   ЛКМ — каст   E — подбор   Q/R — зелья   I — сумка   J — журнал   K — бестиарий   M — карта   F6/F9 — сейв/загрузка"
 
 var player: PlayerCharacter
 var hud: GameHud
@@ -112,7 +112,7 @@ func _process(delta: float) -> void:
 	_update_minimap()
 	hud.update_dodge(player.dodge_cooldown_left, player.dodge_cooldown, player.dodge_time_left > 0.0)
 	nearby_interactable = _find_nearest_interactable()
-	if hud.dialogue_visible or hud.inventory_open or hud.bestiary_visible or hud.world_map_visible:
+	if hud.dialogue_visible or hud.inventory_open or hud.overlay_visible() or hud.world_map_visible:
 		hud.set_prompt("")
 	elif nearby_interactable != null:
 		hud.set_prompt(_interaction_prompt(nearby_interactable))
@@ -148,7 +148,7 @@ func _input(event: InputEvent) -> void:
 			_try_interact()
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("cast_spell"):
-		if not get_tree().paused and not hud.dialogue_visible and not hud.inventory_open and not hud.bestiary_visible:
+		if not get_tree().paused and not hud.dialogue_visible and not hud.inventory_open and not hud.overlay_visible():
 			_cast_spell()
 		get_viewport().set_input_as_handled()
 
@@ -159,17 +159,25 @@ func _handle_key(keycode: Key) -> bool:
 		KEY_M when not world_blocked:
 			if hud.inventory_open:
 				hud.toggle_inventory(player)
-			if hud.bestiary_visible:
-				hud.toggle_bestiary(bestiary_entries, discovered_enemies)
+			_close_books()
 			_update_minimap()
 			hud.open_world_map(current_region, player.global_position, discovered_landmarks.get(current_region, {}), quests.get_active_summary())
 			return true
 		KEY_K when not world_blocked:
 			if hud.inventory_open:
 				hud.toggle_inventory(player)
+			if hud.journal_visible:
+				hud.toggle_journal(quests)
 			hud.toggle_bestiary(bestiary_entries, discovered_enemies)
 			return true
-	if hud.bestiary_visible:
+		KEY_J when not world_blocked:
+			if hud.inventory_open:
+				hud.toggle_inventory(player)
+			if hud.bestiary_visible:
+				hud.toggle_bestiary(bestiary_entries, discovered_enemies)
+			hud.toggle_journal(quests)
+			return true
+	if hud.overlay_visible():
 		return false
 	match keycode:
 		KEY_F6 when not world_blocked:
@@ -764,13 +772,18 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 		return false
 	if hud.inventory_open:
 		hud.toggle_inventory(player)
-	if hud.bestiary_visible:
-		hud.toggle_bestiary(bestiary_entries, discovered_enemies)
+	_close_books()
 	player.stats_changed.emit()
 	_update_minimap()
 	_refresh_hud()
 	hud.show_message("Прогресс загружен!", 2.0)
 	return true
+
+func _close_books() -> void:
+	if hud.bestiary_visible:
+		hud.toggle_bestiary(bestiary_entries, discovered_enemies)
+	if hud.journal_visible:
+		hud.toggle_journal(quests)
 
 func _go_to_title() -> void:
 	get_tree().paused = false

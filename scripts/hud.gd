@@ -60,6 +60,8 @@ var bestiary_panel: PanelContainer
 var bestiary_view: BestiaryPanel
 var bestiary_list: VBoxContainer
 var bestiary_visible: bool = false
+var journal_view: QuestJournalPanel
+var journal_visible: bool = false
 var minimap: WorldMinimap
 var world_map_panel: PanelContainer
 var world_map_view: WorldMapPanel
@@ -206,6 +208,8 @@ func _ready() -> void:
 	root.add_child(bestiary_view)
 	bestiary_panel = bestiary_view
 	bestiary_list = bestiary_view.entry_list
+	journal_view = QuestJournalPanel.new()
+	root.add_child(journal_view)
 
 	dialogue_panel = PanelContainer.new()
 	dialogue_panel.position = Vector2(140, 246)
@@ -234,7 +238,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			close_world_map()
 			get_viewport().set_input_as_handled()
 		return
-	if defeat_visible or talent_visible or bestiary_visible:
+	if defeat_visible or talent_visible or bestiary_visible or journal_visible:
 		return
 	if event.is_action_pressed("pause"):
 		_set_paused(not get_tree().paused)
@@ -357,6 +361,16 @@ func toggle_bestiary(entries: Dictionary, discovered: Dictionary) -> void:
 	if bestiary_visible:
 		bestiary_view.populate(entries, discovered)
 
+## True while a full-screen book (bestiary or quest journal) is open.
+func overlay_visible() -> bool:
+	return bestiary_visible or journal_visible
+
+func toggle_journal(quests: QuestManager) -> void:
+	journal_visible = not journal_visible
+	journal_view.visible = journal_visible
+	if journal_visible:
+		journal_view.populate(quests)
+
 func show_talent_choices(choices: Array[Dictionary]) -> void:
 	talent_view.populate(choices)
 	talent_visible = true
@@ -374,6 +388,9 @@ func show_defeat(can_load: bool) -> void:
 	if bestiary_visible:
 		bestiary_panel.visible = false
 		bestiary_visible = false
+	if journal_visible:
+		journal_view.visible = false
+		journal_visible = false
 	hide_talent_choices()
 	pause_panel.visible = false
 	inventory_panel.visible = false
