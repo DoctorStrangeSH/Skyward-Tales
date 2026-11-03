@@ -4,6 +4,7 @@ class_name WorldNpc
 signal interacted(source: Node2D)
 
 @export var display_name: String = "Путник"
+@export var outfit_color: Color = Color(0.53, 0.36, 0.66)
 
 func _ready() -> void:
 	add_to_group("interactables")
@@ -14,7 +15,7 @@ func interact() -> void:
 
 func _draw() -> void:
 	draw_rect(Rect2(-7, 5, 14, 4), Color(0.10, 0.12, 0.15, 0.4))
-	draw_rect(Rect2(-5, -2, 10, 10), Color(0.53, 0.36, 0.66))
+	draw_rect(Rect2(-5, -2, 10, 10), outfit_color)
 	draw_rect(Rect2(-4, -9, 8, 8), Color(0.84, 0.65, 0.48))
 	draw_rect(Rect2(-5, -11, 10, 4), Color(0.77, 0.78, 0.80))
 	draw_rect(Rect2(-6, -7, 3, 5), Color(0.77, 0.78, 0.80))
