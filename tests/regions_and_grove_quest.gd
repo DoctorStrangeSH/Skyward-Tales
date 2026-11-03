@@ -43,6 +43,15 @@ func _run() -> void:
 		return
 	if not verify(game.player.gold == before_gold + 50, "quest gold reward"):
 		return
+	if not verify(game.relationships.get_score("ilara") == 20, "Ilara trust reward is applied once"):
+		return
+	if not verify(game.discovered_landmarks.get("moonlit_grove", {}).has("ilara_ancient_cache"), "Ilara reveals the ancient cache on the map"):
+		return
+	game._on_grove_warden_interacted(null)
+	if not verify(game.hud.dialogue_label.text.contains("древний тайник"), "trusted follow-up dialogue reveals the cache"):
+		return
+	if not verify(game.relationships.get_score("ilara") == 20, "repeated conversation does not duplicate trust"):
+		return
 	var wolves: int = 0
 	for node in game.get_children():
 		if node is ForestWolf:
