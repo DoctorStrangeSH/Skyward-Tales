@@ -406,6 +406,9 @@ func _on_dialogue_choice_selected(choice_id: String) -> void:
 	if choice_id == "blacksmith_craft:reinforce_mantle":
 		_craft_blacksmith_item("reinforce_wolfskin_mantle")
 		return
+	if choice_id == "blacksmith_craft:ironbound_staff":
+		_craft_blacksmith_item("forge_ironbound_staff")
+		return
 	if choice_id == "blacksmith_craft:later":
 		hud.close_dialogue()
 		player.set_physics_process(true)
@@ -506,14 +509,21 @@ func _spawn_blacksmith() -> void:
 	blacksmith.interacted.connect(_on_blacksmith_interacted)
 
 func _on_blacksmith_interacted(_source: Node2D) -> void:
-	var status: Dictionary = crafting_service.get_recipe_status(player, "reinforce_wolfskin_mantle")
-	if bool(status.get("success", false)):
-		_show_dialogue_choices("Борин, кузнец", "Неплохая работа Торена. Я могу укрепить накидку стальными пластинами. Понадобятся сама накидка, две дополнительные шкуры и 30 золота. Усиливаем?", [
-			{"id": "blacksmith_craft:reinforce_mantle", "label": "Укрепить накидку — 2 шкуры и 30 золота"},
-			{"id": "blacksmith_craft:later", "label": "В другой раз"}
-		])
+	var choices: Array[Dictionary] = []
+	var mantle_status: Dictionary = crafting_service.get_recipe_status(player, "reinforce_wolfskin_mantle")
+	var staff_status: Dictionary = crafting_service.get_recipe_status(player, "forge_ironbound_staff")
+	if bool(mantle_status.get("success", false)):
+		choices.append({"id": "blacksmith_craft:reinforce_mantle", "label": "Укрепить волчью накидку — 2 шкуры, 30 золота"})
+	if bool(staff_status.get("success", false)):
+		choices.append({"id": "blacksmith_craft:ironbound_staff", "label": "Усилить посох железом — 3 руды, 50 золота"})
+	if not choices.is_empty():
+		choices.append({"id": "blacksmith_craft:later", "label": "В другой раз"})
+		_show_dialogue_choices("Борин, кузнец", "Приноси материалы — и я превращу обычное снаряжение в надёжное оружие и броню. Выбирай работу:", choices)
 	else:
-		_show_dialogue("Борин, кузнец", "Принеси мне волчью накидку, две волчьи шкуры и 30 золотых. Я укреплю её стальными пластинами. " + str(status.get("message", "")))
+		var requirements := "Для усиления накидки: волчья накидка, 2 волчьи шкуры и 30 золота. "
+		requirements += "Для железного посоха: посох ученика, 3 железной руды и 50 золота."
+		var missing := str(mantle_status.get("message", "")) + " " + str(staff_status.get("message", ""))
+		_show_dialogue("Борин, кузнец", "Я работаю с тем, что принесли. " + requirements + "\n" + missing)
 
 func _craft_blacksmith_item(recipe_id: String) -> void:
 	var result: Dictionary = crafting_service.craft(player, recipe_id)
