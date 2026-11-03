@@ -56,7 +56,6 @@ func _run() -> void:
 		return
 	if not _verify(int(restored.quests.states["bran_supply_run"].get("progress", 0)) == 1, "collected crate progress survives save/load"):
 		return
-		return
 	var restored_crates := 0
 	for node in restored.get_children():
 		if node is WorldCollectible and node.item_id.begins_with("supply_crate_"):
@@ -65,7 +64,7 @@ func _run() -> void:
 		return
 	var collectables: Array[Node] = []
 	for node in restored.get_children():
-		if node is WorldCollectible and node.item_id == "supply_crate":
+		if node is WorldCollectible and node.item_id.begins_with("supply_crate_"):
 			collectables.append(node)
 	for crate in collectables:
 		restored._on_herb_interacted(crate)
