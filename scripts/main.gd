@@ -40,6 +40,7 @@ var bestiary_entries: Dictionary = {}
 var discovered_enemies: Dictionary = {}
 var discovered_landmarks: Dictionary = {}
 var opened_chests: Dictionary = {}
+var gathered_resource_nodes: Dictionary = {}
 var latest_cache_narrative: bool = false
 
 func _ready() -> void:
@@ -214,6 +215,15 @@ func _populate_region() -> void:
 		_spawn_merchant()
 		_spawn_hunter()
 		_spawn_blacksmith()
+		var ore_nodes: Array[Dictionary] = [
+			{"id": "iron_ore_node_01", "position": Vector2(545, 420)},
+			{"id": "iron_ore_node_02", "position": Vector2(900, 570)},
+			{"id": "iron_ore_node_03", "position": Vector2(1060, 620)}
+		]
+		for ore_node in ore_nodes:
+			var node_id := str(ore_node["id"])
+			if not bool(gathered_resource_nodes.get(node_id, false)):
+				_spawn_herb(ore_node["position"], node_id, "Жила железной руды")
 		var supply_state: Dictionary = quests.states.get("bran_supply_run", {})
 		if bool(supply_state.get("started", false)) and not quests.is_completed("bran_supply_run"):
 			var collected_crates: Array = supply_state.get("collected_crates", [])
@@ -812,6 +822,16 @@ func _on_herb_interacted(source: Node2D) -> void:
 			hud.show_message("Потерянный ящик с припасами. Бран наверняка знает, кому он принадлежит.", 2.5)
 		_refresh_hud()
 		return
+	if herb.item_id.begins_with("iron_ore_node_"):
+		if bool(gathered_resource_nodes.get(herb.item_id, false)):
+			herb.queue_free()
+			return
+		gathered_resource_nodes[herb.item_id] = true
+		player.add_item("iron_ore", 1)
+		herb.queue_free()
+		hud.show_message("Железная руда собрана. Всего: %d." % int(player.inventory.get("iron_ore", 0)), 2.0)
+		_refresh_hud()
+		return
 	if herb.item_id == "map_fragment":
 		const side_quest_id := "lost_cartographer_notes"
 		if quests.active_quest_id == side_quest_id and not quests.is_completed(side_quest_id):
@@ -1041,7 +1061,7 @@ func make_save_snapshot() -> Dictionary:
 			"talents": player.talents.duplicate(true), "starlight_essence_used": player.starlight_essence_used
 		},
 		"quest": {"states": quests.states.duplicate(true), "active": quests.active_quest_id},
-		"world": {"region": current_region, "relationships": relationships.make_snapshot(), "enemies": alive_enemies, "herbs": herbs, "loot": loot_items, "defeated": defeated_enemies, "guardian_defeated": guardian_defeated, "discovered": discovered_enemies.duplicate(true), "landmarks": discovered_landmarks.duplicate(true), "opened_chests": opened_chests.duplicate(true)},
+		"world": {"region": current_region, "relationships": relationships.make_snapshot(), "enemies": alive_enemies, "herbs": herbs, "loot": loot_items, "defeated": defeated_enemies, "guardian_defeated": guardian_defeated, "discovered": discovered_enemies.duplicate(true), "landmarks": discovered_landmarks.duplicate(true), "opened_chests": opened_chests.duplicate(true), "gathered_resource_nodes": gathered_resource_nodes.duplicate(true)},
 		"magic": selected_spell_id
 	}
 
@@ -1089,6 +1109,7 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 	discovered_enemies = world_data.get("discovered", {}).duplicate(true)
 	discovered_landmarks = world_data.get("landmarks", {}).duplicate(true)
 	opened_chests = world_data.get("opened_chests", {}).duplicate(true)
+	gathered_resource_nodes = world_data.get("gathered_resource_nodes", {}).duplicate(true)
 	relationships.restore_snapshot(world_data.get("relationships", {}))
 	var saved_region: String = str(world_data.get("region", "greenreach"))
 	_set_region(saved_region, _read_position(character.get("position"), Vector2(130, 210)), false)
