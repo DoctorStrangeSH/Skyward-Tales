@@ -9,6 +9,7 @@
     "mana_potion": {"name": "Зелье маны", "description": "Восстанавливает до 25 единиц маны", "base_price": 22},
     "apprentice_staff": {"name": "Посох ученика", "description": "+5 урона всем заклинаниям", "base_price": 75},
     "leather_armor": {"name": "Кожаная броня", "description": "Снижает входящий урон на 4", "base_price": 90},
-    "mana_amulet": {"name": "Амулет маны", "description": "+20 к максимальному запасу маны", "base_price": 120}
+    "mana_amulet": {"name": "Амулет маны", "description": "+20 к максимальному запасу маны", "base_price": 120, "required_bran_trust": 20},
+    "starlight_essence": {"name": "Эссенция звёздного света", "description": "Навсегда увеличивает максимальный запас маны на 5", "required_bran_trust": 50, "trade": {"item_id": "mana_potion", "amount": 3}}
   }
 }
