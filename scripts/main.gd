@@ -60,6 +60,7 @@ var latest_cache_narrative: bool = false
 var autosave_enabled: bool = true
 var _autosave_pending: bool = false
 var _session_time: float = 0.0
+var _marker_clock: float = 0.0
 
 func _ready() -> void:
 	var catalogs: GameCatalogs = GameCatalogs.new()
@@ -113,6 +114,10 @@ func _process(delta: float) -> void:
 	if player == null or hud == null or game_over:
 		return
 	_update_spell_hud()
+	_marker_clock -= delta
+	if _marker_clock <= 0.0:
+		_marker_clock = 0.25
+		update_npc_markers()
 	_discover_nearby_enemies()
 	_update_minimap()
 	hud.update_dodge(player.dodge_cooldown_left, player.dodge_cooldown, player.dodge_time_left > 0.0)
@@ -474,6 +479,11 @@ func _on_dialogue_choice_selected(choice_id: String) -> void:
 
 func _on_herb_interacted(source: Node2D) -> void:
 	pickups.handle(source as WorldCollectible)
+
+func update_npc_markers() -> void:
+	for actor in get_children():
+		if actor is WorldNpc and not actor.is_queued_for_deletion():
+			actor.set_marker(dialogues.marker_for(actor.npc_id))
 
 func _show_dialogue(speaker: String, message: String) -> void:
 	player.set_physics_process(false)

@@ -1,4 +1,94 @@
 {
+ "icons/ancient_relic.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/apprentice_staff.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/frost_heart.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/health_potion.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/iron_ore.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/ironbound_staff.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/leather_armor.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/mana_amulet.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/mana_potion.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/pyromancer_core.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/reinforced_wolf_mantle.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/starlight_essence.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/storm_eye.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/wolf_pelt.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/wolfskin_mantle.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "props/chest_closed.png": {
   "size": [
    24,
@@ -67,6 +157,36 @@
   "origin": [
    9,
    12
+  ]
+ },
+ "props/marker_quest.png": {
+  "size": [
+   11,
+   15
+  ],
+  "origin": [
+   5,
+   14
+  ]
+ },
+ "props/marker_ready.png": {
+  "size": [
+   11,
+   15
+  ],
+  "origin": [
+   5,
+   14
+  ]
+ },
+ "props/marker_service.png": {
+  "size": [
+   11,
+   15
+  ],
+  "origin": [
+   5,
+   14
   ]
  },
  "props/moonleaf.png": {

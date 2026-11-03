@@ -5,6 +5,11 @@ signal use_requested(item_id: String)
 signal compare_requested(item_id: String)
 
 var item_id: String = ""
+const RARITY_COLORS := {
+	"common": Color(0.95, 0.93, 0.86),
+	"uncommon": Color(0.6, 0.95, 0.65),
+	"rare": Color(0.72, 0.62, 1.0)
+}
 
 func configure(player: PlayerCharacter, id: String, fallback_names: Dictionary, fallback_descriptions: Dictionary, rarity_names: Dictionary, consumable_ids: Array) -> void:
 	item_id = id
@@ -25,6 +30,13 @@ func configure(player: PlayerCharacter, id: String, fallback_names: Dictionary, 
 	if can_equip:
 		tooltip_text += "\nНаведение: сравнить характеристики"
 	disabled = count <= 0 or not (can_equip or can_consume)
+	var icon_path := "res://assets/icons/%s.png" % item_id
+	if ResourceLoader.exists(icon_path):
+		icon = WorldArt.texture("icons/%s.png" % item_id)
+		alignment = HORIZONTAL_ALIGNMENT_LEFT
+	var rarity_color: Color = RARITY_COLORS.get(rarity, Color(0.95, 0.93, 0.86))
+	add_theme_color_override("font_color", rarity_color)
+	add_theme_color_override("font_disabled_color", rarity_color.darkened(0.25))
 
 func _ready() -> void:
 	pressed.connect(_on_item_pressed)

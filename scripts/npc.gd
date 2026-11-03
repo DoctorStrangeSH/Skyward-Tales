@@ -11,6 +11,9 @@ const DIRECTIONAL_SPRITE_SCRIPT := preload("res://scripts/directional_sprite.gd"
 @export var npc_id: String = ""
 
 var visual: DirectionalSprite
+## "", "quest", "ready" or "service" — set by SkywardGame every few frames.
+var marker: String = ""
+var _marker_time: float = 0.0
 
 func _ready() -> void:
 	add_to_group("interactables")
@@ -27,7 +30,23 @@ func _ready() -> void:
 func interact() -> void:
 	interacted.emit(self)
 
+func set_marker(kind: String) -> void:
+	if kind != marker:
+		marker = kind
+		queue_redraw()
+
+func _process(delta: float) -> void:
+	if not marker.is_empty():
+		_marker_time += delta
+		queue_redraw()
+
 func _draw() -> void:
+	if not marker.is_empty():
+		# Gentle bob so the marker catches the eye.
+		var bob := roundf(sin(_marker_time * 4.0) * 1.5)
+		draw_set_transform(Vector2(0, -30 + bob))
+		WorldArt.draw_prop(self, "props/marker_%s.png" % marker)
+		draw_set_transform(Vector2.ZERO)
 	if visual != null:
 		return
 	draw_rect(Rect2(-7, 5, 14, 4), Color(0.10, 0.12, 0.15, 0.4))
