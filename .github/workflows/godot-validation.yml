@@ -164,6 +164,9 @@ jobs:
       - name: Test data-driven quest rewards
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/quest_rewards.gd
+      - name: Test elder's consequential quest choice
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/elder_choice.gd
       - name: Test NPC relationships and persistence
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/npc_relationships.gd
