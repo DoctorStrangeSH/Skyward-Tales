@@ -31,9 +31,21 @@ func _run() -> void:
 		return
 	var crates: Array[Node] = []
 	for node in game.get_children():
-		if node is WorldCollectible and node.item_id == "supply_crate":
+		if node is WorldCollectible and node.item_id.begins_with("supply_crate_"):
 			crates.append(node)
 	if not _verify(crates.size() == 3, "three physical supply crates spawn"):
+		return
+	var first_crate: Node = crates[0]
+	game._on_herb_interacted(first_crate)
+	if not _verify(int(game.quests.states["bran_supply_run"].get("progress", 0)) == 1, "first crate increments quest progress"):
+		return
+	game._set_region("moonlit_grove", Vector2(140, 430), false)
+	game._set_region("greenreach", Vector2(130, 210), false)
+	var remaining_after_travel := 0
+	for node in game.get_children():
+		if node is WorldCollectible and node.item_id.begins_with("supply_crate_"):
+			remaining_after_travel += 1
+	if not _verify(remaining_after_travel == 2, "collected crate does not respawn after changing regions"):
 		return
 	var snapshot: Dictionary = game.make_save_snapshot()
 	var restored := _new_game()
@@ -42,11 +54,14 @@ func _run() -> void:
 		return
 	if not _verify(restored.quests.active_quest_id == "bran_supply_run", "active quest survives restore"):
 		return
+	if not _verify(int(restored.quests.states["bran_supply_run"].get("progress", 0)) == 1, "collected crate progress survives save/load"):
+		return
+		return
 	var restored_crates := 0
 	for node in restored.get_children():
-		if node is WorldCollectible and node.item_id == "supply_crate":
+		if node is WorldCollectible and node.item_id.begins_with("supply_crate_"):
 			restored_crates += 1
-	if not _verify(restored_crates == 3, "uncollected crates survive save/load"):
+	if not _verify(restored_crates == 2, "remaining crates survive save/load without restoring collected crates"):
 		return
 	var collectables: Array[Node] = []
 	for node in restored.get_children():
