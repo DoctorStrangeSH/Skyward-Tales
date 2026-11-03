@@ -201,6 +201,8 @@ func _populate_region() -> void:
 		_spawn_elder()
 		_spawn_chest("greenreach_ruins", Vector2(960, 175), 45, "health_potion", 2)
 		_spawn_chest("greenreach_woodland", Vector2(660, 460), 30, "mana_potion", 1)
+		# Optional exploration find off the main road, remembered by the existing chest save state.
+		_spawn_chest("greenreach_cartographer_cache", Vector2(335, 495), 20, "mana_potion", 2)
 		_spawn_herb(Vector2(370, 155))
 		_spawn_herb(Vector2(515, 310))
 		_spawn_herb(Vector2(700, 190))
@@ -249,7 +251,10 @@ func _on_chest_opened(id: String, gold: int, item: String, amount: int) -> void:
 	player.add_gold(gold)
 	if not item.is_empty() and amount > 0:
 		player.add_item(item, amount)
-	hud.show_message("Тайник открыт! +%d золота, %s ×%d" % [gold, item, amount], 3.0)
+	if id == "greenreach_cartographer_cache":
+		hud.show_message("Тайник картографа: найдены записи о тропах и припасы. +%d золота, зелья маны ×%d" % [gold, amount], 4.0)
+	else:
+		hud.show_message("Тайник открыт! +%d золота, %s ×%d" % [gold, item, amount], 3.0)
 
 func _on_chest_bonus(item_id: String, rarity: String) -> void:
 	player.add_item(item_id)
