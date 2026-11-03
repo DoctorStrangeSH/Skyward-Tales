@@ -42,23 +42,57 @@ func get_price(item_id: String, reputation: int = 0) -> int:
 		return -1
 	return maxi(1, floori(float(base_price) * (1.0 - get_discount(reputation))))
 
-func get_offers(reputation: int = 0) -> Array[Dictionary]:
+func get_offers(reputation: int = 0, bran_trust: int = 0) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	for item_id in offers:
 		var definition: Variant = offers[item_id]
 		if not definition is Dictionary:
 			continue
-		var price := get_price(str(item_id), reputation)
-		if price <= 0:
+		if bran_trust < int(definition.get("required_bran_trust", 0)):
 			continue
-		result.append({"id": str(item_id), "name": str(definition.get("name", item_id)), "description": str(definition.get("description", "")), "price": price})
+		var price := get_price(str(item_id), reputation)
+		var trade: Variant = definition.get("trade", {})
+		if trade is Dictionary and not trade.is_empty():
+			result.append({
+				"id": str(item_id),
+				"name": str(definition.get("name", item_id)),
+				"description": str(definition.get("description", "")),
+				"trade_currency": str(trade.get("item_id", "")),
+				"trade_amount": maxi(1, int(trade.get("amount", 1))),
+				"required_bran_trust": int(definition.get("required_bran_trust", 0))
+			})
+		elif price > 0:
+			result.append({
+				"id": str(item_id),
+				"name": str(definition.get("name", item_id)),
+				"description": str(definition.get("description", "")),
+				"price": price,
+				"required_bran_trust": int(definition.get("required_bran_trust", 0))
+			})
 	return result
 
-func purchase(player: PlayerCharacter, item_id: String, reputation: int = 0) -> Dictionary:
+func purchase(player: PlayerCharacter, item_id: String, reputation: int = 0, bran_trust: int = 0) -> Dictionary:
 	if player == null:
 		return {"success": false, "message": "Покупка сейчас недоступна."}
 	if not offers.has(item_id):
 		return {"success": false, "message": "Такого товара нет в каталоге."}
+	var definition: Dictionary = offers[item_id]
+	if bran_trust < int(definition.get("required_bran_trust", 0)):
+		return {"success": false, "message": "Бран пока не готов предложить этот товар."}
+	var trade: Variant = definition.get("trade", {})
+	if trade is Dictionary and not trade.is_empty():
+		var currency_id := str(trade.get("item_id", ""))
+		var amount := maxi(1, int(trade.get("amount", 1)))
+		if currency_id.is_empty():
+			return {"success": false, "message": "Условия обмена указаны неверно."}
+		var owned := int(player.inventory.get(currency_id, 0))
+		if owned < amount:
+			return {"success": false, "message": "Для обмена нужно %d ед. ресурса: %s." % [amount, currency_id]}
+		player.inventory[currency_id] = owned - amount
+		if int(player.inventory[currency_id]) <= 0:
+			player.inventory.erase(currency_id)
+		player.add_item(item_id, 1)
+		return {"success": true, "item_id": item_id, "name": str(definition.get("name", item_id)), "trade_currency": currency_id, "trade_amount": amount}
 	var price := get_price(item_id, reputation)
 	if price <= 0:
 		return {"success": false, "message": "Цена товара указана неверно."}
@@ -66,4 +100,4 @@ func purchase(player: PlayerCharacter, item_id: String, reputation: int = 0) -> 
 		return {"success": false, "message": "Не хватает золота: нужно %d." % price}
 	player.add_gold(-price)
 	player.add_item(item_id, 1)
-	return {"success": true, "item_id": item_id, "name": str(offers[item_id].get("name", item_id)), "price": price}
+	return {"success": true, "item_id": item_id, "name": str(definition.get("name", item_id)), "price": price}
