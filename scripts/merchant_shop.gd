@@ -33,10 +33,14 @@ func _init() -> void:
 # --- Selling ---------------------------------------------------------------
 
 ## How much Bran pays for one item, or -1 if he does not buy it.
-func get_sell_price(item_id: String, bran_trust: int = 0) -> int:
-	if not sell_prices.has(item_id):
+func get_sell_price(item_id: String, bran_trust: int = 0, player: PlayerCharacter = null) -> int:
+	var price: float
+	if sell_prices.has(item_id):
+		price = float(sell_prices[item_id])
+	elif player != null and player.get_item_definition(item_id).has("value"):
+		price = float(player.get_item_definition(item_id)["value"])  # rolled loot
+	else:
 		return -1
-	var price := float(sell_prices[item_id])
 	if bran_trust >= int(sell_trust_bonus.get("trust", 999)):
 		price *= 1.0 + float(sell_trust_bonus.get("bonus", 0.0))
 	return maxi(1, roundi(price))
@@ -50,15 +54,19 @@ func sellable_count(player: PlayerCharacter, item_id: String) -> int:
 
 func get_sell_offers(player: PlayerCharacter, bran_trust: int = 0) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	for item_id in sell_prices:
+	var ids: Array = sell_prices.keys()
+	for item_id in player.inventory:
+		if not ids.has(item_id) and player.get_item_definition(str(item_id)).has("value"):
+			ids.append(item_id)
+	for item_id in ids:
 		var count := sellable_count(player, str(item_id))
 		if count <= 0:
 			continue
-		result.append({"id": str(item_id), "name": player.get_item_name(str(item_id)), "price": get_sell_price(str(item_id), bran_trust), "count": count})
+		result.append({"id": str(item_id), "name": player.get_item_name(str(item_id)), "price": get_sell_price(str(item_id), bran_trust, player), "count": count})
 	return result
 
 func sell(player: PlayerCharacter, item_id: String, bran_trust: int = 0) -> Dictionary:
-	var price := get_sell_price(item_id, bran_trust)
+	var price := get_sell_price(item_id, bran_trust, player)
 	if price < 0:
 		return {"success": false, "message": "Бран такое не покупает."}
 	if sellable_count(player, item_id) <= 0 or not player.remove_item(item_id, 1):

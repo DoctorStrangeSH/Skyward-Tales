@@ -1,0 +1,27 @@
+{
+  "drop_chance": 0.18,
+  "rarity_weights": {"common": 55, "uncommon": 30, "rare": 12, "epic": 3},
+  "rarities": {
+    "common": {"affixes": 1, "mult": 1.0, "value": 12},
+    "uncommon": {"affixes": 2, "mult": 1.2, "value": 25},
+    "rare": {"affixes": 3, "mult": 1.5, "value": 50},
+    "epic": {"affixes": 4, "mult": 1.8, "value": 90}
+  },
+  "bases": {
+    "staff": {"slot": "weapon", "names": ["Посох", "Жезл"], "icon": "apprentice_staff", "base": {"spell_bonus": {"*": 3}}},
+    "robe": {"slot": "armor", "names": ["Мантия", "Накидка"], "icon": "leather_armor", "base": {"armor": 2}},
+    "amulet": {"slot": "amulet", "names": ["Амулет", "Кулон"], "icon": "mana_amulet", "base": {"max_mana": 8}},
+    "relic": {"slot": "relic", "names": ["Талисман", "Оберег"], "icon": "storm_eye", "base": {}}
+  },
+  "affixes": [
+    {"id": "power", "stat": "power", "min": 1, "max": 3, "suffix": "силы", "label": "+%d к силе магии"},
+    {"id": "will", "stat": "will", "min": 1, "max": 3, "suffix": "воли", "label": "+%d к воле"},
+    {"id": "agility", "stat": "agility", "min": 1, "max": 3, "suffix": "ветра", "label": "+%d к ловкости"},
+    {"id": "fire", "stat": "spell_bonus.fireball", "min": 2, "max": 4, "suffix": "пламени", "label": "+%d к урону огненного шара"},
+    {"id": "ice", "stat": "spell_bonus.frostbolt", "min": 2, "max": 4, "suffix": "инея", "label": "+%d к урону ледяной стрелы"},
+    {"id": "storm", "stat": "spell_bonus.chain_lightning", "min": 2, "max": 4, "suffix": "грозы", "label": "+%d к урону цепной молнии"},
+    {"id": "guard", "stat": "armor", "min": 1, "max": 3, "suffix": "стража", "label": "+%d к броне"},
+    {"id": "spring", "stat": "max_mana", "min": 5, "max": 12, "suffix": "источника", "label": "+%d к максимуму маны"},
+    {"id": "ember", "stat": "burn_damage_bonus", "min": 1, "max": 1, "suffix": "углей", "label": "+%d к урону горения"}
+  ]
+}

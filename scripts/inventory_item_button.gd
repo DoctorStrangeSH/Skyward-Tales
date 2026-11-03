@@ -8,7 +8,8 @@ var item_id: String = ""
 const RARITY_COLORS := {
 	"common": Color(0.95, 0.93, 0.86),
 	"uncommon": Color(0.6, 0.95, 0.65),
-	"rare": Color(0.72, 0.62, 1.0)
+	"rare": Color(0.72, 0.62, 1.0),
+	"epic": Color(1.0, 0.7, 0.3)
 }
 
 func configure(player: PlayerCharacter, id: String, fallback_names: Dictionary, fallback_descriptions: Dictionary, rarity_names: Dictionary, consumable_ids: Array) -> void:
@@ -30,9 +31,12 @@ func configure(player: PlayerCharacter, id: String, fallback_names: Dictionary, 
 	if can_equip:
 		tooltip_text += "\nНаведение: сравнить характеристики"
 	disabled = count <= 0 or not (can_equip or can_consume)
-	var icon_path := "res://assets/icons/%s.png" % item_id
-	if ResourceLoader.exists(icon_path):
-		icon = WorldArt.texture("icons/%s.png" % item_id)
+	add_theme_font_size_override("font_size", 9)
+	custom_minimum_size = Vector2(0, 18)
+	clip_text = true
+	var icon_id: String = str(definition.get("icon", item_id))
+	if ResourceLoader.exists("res://assets/icons/%s.png" % icon_id):
+		icon = WorldArt.texture("icons/%s.png" % icon_id)
 		alignment = HORIZONTAL_ALIGNMENT_LEFT
 	var rarity_color: Color = RARITY_COLORS.get(rarity, Color(0.95, 0.93, 0.86))
 	add_theme_color_override("font_color", rarity_color)
