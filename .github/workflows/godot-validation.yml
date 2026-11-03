@@ -180,6 +180,9 @@ jobs:
       - name: Test blacksmith crafting and equipment
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/blacksmith_crafting.gd
+      - name: Test iron mining and crafting progression
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/iron_mining_crafting.gd
       - name: Test elder's consequential quest choice
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/elder_choice.gd
