@@ -334,7 +334,9 @@ func _on_cartographer_interacted(_source: Node2D) -> void:
 	const quest_id := "lost_cartographer_notes"
 	if quests.is_completed(quest_id):
 		var choice_id: String = str(quests.states[quest_id].get("choice", ""))
-		if choice_id == "supplies":
+		if relationships.get_score("mira") >= 20:
+			_show_dialogue("Мира, картограф", "Теперь я знаю, что могу тебе доверять. Я отметила на карте старый тайник с припасами — он находится к югу от лагеря.")
+		elif choice_id == "supplies":
 			_show_dialogue("Мира, картограф", "%s. Надеюсь, припасы пригодились. Я уже начала восстанавливать безопасные тропы по копии дневника." % relationships.get_reaction("mira"))
 		else:
 			_show_dialogue("Мира, картограф", "%s. Благодарю за возвращённый дневник. Монеты — малая плата за такую помощь." % relationships.get_reaction("mira"))
@@ -362,8 +364,11 @@ func _on_dialogue_choice_selected(choice_id: String) -> void:
 	if reward.is_empty() or not quests.complete_quest(quest_id):
 		return
 	quests.states[quest_id]["choice"] = choice_id
-	relationships.adjust("mira", 10)
-	_show_relationship_change("mira", 10)
+	var relationship_gain: int = 20 if choice_id == "supplies" else 8
+	relationships.adjust("mira", relationship_gain)
+	if relationships.get_score("mira") >= 20:
+		_reveal_cartographer_cache()
+	_show_relationship_change("mira", relationship_gain)
 	player.add_experience(int(reward.get("experience", 0)))
 	player.add_gold(int(reward.get("gold", 0)))
 	var items: Variant = reward.get("items", [])
@@ -449,6 +454,16 @@ func _try_interact() -> void:
 		return
 	if target.has_method("interact"):
 		target.interact()
+
+func _reveal_cartographer_cache() -> void:
+	var markers: Dictionary = discovered_landmarks.get("greenreach", {})
+	if markers.has("secret_cartographer_cache"):
+		return
+	markers["secret_cartographer_cache"] = {"position": [335.0, 495.0], "kind": "secret"}
+	discovered_landmarks["greenreach"] = markers
+	if current_region == "greenreach":
+		_update_minimap()
+	hud.show_message("Мира открыла на карте тайник картографа!", 3.5)
 
 func _show_relationship_change(npc_id: String, amount: int) -> void:
 	hud.show_message("Отношение: %s (%+d) — %s" % [relationships.get_name(npc_id), amount, relationships.get_rank(npc_id)], 3.0)
