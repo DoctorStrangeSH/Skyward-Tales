@@ -3,7 +3,8 @@
 ## Visual target
 
 Cosy, readable fantasy pixel art in the spirit of modern 16-bit-inspired RPGs:
-warm sunlit greens by day, cool teal/violet moonlight at night, tinted
+warm sunlit greens by day, cool teal/violet moonlight at night, deep violet
+caves lit by glowing crystals, tinted
 outlines (never pure black), light from the top-left, soft blue-purple
 shadows, chibi characters (~26 px tall) and 3/4 top-down scenery.
 All art is original.
@@ -23,10 +24,10 @@ Requires Python 3 with Pillow, numpy and scipy. Output is deterministic.
 
 | Module | What it draws |
 | --- | --- |
-| `tools/art/palettes.py` | Day and night colour ramps |
+| `tools/art/palettes.py` | Day, night and cave colour ramps |
 | `tools/art/terrain.py` | Region ground: grass, trails (from `data/regions.json`), ponds, flowers |
-| `tools/art/flora.py` | Trees, bushes, the foliage border around each map |
-| `tools/art/props.py` | Ruins, standing stones, chests, herbs, ore, crates, potions, gates |
+| `tools/art/flora.py` | Trees, bushes, crystal clusters, rock piles, the border around each map |
+| `tools/art/props.py` | Ruins, standing stones, crystal altar, chests, herbs, crystals, ore, crates, potions, gates, quest markers |
 | `tools/art/characters.py` | Chibi humanoid rig: hero, NPCs, forest shaman |
 | `tools/art/creatures.py` | Slime, wolf, grove guardian (48 px), spell projectiles |
 | `tools/art/icons.py` | 16×16 inventory icons (`assets/icons/<item_id>.png`) |
@@ -56,6 +57,7 @@ section of `data/regions.json` and rebuild: collisions and art read the same dat
 | `sprites/enemies/forest_wolf_8dir.png` | 32 | Trot |
 | `sprites/enemies/forest_shaman_8dir.png` | 32 | Robed walk |
 | `sprites/enemies/grove_guardian_8dir.png` | 48 | Boss walk |
+| `sprites/enemies/cave_bat_8dir.png` | 32 | Hovering flap (body floats above its shadow) |
 | `sprites/magic/{fireball,frostbolt,chain_lightning}_8dir.png` | 32 | Flight |
 
 ## Next steps for art
