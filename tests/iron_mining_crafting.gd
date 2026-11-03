@@ -33,6 +33,7 @@ func _run() -> void:
 			deposits.append(actor)
 	for deposit in deposits:
 		game._on_herb_interacted(deposit)
+	await process_frame
 	if not _verify(int(game.player.inventory.get("iron_ore", 0)) == 3, "each deposit grants one iron ore"):
 		return
 	if not _verify(_count_ore_nodes(game) == 0, "collected deposits disappear"):
