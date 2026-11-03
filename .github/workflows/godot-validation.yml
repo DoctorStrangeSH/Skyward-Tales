@@ -173,6 +173,9 @@ jobs:
       - name: Test Toren wolf hunt quest and rewards
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/hunter_wolf_quest.gd
+      - name: Test wolf pelt crafting and equipment
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/wolf_pelt_crafting.gd
       - name: Test elder's consequential quest choice
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/elder_choice.gd
