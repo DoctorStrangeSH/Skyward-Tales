@@ -68,3 +68,15 @@ func get_reward(quest_id: String) -> Dictionary:
 		return {}
 	var reward: Variant = definitions[quest_id].get("reward", {})
 	return reward if reward is Dictionary else {}
+
+func get_choice_reward(quest_id: String, choice_id: String) -> Dictionary:
+	if not definitions.has(quest_id):
+		return {}
+	var choices: Variant = definitions[quest_id].get("choices", {})
+	if not choices is Dictionary or not choices.has(choice_id):
+		return {}
+	var choice: Variant = choices[choice_id]
+	if not choice is Dictionary:
+		return {}
+	var reward: Variant = choice.get("reward", {})
+	return reward.duplicate(true) if reward is Dictionary else {}
