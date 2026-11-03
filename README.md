@@ -24,6 +24,7 @@
 - 2D top-down
 - Внутреннее разрешение 640×360, окно 1280×720
 - Nearest-neighbour filtering для пиксельной графики
+- Пиксель-арт генерируется кодом: `python3 tools/art/build.py` (см. [гайд по графике](assets/ART_GUIDE.md))
 
 ## Запуск
 

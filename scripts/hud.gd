@@ -8,6 +8,7 @@ const INVENTORY_RARITY_NAMES := {"common": "ОБЫЧНЫЙ", "uncommon": "НЕО
 const INVENTORY_CONSUMABLE_IDS := ["health_potion", "mana_potion", "starlight_essence"]
 
 var status_label: Label
+var vitals: HudVitals
 var quest_label: Label
 var message_label: Label
 var prompt_label: Label
@@ -78,22 +79,22 @@ func _ready() -> void:
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(root)
 
-	var status_panel := PanelContainer.new()
-	status_panel.position = Vector2(10, 10)
-	status_panel.custom_minimum_size = Vector2(270, 64)
-	status_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.055, 0.075, 0.09, 0.92)))
-	root.add_child(status_panel)
-	status_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	var status_box := VBoxContainer.new()
-	status_panel.add_child(status_box)
-	status_label = _make_label("УР. 1   ЗДОРОВЬЕ 100/100   МАНА 60/60", 11, Color(0.91, 0.94, 0.87))
-	status_box.add_child(status_label)
-	quest_label = _make_label("ЗАДАНИЕ: Поговорите со старейшиной", 10, Color(0.83, 0.88, 0.72))
-	status_box.add_child(quest_label)
+	# Compact layout: vitals top-left, quest tracker under it, minimap
+	# top-right, spells bottom-left. Text uses outlines instead of panels so
+	# the world stays visible.
+	vitals = HudVitals.new()
+	vitals.position = Vector2(6, 6)
+	root.add_child(vitals)
+	status_label = _make_label("", 9, Color(0.91, 0.94, 0.87))
+	status_label.visible = false
+	root.add_child(status_label)
+	quest_label = _make_label("", 9, Color(1.0, 0.93, 0.72))
+	quest_label.position = Vector2(8, 50)
+	quest_label.size = Vector2(300, 14)
+	root.add_child(quest_label)
 
 	minimap = preload("res://scripts/world_minimap.gd").new() as WorldMinimap
-	minimap.position = Vector2(498, 8)
+	minimap.position = Vector2(502, 6)
 	root.add_child(minimap)
 
 	world_map_view = WorldMapPanel.new()
@@ -102,62 +103,52 @@ func _ready() -> void:
 	world_map = world_map_view.map_view
 	world_map_quest = world_map_view.quest_label
 
-	# Compact battle information, without introducing mouse-blocking controls.
 	var spell_panel := PanelContainer.new()
-	spell_panel.position = Vector2(10, 83)
-	spell_panel.custom_minimum_size = Vector2(230, 49)
+	spell_panel.position = Vector2(6, 318)
+	spell_panel.custom_minimum_size = Vector2(150, 0)
 	spell_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	spell_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.055, 0.075, 0.09, 0.88)))
+	spell_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.07, 0.06, 0.11, 0.82)))
 	root.add_child(spell_panel)
 	var spell_box := VBoxContainer.new()
+	spell_box.add_theme_constant_override("separation", 1)
 	spell_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	spell_panel.add_child(spell_box)
-	spell_label = _make_label("1 🔥 ОГНЕННЫЙ ШАР", 11, Color(0.98, 0.89, 0.70))
+	spell_label = _make_label("Огненный шар", 9, Color(0.98, 0.89, 0.70))
 	spell_box.add_child(spell_label)
-	spell_cooldown_bar = ProgressBar.new()
-	spell_cooldown_bar.custom_minimum_size = Vector2(210, 8)
-	spell_cooldown_bar.max_value = 1.0
-	spell_cooldown_bar.value = 1.0
-	spell_cooldown_bar.show_percentage = false
-	spell_cooldown_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	spell_cooldown_bar = _make_bar(Color(1.0, 0.62, 0.3), 136, 3)
 	spell_box.add_child(spell_cooldown_bar)
 
 	var dodge_panel := PanelContainer.new()
-	dodge_panel.position = Vector2(10, 137)
-	dodge_panel.custom_minimum_size = Vector2(230, 38)
+	dodge_panel.position = Vector2(162, 318)
+	dodge_panel.custom_minimum_size = Vector2(92, 0)
 	dodge_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	dodge_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.055, 0.075, 0.09, 0.88)))
+	dodge_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.07, 0.06, 0.11, 0.82)))
 	root.add_child(dodge_panel)
 	var dodge_box := VBoxContainer.new()
+	dodge_box.add_theme_constant_override("separation", 1)
 	dodge_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dodge_panel.add_child(dodge_box)
-	dodge_label = _make_label("SHIFT — РЫВОК: ГОТОВО", 10, Color(0.65, 0.90, 1.0))
+	dodge_label = _make_label("SHIFT — ГОТОВО", 9, Color(0.65, 0.90, 1.0))
 	dodge_box.add_child(dodge_label)
-	dodge_cooldown_bar = ProgressBar.new()
-	dodge_cooldown_bar.custom_minimum_size = Vector2(210, 7)
-	dodge_cooldown_bar.max_value = 1.0
-	dodge_cooldown_bar.value = 1.0
-	dodge_cooldown_bar.show_percentage = false
-	dodge_cooldown_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dodge_cooldown_bar = _make_bar(Color(0.55, 0.9, 1.0), 78, 3)
 	dodge_box.add_child(dodge_cooldown_bar)
 
-	inventory_label = _make_label("Q: Здоровье ×0   R: Мана ×0", 10, Color(0.92, 0.87, 0.77))
-	inventory_label.position = Vector2(12, 187)
-	inventory_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	inventory_label = _make_label("", 9, Color(0.95, 0.9, 0.8))
+	inventory_label.position = Vector2(260, 330)
 	root.add_child(inventory_label)
 
-	message_label = _make_label("", 12, Color(1.0, 0.91, 0.62))
-	message_label.position = Vector2(180, 18)
-	message_label.size = Vector2(450, 28)
+	message_label = _make_label("", 10, Color(1.0, 0.91, 0.62))
+	message_label.position = Vector2(160, 8)
+	message_label.size = Vector2(330, 28)
 	message_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	message_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	root.add_child(message_label)
-	message_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	prompt_label = _make_label("", 10, Color(0.94, 0.94, 0.87))
-	prompt_label.position = Vector2(12, 330)
-	prompt_label.size = Vector2(500, 20)
+	prompt_label = _make_label("", 9, Color(0.97, 0.97, 0.9))
+	prompt_label.position = Vector2(110, 284)
+	prompt_label.size = Vector2(420, 28)
+	prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	root.add_child(prompt_label)
-	prompt_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	# Keep public HUD references for existing save, input and regression code.
 	inventory_view = InventoryWindow.new()
@@ -331,8 +322,10 @@ func update_status(player: PlayerCharacter, quests: QuestManager) -> void:
 	status_label.text = "УР. %d   HP %d/%d   МАНА %d/%d   ЗОЛОТО %d" % [
 		player.level, player.health, player.max_health, player.mana, player.max_mana, player.gold
 	]
-	quest_label.text = "ЗАДАНИЕ: " + quests.get_active_summary()
-	inventory_label.text = "I: Сумка   Q: HP ×%d   R: MP ×%d" % [int(player.inventory.get("health_potion", 0)), int(player.inventory.get("mana_potion", 0))]
+	if vitals != null:
+		vitals.set_values(player)
+	quest_label.text = "◆ " + quests.get_active_summary()
+	inventory_label.text = "Q  Зелье HP ×%d     R  Зелье MP ×%d" % [int(player.inventory.get("health_potion", 0)), int(player.inventory.get("mana_potion", 0))]
 	if inventory_open:
 		refresh_inventory(player)
 
@@ -344,7 +337,7 @@ func update_spell(spell_name: String, mana_cost: int, current_mana: int, remaini
 	var state: String = "ГОТОВО" if ready else ("ОТКАТ %.1fс" % remaining)
 	if not enough_mana:
 		state = "НЕТ МАНЫ"
-	spell_label.text = "%s  •  %d MP  •  %s" % [spell_name, mana_cost, state]
+	spell_label.text = "%s · %d MP · %s" % [spell_name, mana_cost, state]
 	spell_label.modulate = Color.WHITE if ready and enough_mana else Color(0.73, 0.8, 0.88)
 	spell_cooldown_bar.value = 1.0 if total <= 0.0 else clampf(1.0 - remaining / total, 0.0, 1.0)
 
@@ -458,22 +451,39 @@ func close_dialogue() -> void:
 	dialogue_panel.visible = false
 	dialogue_visible = false
 
+func _make_bar(color: Color, width: float, height: float) -> ProgressBar:
+	var bar := ProgressBar.new()
+	bar.custom_minimum_size = Vector2(width, height)
+	bar.max_value = 1.0
+	bar.value = 1.0
+	bar.show_percentage = false
+	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var back := StyleBoxFlat.new()
+	back.bg_color = Color(0.13, 0.11, 0.18)
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = color
+	bar.add_theme_stylebox_override("background", back)
+	bar.add_theme_stylebox_override("fill", fill)
+	return bar
+
 func _make_label(text_value: String, font_size: int, color: Color) -> Label:
 	var label := Label.new()
 	label.text = text_value
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", color)
+	label.add_theme_color_override("font_outline_color", Color(0.05, 0.04, 0.08))
+	label.add_theme_constant_override("outline_size", 3)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return label
 
 func _panel_style(background: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = background
-	style.border_color = Color(0.35, 0.47, 0.45, 0.9)
-	style.set_border_width_all(2)
-	style.set_corner_radius_all(4)
-	style.content_margin_left = 9
-	style.content_margin_right = 9
-	style.content_margin_top = 7
-	style.content_margin_bottom = 7
+	style.border_color = Color(0.93, 0.78, 0.47, 0.85)
+	style.set_border_width_all(1)
+	style.set_corner_radius_all(3)
+	style.content_margin_left = 6
+	style.content_margin_right = 6
+	style.content_margin_top = 4
+	style.content_margin_bottom = 4
 	return style

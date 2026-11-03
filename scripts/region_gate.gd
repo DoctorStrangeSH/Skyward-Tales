@@ -15,8 +15,5 @@ func interact() -> void:
 	travel_requested.emit(target_region, arrival_position)
 
 func _draw() -> void:
-	draw_rect(Rect2(-9, -13, 18, 26), Color(0.12, 0.10, 0.18, 0.85))
-	draw_rect(Rect2(-6, -10, 12, 20), Color(0.24, 0.42, 0.36))
-	draw_rect(Rect2(-3, -8, 6, 16), Color(0.46, 0.78, 0.60))
-	draw_rect(Rect2(-1, -6, 2, 12), Color(0.82, 0.92, 0.67))
-	draw_rect(Rect2(-12, 10, 24, 3), Color(0.22, 0.17, 0.12))
+	# The gate is styled after the region it stands in.
+	WorldArt.draw_prop(self, "props/gate_day.png" if target_region == "moonlit_grove" else "props/gate_night.png")

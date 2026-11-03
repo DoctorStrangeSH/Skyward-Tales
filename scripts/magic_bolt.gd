@@ -22,13 +22,9 @@ func _ready() -> void:
 	body_entered.connect(_on_body_entered)
 	visual = DIRECTIONAL_SPRITE_SCRIPT.new() as DirectionalSprite
 	visual.name = "DirectionalVisual"
-	visual.configure(FIREBALL_SHEET, 4, 8, 1.8, 16.0)
+	visual.configure(_sheet_for(spell_id), 4, 8, 1.0, 16.0)
 	visual.set_direction_vector(direction)
 	visual.set_moving(true)
-	if spell_id == "frostbolt":
-		visual.modulate = Color(0.38, 0.82, 1.0)
-	elif spell_id == "chain_lightning":
-		visual.modulate = Color(0.78, 0.66, 1.0)
 	add_child(visual)
 
 func setup(flight_direction: Vector2, spell_damage: int) -> void:
@@ -42,7 +38,17 @@ func configure_effect(new_spell_id: String, new_slow_multiplier: float, new_slow
 	slow_multiplier = clampf(new_slow_multiplier, 0.1, 1.0)
 	slow_duration = maxf(new_slow_duration, 0.0)
 	if visual != null:
-		visual.modulate = Color(0.38, 0.82, 1.0) if spell_id == "frostbolt" else (Color(0.78, 0.66, 1.0) if spell_id == "chain_lightning" else Color.WHITE)
+		visual.configure(_sheet_for(spell_id), 4, 8, 1.0, 16.0)
+		visual.set_direction_vector(direction)
+		visual.set_moving(true)
+
+static func _sheet_for(id: String) -> String:
+	match id:
+		"frostbolt":
+			return "res://assets/sprites/magic/frostbolt_8dir.png"
+		"chain_lightning":
+			return "res://assets/sprites/magic/chain_lightning_8dir.png"
+	return FIREBALL_SHEET
 
 func configure_burning(damage_per_tick: int, duration: float) -> void:
 	burn_damage = maxi(0, damage_per_tick)

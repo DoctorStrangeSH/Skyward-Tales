@@ -26,7 +26,7 @@ const REGION_NAMES := {"greenreach": "Зелёные Пределы", "moonlit_g
 const MATERIAL_ITEMS := ["wolf_pelt", "iron_ore"]
 const RARITY_LABELS := {"common": "ОБЫЧНАЯ", "uncommon": "НЕОБЫЧНАЯ", "rare": "РЕДКАЯ"}
 const CARTOGRAPHER_CACHE_ID := "greenreach_cartographer_cache"
-const IDLE_HINT := "WASD — ходьба   Shift — рывок   1/2/3 — магия   ЛКМ — каст   E — подбор   Q/R — зелья   I — сумка   J — журнал   K — бестиарий   M — карта   F6/F9 — сейв/загрузка"
+const IDLE_HINT := "WASD — ходьба · ЛКМ — магия · 1/2/3 — школа · Shift — рывок · E — действие\nI — сумка · J — журнал · K — бестиарий · M — карта · Esc — пауза"
 
 var player: PlayerCharacter
 var hud: GameHud
@@ -59,6 +59,7 @@ var gathered_resource_nodes: Dictionary = {}
 var latest_cache_narrative: bool = false
 var autosave_enabled: bool = true
 var _autosave_pending: bool = false
+var _session_time: float = 0.0
 
 func _ready() -> void:
 	var catalogs: GameCatalogs = GameCatalogs.new()
@@ -67,6 +68,8 @@ func _ready() -> void:
 	bestiary_entries = catalogs.bestiary
 	region_layouts = catalogs.regions
 	world = get_node("World") as Node2D
+	# Actors and scenery share one y-sorted space: walk behind trees and ruins.
+	y_sort_enabled = true
 	quests = QuestManager.new()
 	quests.quest_completed.connect(func(_quest_id: String) -> void: request_autosave())
 	relationships = RELATIONSHIP_SCRIPT.new()
@@ -80,6 +83,7 @@ func _ready() -> void:
 	player.stats_changed.connect(_refresh_hud)
 	player.level_up.connect(_on_level_up)
 	player.died.connect(_on_player_died)
+	_apply_camera_limits()
 
 	hud = GameHud.new()
 	add_child(hud)
@@ -104,6 +108,7 @@ func _ready() -> void:
 	_refresh_hud()
 
 func _process(delta: float) -> void:
+	_session_time += delta
 	cast_cooldown_remaining = maxf(0.0, cast_cooldown_remaining - delta)
 	if player == null or hud == null or game_over:
 		return
@@ -116,8 +121,10 @@ func _process(delta: float) -> void:
 		hud.set_prompt("")
 	elif nearby_interactable != null:
 		hud.set_prompt(_interaction_prompt(nearby_interactable))
-	else:
+	elif _session_time < 20.0:
 		hud.set_prompt(IDLE_HINT)
+	else:
+		hud.set_prompt("")
 
 func _interaction_prompt(target: Node2D) -> String:
 	if target is WorldNpc:
@@ -301,6 +308,16 @@ func _set_region(region_id: String, arrival: Vector2, notify: bool = true) -> vo
 		hud.show_message("Локация: " + str(REGION_NAMES.get(current_region, current_region)), 2.5)
 	_refresh_hud()
 
+func _apply_camera_limits() -> void:
+	var camera := player.get_node_or_null("Camera2D") as Camera2D
+	if camera == null or world == null or not world.has_method("map_size"):
+		return
+	var size: Vector2 = world.map_size()
+	camera.limit_left = 0
+	camera.limit_top = 0
+	camera.limit_right = int(size.x)
+	camera.limit_bottom = int(size.y)
+
 func _on_region_travel(target_region: String, arrival: Vector2) -> void:
 	if target_region == "moonlit_grove" and not quests.is_completed("moonleaf_gathering"):
 		hud.show_message("Сначала помогите старейшине с лунными листьями.", 2.5)
@@ -350,6 +367,7 @@ func _enemy_kind(enemy: SlimeEnemy) -> String:
 func _spawn_npc(npc_data: Dictionary) -> void:
 	var npc_id := str(npc_data.get("id", ""))
 	var npc := NPC_SCRIPT.new() as WorldNpc
+	npc.npc_id = npc_id
 	npc.display_name = str(npc_data.get("name", "Путник"))
 	var color: Variant = npc_data.get("outfit_color")
 	if color is Array and color.size() == 3:

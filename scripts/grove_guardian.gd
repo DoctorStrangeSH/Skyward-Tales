@@ -4,6 +4,9 @@ class_name GroveGuardian
 var enraged: bool = false
 
 func _ready() -> void:
+	sprite_sheet = "res://assets/sprites/enemies/grove_guardian_8dir.png"
+	sprite_offset = Vector2(0.0, -19.0)
+	sprite_fps = 4.0
 	super._ready()
 	elemental_multipliers = {"fire": 0.65, "ice": 1.25, "lightning": 1.0}
 	max_health = 160
@@ -16,9 +19,7 @@ func _ready() -> void:
 	shooting_distance = 300.0
 	preferred_distance = 180.0
 	retreat_distance = 120.0
-	base_visual_tint = Color(0.97, 0.67, 0.29)
 	visual.modulate = base_visual_tint
-	visual.scale = Vector2.ONE * 2.4
 	combat_feedback.elite = true
 	combat_feedback.set_health(health, max_health)
 
@@ -30,7 +31,7 @@ func take_damage(amount: int) -> void:
 		combat_feedback.set_warning(true)
 		move_speed = 44.0
 		attack_cooldown_duration = 1.2
-		base_visual_tint = Color(1.0, 0.35, 0.36)
+		base_visual_tint = Color(1.0, 0.62, 0.55)
 		visual.modulate = base_visual_tint
 	super.take_damage(amount)
 

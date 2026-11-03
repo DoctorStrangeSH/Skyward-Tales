@@ -16,7 +16,9 @@ func interact() -> void:
 	queue_free()
 
 func _draw() -> void:
-	var color: Color = Color(0.9, 0.25, 0.3) if item_id == "health_potion" else Color(0.27, 0.6, 0.95)
-	draw_rect(Rect2(-4, -4, 8, 9), Color(0.17, 0.15, 0.22))
-	draw_rect(Rect2(-3, -3, 6, 7), color)
-	draw_rect(Rect2(-2, -6, 4, 3), Color(0.87, 0.73, 0.44))
+	var art := "pouch"
+	if item_id in ["health_potion", "mana_potion", "wolf_pelt"]:
+		art = item_id
+	elif item_id == "ancient_relic":
+		art = "relic"
+	WorldArt.draw_prop(self, "props/%s.png" % art)

@@ -2,67 +2,412 @@
   "greenreach": {
     "name": "Зелёные Пределы",
     "npcs": [
-      {"id": "elder", "name": "Старейшина Элиан", "position": [250, 205]},
-      {"id": "cartographer", "name": "Мира, картограф", "position": [205, 485]},
-      {"id": "merchant", "name": "Торговец Бран", "position": [365, 205], "outfit_color": [0.25, 0.48, 0.31]},
-      {"id": "hunter", "name": "Торен, охотник", "position": [315, 330], "outfit_color": [0.48, 0.39, 0.25]},
-      {"id": "blacksmith", "name": "Кузнец Борин", "position": [455, 330], "outfit_color": [0.42, 0.48, 0.58]}
+      {
+        "id": "elder",
+        "name": "Старейшина Элиан",
+        "position": [250, 205]
+      },
+      {
+        "id": "cartographer",
+        "name": "Мира, картограф",
+        "position": [205, 485]
+      },
+      {
+        "id": "merchant",
+        "name": "Торговец Бран",
+        "position": [365, 205],
+        "outfit_color": [0.25, 0.48, 0.31]
+      },
+      {
+        "id": "hunter",
+        "name": "Торен, охотник",
+        "position": [315, 330],
+        "outfit_color": [0.48, 0.39, 0.25]
+      },
+      {
+        "id": "blacksmith",
+        "name": "Кузнец Борин",
+        "position": [455, 330],
+        "outfit_color": [0.42, 0.48, 0.58]
+      }
     ],
     "resource_nodes": [
-      {"id": "iron_ore_node_01", "name": "Жила железной руды", "position": [545, 420]},
-      {"id": "iron_ore_node_02", "name": "Жила железной руды", "position": [900, 570]},
-      {"id": "iron_ore_node_03", "name": "Жила железной руды", "position": [1060, 620]}
+      {
+        "id": "iron_ore_node_01",
+        "name": "Жила железной руды",
+        "position": [545, 420]
+      },
+      {
+        "id": "iron_ore_node_02",
+        "name": "Жила железной руды",
+        "position": [900, 570]
+      },
+      {
+        "id": "iron_ore_node_03",
+        "name": "Жила железной руды",
+        "position": [1060, 620]
+      }
     ],
-    "supply_crates": [[445, 470], [635, 520], [865, 430]],
-    "map_fragments": [[455, 535], [610, 585]],
+    "supply_crates": [
+      [445, 470],
+      [635, 520],
+      [865, 430]
+    ],
+    "map_fragments": [
+      [455, 535],
+      [610, 585]
+    ],
     "chests": [
-      {"id": "greenreach_ruins", "position": [960, 175], "gold": 45, "item": "health_potion", "amount": 2},
-      {"id": "greenreach_woodland", "position": [660, 460], "gold": 30, "item": "mana_potion", "amount": 1},
-      {"id": "greenreach_cartographer_cache", "position": [335, 495], "gold": 20, "item": "mana_potion", "amount": 2}
+      {
+        "id": "greenreach_ruins",
+        "position": [960, 175],
+        "gold": 45,
+        "item": "health_potion",
+        "amount": 2
+      },
+      {
+        "id": "greenreach_woodland",
+        "position": [660, 460],
+        "gold": 30,
+        "item": "mana_potion",
+        "amount": 1
+      },
+      {
+        "id": "greenreach_cartographer_cache",
+        "position": [335, 495],
+        "gold": 20,
+        "item": "mana_potion",
+        "amount": 2
+      }
     ],
     "herbs": [
-      {"position": [370, 155]},
-      {"position": [515, 310]},
-      {"position": [700, 190]}
+      {
+        "position": [370, 155]
+      },
+      {
+        "position": [515, 310]
+      },
+      {
+        "position": [700, 190]
+      }
     ],
     "enemies": [
-      {"kind": "slime", "position": [475, 350]},
-      {"kind": "slime", "position": [790, 300]},
-      {"kind": "slime", "position": [990, 250]}
+      {
+        "kind": "slime",
+        "position": [475, 350]
+      },
+      {
+        "kind": "slime",
+        "position": [790, 300]
+      },
+      {
+        "kind": "slime",
+        "position": [990, 250]
+      }
     ],
     "gates": [
-      {"target": "moonlit_grove", "position": [1120, 205], "arrival": [140, 430], "label": "Тропа в Зачарованный лес"}
+      {
+        "target": "moonlit_grove",
+        "position": [1120, 205],
+        "arrival": [140, 430],
+        "label": "Тропа в Зачарованный лес"
+      }
     ],
     "secrets": {
       "elder_hidden_storehouse": [960, 175],
       "secret_cartographer_cache": [335, 495]
+    },
+    "terrain": {
+      "size": [1280, 864],
+      "style": "day",
+      "trails": [
+        [
+          [60, 205],
+          [170, 205],
+          [225, 250],
+          [340, 250],
+          [405, 195],
+          [545, 195],
+          [625, 255],
+          [790, 255],
+          [900, 205],
+          [1120, 205],
+          [1280, 205]
+        ]
+      ],
+      "ponds": [
+        {
+          "rect": [760, 470, 145, 88]
+        }
+      ],
+      "trees": [
+        [70, 90],
+        [125, 85],
+        [330, 80],
+        [380, 95],
+        [610, 90],
+        [680, 115],
+        [840, 90],
+        [1080, 105],
+        [110, 390],
+        [200, 460],
+        [350, 420],
+        [600, 420],
+        [690, 500],
+        [980, 390],
+        [1080, 460],
+        [470, 590],
+        [884, 739],
+        [885, 815],
+        [354, 811],
+        [1022, 312],
+        [1164, 153],
+        [532, 786],
+        [515, 658],
+        [163, 585],
+        [251, 432],
+        [216, 682],
+        [872, 174],
+        [288, 595]
+      ],
+      "props": [
+        {
+          "kind": "ruins",
+          "position": [966, 150]
+        }
+      ],
+      "blockers": [
+        {
+          "center": [832.5, 514],
+          "size": [145, 88]
+        },
+        {
+          "center": [966, 119],
+          "size": [92, 58]
+        }
+      ],
+      "bushes": [
+        [1155, 643],
+        [118, 361],
+        [694, 694],
+        [100, 512],
+        [1229, 60],
+        [137, 684],
+        [1031, 769],
+        [1052, 687],
+        [804, 723],
+        [518, 530],
+        [654, 398],
+        [1139, 312],
+        [47, 796],
+        [971, 544],
+        [828, 261],
+        [207, 537],
+        [778, 60],
+        [478, 633],
+        [177, 69],
+        [63, 390],
+        [146, 420],
+        [1235, 593],
+        [378, 740],
+        [907, 669],
+        [1097, 589],
+        [491, 233],
+        [1237, 481],
+        [748, 280],
+        [562, 595],
+        [535, 708],
+        [958, 698],
+        [383, 281],
+        [336, 653],
+        [812, 378]
+      ]
     }
   },
   "moonlit_grove": {
     "name": "Зачарованный лес",
     "npcs": [
-      {"id": "grove_warden", "name": "Хранительница Илара", "position": [250, 420]}
+      {
+        "id": "grove_warden",
+        "name": "Хранительница Илара",
+        "position": [250, 420]
+      }
     ],
     "chests": [
-      {"id": "grove_moon_pool", "position": [565, 215], "gold": 35, "item": "mana_potion", "amount": 2},
-      {"id": "grove_ancient_stones", "position": [975, 640], "gold": 60, "item": "health_potion", "amount": 1}
+      {
+        "id": "grove_moon_pool",
+        "position": [570, 246],
+        "gold": 35,
+        "item": "mana_potion",
+        "amount": 2
+      },
+      {
+        "id": "grove_ancient_stones",
+        "position": [975, 640],
+        "gold": 60,
+        "item": "health_potion",
+        "amount": 1
+      }
     ],
     "herbs": [
-      {"id": "spirit_blossom", "name": "Духовный цветок", "position": [330, 315]},
-      {"id": "spirit_blossom", "name": "Духовный цветок", "position": [680, 505]},
-      {"id": "spirit_blossom", "name": "Духовный цветок", "position": [1080, 390]}
+      {
+        "id": "spirit_blossom",
+        "name": "Духовный цветок",
+        "position": [330, 315]
+      },
+      {
+        "id": "spirit_blossom",
+        "name": "Духовный цветок",
+        "position": [680, 505]
+      },
+      {
+        "id": "spirit_blossom",
+        "name": "Духовный цветок",
+        "position": [1080, 390]
+      }
     ],
     "enemies": [
-      {"kind": "wolf", "position": [470, 430]},
-      {"kind": "wolf", "position": [900, 290]},
-      {"kind": "shaman", "position": [730, 360]}
+      {
+        "kind": "wolf",
+        "position": [470, 430]
+      },
+      {
+        "kind": "wolf",
+        "position": [900, 290]
+      },
+      {
+        "kind": "shaman",
+        "position": [730, 360]
+      }
     ],
-    "boss": {"kind": "guardian", "position": [1020, 580], "after_quest": "grove_spirits"},
+    "boss": {
+      "kind": "guardian",
+      "position": [1020, 580],
+      "after_quest": "grove_spirits"
+    },
     "gates": [
-      {"target": "greenreach", "position": [1120, 205], "arrival": [1080, 205], "label": "Возврат к Зелёным Пределам"}
+      {
+        "target": "greenreach",
+        "position": [1120, 205],
+        "arrival": [1080, 205],
+        "label": "Возврат к Зелёным Пределам"
+      }
     ],
     "secrets": {
       "ilara_ancient_cache": [975, 640]
+    },
+    "terrain": {
+      "size": [1280, 864],
+      "style": "night",
+      "trails": [
+        [
+          [0, 430],
+          [40, 430],
+          [210, 430],
+          [330, 360],
+          [510, 360],
+          [650, 445],
+          [820, 445],
+          [960, 365],
+          [1280, 365]
+        ]
+      ],
+      "ponds": [
+        {
+          "circle": [570, 180, 48]
+        }
+      ],
+      "trees": [
+        [75, 100],
+        [165, 120],
+        [285, 90],
+        [420, 105],
+        [560, 60],
+        [690, 120],
+        [830, 95],
+        [1010, 110],
+        [1170, 95],
+        [90, 300],
+        [260, 320],
+        [420, 290],
+        [610, 310],
+        [790, 290],
+        [980, 330],
+        [1160, 300],
+        [160, 650],
+        [360, 690],
+        [600, 660],
+        [850, 690],
+        [1080, 650],
+        [1074, 533],
+        [499, 518],
+        [734, 622],
+        [638, 364],
+        [533, 458],
+        [456, 584],
+        [81, 603],
+        [1152, 761],
+        [335, 564],
+        [72, 696],
+        [79, 233],
+        [490, 136]
+      ],
+      "props": [
+        {
+          "kind": "standing_stones",
+          "position": [985, 612]
+        }
+      ],
+      "blockers": [
+        {
+          "center": [570, 180],
+          "size": [78, 70]
+        },
+        {
+          "center": [946, 600],
+          "size": [14, 14]
+        },
+        {
+          "center": [1024, 600],
+          "size": [14, 14]
+        }
+      ],
+      "bushes": [
+        [66, 551],
+        [218, 689],
+        [317, 523],
+        [1219, 122],
+        [465, 804],
+        [803, 334],
+        [1074, 125],
+        [909, 682],
+        [527, 58],
+        [736, 197],
+        [43, 94],
+        [1209, 59],
+        [927, 807],
+        [639, 455],
+        [176, 687],
+        [110, 102],
+        [905, 754],
+        [59, 186],
+        [1183, 502],
+        [642, 221],
+        [92, 454],
+        [169, 762],
+        [617, 587],
+        [823, 599],
+        [347, 221],
+        [731, 493],
+        [746, 114],
+        [340, 348],
+        [820, 725],
+        [843, 794],
+        [64, 656],
+        [1080, 292],
+        [1214, 752],
+        [1037, 282]
+      ]
     }
   }
 }
