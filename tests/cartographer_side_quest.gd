@@ -85,6 +85,10 @@ func _run() -> void:
 		return
 	if not _verify(int(game.player.inventory.get("mana_potion", 0)) == old_mana_potions + 2, "supplies choice grants two mana potions"):
 		return
+	if not _verify(game.relationships.get_score("mira") == 20, "supplies choice grants enough trust to unlock the secret cache"):
+		return
+	if not _verify(game.discovered_landmarks.get("greenreach", {}).has("secret_cartographer_cache"), "trust reveals the cartographer cache on the map"):
+		return
 	var chosen_snapshot: Dictionary = game.make_save_snapshot()
 	if not _verify(game.restore_save_snapshot(chosen_snapshot), "selected quest choice save restore"):
 		return
@@ -97,7 +101,7 @@ func _run() -> void:
 		return
 	cartographer = _find_cartographer(game)
 	cartographer.interact()
-	if not _verify(game.hud.dialogue_label.text.contains("припасы"), "follow-up dialogue reflects the saved choice"):
+	if not _verify(game.hud.dialogue_label.text.contains("тайник"), "trusted follow-up dialogue reveals the secret cache"):
 		return
 	print("CARTOGRAPHER SIDE QUEST OK: unlock, collect, travel, save/restore, choice and consequence")
 	quit(0)
