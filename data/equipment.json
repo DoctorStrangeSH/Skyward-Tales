@@ -87,6 +87,22 @@
       "spell_bonus": {
         "*": 8
       }
+    },
+    "health_potion": {
+      "name": "Зелье здоровья",
+      "description": "+35 HP"
+    },
+    "mana_potion": {
+      "name": "Зелье маны",
+      "description": "+25 MP"
+    },
+    "starlight_essence": {
+      "name": "Звёздная эссенция",
+      "description": "Постоянно +5 к максимальной мане"
+    },
+    "ancient_relic": {
+      "name": "Древний артефакт",
+      "description": "Трофей победы над хранителем"
     }
   }
 }

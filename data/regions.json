@@ -1,0 +1,68 @@
+{
+  "greenreach": {
+    "name": "Зелёные Пределы",
+    "npcs": [
+      {"id": "elder", "name": "Старейшина Элиан", "position": [250, 205]},
+      {"id": "cartographer", "name": "Мира, картограф", "position": [205, 485]},
+      {"id": "merchant", "name": "Торговец Бран", "position": [365, 205], "outfit_color": [0.25, 0.48, 0.31]},
+      {"id": "hunter", "name": "Торен, охотник", "position": [315, 330], "outfit_color": [0.48, 0.39, 0.25]},
+      {"id": "blacksmith", "name": "Кузнец Борин", "position": [455, 330], "outfit_color": [0.42, 0.48, 0.58]}
+    ],
+    "resource_nodes": [
+      {"id": "iron_ore_node_01", "name": "Жила железной руды", "position": [545, 420]},
+      {"id": "iron_ore_node_02", "name": "Жила железной руды", "position": [900, 570]},
+      {"id": "iron_ore_node_03", "name": "Жила железной руды", "position": [1060, 620]}
+    ],
+    "supply_crates": [[445, 470], [635, 520], [865, 430]],
+    "map_fragments": [[455, 535], [610, 585]],
+    "chests": [
+      {"id": "greenreach_ruins", "position": [960, 175], "gold": 45, "item": "health_potion", "amount": 2},
+      {"id": "greenreach_woodland", "position": [660, 460], "gold": 30, "item": "mana_potion", "amount": 1},
+      {"id": "greenreach_cartographer_cache", "position": [335, 495], "gold": 20, "item": "mana_potion", "amount": 2}
+    ],
+    "herbs": [
+      {"position": [370, 155]},
+      {"position": [515, 310]},
+      {"position": [700, 190]}
+    ],
+    "enemies": [
+      {"kind": "slime", "position": [475, 350]},
+      {"kind": "slime", "position": [790, 300]},
+      {"kind": "slime", "position": [990, 250]}
+    ],
+    "gates": [
+      {"target": "moonlit_grove", "position": [1120, 205], "arrival": [140, 430], "label": "Тропа в Зачарованный лес"}
+    ],
+    "secrets": {
+      "elder_hidden_storehouse": [960, 175],
+      "secret_cartographer_cache": [335, 495]
+    }
+  },
+  "moonlit_grove": {
+    "name": "Зачарованный лес",
+    "npcs": [
+      {"id": "grove_warden", "name": "Хранительница Илара", "position": [250, 420]}
+    ],
+    "chests": [
+      {"id": "grove_moon_pool", "position": [565, 215], "gold": 35, "item": "mana_potion", "amount": 2},
+      {"id": "grove_ancient_stones", "position": [975, 640], "gold": 60, "item": "health_potion", "amount": 1}
+    ],
+    "herbs": [
+      {"id": "spirit_blossom", "name": "Духовный цветок", "position": [330, 315]},
+      {"id": "spirit_blossom", "name": "Духовный цветок", "position": [680, 505]},
+      {"id": "spirit_blossom", "name": "Духовный цветок", "position": [1080, 390]}
+    ],
+    "enemies": [
+      {"kind": "wolf", "position": [470, 430]},
+      {"kind": "wolf", "position": [900, 290]},
+      {"kind": "shaman", "position": [730, 360]}
+    ],
+    "boss": {"kind": "guardian", "position": [1020, 580], "after_quest": "grove_spirits"},
+    "gates": [
+      {"target": "greenreach", "position": [1120, 205], "arrival": [1080, 205], "label": "Возврат к Зелёным Пределам"}
+    ],
+    "secrets": {
+      "ilara_ancient_cache": [975, 640]
+    }
+  }
+}
