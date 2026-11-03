@@ -25,6 +25,8 @@ func set_health(current: int, maximum: int) -> void:
 	queue_redraw()
 
 func show_damage(amount: int) -> void:
+	if not GameSettings.damage_numbers_enabled():
+		return
 	damage_amount = maxi(0, amount)
 	damage_timer = 0.72
 	queue_redraw()

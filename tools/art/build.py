@@ -99,7 +99,7 @@ def build_props() -> None:
         "gate_day": props.gate(False), "gate_night": props.gate(True), "gate_cave": props.cave_gate(),
         "echo_crystal": props.herb("echo_crystal"),
         "marker_quest": props.marker("quest"), "marker_ready": props.marker("ready"),
-        "marker_service": props.marker("service"),
+        "marker_service": props.marker("service"), "key_e": props.key_badge(),
     }
     for name, (canvas, origin) in items.items():
         save(canvas, f"props/{name}.png", origin)

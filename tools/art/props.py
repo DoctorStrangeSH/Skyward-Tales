@@ -517,3 +517,27 @@ def cave_gate() -> tuple[Canvas, tuple[int, int]]:
         c.put(x, y, portal[0])
     _finish(c)
     return c, (18, 41)
+
+
+def key_badge() -> tuple[Canvas, tuple[int, int]]:
+    """A keycap with the letter E, shown above interactable objects."""
+    c = Canvas(13, 13)
+    cap = ramp("#fff6e0", "#e8dcc0", "#b8a888", "#7a6a58")
+    for y in range(1, 12):
+        for x in range(1, 12):
+            corner = (x in (1, 11)) and (y in (1, 11))
+            if corner:
+                continue
+            c.put(x, y, cap[2] if y >= 10 else cap[1])
+    c.hline(2, 10, 1, cap[0])
+    ink = hex_color("#2a1d33")
+    for y in range(3, 9):
+        c.put(4, y, ink)
+    for x in range(4, 9):
+        c.put(x, 3, ink)
+        c.put(x, 8, ink)
+    for x in range(4, 8):
+        c.put(x, 5, ink)
+        c.put(x, 6, ink) if False else None
+    c.outline(OUTLINE)
+    return c, (6, 12)

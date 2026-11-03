@@ -26,7 +26,6 @@ const ENEMY_SCRIPTS := {
 const MATERIAL_ITEMS := ["wolf_pelt", "iron_ore"]
 const RARITY_LABELS := {"common": "ОБЫЧНАЯ", "uncommon": "НЕОБЫЧНАЯ", "rare": "РЕДКАЯ"}
 const CARTOGRAPHER_CACHE_ID := "greenreach_cartographer_cache"
-const IDLE_HINT := "WASD — ходьба · ЛКМ — магия · 1/2/3 — школа · Shift — рывок · E — действие\nI — сумка · J — журнал · K — бестиарий · M — карта · Esc — пауза"
 
 var player: PlayerCharacter
 var hud: GameHud
@@ -35,6 +34,7 @@ var relationships: NpcRelationships
 var merchant_shop: MerchantShop
 var crafting_service: CraftingService
 var dialogues: NpcDialogues
+var interact_prompt: InteractPrompt
 var pickups: QuestPickups
 var elder: WorldNpc
 var nearby_interactable: Node2D
@@ -88,6 +88,8 @@ func _ready() -> void:
 
 	hud = GameHud.new()
 	add_child(hud)
+	interact_prompt = InteractPrompt.new()
+	add_child(interact_prompt)
 	hud.inventory_use_requested.connect(_on_inventory_use)
 	hud.inventory_unequip_requested.connect(_on_inventory_unequip)
 	hud.pause_save_requested.connect(save_game)
@@ -106,6 +108,7 @@ func _ready() -> void:
 		load_game(true)
 	else:
 		hud.show_message("Добро пожаловать в Skyward Tales! Найдите старейшину.", 5.0)
+		hud.show_tip("controls", "Совет: Esc — пауза, там же управление и настройки.", 6.0)
 	_refresh_hud()
 
 func _process(delta: float) -> void:
@@ -122,14 +125,14 @@ func _process(delta: float) -> void:
 	_update_minimap()
 	hud.update_dodge(player.dodge_cooldown_left, player.dodge_cooldown, player.dodge_time_left > 0.0)
 	nearby_interactable = _find_nearest_interactable()
-	if hud.dialogue_visible or hud.inventory_open or hud.overlay_visible() or hud.world_map_visible:
+	var busy: bool = hud.dialogue_visible or hud.inventory_open or hud.overlay_visible() or hud.world_map_visible
+	if busy or nearby_interactable == null:
 		hud.set_prompt("")
-	elif nearby_interactable != null:
-		hud.set_prompt(_interaction_prompt(nearby_interactable))
-	elif _session_time < 20.0:
-		hud.set_prompt(IDLE_HINT)
+		interact_prompt.show_for(null, "")
 	else:
-		hud.set_prompt("")
+		var text := _interaction_prompt(nearby_interactable)
+		hud.set_prompt(text)
+		interact_prompt.show_for(nearby_interactable, text.trim_prefix("E — "))
 
 func _interaction_prompt(target: Node2D) -> String:
 	if target is WorldNpc:
@@ -358,7 +361,8 @@ func _discover_nearby_enemies() -> void:
 		var kind: String = enemy_kind(enemy)
 		if not discovered_enemies.has(kind):
 			discovered_enemies[kind] = true
-			hud.show_message("Бестиарий: %s! Откройте книгу клавишей K." % str(bestiary_entries.get(kind, {}).get("name", kind)), 2.5)
+			hud.show_message("Новая запись в бестиарии: %s" % str(bestiary_entries.get(kind, {}).get("name", kind)), 2.5)
+			hud.show_tip("bestiary", "Совет: K — бестиарий со слабостями врагов.")
 
 static func enemy_kind(enemy: SlimeEnemy) -> String:
 	if enemy is GroveGuardian:
@@ -770,7 +774,9 @@ func save_game() -> bool:
 		return false
 	var success: bool = SAVE_SCRIPT.save_snapshot(make_save_snapshot(), save_path)
 	if hud != null:
-		hud.show_message("Игра сохранена (F9 — загрузить)" if success else "Ошибка сохранения!", 2.0)
+		hud.show_message("Игра сохранена" if success else "Ошибка сохранения!", 2.0)
+		if success:
+			hud.show_tip("quickload", "Совет: F9 — быстрая загрузка.")
 	return success
 
 ## F9 / pause menu load the manual save (falling back to the autosave);
