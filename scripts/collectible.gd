@@ -14,6 +14,12 @@ func interact() -> void:
 	interacted.emit(self)
 
 func _draw() -> void:
+	if item_id.begins_with("iron_ore_node_"):
+		draw_rect(Rect2(-10, -6, 20, 13), Color(0.25, 0.27, 0.29))
+		draw_rect(Rect2(-7, -9, 8, 12), Color(0.48, 0.52, 0.55))
+		draw_rect(Rect2(1, -11, 7, 14), Color(0.67, 0.57, 0.36))
+		draw_rect(Rect2(3, -8, 3, 5), Color(0.86, 0.76, 0.48))
+		return
 	if item_id.begins_with("supply_crate_"):
 		draw_rect(Rect2(-9, -8, 18, 16), Color(0.43, 0.27, 0.14))
 		draw_rect(Rect2(-9, -8, 18, 3), Color(0.68, 0.48, 0.25))
