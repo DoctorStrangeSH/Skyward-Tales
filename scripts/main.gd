@@ -10,6 +10,7 @@ const CHEST_SCRIPT := preload("res://scripts/treasure_chest.gd")
 const SAVE_SCRIPT := preload("res://scripts/save_system.gd")
 const RELATIONSHIP_SCRIPT := preload("res://scripts/npc_relationships.gd")
 const MERCHANT_SHOP_SCRIPT := preload("res://scripts/merchant_shop.gd")
+const CRAFTING_SERVICE_SCRIPT := preload("res://scripts/crafting_service.gd")
 const GATE_SCRIPT := preload("res://scripts/region_gate.gd")
 const WOLF_SCRIPT := preload("res://scripts/forest_wolf.gd")
 const SHAMAN_SCRIPT := preload("res://scripts/forest_shaman.gd")
@@ -20,6 +21,7 @@ var hud: GameHud
 var quests: QuestManager
 var relationships: NpcRelationships
 var merchant_shop: MerchantShop
+var crafting_service: CraftingService
 var elder: WorldNpc
 var nearby_interactable: Node2D
 var spell_definitions: Dictionary = {}
@@ -49,6 +51,7 @@ func _ready() -> void:
 	quests = QuestManager.new()
 	relationships = RELATIONSHIP_SCRIPT.new()
 	merchant_shop = MERCHANT_SHOP_SCRIPT.new()
+	crafting_service = CRAFTING_SERVICE_SCRIPT.new()
 	player = PLAYER_SCENE.instantiate() as PlayerCharacter
 	add_child(player)
 	player.global_position = Vector2(130, 210)
@@ -210,6 +213,7 @@ func _populate_region() -> void:
 		_spawn_cartographer()
 		_spawn_merchant()
 		_spawn_hunter()
+		_spawn_blacksmith()
 		var supply_state: Dictionary = quests.states.get("bran_supply_run", {})
 		if bool(supply_state.get("started", false)) and not quests.is_completed("bran_supply_run"):
 			var collected_crates: Array = supply_state.get("collected_crates", [])
@@ -389,6 +393,13 @@ func _on_dialogue_choice_selected(choice_id: String) -> void:
 		hud.close_dialogue()
 		player.set_physics_process(true)
 		return
+	if choice_id == "blacksmith_craft:reinforce_mantle":
+		_craft_blacksmith_item("reinforce_wolfskin_mantle")
+		return
+	if choice_id == "blacksmith_craft:later":
+		hud.close_dialogue()
+		player.set_physics_process(true)
+		return
 	if choice_id == "merchant_supply:fair" or choice_id == "merchant_supply:clinic":
 		_complete_merchant_supply_quest(choice_id.trim_prefix("merchant_supply:"))
 		return
@@ -475,6 +486,31 @@ func _spawn_hunter() -> void:
 	add_child(hunter)
 	hunter.global_position = Vector2(315, 330)
 	hunter.interacted.connect(_on_hunter_interacted)
+
+func _spawn_blacksmith() -> void:
+	var blacksmith := NPC_SCRIPT.new() as WorldNpc
+	blacksmith.display_name = "Кузнец Борин"
+	blacksmith.outfit_color = Color(0.42, 0.48, 0.58)
+	add_child(blacksmith)
+	blacksmith.global_position = Vector2(455, 330)
+	blacksmith.interacted.connect(_on_blacksmith_interacted)
+
+func _on_blacksmith_interacted(_source: Node2D) -> void:
+	var status: Dictionary = crafting_service.get_recipe_status(player, "reinforce_wolfskin_mantle")
+	if bool(status.get("success", false)):
+		_show_dialogue_choices("Борин, кузнец", "Неплохая работа Торена. Я могу укрепить накидку стальными пластинами. Понадобятся сама накидка, две дополнительные шкуры и 30 золота. Усиливаем?", [
+			{"id": "blacksmith_craft:reinforce_mantle", "label": "Укрепить накидку — 2 шкуры и 30 золота"},
+			{"id": "blacksmith_craft:later", "label": "В другой раз"}
+		])
+	else:
+		_show_dialogue("Борин, кузнец", "Принеси мне волчью накидку, две волчьи шкуры и 30 золотых. Я укреплю её стальными пластинами. " + str(status.get("message", "")))
+
+func _craft_blacksmith_item(recipe_id: String) -> void:
+	var result: Dictionary = crafting_service.craft(player, recipe_id)
+	hud.close_dialogue()
+	player.set_physics_process(true)
+	hud.show_message(str(result.get("message", "Кузнец не смог выполнить заказ.")), 3.0)
+	_refresh_hud()
 
 func _on_hunter_interacted(_source: Node2D) -> void:
 	const quest_id := "toren_wolf_hunt"
