@@ -44,9 +44,7 @@
       "rarity": "rare",
       "spell_bonus": {"chain_lightning": 4},
       "chain_targets_bonus": 1
-    }
-  }
-,
+    },
     "wolf_pelt": {
       "name": "Волчья шкура",
       "description": "Материал для охотничьего снаряжения. Торен использует три шкуры для пошива накидки.",
