@@ -4,8 +4,10 @@ class_name GameCatalogs
 var bestiary: Dictionary = {}
 var talents: Dictionary = {}
 var spells: Dictionary = {}
+var regions: Dictionary = {}
 
 func _init() -> void:
+	regions = _load_dictionary("res://data/regions.json", "Каталог регионов не найден.")
 	bestiary = _load_dictionary("res://data/bestiary.json", "Каталог бестиария не найден.")
 	talents = _load_dictionary("res://data/talents.json", "Каталог талантов не найден.")
 	spells = _load_dictionary("res://data/spells.json", "Каталог заклинаний не найден — используются значения по умолчанию.")
