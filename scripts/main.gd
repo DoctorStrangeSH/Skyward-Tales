@@ -457,6 +457,7 @@ func _on_merchant_interacted(_source: Node2D) -> void:
 func _show_merchant_menu() -> void:
 	const quest_id := "bran_supply_run"
 	var reputation: int = relationships.get_score("elder")
+	var bran_trust: int = relationships.get_score("bran")
 	var discount_percent: int = merchant_shop.get_discount_percent(reputation)
 	var choices: Array[Dictionary] = []
 	var message := "Добро пожаловать! Чем могу помочь?"
@@ -474,11 +475,14 @@ func _show_merchant_menu() -> void:
 		message += "\nЗа помощь поселению действует скидка %d%%." % discount_percent
 	else:
 		message += "\nПомоги поселению — и я предложу лучшие цены."
-	for offer in merchant_shop.get_offers(reputation):
-		choices.append({
-			"id": "merchant_buy:" + str(offer.get("id", "")),
-			"label": "Купить %s — %d золота" % [str(offer.get("name", "Товар")), int(offer.get("price", 0))]
-		})
+	for offer in merchant_shop.get_offers(reputation, bran_trust):
+		var offer_label: String
+		if offer.has("trade_currency"):
+			var currency_name := "зелья маны" if str(offer["trade_currency"]) == "mana_potion" else str(offer["trade_currency"])
+			offer_label = "Обменять %d × %s на %s" % [int(offer["trade_amount"]), currency_name, str(offer["name"])]
+		else:
+			offer_label = "Купить %s — %d золота" % [str(offer.get("name", "Товар")), int(offer.get("price", 0))]
+		choices.append({"id": "merchant_buy:" + str(offer.get("id", "")), "label": offer_label})
 	choices.append({"id": "merchant_close", "label": "Завершить торговлю"})
 	_show_dialogue_choices("Торговец Бран", message, choices)
 
@@ -516,9 +520,12 @@ func _complete_merchant_supply_quest(choice_id: String) -> void:
 	_refresh_hud()
 
 func _purchase_merchant_item(item_id: String) -> void:
-	var result: Dictionary = merchant_shop.purchase(player, item_id, relationships.get_score("elder"))
+	var result: Dictionary = merchant_shop.purchase(player, item_id, relationships.get_score("elder"), relationships.get_score("bran"))
 	if bool(result.get("success", false)):
-		hud.show_message("Куплено: %s за %d золота." % [str(result.get("name", item_id)), int(result.get("price", 0))], 2.5)
+		if result.has("trade_currency"):
+			hud.show_message("Обмен завершён: получено %s." % str(result.get("name", item_id)), 2.5)
+		else:
+			hud.show_message("Куплено: %s за %d золота." % [str(result.get("name", item_id)), int(result.get("price", 0))], 2.5)
 	else:
 		hud.show_message(str(result.get("message", "Покупка не удалась.")), 2.5)
 	_show_merchant_menu()
