@@ -25,7 +25,7 @@ func _ready() -> void:
 	column.add_child(caption)
 	_add_button(column, "Новая игра", _start_new)
 	continue_button = _add_button(column, "Продолжить", _continue_game)
-	continue_button.disabled = SaveSystem.load_snapshot().is_empty()
+	continue_button.disabled = SaveSystem.load_latest().is_empty()
 	_add_button(column, "Выход", _exit_game)
 
 func _set_menu_background() -> void:
@@ -47,7 +47,7 @@ func _start_new() -> void:
 	get_tree().change_scene_to_file(GAME_SCENE)
 
 func _continue_game() -> void:
-	if SaveSystem.load_snapshot().is_empty():
+	if SaveSystem.load_latest().is_empty():
 		return
 	get_tree().set_meta("skyward_continue", true)
 	get_tree().change_scene_to_file(GAME_SCENE)

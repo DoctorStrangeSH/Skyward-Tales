@@ -5,6 +5,8 @@ var definitions: Dictionary = {}
 var states: Dictionary = {}
 var active_quest_id: String = ""
 
+signal quest_completed(quest_id: String)
+
 func _init() -> void:
 	var file := FileAccess.open("res://data/quests.json", FileAccess.READ)
 	if file == null:
@@ -50,6 +52,7 @@ func complete_quest(quest_id: String) -> bool:
 	states[quest_id]["completed"] = true
 	if active_quest_id == quest_id:
 		active_quest_id = ""
+	quest_completed.emit(quest_id)
 	return true
 
 func get_active_summary() -> String:

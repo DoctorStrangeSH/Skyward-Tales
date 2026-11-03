@@ -57,6 +57,8 @@ var discovered_landmarks: Dictionary = {}
 var opened_chests: Dictionary = {}
 var gathered_resource_nodes: Dictionary = {}
 var latest_cache_narrative: bool = false
+var autosave_enabled: bool = true
+var _autosave_pending: bool = false
 
 func _ready() -> void:
 	var catalogs: GameCatalogs = GameCatalogs.new()
@@ -66,6 +68,7 @@ func _ready() -> void:
 	region_layouts = catalogs.regions
 	world = get_node("World") as Node2D
 	quests = QuestManager.new()
+	quests.quest_completed.connect(func(_quest_id: String) -> void: request_autosave())
 	relationships = RELATIONSHIP_SCRIPT.new()
 	merchant_shop = MERCHANT_SHOP_SCRIPT.new()
 	crafting_service = CRAFTING_SERVICE_SCRIPT.new()
@@ -95,7 +98,7 @@ func _ready() -> void:
 
 	if get_tree().has_meta("skyward_continue") and bool(get_tree().get_meta("skyward_continue")):
 		get_tree().remove_meta("skyward_continue")
-		load_game()
+		load_game(true)
 	else:
 		hud.show_message("Добро пожаловать в Skyward Tales! Найдите старейшину.", 5.0)
 	_refresh_hud()
@@ -295,6 +298,7 @@ func _on_region_travel(target_region: String, arrival: Vector2) -> void:
 		hud.show_message("Сначала помогите старейшине с лунными листьями.", 2.5)
 		return
 	_set_region(target_region, arrival)
+	request_autosave()
 
 func _update_minimap() -> void:
 	var region_markers: Dictionary = discovered_landmarks.get(current_region, {})
@@ -517,6 +521,7 @@ func _on_guardian_defeated(xp: int, death_position: Vector2) -> void:
 	player.add_gold(100)
 	_spawn_loot(death_position, "ancient_relic")
 	hud.show_message("Хранитель побеждён! +100 золота. Древний артефакт ждёт!", 3.5)
+	request_autosave()
 
 func _on_wolf_defeated(xp_reward: int, death_position: Vector2) -> void:
 	if quests.active_quest_id == "toren_wolf_hunt" and not quests.is_completed("toren_wolf_hunt"):
@@ -676,7 +681,7 @@ func _on_player_died() -> void:
 	pending_level_choices.clear()
 	if hud != null:
 		hud.hide_talent_choices()
-		hud.show_defeat(not SAVE_SCRIPT.load_snapshot(save_path).is_empty())
+		hud.show_defeat(not SAVE_SCRIPT.load_latest(save_path).is_empty())
 	get_tree().paused = true
 
 func _restart_run() -> void:
@@ -685,10 +690,29 @@ func _restart_run() -> void:
 	get_tree().change_scene_to_file("res://scenes/main.tscn")
 
 func _load_from_defeat() -> void:
-	load_game()
+	load_game(true)
 
 func make_save_snapshot() -> Dictionary:
 	return GameSaveState.capture(self)
+
+func autosave_path() -> String:
+	return SAVE_SCRIPT.autosave_path_for(save_path)
+
+## Autosave runs at the end of the frame, so rewards granted right after a
+## quest completes are included in the snapshot.
+func request_autosave() -> void:
+	if autosave_enabled and not _autosave_pending:
+		_autosave_pending = true
+		autosave.call_deferred()
+
+func autosave() -> bool:
+	_autosave_pending = false
+	if not autosave_enabled or game_over or player == null or not is_inside_tree():
+		return false
+	var success: bool = SAVE_SCRIPT.save_snapshot(make_save_snapshot(), autosave_path())
+	if success and hud != null and hud.message_time <= 0.0:
+		hud.show_message("Автосохранение", 1.2)
+	return success
 
 func save_game() -> bool:
 	if game_over:
@@ -700,8 +724,18 @@ func save_game() -> bool:
 		hud.show_message("Игра сохранена (F9 — загрузить)" if success else "Ошибка сохранения!", 2.0)
 	return success
 
-func load_game() -> bool:
-	var data: Dictionary = SAVE_SCRIPT.load_snapshot(save_path)
+## F9 / pause menu load the manual save (falling back to the autosave);
+## "Continue" and the defeat screen load whichever save is newest.
+func load_game(newest: bool = false) -> bool:
+	var data: Dictionary
+	if newest:
+		data = SAVE_SCRIPT.load_latest(save_path)
+	else:
+		data = SAVE_SCRIPT.load_snapshot(save_path)
+		if data.is_empty():
+			data = SAVE_SCRIPT.load_snapshot(autosave_path())
+			if not data.is_empty():
+				data["_source_path"] = autosave_path()
 	if data.is_empty():
 		if game_over and hud != null:
 			hud.set_defeat_message("Сохранение не найдено или повреждено. Можно начать новое приключение.")
@@ -716,6 +750,8 @@ func load_game() -> bool:
 	if restored:
 		if hud != null:
 			hud.hide_defeat()
+			if str(data.get("_source_path", "")) == autosave_path():
+				hud.show_message("Загружено автосохранение.", 2.0)
 	elif recovering_from_defeat:
 		game_over = true
 		get_tree().paused = true
