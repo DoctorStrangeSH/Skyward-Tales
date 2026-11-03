@@ -1,0 +1,14 @@
+{
+  "discount_tiers": [
+    {"trust": 20, "discount": 0.10},
+    {"trust": 50, "discount": 0.15},
+    {"trust": 80, "discount": 0.20}
+  ],
+  "offers": {
+    "health_potion": {"name": "Зелье здоровья", "description": "Восстанавливает до 35 единиц здоровья", "base_price": 18},
+    "mana_potion": {"name": "Зелье маны", "description": "Восстанавливает до 25 единиц маны", "base_price": 22},
+    "apprentice_staff": {"name": "Посох ученика", "description": "+5 урона всем заклинаниям", "base_price": 75},
+    "leather_armor": {"name": "Кожаная броня", "description": "Снижает входящий урон на 4", "base_price": 90},
+    "mana_amulet": {"name": "Амулет маны", "description": "+20 к максимальному запасу маны", "base_price": 120}
+  }
+}
