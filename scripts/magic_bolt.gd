@@ -25,6 +25,8 @@ func _ready() -> void:
 	visual.configure(_sheet_for(spell_id), 4, 8, 1.0, 16.0)
 	visual.set_direction_vector(direction)
 	visual.set_moving(true)
+	# Drawn at hand height; the hitbox stays at ground level where enemies are.
+	visual.offset = Vector2(0, -8)
 	add_child(visual)
 
 func setup(flight_direction: Vector2, spell_damage: int) -> void:
@@ -71,8 +73,10 @@ func _on_body_entered(body: Node2D) -> void:
 			_apply_chain_lightning(body)
 		if spell_id == "frostbolt" and body.has_method("apply_slow") and slow_duration > 0.0:
 			body.apply_slow(slow_multiplier, slow_duration)
+		Vfx.spell_impact(get_parent(), global_position, spell_id)
 		queue_free()
 	elif body is StaticBody2D:
+		Vfx.spell_impact(get_parent(), global_position, spell_id)
 		queue_free()
 
 func _element_for_spell() -> String:

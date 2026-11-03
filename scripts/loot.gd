@@ -12,6 +12,7 @@ func _ready() -> void:
 	queue_redraw()
 
 func interact() -> void:
+	Vfx.sparkle(get_parent(), global_position)
 	collected.emit(item_id, amount)
 	queue_free()
 

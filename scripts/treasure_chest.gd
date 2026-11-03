@@ -20,6 +20,7 @@ func interact() -> void:
 	if is_opened or is_queued_for_deletion():
 		return
 	is_opened = true
+	Vfx.sparkle(get_parent(), global_position)
 	opened.emit(chest_id, gold_reward, item_reward, item_amount)
 	var drop: Dictionary = roll_bonus(rng.randf())
 	bonus_found.emit(str(drop["item"]), str(drop["rarity"]))

@@ -123,13 +123,14 @@ def rect_mask(x0: int, y0: int, x1: int, y1: int, round_bottom: bool = False) ->
 
 # --- the rig ------------------------------------------------------------------
 
-def draw(look: Look, facing: str, frame: int) -> Canvas:
+def draw(look: Look, facing: str, frame: int, pose: str = "walk") -> Canvas:
     s = Sprite()
     side = facing == "right"
     back = facing in ("up", "up_right")
     three_q = facing in ("down_right", "up_right")
-    bob = 1 if frame in (1, 3) else 0
-    stride = [1, 0, -1, 0][frame]
+    casting = pose == "cast"
+    bob = 0 if casting else (1 if frame in (1, 3) else 0)
+    stride = 0 if casting else [1, 0, -1, 0][frame]
     hy = 10 - bob - look.height_bonus          # head centre
     ty0, ty1 = 16 - bob, 23 - bob               # torso rows
     cx = 16
@@ -208,9 +209,11 @@ def draw(look: Look, facing: str, frame: int) -> Canvas:
     if look.cape and back:
         s.part(rect_mask(cx - 5, ty0, cx + 4, ty1 + 3, round_bottom=True), look.cape)
 
-    # Arms swing opposite to the legs.
+    # Arms swing opposite to the legs (or reach forward while casting).
     swing = -stride
-    if side:
+    if casting:
+        _cast_arms(s, look, facing, frame, cx, ty0, ty1)
+    elif side:
         arm = rect_mask(cx - 1 + swing * 2, ty0 + 1, cx + 1 + swing * 2, ty1 - 1)
         s.part(arm, look.top)
         s.part(rect_mask(cx - 1 + swing * 2, ty1, cx + 1 + swing * 2, ty1), look.skin, separate=False)
@@ -241,7 +244,68 @@ def draw(look: Look, facing: str, frame: int) -> Canvas:
     if not back:
         staff()
     s.outline(look.outline)
+    if casting:
+        _cast_glow(s, look, facing, frame, cx, ty0)
     return s.canvas()
+
+
+GLOW = r4("#ffffff", "#c8fff4", "#6fe0c8", "#2fb09c")
+
+
+def _cast_arms(s: Sprite, look: Look, facing: str, frame: int, cx: int, ty0: int, ty1: int) -> None:
+    """Frame 0 gathers, 1-2 hold the spell forward, 3 recovers."""
+    lift = [1, 3, 3, 1][frame]
+    if facing == "right":
+        reach = [2, 5, 6, 3][frame]
+        s.part(rect_mask(cx, ty0 + 2, cx + reach, ty0 + 3), look.top)
+        s.part(rect_mask(cx + reach + 1, ty0 + 2, cx + reach + 1, ty0 + 3), look.skin, separate=False)
+    elif facing in ("up", "up_right"):
+        for ax in (cx - 7, cx + 5):
+            s.part(rect_mask(ax, ty0 - lift, ax + 1, ty0 + 4 - lift), look.top)
+            s.part(rect_mask(ax, ty0 - lift - 1, ax + 1, ty0 - lift - 1), look.skin, separate=False)
+    else:
+        shift = 1 if facing == "down_right" else 0
+        for ax in (cx - 5 + shift, cx + 3 + shift):
+            s.part(rect_mask(ax, ty0 + 3 - lift + 2, ax + 1, ty1 - lift), look.top)
+            s.part(rect_mask(ax, ty1 - lift + 1, ax + 1, ty1 - lift + 1), look.skin, separate=False)
+
+
+def _hand_point(facing: str, frame: int, cx: int, ty0: int) -> tuple[int, int]:
+    lift = [1, 3, 3, 1][frame]
+    if facing == "right":
+        return cx + [2, 5, 6, 3][frame] + 2, ty0 + 2
+    if facing in ("up", "up_right"):
+        return cx + (2 if facing == "up_right" else 0), 3 - lift // 3
+    return cx + (1 if facing == "down_right" else 0), ty0 + 21 - 16 - lift + 2
+
+
+def _cast_glow(s: Sprite, look: Look, facing: str, frame: int, cx: int, ty0: int) -> None:
+    """Glowing spell orb between the hands and a rune circle under the feet."""
+    hx, hy = _hand_point(facing, frame, cx, ty0)
+    radius = [1.2, 2.4, 2.8, 1.4][frame]
+    for y in range(SIZE):
+        for x in range(SIZE):
+            d = math.hypot(x + 0.5 - hx, y + 0.5 - hy)
+            if d <= radius:
+                s.px[y, x] = GLOW[0] if d < radius * 0.5 else GLOW[1]
+            elif d <= radius + 1.5 and s.px[y, x, 3] == 0:
+                s.px[y, x] = GLOW[2][:3] + (150,)
+    ring = [5.5, 7.5, 8.5, 9.0][frame]
+    alpha = [120, 200, 170, 80][frame]
+    for y in range(26, SIZE):
+        for x in range(SIZE):
+            d = math.hypot((x + 0.5 - 16) / ring, (y + 0.5 - 29.5) / (ring * 0.32))
+            if 0.82 <= d <= 1.0 and s.owner[y, x] in (-1, -2):
+                s.px[y, x] = GLOW[2][:3] + (alpha,)
+
+
+def cast_sheet(look: Look) -> Canvas:
+    out = Canvas(SIZE * 4, SIZE * 8)
+    for row, direction in enumerate(ROW_ORDER):
+        facing = MIRROR.get(direction, direction)
+        for frame in range(4):
+            out.paste(draw(look, facing, frame, "cast"), frame * SIZE, row * SIZE, flip=direction in MIRROR)
+    return out
 
 
 def _hair(s: Sprite, look: Look, facing: str, cx: int, hy: float, frame: int) -> None:
