@@ -523,14 +523,6 @@ func _purchase_merchant_item(item_id: String) -> void:
 		hud.show_message(str(result.get("message", "Покупка не удалась.")), 2.5)
 	_show_merchant_menu()
 
-func _purchase_merchant_item(item_id: String) -> void:
-	var result: Dictionary = merchant_shop.purchase(player, item_id, relationships.get_score("elder"))
-	if bool(result.get("success", false)):
-		hud.show_message("Куплено: %s за %d золота." % [str(result.get("name", item_id)), int(result.get("price", 0))], 2.5)
-	else:
-		hud.show_message(str(result.get("message", "Покупка не удалась.")), 2.5)
-	_show_merchant_menu()
-
 func _spawn_elder() -> void:
 	elder = NPC_SCRIPT.new() as WorldNpc
 	elder.display_name = "Старейшина Элиан"
