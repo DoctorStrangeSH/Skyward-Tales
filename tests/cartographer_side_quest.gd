@@ -69,16 +69,35 @@ func _run() -> void:
 		return
 	var old_gold: int = game.player.gold
 	var old_xp: int = game.player.experience
+	var old_mana_potions: int = int(game.player.inventory.get("mana_potion", 0))
 	cartographer = _find_cartographer(game)
 	cartographer.interact()
-	if not _verify(game.quests.is_completed("lost_cartographer_notes"), "quest completed by cartographer"):
+	if not _verify(game.hud.dialogue_visible and game.hud.dialogue_choices_container.get_child_count() == 2, "two reward choices are shown"):
 		return
-	if not _verify(game.player.gold == old_gold + 35 and game.player.experience == old_xp + 25, "data-driven quest rewards"):
+	if not _verify(not game.quests.is_completed("lost_cartographer_notes"), "quest waits for player choice"):
+		return
+	game._on_dialogue_choice_selected("supplies")
+	if not _verify(game.quests.is_completed("lost_cartographer_notes"), "quest completed after choice"):
+		return
+	if not _verify(str(game.quests.states["lost_cartographer_notes"].get("choice", "")) == "supplies", "selected choice stored in quest state"):
+		return
+	if not _verify(game.player.gold == old_gold + 10 and game.player.experience == old_xp + 25, "supplies choice grants configured gold and XP"):
+		return
+	if not _verify(int(game.player.inventory.get("mana_potion", 0)) == old_mana_potions + 2, "supplies choice grants two mana potions"):
+		return
+	var chosen_snapshot: Dictionary = game.make_save_snapshot()
+	if not _verify(game.restore_save_snapshot(chosen_snapshot), "selected quest choice save restore"):
+		return
+	if not _verify(str(game.quests.states["lost_cartographer_notes"].get("choice", "")) == "supplies", "selected choice survives save/load"):
 		return
 	_close_dialogue(game)
 	game._set_region("moonlit_grove", Vector2(140, 430), false)
 	game._set_region("greenreach", Vector2(130, 210), false)
 	if not _verify(_find_fragments(game).is_empty(), "completed quest pages do not respawn"):
 		return
-	print("CARTOGRAPHER SIDE QUEST OK: unlock, collect, travel, save/restore and reward")
+	cartographer = _find_cartographer(game)
+	cartographer.interact()
+	if not _verify(game.hud.dialogue_label.text.contains("припасы"), "follow-up dialogue reflects the saved choice"):
+		return
+	print("CARTOGRAPHER SIDE QUEST OK: unlock, collect, travel, save/restore, choice and consequence")
 	quit(0)
