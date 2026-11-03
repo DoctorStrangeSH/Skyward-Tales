@@ -22,7 +22,8 @@ const ENEMY_SCRIPTS := {
 	"shaman": preload("res://scripts/forest_shaman.gd"),
 	"guardian": preload("res://scripts/grove_guardian.gd"),
 	"bat": preload("res://scripts/cave_bat.gd"),
-	"echo": preload("res://scripts/echo_warden.gd")
+	"echo": preload("res://scripts/echo_warden.gd"),
+	"sentinel": preload("res://scripts/sky_sentinel.gd")
 }
 const MATERIAL_ITEMS := ["wolf_pelt", "iron_ore"]
 const RARITY_LABELS := {"common": "ОБЫЧНАЯ", "uncommon": "НЕОБЫЧНАЯ", "rare": "РЕДКАЯ"}
@@ -37,6 +38,7 @@ var crafting_service: CraftingService
 var dialogues: NpcDialogues
 var interact_prompt: InteractPrompt
 var story: StoryScene
+var companion: Companion
 var loot_rng := RandomNumberGenerator.new()
 var director: StoryDirector
 var pickups: QuestPickups
@@ -357,6 +359,8 @@ func reveal_secret(region_id: String, marker_id: String) -> void:
 
 func _clear_region_actors() -> void:
 	for node in get_children():
+		if node is WorldNpc and node.is_companion:
+			continue
 		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is MagicBolt or node is EnemyMagicOrb:
 			remove_child(node)
 			node.queue_free()
@@ -370,6 +374,7 @@ func _set_region(region_id: String, arrival: Vector2, notify: bool = true) -> vo
 		world.configure_region(current_region)
 	_populate_region()
 	player.global_position = arrival
+	_place_companion()
 	if notify and hud != null:
 		hud.show_message("Локация: " + RegionCatalog.display_name(current_region), 2.5)
 	_refresh_hud()
@@ -397,6 +402,27 @@ func spawn_story_objects() -> void:
 				present = true
 		if not present:
 			_spawn_herb(_vec(object_data.get("position")), object_id, str(object_data.get("name", "")))
+
+## Mira joins the party (Act II); safe to call more than once.
+func ensure_companion() -> void:
+	if companion != null and is_instance_valid(companion):
+		return
+	for actor in get_children():
+		if actor is WorldNpc and not actor.is_companion and actor.npc_id == "cartographer":
+			remove_child(actor)
+			actor.queue_free()
+	companion = Companion.new()
+	companion.npc_id = "cartographer"
+	companion.display_name = "Мира, картограф"
+	companion.hero = player
+	add_child(companion)
+	companion.global_position = player.global_position + Companion.FOLLOW_OFFSET
+	companion.interacted.connect(_on_cartographer_interacted)
+	director.set_flag("mira_companion")
+
+func _place_companion() -> void:
+	if companion != null and is_instance_valid(companion):
+		companion.global_position = player.global_position + Companion.FOLLOW_OFFSET
 
 ## Story object data (from regions.json) for an item id in the current region.
 func story_object(item_id: String) -> Dictionary:
@@ -459,6 +485,8 @@ static func enemy_kind(enemy: SlimeEnemy) -> String:
 		return "echo"
 	if enemy is GroveGuardian:
 		return "guardian"
+	if enemy is SkySentinel:
+		return "sentinel"
 	if enemy is ForestShaman:
 		return "shaman"
 	if enemy is ForestWolf:
@@ -474,6 +502,8 @@ func _enemy_kind(enemy: SlimeEnemy) -> String:
 
 func _spawn_npc(npc_data: Dictionary) -> void:
 	var npc_id := str(npc_data.get("id", ""))
+	if npc_id == "cartographer" and companion != null:
+		return  # Mira travels with the hero instead of waiting at camp
 	var npc := NPC_SCRIPT.new() as WorldNpc
 	npc.npc_id = npc_id
 	npc.display_name = str(npc_data.get("name", "Путник"))
@@ -602,6 +632,10 @@ func _on_blacksmith_interacted(_source: Node2D) -> void:
 	if not director.try_talk("blacksmith"):
 		dialogues.on_blacksmith()
 
+func _on_archivist_interacted(_source: Node2D) -> void:
+	if not director.try_talk("archivist"):
+		dialogues.on_archivist()
+
 func _on_miner_interacted(_source: Node2D) -> void:
 	if not director.try_talk("miner"):
 		dialogues.on_miner()
@@ -615,7 +649,11 @@ func _on_herb_interacted(source: Node2D) -> void:
 func update_npc_markers() -> void:
 	for actor in get_children():
 		if actor is WorldNpc and not actor.is_queued_for_deletion():
-			actor.set_marker(dialogues.marker_for(actor.npc_id))
+			var marker := dialogues.marker_for(actor.npc_id)
+			# The companion is always at hand: mark her only when she advances the story.
+			if actor.is_companion and marker != "ready":
+				marker = ""
+			actor.set_marker(marker)
 
 func _show_dialogue(speaker: String, message: String) -> void:
 	player.set_physics_process(false)
@@ -653,6 +691,9 @@ func _find_nearest_interactable() -> Node2D:
 
 func _try_interact() -> void:
 	var target := _find_nearest_interactable()
+	if target == null and companion != null and is_instance_valid(companion):
+		companion.interact()
+		return
 	if target == null:
 		hud.show_message("Здесь пока нечего исследовать.", 1.5)
 		return

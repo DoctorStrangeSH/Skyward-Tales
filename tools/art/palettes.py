@@ -45,4 +45,20 @@ CAVE = {
     "flowers": [ramp("#d0b8ff", "#7a5ad8"), ramp("#8fe0ff", "#3a8ac8"), ramp("#f6f0ff", "#9a90c0")],
 }
 
-STYLES = {"day": DAY, "night": NIGHT, "cave": CAVE}
+SKY = {
+    # Bright, airy: pale marble paths, soft spring grass, blossom trees.
+    "grass": ramp("#2a5a5a", "#3a7a6a", "#4f9a72", "#6db87e", "#92d08e", "#bfe6a6", "#e6f6c6"),
+    "dirt": ramp("#6a6a8a", "#8a8ca8", "#a8adc4", "#c6cadc", "#e0e3ee", "#f6f7fb"),
+    "water": ramp("#2a4a8a", "#3a6ab0", "#5a92d0", "#86baea", "#b8dcf8", "#f0f8ff"),
+    "stone": ramp("#4a4a66", "#6a6c8a", "#9094b0", "#b8bdd2", "#dcdfea", "#f8f8fc"),
+    "leaf": ramp("#5a2a4a", "#8a3a6a", "#b85a8a", "#de86ac", "#f4aac6", "#ffd0e0", "#fff0f6"),
+    "bark": ramp("#3a2a3a", "#5a3e4a", "#7a5a62", "#9a7a7e", "#b89a98"),
+    "moss": ramp("#3a7a6a", "#4f9a72", "#6db87e", "#92d08e"),
+    "shadow": hex_color("#1a2a4a", 80),
+    "outline": hex_color("#2a2440"),
+    "sky": ramp("#6a9ae0", "#86b2ec", "#a6caf4", "#c8e0fa"),
+    "cloud": ramp("#8aa6d0", "#a8c0e4", "#c6d8f2", "#dce8f8", "#eef4fc", "#f8fbff", "#ffffff"),
+    "flowers": [ramp("#ffffff", "#d8e0f0"), ramp("#ffd6e8", "#e08aac"), ramp("#fff2a8", "#e0b84a")],
+}
+
+STYLES = {"day": DAY, "night": NIGHT, "cave": CAVE, "sky": SKY}

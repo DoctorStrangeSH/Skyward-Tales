@@ -47,7 +47,9 @@ func _grant_reward(reward: Dictionary) -> String:
 func marker_for(npc_id: String) -> String:
 	var quests := game.quests
 	if game.director != null and game.director.talk_target() == npc_id:
-		return "ready"
+		var definition: Dictionary = quests.definitions.get(quests.active_quest_id, {})
+		if not bool(definition.get("talk_requires_progress", false)) or quests.is_ready_to_complete(quests.active_quest_id):
+			return "ready"
 	var free: bool = quests.active_quest_id.is_empty()
 	var village_helped: bool = quests.is_completed("moonleaf_gathering")
 	var quest_id: String = {
@@ -319,6 +321,15 @@ func _craft_blacksmith_item(recipe_id: String) -> void:
 	game._refresh_hud()
 
 # --- Miner Dorn ------------------------------------------------------------
+
+func on_archivist() -> void:
+	var quests := game.quests
+	if quests.is_completed("main_archive"):
+		_say("Ориэн, архивариус", "Ветреные шпили ждут. Ветер там помнит голоса Хранителей.")
+	elif bool(quests.states.get("main_archive", {}).get("started", false)):
+		_say("Ориэн, архивариус", "Кристаллы памяти разбросаны по руинам. Найдено: %d из 3." % int(quests.states["main_archive"].get("progress", 0)))
+	else:
+		_say("Ориэн, архивариус", "Тише… Архив спит. Только печать Хранителя может его разбудить.")
 
 func on_miner() -> void:
 	const quest_id := "crystal_heart"

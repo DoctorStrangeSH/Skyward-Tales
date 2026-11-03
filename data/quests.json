@@ -212,5 +212,30 @@
       "gold": 150
     },
     "main": true
+  },
+  {
+    "id": "main_bridge",
+    "title": "Мост к небу",
+    "description": "Поднимитесь по мосту света от хрустального алтаря на первый Небесный остров.",
+    "target": 1,
+    "reward": {
+      "experience": 40,
+      "gold": 0
+    },
+    "main": true
+  },
+  {
+    "id": "main_archive",
+    "title": "Архив Хранителей",
+    "description": "Соберите три кристалла памяти в руинах острова и отнесите их архивариусу Ориэну.",
+    "target": 3,
+    "reward": {
+      "experience": 220,
+      "gold": 120
+    },
+    "main": true,
+    "talk_to": "archivist",
+    "talk_scene": "archive_truth",
+    "talk_requires_progress": true
   }
 ]

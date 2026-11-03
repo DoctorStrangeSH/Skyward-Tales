@@ -16,6 +16,7 @@ SHEETS = {
     "guardian": (ROOT / "assets/sprites/enemies/grove_guardian_8dir.png", 48),
     "bat": (ROOT / "assets/sprites/enemies/cave_bat_8dir.png", 32),
     "echo": (ROOT / "assets/sprites/enemies/echo_warden_8dir.png", 48),
+    "sentinel": (ROOT / "assets/sprites/enemies/sky_sentinel_8dir.png", 32),
     "fireball": (ROOT / "assets/sprites/magic/fireball_8dir.png", 32),
     "frostbolt": (ROOT / "assets/sprites/magic/frostbolt_8dir.png", 32),
     "chain_lightning": (ROOT / "assets/sprites/magic/chain_lightning_8dir.png", 32),

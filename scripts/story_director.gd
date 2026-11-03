@@ -71,6 +71,8 @@ func try_talk(npc_id: String) -> bool:
 	var definition: Dictionary = game.quests.definitions.get(quest_id, {})
 	if str(definition.get("talk_to", "")) != npc_id:
 		return false
+	if bool(definition.get("talk_requires_progress", false)) and not game.quests.is_ready_to_complete(quest_id):
+		return false
 	game.story.play(str(definition.get("talk_scene", "")), func() -> void: _complete(quest_id))
 	return true
 
@@ -87,7 +89,10 @@ func on_region_entered(region_id: String) -> void:
 		var flag := str(trigger.get("flag", ""))
 		if str(trigger.get("region", "")) == region_id and not has_flag(flag):
 			set_flag(flag)
-			queue_scene(str(trigger.get("scene", "")))
+			var completes := str(trigger.get("completes", ""))
+			queue_scene(str(trigger.get("scene", "")), func() -> void:
+				if not completes.is_empty() and game.quests.active_quest_id == completes:
+					_complete(completes))
 
 func on_boss_defeated(kind: String) -> void:
 	if not story_mode() or not bosses.has(kind):

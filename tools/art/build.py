@@ -49,7 +49,8 @@ def build_world() -> None:
         print(f"region {region_id} ({style})")
         save(terrain.render_ground(t, pal, seed=100 + index * 17), f"world/{region_id}_ground.png")
         w, h = t["size"]
-        save(flora.canopy_border(w, h, pal, seed=200 + index, glow=glow), f"world/{region_id}_canopy.png")
+        border_pal = dict(pal, leaf=pal["cloud"], outline=pal["cloud"][0]) if style == "sky" else pal
+        save(flora.canopy_border(w, h, border_pal, seed=200 + index, glow=glow), f"world/{region_id}_canopy.png")
         for variant in range(3):
             size = "large" if variant != 2 else "small"
             if style == "cave":
@@ -70,6 +71,8 @@ def build_world() -> None:
     save(canvas, "world/standing_stones.png", origin)
     canvas, origin = props.crystal_altar(STYLES["cave"])
     save(canvas, "world/crystal_altar.png", origin)
+    canvas, origin = props.sky_archive(STYLES["sky"])
+    save(canvas, "world/sky_archive.png", origin)
 
 
 def build_characters() -> None:
@@ -86,6 +89,7 @@ def build_characters() -> None:
     save(creatures.build_sheet(creatures.guardian, 48), "sprites/enemies/grove_guardian_8dir.png")
     save(creatures.build_sheet(creatures.bat, 32), "sprites/enemies/cave_bat_8dir.png")
     save(creatures.build_sheet(creatures.echo_warden, 48), "sprites/enemies/echo_warden_8dir.png")
+    save(creatures.build_sheet(creatures.sentinel, 32), "sprites/enemies/sky_sentinel_8dir.png")
     save(creatures.build_sheet(creatures.projectile("fire"), 32), "sprites/magic/fireball_8dir.png")
     save(creatures.build_sheet(creatures.projectile("frost"), 32), "sprites/magic/frostbolt_8dir.png")
     save(creatures.build_sheet(creatures.projectile("lightning"), 32), "sprites/magic/chain_lightning_8dir.png")
@@ -99,7 +103,8 @@ def build_props() -> None:
         "ore_node": props.ore_node(), "supply_crate": props.crate(), "map_fragment": props.scroll(),
         "health_potion": props.potion("red"), "mana_potion": props.potion("blue"),
         "wolf_pelt": props.pelt(), "relic": props.treasure("relic"), "pouch": props.treasure("pouch"),
-        "gate_day": props.gate(False), "gate_night": props.gate(True), "gate_cave": props.cave_gate(),
+        "gate_day": props.gate(False), "gate_night": props.gate(True), "gate_cave": props.cave_gate(), "gate_sky": props.sky_gate(),
+        "memory_crystal": props.herb("memory_crystal"),
         "echo_crystal": props.herb("echo_crystal"), "sky_shard": props.sky_shard(), "altar_heart": props.rune_circle(),
         "marker_quest": props.marker("quest"), "marker_ready": props.marker("ready"),
         "marker_service": props.marker("service"), "key_e": props.key_badge(),

@@ -8,7 +8,8 @@
     "grove_warden": "Хранительница Илара",
     "miner": "Дорн, рудокоп",
     "vail": "Вейл Безоблачный",
-    "guardian_spirit": "Дух стража"
+    "guardian_spirit": "Дух стража",
+    "archivist": "Ориэн, архивариус"
   },
   "scenes": {
     "prologue": {
@@ -219,6 +220,98 @@
           "text": "Впервые за сто лет над Подоблачьем загорается мост к Небесным островам."
         }
       ]
+    },
+    "mira_joins": {
+      "steps": [
+        {
+          "speaker": "cartographer",
+          "text": "{hero}! Я видела луч из самого поселения и бежала всю дорогу."
+        },
+        {
+          "speaker": "cartographer",
+          "text": "Моя карта ожила — на ней теперь путь к острову."
+        },
+        {
+          "speaker": "hero",
+          "text": "Пойдёшь со мной?"
+        },
+        {
+          "speaker": "cartographer",
+          "text": "Попробуй меня остановить."
+        },
+        {
+          "effect": "companion_join"
+        },
+        {
+          "text": "Мира присоединяется к отряду. Она прикроет в бою и поможет в трудную минуту."
+        }
+      ]
+    },
+    "island_arrival": {
+      "steps": [
+        {
+          "effect": "title",
+          "text": "Акт II · Небесные острова"
+        },
+        {
+          "text": "Мост из света выводит на остров. Тишина — только ветер в пустых арках."
+        },
+        {
+          "speaker": "cartographer",
+          "text": "Город Хранителей… Его нет ни на одной карте."
+        },
+        {
+          "speaker": "hero",
+          "text": "Значит, мы первые за сто лет."
+        }
+      ]
+    },
+    "archive_hint": {
+      "steps": [
+        {
+          "speaker": "cartographer",
+          "text": "Смотри — в руинах светятся кристаллы памяти."
+        },
+        {
+          "speaker": "cartographer",
+          "text": "У большого здания кто-то стоит. Соберём кристаллы и спросим его."
+        }
+      ]
+    },
+    "archive_truth": {
+      "steps": [
+        {
+          "speaker": "archivist",
+          "text": "Печать… Сто лет я ждал Хранителя."
+        },
+        {
+          "effect": "flash"
+        },
+        {
+          "speaker": "archivist",
+          "text": "Мы не исчезли. Мы ушли выше — чинить Узор изнутри небес."
+        },
+        {
+          "speaker": "archivist",
+          "text": "Вейл был одним из нас. Он решил, что небо надо отпустить."
+        },
+        {
+          "speaker": "hero",
+          "text": "Где остальные Хранители?"
+        },
+        {
+          "speaker": "archivist",
+          "text": "На шести других опорах. Следующая — Ветреные шпили."
+        },
+        {
+          "speaker": "cartographer",
+          "text": "Я нанесу их на карту. Мы их найдём, {hero}."
+        },
+        {
+          "effect": "title",
+          "text": "Продолжение следует…"
+        }
+      ]
     }
   },
   "chain": [
@@ -236,6 +329,16 @@
       "after": "crystal_heart",
       "start": "main_echo",
       "scene": "dorn_altar"
+    },
+    {
+      "after": "main_echo",
+      "start": "main_bridge",
+      "scene": "mira_joins"
+    },
+    {
+      "after": "main_bridge",
+      "start": "main_archive",
+      "scene": "archive_hint"
     }
   ],
   "on_enter": [
@@ -243,6 +346,12 @@
       "region": "moonlit_grove",
       "flag": "seen_vail_grove",
       "scene": "vail_glimpse"
+    },
+    {
+      "region": "sky_island",
+      "flag": "arrived_island",
+      "scene": "island_arrival",
+      "completes": "main_bridge"
     }
   ],
   "bosses": {

@@ -240,6 +240,7 @@ def herb(kind: str) -> tuple[Canvas, tuple[int, int]]:
     _shadow(c, 10, 19, 6, 1.8)
     glow = {"moonleaf": ramp("#f4fff0", "#c8f0d8", "#7fcfae", "#3f8f7a"),
             "spirit_blossom": ramp("#f4ffff", "#9cfff0", "#3fd6d0", "#1f8a8a"),
+            "memory_crystal": ramp("#fffbe0", "#fff2a8", "#ffd45c", "#c88a2a"),
             "echo_crystal": ramp("#f6f0ff", "#d0b8ff", "#9a7aff", "#5a3ac0")}[kind]
     stem = ramp("#8fd862", "#4fa04e", "#2a6a44")
     if kind != "echo_crystal":
@@ -251,7 +252,7 @@ def herb(kind: str) -> tuple[Canvas, tuple[int, int]]:
             d = ((x - 10) / 9) ** 2 + ((y - 7) / 7) ** 2
             if d <= 1:
                 c.blend(x, y, glow[2][:3] + (int(45 * (1 - d)),))
-    if kind == "echo_crystal":
+    if kind in ("echo_crystal", "memory_crystal"):
         # Three faceted shards growing from a stone.
         for sx, top, w in ((10, 2, 2), (6, 8, 1), (14, 7, 1)):
             for y in range(top, 18):
@@ -589,3 +590,64 @@ def rune_circle() -> tuple[Canvas, tuple[int, int]]:
         c.put(x, y, glow[0])
         c.put(x + 1, y, glow[1])
     return c, (20, 9)
+
+
+def sky_archive(pal, seed: int = 11) -> tuple[Canvas, tuple[int, int]]:
+    """Marble archive of the Keepers: columns, blue roof, glowing doorway."""
+    stone = pal["stone"]
+    roof = ramp("#c6e0ff", "#86b2ec", "#4a7ac8", "#2a4a8a", "#1a2a5a")
+    glow = ramp("#ffffff", "#c8fff4", "#6fe0c8")
+    c = Canvas(170, 130)
+    origin = (85, 124)
+    for y in range(114, 130):
+        for x in range(170):
+            if ((x - 87) / 82) ** 2 + ((y - 122) / 7) ** 2 <= 1:
+                c.blend(x, y, pal["shadow"])
+    _block(c, 8, 108, 154, 14, stone, top=4)       # stairs base
+    _block(c, 16, 100, 138, 10, stone, top=3)
+    _block(c, 22, 52, 126, 50, stone, top=0)        # main wall
+    for x in range(30, 145, 6):
+        c.vline(x, 54, 98, stone[2])
+    # Columns.
+    for cx in (28, 52, 110, 134):
+        _block(c, cx - 5, 44, 11, 58, stone, top=3)
+        c.vline(cx - 3, 48, 98, stone[5])
+        _block(c, cx - 7, 40, 15, 6, stone, top=2)
+    # Roof (pediment).
+    for y in range(14, 46):
+        half = (y - 14) * 2.6
+        for x in range(int(85 - half), int(85 + half) + 1):
+            level = 0 if x < 85 - half + 4 else (1 if x < 85 else (2 if x < 85 + half - 3 else 3))
+            c.put(x, y, roof[level])
+    c.hline(8, 162, 46, roof[3])
+    c.hline(8, 162, 47, roof[4])
+    # Glowing doorway and a sky-seal emblem.
+    for y in range(66, 100):
+        for x in range(72, 99):
+            if y < 74 and (x - 85) ** 2 + ((y - 74) * 1.6) ** 2 > 170:
+                continue
+            c.put(x, y, glow[2] if (x + y) % 3 else glow[1])
+    c.ellipse(85, 30, 5, 5, glow[1])
+    c.ellipse(85, 30, 2.5, 2.5, glow[0])
+    c.outline(pal["outline"])
+    return c, origin
+
+
+def sky_gate() -> tuple[Canvas, tuple[int, int]]:
+    """Bridge of light: a glowing arch at the island's edge."""
+    c = Canvas(36, 48)
+    glow = ramp("#ffffff", "#fff6c0", "#ffd45c", "#e0962e")
+    for y in range(4, 46):
+        for x in range(4, 32):
+            d = ((x - 18) / 13) ** 2 + ((y - 30) / 26) ** 2
+            if d <= 1:
+                c.blend(x, y, glow[1][:3] + (int(160 * (1 - d)) + 40,))
+    for y in range(8, 46):
+        for x in (6, 29):
+            c.put(x, y, glow[2])
+            c.put(x + 1, y, glow[1])
+    for x in range(6, 31):
+        y = 8 + int(abs(x - 18) * 0.25)
+        c.put(x, y, glow[0])
+    _finish(c)
+    return c, (18, 44)
