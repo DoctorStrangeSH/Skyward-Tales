@@ -54,6 +54,7 @@ func _build() -> void:
 		if not file.is_empty():
 			_add_sprite(file, _vec(prop.get("position")))
 	_add_decor_bushes(style)
+	_add_ambient()
 	_create_world_collisions()
 
 ## Bushes are pure decoration (no collision), placed deterministically away
@@ -62,6 +63,75 @@ func _add_decor_bushes(style: String) -> void:
 	var spots: Array = terrain.get("bushes", [])
 	for index in range(spots.size()):
 		_add_sprite("%s_bush_%d.png" % [style, index % 2], _vec(spots[index]))
+
+## Fireflies at night, drifting pollen by day, and glints on the water.
+func _add_ambient() -> void:
+	var size := map_size()
+	var air := CPUParticles2D.new()
+	air.name = "AmbientParticles"
+	air.amount = 90 if is_night() else 45
+	air.lifetime = 7.0
+	air.preprocess = 7.0
+	air.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	air.emission_rect_extents = size * 0.5
+	air.position = size * 0.5
+	air.direction = Vector2(1, 0.3) if not is_night() else Vector2.UP
+	air.spread = 40.0 if not is_night() else 180.0
+	air.initial_velocity_min = 3.0
+	air.initial_velocity_max = 9.0 if not is_night() else 12.0
+	air.gravity = Vector2.ZERO
+	air.scale_amount_min = 1.0
+	air.scale_amount_max = 2.0 if is_night() else 1.0
+	var gradient := Gradient.new()
+	if is_night():
+		gradient.offsets = PackedFloat32Array([0.0, 0.2, 0.5, 0.8, 1.0])
+		gradient.colors = PackedColorArray([Color(0.6, 1, 0.8, 0), Color(0.75, 1, 0.7, 1), Color(0.5, 1, 0.95, 0.2), Color(0.85, 1, 0.6, 1), Color(0.6, 1, 0.8, 0)])
+	else:
+		gradient.offsets = PackedFloat32Array([0.0, 0.3, 0.7, 1.0])
+		gradient.colors = PackedColorArray([Color(1, 1, 0.85, 0), Color(1, 1, 0.85, 0.75), Color(1, 0.95, 0.7, 0.6), Color(1, 1, 0.85, 0)])
+	air.color_ramp = gradient
+	air.z_index = 50
+	add_child(air)
+	var points := PackedVector2Array()
+	for pond in terrain.get("ponds", []):
+		points.append_array(_pond_points(pond))
+	if points.is_empty():
+		return
+	var glints := CPUParticles2D.new()
+	glints.name = "WaterGlints"
+	glints.amount = maxi(6, points.size() / 3)
+	glints.lifetime = 1.6
+	glints.preprocess = 2.0
+	glints.emission_shape = CPUParticles2D.EMISSION_SHAPE_POINTS
+	glints.emission_points = points
+	glints.gravity = Vector2.ZERO
+	glints.initial_velocity_min = 0.0
+	glints.initial_velocity_max = 2.0
+	glints.direction = Vector2.RIGHT
+	glints.spread = 10.0
+	glints.scale_amount_min = 1.0
+	glints.scale_amount_max = 2.0
+	var shine := Gradient.new()
+	shine.offsets = PackedFloat32Array([0.0, 0.5, 1.0])
+	shine.colors = PackedColorArray([Color(1, 1, 1, 0), Color(0.9, 1, 1, 0.95), Color(1, 1, 1, 0)])
+	glints.color_ramp = shine
+	glints.z_index = -90
+	add_child(glints)
+
+func _pond_points(pond: Dictionary) -> PackedVector2Array:
+	var result := PackedVector2Array()
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 4242
+	for i in range(40):
+		if pond.has("rect"):
+			var r: Array = pond["rect"]
+			result.append(Vector2(float(r[0]) + float(r[2]) * rng.randf_range(0.15, 0.85), float(r[1]) + float(r[3]) * rng.randf_range(0.25, 0.85)))
+		elif pond.has("circle"):
+			var c: Array = pond["circle"]
+			var angle := rng.randf() * TAU
+			var dist := sqrt(rng.randf()) * float(c[2]) * 0.75
+			result.append(Vector2(float(c[0]), float(c[1])) + Vector2(cos(angle), sin(angle)) * dist)
+	return result
 
 func _add_layer(file: String, layer_z: int) -> void:
 	var texture := _texture(file)

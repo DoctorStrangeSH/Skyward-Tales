@@ -50,6 +50,7 @@ func _ready() -> void:
 	visual.offset = sprite_offset
 	visual.set_direction_vector(Vector2.DOWN)
 	visual.modulate = base_visual_tint
+	Vfx.enable_flash(visual)
 	add_child(visual)
 	combat_feedback = FEEDBACK_SCRIPT.new() as EnemyCombatFeedback
 	combat_feedback.set_health(health, max_health)
@@ -334,6 +335,8 @@ func take_damage(amount: int) -> void:
 	if combat_feedback != null:
 		combat_feedback.set_health(health, max_health)
 		combat_feedback.show_damage(amount)
+	Vfx.flash(visual)
 	if health <= 0:
+		Vfx.defeat(get_parent(), global_position)
 		defeated.emit(xp_reward)
 		queue_free()

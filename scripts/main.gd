@@ -621,6 +621,7 @@ func _use_consumable(item_id: String, label: String = "") -> void:
 
 func _on_level_up(new_level: int) -> void:
 	pending_level_choices.append(new_level)
+	Vfx.level_up(self, player.global_position)
 	if hud != null and not game_over:
 		hud.show_message("НОВЫЙ УРОВЕНЬ: %d! Здоровье и мана восстановлены." % new_level, 2.5)
 		_present_next_level_choice()
@@ -700,6 +701,7 @@ func _cast_spell() -> void:
 	bolt.chain_damage_factor = float(spell.get("chain_damage_factor", 0.65))
 	add_child(bolt)
 	bolt.global_position = player.global_position + direction * 12.0
+	player.play_cast(direction)
 	cast_cooldown_total = float(spell.get("cooldown", 0.25)) * player.get_cooldown_multiplier()
 	cast_cooldown_remaining = cast_cooldown_total
 	_update_spell_hud()

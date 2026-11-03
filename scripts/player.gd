@@ -44,6 +44,7 @@ func _ready() -> void:
 	visual.configure(HERO_SHEET, 4, 8, 1.0, 8.0)
 	visual.offset = Vector2(0.0, -14.0)
 	visual.set_direction_vector(facing)
+	Vfx.enable_flash(visual)
 	add_child(visual)
 
 func start_dodge() -> bool:
@@ -86,11 +87,21 @@ func _physics_process(_delta: float) -> void:
 	visual.set_direction_vector(facing)
 	visual.set_moving(moving)
 
+const CAST_SHEET := "res://assets/sprites/characters/hero_8dir_cast.png"
+
+## Turns the hero towards the target and plays the casting pose.
+func play_cast(direction: Vector2) -> void:
+	if direction.length_squared() > 0.01:
+		facing = direction.normalized()
+		visual.set_direction_vector(facing)
+	visual.play_action(CAST_SHEET, 0.32)
+
 func take_damage(amount: int) -> void:
 	if dodge_time_left > 0.0 or health <= 0:
 		return
 	var previous_health: int = health
 	health = maxi(0, health - maxi(1, amount - get_armor()))
+	Vfx.flash(visual, Color(1.0, 0.45, 0.45), 0.2)
 	stats_changed.emit()
 	if previous_health > 0 and health <= 0:
 		died.emit()

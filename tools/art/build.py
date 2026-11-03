@@ -66,6 +66,7 @@ def build_world() -> None:
 def build_characters() -> None:
     print("characters")
     save(characters.sheet(characters.HERO), "sprites/characters/hero_8dir_walk.png")
+    save(characters.cast_sheet(characters.HERO), "sprites/characters/hero_8dir_cast.png")
     for npc_id, look in characters.NPCS.items():
         save(characters.portrait_sheet(look), f"sprites/npcs/{npc_id}.png")
     save(characters.sheet(characters.SHAMAN), "sprites/enemies/forest_shaman_8dir.png")

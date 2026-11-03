@@ -259,6 +259,12 @@
    10
   ]
  },
+ "sprites/characters/hero_8dir_cast.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
  "sprites/characters/hero_8dir_walk.png": {
   "size": [
    128,

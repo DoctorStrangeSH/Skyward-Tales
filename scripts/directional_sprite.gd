@@ -14,6 +14,9 @@ var direction_index: int = 0
 var animation_frame: int = 0
 var is_moving: bool = false
 var _animation_clock: float = 0.0
+var _base_texture: Texture2D
+var _action_time_left: float = 0.0
+var _action_duration: float = 0.0
 
 ## Atlas textures are shared between all sprites that use the same file.
 static var _texture_cache: Dictionary = {}
@@ -68,7 +71,28 @@ func set_moving(value: bool) -> void:
 		animation_frame = 0
 		_apply_frame()
 
+## Plays a one-shot action sheet (same 4x8 layout) over the walk cycle.
+func play_action(texture_path: String, duration: float) -> void:
+	var action := _get_texture(texture_path)
+	if action == null:
+		return
+	if _action_time_left <= 0.0:
+		_base_texture = texture
+	texture = action
+	_action_duration = maxf(0.01, duration)
+	_action_time_left = _action_duration
+	_apply_frame()
+
+func is_playing_action() -> bool:
+	return _action_time_left > 0.0
+
 func _process(delta: float) -> void:
+	if _action_time_left > 0.0:
+		_action_time_left -= delta
+		if _action_time_left <= 0.0:
+			texture = _base_texture
+		_apply_frame()
+		return
 	if not is_moving or frames_per_direction <= 1:
 		return
 	_animation_clock += delta
@@ -79,4 +103,8 @@ func _process(delta: float) -> void:
 		_apply_frame()
 
 func _apply_frame() -> void:
+	if _action_time_left > 0.0:
+		var progress := 1.0 - _action_time_left / _action_duration
+		frame = direction_index * frames_per_direction + mini(frames_per_direction - 1, int(progress * frames_per_direction))
+		return
 	frame = direction_index * frames_per_direction + animation_frame
