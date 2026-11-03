@@ -31,6 +31,9 @@ var dodge_direction: Vector2 = Vector2.DOWN
 var inventory: Dictionary = {}
 var equipment: Dictionary = {"weapon": "", "armor": "", "amulet": "", "relic": ""}
 var talents: Dictionary = {}
+## Rolled equipment definitions by id ("gen_0001"); saved with the hero.
+var generated_items: Dictionary = {}
+var _generated_counter: int = 0
 ## Extra skill points from story rewards (on top of one per level).
 var bonus_skill_points: int = 0
 var second_wind_ready_in: float = 0.0
@@ -58,7 +61,7 @@ func start_dodge() -> bool:
 	var input_direction: Vector2 = Input.get_vector("move_left", "move_right", "move_up", "move_down")
 	dodge_direction = input_direction.normalized() if input_direction.length_squared() > 0.01 else facing.normalized()
 	dodge_time_left = dodge_duration
-	dodge_cooldown_left = dodge_cooldown
+	dodge_cooldown_left = get_dodge_cooldown()
 	visual.modulate = Color(0.55, 0.94, 1.0, 0.72)
 	return true
 
@@ -76,7 +79,7 @@ func _physics_process(_delta: float) -> void:
 		return
 	# Recover mana slowly so casting remains testable during exploration.
 	if mana < max_mana:
-		mana_regen_accumulator += _delta * 4.0
+		mana_regen_accumulator += _delta * get_mana_regen()
 		if mana_regen_accumulator >= 1.0:
 			var recovered: int = mini(int(mana_regen_accumulator), max_mana - mana)
 			mana += recovered
@@ -88,7 +91,7 @@ func _physics_process(_delta: float) -> void:
 	var moving := direction.length_squared() > 0.01
 	if moving:
 		facing = direction.normalized()
-	velocity = direction * move_speed
+	velocity = direction * get_move_speed()
 	move_and_slide()
 	visual.set_direction_vector(facing)
 	visual.set_moving(moving)
@@ -177,8 +180,39 @@ func _load_equipment_definitions() -> void:
 		push_error("Некорректный каталог экипировки: " + EQUIPMENT_DATA_PATH)
 
 func get_item_definition(item_id: String) -> Dictionary:
-	var definition: Variant = equipment_definitions.get(item_id, {})
+	var definition: Variant = equipment_definitions.get(item_id, generated_items.get(item_id, {}))
 	return definition if definition is Dictionary else {}
+
+## Registers a rolled item (LootGenerator) and returns its new id.
+func register_generated_item(definition: Dictionary) -> String:
+	_generated_counter += 1
+	var item_id := "gen_%04d" % _generated_counter
+	while generated_items.has(item_id):
+		_generated_counter += 1
+		item_id = "gen_%04d" % _generated_counter
+	generated_items[item_id] = definition.duplicate(true)
+	return item_id
+
+# --- Characteristics -----------------------------------------------------
+# Each grows by 1 per level after the first and comes from equipment.
+
+func get_stat(stat: String) -> int:
+	return maxi(0, level - 1) + _equipped_stat(stat)
+
+## +2% spell damage per point of power.
+func get_spell_power_multiplier() -> float:
+	return 1.0 + 0.02 * float(get_stat("power"))
+
+## Base 4 mana per second, +0.3 per point of will.
+func get_mana_regen() -> float:
+	return 4.0 + 0.3 * float(get_stat("will"))
+
+## Agility: −2% dodge cooldown per point (to 50%) and +1% speed (to +25%).
+func get_dodge_cooldown() -> float:
+	return dodge_cooldown * maxf(0.5, 1.0 - 0.02 * float(get_stat("agility")))
+
+func get_move_speed() -> float:
+	return move_speed * (1.0 + minf(0.25, 0.01 * float(get_stat("agility"))))
 
 func get_item_name(item_id: String) -> String:
 	return str(get_item_definition(item_id).get("name", item_id))
@@ -282,6 +316,10 @@ func get_equipment_comparison(item_id: String) -> Dictionary:
 		get_slow_duration_bonus() - float(current_definition.get("slow_duration_bonus", 0.0)) + float(candidate.get("slow_duration_bonus", 0.0)),
 		" с"
 	)
+	for stat_data in [["power", "Сила магии"], ["will", "Воля"], ["agility", "Ловкость"]]:
+		var stat: String = stat_data[0]
+		var before_stat := float(get_stat(stat))
+		_append_equipment_comparison_stat(stats, stat_data[1], before_stat, before_stat - float(current_definition.get(stat, 0)) + float(candidate.get(stat, 0)))
 	_append_equipment_comparison_stat(
 		stats, "Прыжки молнии", float(get_chain_targets_bonus()),
 		float(get_chain_targets_bonus() - int(current_definition.get("chain_targets_bonus", 0)) + int(candidate.get("chain_targets_bonus", 0)))

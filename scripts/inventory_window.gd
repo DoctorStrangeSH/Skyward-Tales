@@ -8,13 +8,14 @@ signal compare_requested(item_id: String)
 signal unequip_requested(slot: String)
 
 var equipment_list: VBoxContainer
+var stats_label: Label
 var item_list: VBoxContainer
 var filter_button: OptionButton
 var sort_button: OptionButton
 
 func _ready() -> void:
-	position = Vector2(8, 30)
-	custom_minimum_size = Vector2(286, 300)
+	position = Vector2(8, 26)
+	custom_minimum_size = Vector2(286, 318)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.045, 0.06, 0.09, 0.97)
@@ -24,6 +25,8 @@ func _ready() -> void:
 	var contents := VBoxContainer.new()
 	add_child(contents)
 	contents.add_child(_label("СУМКА  [I — закрыть]", 13, Color(1.0, 0.88, 0.56)))
+	stats_label = _label("", 9, Color(0.75, 0.92, 1.0))
+	contents.add_child(stats_label)
 	contents.add_child(_label("Экипировка (клик — снять)", 10, Color(0.91, 0.90, 0.75)))
 	equipment_list = VBoxContainer.new()
 	contents.add_child(equipment_list)
@@ -31,7 +34,8 @@ func _ready() -> void:
 	controls.add_theme_constant_override("separation", 4)
 	contents.add_child(controls)
 	filter_button = OptionButton.new()
-	filter_button.custom_minimum_size = Vector2(118, 26)
+	filter_button.add_theme_font_size_override("font_size", 9)
+	filter_button.custom_minimum_size = Vector2(118, 18)
 	filter_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	filter_button.add_item("Все предметы", 0)
 	filter_button.add_item("Экипировка", 1)
@@ -40,7 +44,8 @@ func _ready() -> void:
 	filter_button.item_selected.connect(func(index: int) -> void: filter_selected.emit(index))
 	controls.add_child(filter_button)
 	sort_button = OptionButton.new()
-	sort_button.custom_minimum_size = Vector2(118, 26)
+	sort_button.add_theme_font_size_override("font_size", 9)
+	sort_button.custom_minimum_size = Vector2(118, 18)
 	sort_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	sort_button.add_item("Порядок", 0)
 	sort_button.add_item("По названию", 1)
@@ -49,7 +54,7 @@ func _ready() -> void:
 	sort_button.item_selected.connect(func(index: int) -> void: sort_selected.emit(index))
 	controls.add_child(sort_button)
 	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(250, 90)
+	scroll.custom_minimum_size = Vector2(250, 170)
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	contents.add_child(scroll)
 	item_list = VBoxContainer.new()
@@ -72,12 +77,18 @@ func populate(player: PlayerCharacter, filter_index: int, sort_index: int, prefe
 	for child in equipment_list.get_children():
 		equipment_list.remove_child(child)
 		child.queue_free()
+	stats_label.text = "Сила магии %d (+%d%% урона) · Воля %d · Ловкость %d · Броня %d" % [
+		player.get_stat("power"), roundi((player.get_spell_power_multiplier() - 1.0) * 100.0),
+		player.get_stat("will"), player.get_stat("agility"), player.get_armor()]
 	var slots: Dictionary = {"weapon": "Оружие", "armor": "Броня", "amulet": "Амулет", "relic": "Реликвия"}
 	for slot in ["weapon", "armor", "amulet", "relic"]:
 		var equipped_item: String = str(player.equipment.get(slot, ""))
 		var slot_button := Button.new()
 		slot_button.text = "%s: %s" % [slots[slot], player.get_item_name(equipped_item) if not equipped_item.is_empty() else "Пусто"]
 		slot_button.disabled = equipped_item.is_empty()
+		slot_button.add_theme_font_size_override("font_size", 9)
+		slot_button.custom_minimum_size = Vector2(0, 16)
+		slot_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		slot_button.pressed.connect(func() -> void: unequip_requested.emit(slot))
 		equipment_list.add_child(slot_button)
 	var available_item_ids: Array[String] = []

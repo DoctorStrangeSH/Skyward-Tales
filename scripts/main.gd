@@ -37,6 +37,7 @@ var crafting_service: CraftingService
 var dialogues: NpcDialogues
 var interact_prompt: InteractPrompt
 var story: StoryScene
+var loot_rng := RandomNumberGenerator.new()
 var director: StoryDirector
 var pickups: QuestPickups
 var elder: WorldNpc
@@ -66,6 +67,7 @@ var _session_time: float = 0.0
 var _marker_clock: float = 0.0
 
 func _ready() -> void:
+	loot_rng.randomize()
 	var catalogs: GameCatalogs = GameCatalogs.new()
 	spell_definitions = catalogs.spells
 	talent_definitions = catalogs.talents
@@ -656,6 +658,7 @@ func _on_guardian_defeated(xp: int, death_position: Vector2) -> void:
 	player.add_experience(xp)
 	player.add_gold(100)
 	_spawn_loot(death_position, "ancient_relic")
+	spawn_generated_loot(death_position + Vector2(14, 6), "rare")
 	hud.show_message("Хранитель побеждён! +100 золота. Древний артефакт ждёт!", 3.5)
 	_grant_sky_seal()
 	director.on_boss_defeated("guardian")
@@ -667,6 +670,7 @@ func _on_echo_defeated(xp: int, death_position: Vector2) -> void:
 	director.set_flag("echo_defeated")
 	player.add_experience(xp)
 	_spawn_loot(death_position, "ancient_relic")
+	spawn_generated_loot(death_position + Vector2(14, 6), "rare")
 	hud.show_message("Отголосок повержен!", 3.0)
 	_grant_sky_seal()
 	director.on_boss_defeated("echo")
@@ -693,7 +697,19 @@ func _on_enemy_defeated(xp_reward: int, death_position: Vector2) -> void:
 	else:
 		drop = "health_potion" if defeated_enemies % 2 == 1 else "mana_potion"
 	_spawn_loot(death_position, drop)
+	if loot_rng.randf() < LootGenerator.drop_chance():
+		spawn_generated_loot(death_position + Vector2(10, 4))
 	hud.show_message("Противник побеждён! +%d опыта" % xp_reward, 1.5)
+
+## Drops a rolled piece of equipment (bosses pass a minimum rarity).
+func spawn_generated_loot(at: Vector2, minimum_rarity: String = "common") -> String:
+	var rarity := LootGenerator.roll_rarity(loot_rng, minimum_rarity)
+	var definition := LootGenerator.generate(loot_rng, player.level, rarity)
+	if definition.is_empty():
+		return ""
+	var item_id := player.register_generated_item(definition)
+	_spawn_loot(at, item_id)
+	return item_id
 
 func _on_loot_collected(item_id: String, amount: int) -> void:
 	player.add_item(item_id, amount)
@@ -775,7 +791,7 @@ func _cast_spell() -> void:
 		return
 	var spell: Dictionary = spell_definitions.get(selected_spell_id, {})
 	var mana_cost := int(spell.get("mana_cost", 8))
-	var spell_damage := int(spell.get("damage", 18)) + player.get_spell_bonus(selected_spell_id)
+	var spell_damage := roundi((int(spell.get("damage", 18)) + player.get_spell_bonus(selected_spell_id)) * player.get_spell_power_multiplier())
 	if not player.spend_mana(mana_cost):
 		hud.show_message("Недостаточно маны.", 1.2)
 		return

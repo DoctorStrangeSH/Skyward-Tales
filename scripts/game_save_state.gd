@@ -52,6 +52,7 @@ static func capture(game: SkywardGame) -> Dictionary:
 			"equipment": player.equipment.duplicate(true),
 			"talents": player.talents.duplicate(true), "starlight_essence_used": player.starlight_essence_used,
 			"bonus_skill_points": player.bonus_skill_points,
+			"generated_items": player.generated_items.duplicate(true), "generated_counter": player._generated_counter,
 			"hero_name": player.hero_name, "hero_gender": player.hero_gender
 		},
 		"quest": {"states": game.quests.states.duplicate(true), "active": game.quests.active_quest_id},
@@ -110,6 +111,10 @@ static func _apply_player(player: PlayerCharacter, character: Dictionary) -> voi
 	player.max_mana = maxi(1, int(character.get("max_mana", 60)))
 	player.health = clampi(int(character.get("health", player.max_health)), 1, player.max_health)
 	player.mana = clampi(int(character.get("mana", player.max_mana)), 0, player.max_mana)
+	# Rolled item definitions first, so equipment and loot can refer to them.
+	var rolled: Variant = character.get("generated_items", {})
+	player.generated_items = rolled.duplicate(true) if rolled is Dictionary else {}
+	player._generated_counter = maxi(int(character.get("generated_counter", 0)), player.generated_items.size())
 	player.inventory = character["inventory"].duplicate(true)
 	player.equipment = {"weapon": "", "armor": "", "amulet": "", "relic": ""}
 	for slot in player.equipment.keys():
