@@ -62,6 +62,29 @@ static func level_up(parent: Node, at: Vector2) -> void:
 	if p != null:
 		p.gravity = Vector2(0, -20)
 
+## A falling star streaking down onto a point of the world.
+static func meteor(parent: Node, to: Vector2) -> void:
+	if parent == null or not parent.is_inside_tree():
+		return
+	var trail := Line2D.new()
+	trail.width = 3.0
+	trail.default_color = Color(0.85, 1.0, 1.0, 0.9)
+	trail.z_index = 70
+	var gradient := Gradient.new()
+	gradient.colors = PackedColorArray([Color(0.6, 0.9, 1.0, 0.0), Color(1, 1, 1, 1)])
+	trail.gradient = gradient
+	parent.add_child(trail)
+	var start := to + Vector2(-260, -320)
+	var tween := trail.create_tween()
+	tween.tween_method(func(t: float) -> void:
+		var tip := start.lerp(to, t)
+		trail.clear_points()
+		trail.add_point(start.lerp(to, maxf(0.0, t - 0.25)))
+		trail.add_point(tip), 0.0, 1.0, 0.9)
+	tween.tween_callback(func() -> void:
+		burst(parent, to, [Color(1, 1, 1), Color(0.7, 0.95, 1.0), Color(0.4, 0.7, 1.0, 0.0)], 30, 120.0, 0.8))
+	tween.tween_callback(trail.queue_free)
+
 ## Gives a CanvasItem a private hit-flash material.
 static func enable_flash(item: CanvasItem) -> void:
 	var material := ShaderMaterial.new()

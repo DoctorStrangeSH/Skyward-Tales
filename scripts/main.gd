@@ -35,6 +35,7 @@ var merchant_shop: MerchantShop
 var crafting_service: CraftingService
 var dialogues: NpcDialogues
 var interact_prompt: InteractPrompt
+var story: StoryScene
 var pickups: QuestPickups
 var elder: WorldNpc
 var nearby_interactable: Node2D
@@ -78,6 +79,7 @@ func _ready() -> void:
 	crafting_service = CRAFTING_SERVICE_SCRIPT.new()
 	dialogues = NpcDialogues.new(self)
 	pickups = QuestPickups.new(self)
+	story = StoryScene.new(self)
 	player = PLAYER_SCENE.instantiate() as PlayerCharacter
 	add_child(player)
 	player.global_position = GameSaveState.DEFAULT_PLAYER_POSITION
@@ -85,6 +87,7 @@ func _ready() -> void:
 	player.level_up.connect(_on_level_up)
 	player.died.connect(_on_player_died)
 	_apply_camera_limits()
+	StoryText.reset()
 
 	hud = GameHud.new()
 	add_child(hud)
@@ -106,6 +109,10 @@ func _ready() -> void:
 	if get_tree().has_meta("skyward_continue") and bool(get_tree().get_meta("skyward_continue")):
 		get_tree().remove_meta("skyward_continue")
 		load_game(true)
+	elif get_tree().has_meta("skyward_new_hero"):
+		var hero: Dictionary = get_tree().get_meta("skyward_new_hero")
+		get_tree().remove_meta("skyward_new_hero")
+		start_new_story(str(hero.get("name", "")), str(hero.get("gender", "m")))
 	else:
 		hud.show_message("Добро пожаловать в Skyward Tales! Найдите старейшину.", 5.0)
 		hud.show_tip("controls", "Совет: Esc — пауза, там же управление и настройки.", 6.0)
@@ -156,7 +163,9 @@ func _input(event: InputEvent) -> void:
 			return
 	# _input receives mouse clicks even when a Control overlays the world.
 	if event.is_action_pressed("interact"):
-		if hud.dialogue_visible:
+		if story.active:
+			story.advance()
+		elif hud.dialogue_visible:
 			hud.close_dialogue()
 			player.set_physics_process(true)
 		else:
@@ -240,6 +249,10 @@ func _populate_region() -> void:
 		if not bool(gathered_resource_nodes.get(node_id, false)):
 			_spawn_herb(_vec(node_data.get("position")), node_id, str(node_data.get("name", node_id)))
 	_spawn_pending_supply_crates(layout)
+	for object_data in layout.get("story_objects", []):
+		var quest_id := str(object_data.get("quest", ""))
+		if bool(quests.states.get(quest_id, {}).get("started", false)) and not quests.is_completed(quest_id):
+			_spawn_herb(_vec(object_data.get("position")), str(object_data.get("id", "")), str(object_data.get("name", "")))
 	_spawn_pending_map_fragments(layout)
 	for chest_data in layout.get("chests", []):
 		_spawn_chest(str(chest_data.get("id", "")), _vec(chest_data.get("position")), int(chest_data.get("gold", 0)), str(chest_data.get("item", "")), int(chest_data.get("amount", 0)))
@@ -315,6 +328,23 @@ func _set_region(region_id: String, arrival: Vector2, notify: bool = true) -> vo
 	if notify and hud != null:
 		hud.show_message("Локация: " + RegionCatalog.display_name(current_region), 2.5)
 	_refresh_hud()
+
+## New adventure: identity from character creation, then the prologue.
+func start_new_story(hero_name: String, gender: String) -> void:
+	player.set_identity(hero_name, gender)
+	quests.start_quest("main_prologue")
+	_set_region(current_region, player.global_position, false)
+	hud.flash_screen(Color.BLACK, 2.0)
+	story.play("prologue", func() -> void:
+		hud.show_tip("controls", "Совет: Esc — пауза, там же управление и настройки.", 6.0)
+		_refresh_hud())
+
+## Story object data (from regions.json) for an item id in the current region.
+func story_object(item_id: String) -> Dictionary:
+	for object_data in _layout().get("story_objects", []):
+		if str(object_data.get("id", "")) == item_id:
+			return object_data
+	return {}
 
 func _apply_camera_limits() -> void:
 	var camera := player.get_node_or_null("Camera2D") as Camera2D
@@ -502,11 +532,16 @@ func update_npc_markers() -> void:
 
 func _show_dialogue(speaker: String, message: String) -> void:
 	player.set_physics_process(false)
-	hud.show_dialogue(speaker, message)
+	hud.show_dialogue(speaker, StoryText.format(message))
 
 func _show_dialogue_choices(speaker: String, message: String, choices: Array[Dictionary]) -> void:
 	player.set_physics_process(false)
-	hud.show_dialogue_choices(speaker, message, choices)
+	var formatted: Array[Dictionary] = []
+	for choice in choices:
+		var copy: Dictionary = choice.duplicate()
+		copy["label"] = StoryText.format(str(choice.get("label", "")))
+		formatted.append(copy)
+	hud.show_dialogue_choices(speaker, StoryText.format(message), formatted)
 
 func _show_relationship_change(npc_id: String, amount: int) -> void:
 	hud.show_message("Отношение: %s (%+d) — %s" % [relationships.get_name(npc_id), amount, relationships.get_rank(npc_id)], 3.0)

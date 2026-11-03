@@ -23,11 +23,30 @@ func handle(herb: WorldCollectible) -> void:
 		_collect_supply_crate(herb)
 	elif herb.item_id.begins_with("iron_ore_node_"):
 		_mine_ore(herb)
+	elif not game.story_object(herb.item_id).is_empty():
+		_inspect_story_object(herb)
+		return
 	elif herb.item_id == "map_fragment":
 		_collect_map_fragment(herb)
 	else:
 		_collect_quest_herb(herb)
 	game._refresh_hud()
+
+## Plays the object's scene, then completes its main-story quest.
+func _inspect_story_object(herb: WorldCollectible) -> void:
+	var data := game.story_object(herb.item_id)
+	var quest_id := str(data.get("quest", ""))
+	if game.story.active:
+		return
+	game.story.play(str(data.get("scene", "")), func() -> void:
+		if game.quests.states.has(quest_id) and not game.quests.is_completed(quest_id):
+			game.quests.add_progress(quest_id, 1)
+			if game.quests.complete_quest(quest_id):
+				game._grant_quest_reward(quest_id)
+				game.hud.show_message("Задание выполнено: " + str(game.quests.definitions[quest_id].get("title", "")), 3.0)
+		if is_instance_valid(herb):
+			_collect(herb)
+		game._refresh_hud())
 
 func _collect_supply_crate(herb: WorldCollectible) -> void:
 	var quests := game.quests

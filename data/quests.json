@@ -1,5 +1,16 @@
 [
   {
+    "id": "main_prologue",
+    "title": "Звездопад",
+    "description": "Осмотрите то, что упало с неба у северных руин.",
+    "target": 1,
+    "reward": {
+      "experience": 20,
+      "gold": 0
+    },
+    "main": true
+  },
+  {
     "id": "moonleaf_gathering",
     "title": "Три лунных листа",
     "description": "Соберите три лунных листа и вернитесь к старейшине Элиану.",
@@ -23,7 +34,8 @@
           "gold": 10
         }
       }
-    }
+    },
+    "main": true
   },
   {
     "id": "grove_spirits",
@@ -33,7 +45,8 @@
     "reward": {
       "experience": 90,
       "gold": 50
-    }
+    },
+    "main": true
   },
   {
     "id": "bran_supply_run",
@@ -162,6 +175,7 @@
           "dorn_trust": 20
         }
       }
-    }
+    },
+    "main": true
   }
 ]

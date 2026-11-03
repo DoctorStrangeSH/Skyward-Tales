@@ -41,7 +41,7 @@ func _ready() -> void:
 	mana = max_mana
 	visual = DIRECTIONAL_SPRITE_SCRIPT.new() as DirectionalSprite
 	visual.name = "DirectionalVisual"
-	visual.configure(HERO_SHEET, 4, 8, 1.0, 8.0)
+	visual.configure(_walk_sheet(), 4, 8, 1.0, 8.0)
 	visual.offset = Vector2(0.0, -14.0)
 	visual.set_direction_vector(facing)
 	Vfx.enable_flash(visual)
@@ -88,13 +88,36 @@ func _physics_process(_delta: float) -> void:
 	visual.set_moving(moving)
 
 const CAST_SHEET := "res://assets/sprites/characters/hero_8dir_cast.png"
+const HERO_F_SHEET := "res://assets/sprites/characters/hero_f_8dir_walk.png"
+const CAST_F_SHEET := "res://assets/sprites/characters/hero_f_8dir_cast.png"
+
+## Name and look chosen at the start of a new game ("m" or "f").
+var hero_name: String = "Арен"
+var hero_gender: String = "m"
+
+func _walk_sheet() -> String:
+	return HERO_F_SHEET if hero_gender == "f" else HERO_SHEET
+
+func _cast_sheet() -> String:
+	return CAST_F_SHEET if hero_gender == "f" else CAST_SHEET
+
+## Applies identity to the sprite and to all formatted text.
+func set_identity(new_name: String, gender: String) -> void:
+	StoryText.set_hero(new_name, gender)
+	hero_name = StoryText.hero_name
+	hero_gender = StoryText.hero_gender
+	if visual != null:
+		var keep := visual.direction_index
+		visual.configure(_walk_sheet(), 4, 8, 1.0, 8.0)
+		visual.direction_index = keep
+		visual.set_direction_vector(facing)
 
 ## Turns the hero towards the target and plays the casting pose.
 func play_cast(direction: Vector2) -> void:
 	if direction.length_squared() > 0.01:
 		facing = direction.normalized()
 		visual.set_direction_vector(facing)
-	visual.play_action(CAST_SHEET, 0.32)
+	visual.play_action(_cast_sheet(), 0.32)
 
 func take_damage(amount: int) -> void:
 	if dodge_time_left > 0.0 or health <= 0:

@@ -49,7 +49,8 @@ static func capture(game: SkywardGame) -> Dictionary:
 			"gold": player.gold,
 			"inventory": player.inventory.duplicate(true),
 			"equipment": player.equipment.duplicate(true),
-			"talents": player.talents.duplicate(true), "starlight_essence_used": player.starlight_essence_used
+			"talents": player.talents.duplicate(true), "starlight_essence_used": player.starlight_essence_used,
+			"hero_name": player.hero_name, "hero_gender": player.hero_gender
 		},
 		"quest": {"states": game.quests.states.duplicate(true), "active": game.quests.active_quest_id},
 		"world": {
@@ -113,6 +114,8 @@ static func _apply_player(player: PlayerCharacter, character: Dictionary) -> voi
 			player.equipment[slot] = saved_item
 	player.talents = character.get("talents", {}).duplicate(true)
 	player.starlight_essence_used = maxi(0, int(character.get("starlight_essence_used", 0)))
+	# Saves from before character creation default to Арен.
+	player.set_identity(str(character.get("hero_name", "")), str(character.get("hero_gender", "m")))
 
 static func _restore_world_actors(game: SkywardGame, world_data: Dictionary) -> void:
 	# Queued old nodes must leave the scene tree immediately.

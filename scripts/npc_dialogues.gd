@@ -107,14 +107,21 @@ func on_elder() -> void:
 	var quests := game.quests
 	if quests.is_completed("moonleaf_gathering"):
 		if game.relationships.get_score("elder") >= 20:
-			_say("Старейшина Элиан", "Ты доказал, что думаешь не только о себе. Я открыл для тебя старое хранилище у северных руин — там поселение прятало припасы во время войны.")
+			_say("Старейшина Элиан", "Ты {доказал|доказала}, что думаешь не только о себе. Я открыл для тебя старое хранилище у северных руин — там поселение прятало припасы во время войны.")
 		else:
-			_say("Старейшина Элиан", "%s. Ты помог нашему поселению. На востоке есть тропа в Зачарованный лес. Найди хранительницу Илару — возможно, ей нужна помощь." % game.relationships.get_reaction("elder"))
+			_say("Старейшина Элиан", "%s. Ты {помог|помогла} нашему поселению. На востоке есть тропа в Зачарованный лес. Найди хранительницу Илару — возможно, ей нужна помощь." % game.relationships.get_reaction("elder"))
+	elif quests.active_quest_id == "main_prologue":
+		_say("Старейшина Элиан", "Сначала взгляни, что упало у северных руин. Это к востоку по тропе.")
+	elif quests.active_quest_id.is_empty() and quests.is_completed("main_prologue") and game.story.has_scene("elder_after_shard") and not bool(quests.states["moonleaf_gathering"]["started"]):
+		game.story.play("elder_after_shard", func() -> void:
+			quests.start_quest("moonleaf_gathering")
+			_say("Старейшина Элиан", "Принеси три лунных листа — они очищают воздух. Растут вдоль старой тропы.")
+			game._refresh_hud())
 	elif quests.active_quest_id.is_empty():
 		quests.start_quest("moonleaf_gathering")
-		_say("Старейшина Элиан", "Юный странник, ночной туман отравляет наш лес. Принеси мне три лунных листа — они растут вдоль старой тропы. Я щедро тебя отблагодарю.")
+		_say("Старейшина Элиан", "{hero}, туман небесной пыли ползёт к домам. Принеси три лунных листа — они очищают воздух. Растут вдоль старой тропы.")
 	elif quests.is_ready_to_complete("moonleaf_gathering"):
-		_ask("Старейшина Элиан", "Ты спас наши запасы от порчи. Я обещал награду. Но поселению тоже тяжело пережить эту зиму. Как поступим?", [
+		_ask("Старейшина Элиан", "Ты {спас|спасла} наши запасы от порчи. Я обещал награду. Но поселению тоже тяжело пережить эту зиму. Как поступим?", [
 			{"id": "payment", "label": "Принять полную награду — 25 золота"},
 			{"id": "village", "label": "Оставить большую часть награды поселению"}
 		])
@@ -161,7 +168,7 @@ func on_cartographer() -> void:
 		quests.start_quest(quest_id)
 		_say("Мира, картограф", "Ветер разметал страницы моего полевого дневника возле старого лагеря. Найди два обрывка на поляне и принеси их мне. Там записаны безопасные тропы через лес.")
 	elif quests.is_ready_to_complete(quest_id):
-		_ask("Мира, картограф", "Ты нашёл обе страницы! Я хочу отблагодарить тебя. Что тебе сейчас нужнее?", [
+		_ask("Мира, картограф", "Ты {нашёл|нашла} обе страницы! Я хочу отблагодарить тебя. Что тебе сейчас нужнее?", [
 			{"id": "gold", "label": "Взять 35 золотых монет"},
 			{"id": "supplies", "label": "Попросить 2 зелья маны и 10 монет"}
 		])
@@ -209,7 +216,7 @@ func on_grove_warden() -> void:
 				game.reveal_secret("moonlit_grove", "ilara_ancient_cache")
 				game._show_relationship_change("ilara", 20)
 			game.spawn_region_boss()
-			_say("Хранительница Илара", "Ты вернул лесу его сияние. Прими эту награду.")
+			_say("Хранительница Илара", "Ты {вернул|вернула} лесу его сияние. Прими эту награду.")
 		else:
 			_say("Хранительница Илара", "Ищи духовные цветы вдоль древней тропы. Их свет виден даже в сумерках.")
 	else:
@@ -357,7 +364,7 @@ func on_merchant() -> void:
 	if quests.is_completed(quest_id):
 		message = "Благодаря тебе лавка снова получает товары. %s." % game.relationships.get_reaction("bran")
 	elif quests.is_ready_to_complete(quest_id):
-		message = "Ты вернул все три ящика! Теперь решим, как распределить припасы."
+		message = "Ты {вернул|вернула} все три ящика! Теперь решим, как распределить припасы."
 		choices.append({"id": "merchant_supply:fair", "label": "Продать припасы — 40 золота"})
 		choices.append({"id": "merchant_supply:clinic", "label": "Передать часть лечебнице — 15 золота"})
 	elif bool(quests.states[quest_id].get("started", false)):
