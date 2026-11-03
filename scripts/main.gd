@@ -1,0 +1,1208 @@
+extends Node2D
+
+const PLAYER_SCENE := preload("res://scenes/player.tscn")
+const BOLT_SCENE := preload("res://scenes/magic_bolt.tscn")
+const NPC_SCRIPT := preload("res://scripts/npc.gd")
+const COLLECTIBLE_SCRIPT := preload("res://scripts/collectible.gd")
+const ENEMY_SCRIPT := preload("res://scripts/enemy.gd")
+const LOOT_SCRIPT := preload("res://scripts/loot.gd")
+const CHEST_SCRIPT := preload("res://scripts/treasure_chest.gd")
+const SAVE_SCRIPT := preload("res://scripts/save_system.gd")
+const RELATIONSHIP_SCRIPT := preload("res://scripts/npc_relationships.gd")
+const MERCHANT_SHOP_SCRIPT := preload("res://scripts/merchant_shop.gd")
+const CRAFTING_SERVICE_SCRIPT := preload("res://scripts/crafting_service.gd")
+const GATE_SCRIPT := preload("res://scripts/region_gate.gd")
+const WOLF_SCRIPT := preload("res://scripts/forest_wolf.gd")
+const SHAMAN_SCRIPT := preload("res://scripts/forest_shaman.gd")
+const GUARDIAN_SCRIPT := preload("res://scripts/grove_guardian.gd")
+
+var player: PlayerCharacter
+var hud: GameHud
+var quests: QuestManager
+var relationships: NpcRelationships
+var merchant_shop: MerchantShop
+var crafting_service: CraftingService
+var elder: WorldNpc
+var nearby_interactable: Node2D
+var spell_definitions: Dictionary = {}
+var cast_cooldown_remaining: float = 0.0
+var selected_spell_id: String = "fireball"
+var cast_cooldown_total: float = 0.0
+var defeated_enemies: int = 0
+var save_path: String = SAVE_SCRIPT.SAVE_PATH
+var world: Node2D
+var current_region: String = "greenreach"
+var guardian_defeated: bool = false
+var game_over: bool = false
+var talent_definitions: Dictionary = {}
+var pending_level_choices: Array[int] = []
+var bestiary_entries: Dictionary = {}
+var discovered_enemies: Dictionary = {}
+var discovered_landmarks: Dictionary = {}
+var opened_chests: Dictionary = {}
+var gathered_resource_nodes: Dictionary = {}
+var latest_cache_narrative: bool = false
+
+func _ready() -> void:
+	var catalogs: GameCatalogs = GameCatalogs.new()
+	spell_definitions = catalogs.spells
+	talent_definitions = catalogs.talents
+	bestiary_entries = catalogs.bestiary
+	world = get_node("World") as Node2D
+	quests = QuestManager.new()
+	relationships = RELATIONSHIP_SCRIPT.new()
+	merchant_shop = MERCHANT_SHOP_SCRIPT.new()
+	crafting_service = CRAFTING_SERVICE_SCRIPT.new()
+	player = PLAYER_SCENE.instantiate() as PlayerCharacter
+	add_child(player)
+	player.global_position = Vector2(130, 210)
+	player.stats_changed.connect(_refresh_hud)
+	player.level_up.connect(_on_level_up)
+	player.died.connect(_on_player_died)
+
+	hud = GameHud.new()
+	add_child(hud)
+	hud.inventory_use_requested.connect(_on_inventory_use)
+	hud.inventory_unequip_requested.connect(_on_inventory_unequip)
+	hud.pause_save_requested.connect(save_game)
+	hud.pause_load_requested.connect(load_game)
+	hud.pause_menu_requested.connect(_go_to_title)
+	hud.defeat_restart_requested.connect(_restart_run)
+	hud.defeat_load_requested.connect(_load_from_defeat)
+	hud.defeat_menu_requested.connect(_go_to_title)
+	hud.talent_selected.connect(_on_talent_selected)
+	hud.dialogue_choice_selected.connect(_on_dialogue_choice_selected)
+
+	_populate_region()
+
+	if get_tree().has_meta("skyward_continue") and bool(get_tree().get_meta("skyward_continue")):
+		get_tree().remove_meta("skyward_continue")
+		load_game()
+	else:
+		hud.show_message("Добро пожаловать в Skyward Tales! Найдите старейшину.", 5.0)
+	_refresh_hud()
+
+func _process(delta: float) -> void:
+	cast_cooldown_remaining = maxf(0.0, cast_cooldown_remaining - delta)
+	if player == null or hud == null or game_over:
+		return
+	_update_spell_hud()
+	_discover_nearby_enemies()
+	_update_minimap()
+	hud.update_dodge(player.dodge_cooldown_left, player.dodge_cooldown, player.dodge_time_left > 0.0)
+	nearby_interactable = _find_nearest_interactable()
+	if hud.dialogue_visible or hud.inventory_open or hud.bestiary_visible or hud.world_map_visible:
+		hud.set_prompt("")
+	elif nearby_interactable != null:
+		var prompt := "E — поговорить" if nearby_interactable is WorldNpc else ("E — перейти" if nearby_interactable is RegionGate else ("E — подобрать" if nearby_interactable is WorldLoot else "E — собрать"))
+		hud.set_prompt(prompt)
+	else:
+		hud.set_prompt("WASD — ходьба   Shift — рывок   1/2/3 — магия   ЛКМ — каст   E — подбор   Q/R — зелья   K — бестиарий   M — карта   F6/F9 — сейв/загрузка")
+
+func _update_minimap() -> void:
+	var region_markers: Dictionary = discovered_landmarks.get(current_region, {})
+	for actor in get_children():
+		if not (actor is WorldNpc or actor is RegionGate):
+			continue
+		if player.global_position.distance_squared_to(actor.global_position) > 150.0 * 150.0:
+			continue
+		var kind: String = "gate" if actor is RegionGate else "npc"
+		var marker_id: String = "%s_%d_%d" % [kind, int(actor.global_position.x), int(actor.global_position.y)]
+		if not region_markers.has(marker_id):
+			region_markers[marker_id] = {"position": [actor.global_position.x, actor.global_position.y], "kind": kind}
+	discovered_landmarks[current_region] = region_markers
+	hud.minimap.update_map(current_region, player.global_position, region_markers)
+
+func _discover_nearby_enemies() -> void:
+	for enemy in get_tree().get_nodes_in_group("enemies"):
+		if not enemy is SlimeEnemy or enemy.is_queued_for_deletion():
+			continue
+		if player.global_position.distance_squared_to(enemy.global_position) > 180.0 * 180.0:
+			continue
+		var kind: String = _enemy_kind(enemy)
+		if not discovered_enemies.has(kind):
+			discovered_enemies[kind] = true
+			hud.show_message("Бестиарий: %s! Откройте книгу клавишей K." % str(bestiary_entries.get(kind, {}).get("name", kind)), 2.5)
+
+func _enemy_kind(enemy: SlimeEnemy) -> String:
+	if enemy is GroveGuardian:
+		return "guardian"
+	if enemy is ForestShaman:
+		return "shaman"
+	if enemy is ForestWolf:
+		return "wolf"
+	return "slime"
+
+func _input(event: InputEvent) -> void:
+	if game_over or (hud != null and (hud.talent_visible or hud.defeat_visible)):
+		return
+	if event is InputEventKey and event.pressed and not event.echo:
+		if event.keycode == KEY_M and not get_tree().paused and not hud.dialogue_visible:
+			if hud.inventory_open:
+				hud.toggle_inventory(player)
+			if hud.bestiary_visible:
+				hud.toggle_bestiary(bestiary_entries, discovered_enemies)
+			_update_minimap()
+			hud.open_world_map(current_region, player.global_position, discovered_landmarks.get(current_region, {}), quests.get_active_summary())
+			get_viewport().set_input_as_handled()
+			return
+		if event.keycode == KEY_K and not get_tree().paused and not hud.dialogue_visible:
+			if hud.inventory_open:
+				hud.toggle_inventory(player)
+			hud.toggle_bestiary(bestiary_entries, discovered_enemies)
+			get_viewport().set_input_as_handled()
+			return
+		if hud.bestiary_visible:
+			return
+		if event.keycode == KEY_F6 and not get_tree().paused and not hud.dialogue_visible:
+			save_game()
+			get_viewport().set_input_as_handled()
+			return
+		if event.keycode == KEY_F9 and not get_tree().paused and not hud.dialogue_visible:
+			load_game()
+			get_viewport().set_input_as_handled()
+			return
+		if event.keycode == KEY_SHIFT and not get_tree().paused and not hud.dialogue_visible and not hud.inventory_open:
+			player.start_dodge()
+			get_viewport().set_input_as_handled()
+			return
+		if event.keycode == KEY_I and not get_tree().paused and not hud.dialogue_visible:
+			hud.toggle_inventory(player)
+			get_viewport().set_input_as_handled()
+			return
+		if hud.inventory_open:
+			return
+		if event.keycode == KEY_Q:
+			_use_consumable("health_potion", "Зелье здоровья")
+		elif event.keycode == KEY_R:
+			_use_consumable("mana_potion", "Зелье маны")
+		elif event.keycode == KEY_1:
+			select_spell("fireball")
+		elif event.keycode == KEY_2:
+			select_spell("frostbolt")
+		elif event.keycode == KEY_3:
+			select_spell("chain_lightning")
+	# _input receives mouse clicks even when a Control overlays the world.
+	if event.is_action_pressed("interact"):
+		if hud.dialogue_visible:
+			hud.close_dialogue()
+			player.set_physics_process(true)
+		else:
+			_try_interact()
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("cast_spell"):
+		if not get_tree().paused and not hud.dialogue_visible and not hud.inventory_open and not hud.bestiary_visible:
+			_cast_spell()
+		get_viewport().set_input_as_handled()
+
+func _populate_region() -> void:
+	if current_region == "moonlit_grove":
+		_spawn_grove_warden()
+		_spawn_chest("grove_moon_pool", Vector2(565, 215), 35, "mana_potion", 2)
+		_spawn_chest("grove_ancient_stones", Vector2(975, 640), 60, "health_potion", 1)
+		_spawn_herb(Vector2(330, 315), "spirit_blossom", "Духовный цветок")
+		_spawn_herb(Vector2(680, 505), "spirit_blossom", "Духовный цветок")
+		_spawn_herb(Vector2(1080, 390), "spirit_blossom", "Духовный цветок")
+		_spawn_wolf(Vector2(470, 430))
+		_spawn_wolf(Vector2(900, 290))
+		_spawn_shaman(Vector2(730, 360))
+		if quests.is_completed("grove_spirits") and not guardian_defeated:
+			_spawn_guardian(Vector2(1020, 580))
+		_spawn_gate("greenreach", Vector2(1120, 205), Vector2(1080, 205), "Возврат к Зелёным Пределам")
+	else:
+		_spawn_elder()
+		_spawn_cartographer()
+		_spawn_merchant()
+		_spawn_hunter()
+		_spawn_blacksmith()
+		var ore_nodes: Array[Dictionary] = [
+			{"id": "iron_ore_node_01", "position": Vector2(545, 420)},
+			{"id": "iron_ore_node_02", "position": Vector2(900, 570)},
+			{"id": "iron_ore_node_03", "position": Vector2(1060, 620)}
+		]
+		for ore_node in ore_nodes:
+			var node_id := str(ore_node["id"])
+			if not bool(gathered_resource_nodes.get(node_id, false)):
+				_spawn_herb(ore_node["position"], node_id, "Жила железной руды")
+		var supply_state: Dictionary = quests.states.get("bran_supply_run", {})
+		if bool(supply_state.get("started", false)) and not quests.is_completed("bran_supply_run"):
+			var collected_crates: Array = supply_state.get("collected_crates", [])
+			var supply_positions: Array[Vector2] = [Vector2(445, 470), Vector2(635, 520), Vector2(865, 430)]
+			for index in range(supply_positions.size()):
+				if not collected_crates.has(index):
+					_spawn_herb(supply_positions[index], "supply_crate_%d" % index, "Потерянный ящик с припасами")
+		var fragments_remaining: int = 0
+		if not quests.is_completed("lost_cartographer_notes"):
+			var fragment_state: Dictionary = quests.states.get("lost_cartographer_notes", {})
+			var target: int = int(quests.definitions.get("lost_cartographer_notes", {}).get("target", 2))
+			fragments_remaining = target - (int(fragment_state.get("progress", 0)) if bool(fragment_state.get("started", false)) else 0)
+		var fragment_positions: Array[Vector2] = [Vector2(455, 535), Vector2(610, 585)]
+		for index in range(clampi(fragments_remaining, 0, fragment_positions.size())):
+			_spawn_herb(fragment_positions[index], "map_fragment", "Обрывок полевого дневника")
+		_spawn_chest("greenreach_ruins", Vector2(960, 175), 45, "health_potion", 2)
+		_spawn_chest("greenreach_woodland", Vector2(660, 460), 30, "mana_potion", 1)
+		# Optional exploration find off the main road, remembered by the existing chest save state.
+		_spawn_chest("greenreach_cartographer_cache", Vector2(335, 495), 20, "mana_potion", 2)
+		_spawn_herb(Vector2(370, 155))
+		_spawn_herb(Vector2(515, 310))
+		_spawn_herb(Vector2(700, 190))
+		_spawn_slime(Vector2(475, 350))
+		_spawn_slime(Vector2(790, 300))
+		_spawn_slime(Vector2(990, 250))
+		_spawn_gate("moonlit_grove", Vector2(1120, 205), Vector2(140, 430), "Тропа в Зачарованный лес")
+
+func _clear_region_actors() -> void:
+	for node in get_children():
+		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is MagicBolt or node is EnemyMagicOrb:
+			remove_child(node)
+			node.queue_free()
+	elder = null
+	nearby_interactable = null
+
+func _set_region(region_id: String, arrival: Vector2, notify: bool = true) -> void:
+	current_region = "moonlit_grove" if region_id == "moonlit_grove" else "greenreach"
+	_clear_region_actors()
+	if world != null and world.has_method("configure_region"):
+		world.configure_region(current_region)
+	_populate_region()
+	player.global_position = arrival
+	if notify and hud != null:
+		hud.show_message("Локация: " + ("Зачарованный лес" if current_region == "moonlit_grove" else "Зелёные Пределы"), 2.5)
+	_refresh_hud()
+
+func _spawn_chest(id: String, at_position: Vector2, gold: int, item: String, amount: int) -> void:
+	var chest := CHEST_SCRIPT.new() as TreasureChest
+	chest.chest_id = id
+	chest.gold_reward = gold
+	chest.item_reward = item
+	chest.item_amount = amount
+	chest.is_opened = bool(opened_chests.get(id, false))
+	chest.position = at_position
+	add_child(chest)
+	if chest.is_opened:
+		chest.remove_from_group("interactables")
+	chest.opened.connect(_on_chest_opened)
+	chest.bonus_found.connect(_on_chest_bonus)
+
+func _on_chest_opened(id: String, gold: int, item: String, amount: int) -> void:
+	if opened_chests.has(id):
+		return
+	opened_chests[id] = true
+	latest_cache_narrative = id == "greenreach_cartographer_cache"
+	player.add_gold(gold)
+	if not item.is_empty() and amount > 0:
+		player.add_item(item, amount)
+	if id == "greenreach_cartographer_cache":
+		hud.show_message("Тайник картографа: найдены записи о тропах и припасы. +%d золота, зелья маны ×%d" % [gold, amount], 4.0)
+	else:
+		hud.show_message("Тайник открыт! +%d золота, %s ×%d" % [gold, item, amount], 3.0)
+
+func _on_chest_bonus(item_id: String, rarity: String) -> void:
+	player.add_item(item_id)
+	var names: Dictionary = {"health_potion": "Зелье здоровья", "mana_amulet": "Амулет маны", "starlight_essence": "Звёздная эссенция", "pyromancer_core": "Сердце пироманта", "frost_heart": "Сердце ледника", "storm_eye": "Око бури"}
+	var rarities: Dictionary = {"common": "ОБЫЧНАЯ", "uncommon": "НЕОБЫЧНАЯ", "rare": "РЕДКАЯ"}
+	if latest_cache_narrative:
+		hud.show_message("Записи картографа найдены! %s НАХОДКА: %s!" % [str(rarities.get(rarity, rarity)), str(names.get(item_id, item_id))], 4.0)
+		latest_cache_narrative = false
+	else:
+		hud.show_message("%s НАХОДКА: %s!" % [str(rarities.get(rarity, rarity)), str(names.get(item_id, item_id))], 3.0)
+
+func _spawn_gate(target_region: String, gate_position: Vector2, arrival: Vector2, label: String) -> void:
+	var gate := GATE_SCRIPT.new() as RegionGate
+	gate.target_region = target_region
+	gate.arrival_position = arrival
+	gate.display_name = label
+	add_child(gate)
+	gate.global_position = gate_position
+	gate.travel_requested.connect(_on_region_travel)
+
+func _on_region_travel(target_region: String, arrival: Vector2) -> void:
+	if target_region == "moonlit_grove" and not quests.is_completed("moonleaf_gathering"):
+		hud.show_message("Сначала помогите старейшине с лунными листьями.", 2.5)
+		return
+	_set_region(target_region, arrival)
+
+func _spawn_grove_warden() -> void:
+	var warden := NPC_SCRIPT.new() as WorldNpc
+	warden.display_name = "Хранительница Илара"
+	add_child(warden)
+	warden.global_position = Vector2(250, 420)
+	warden.interacted.connect(_on_grove_warden_interacted)
+
+func _on_grove_warden_interacted(_source: Node2D) -> void:
+	if quests.is_completed("grove_spirits"):
+		if relationships.get_score("ilara") >= 20:
+			_show_dialogue("Хранительница Илара", "Лес доверяет тебе. Я отметила на карте древний тайник у камней — там хранятся припасы для тех, кто защищает рощу.")
+		else:
+			_show_dialogue("Хранительница Илара", "%s. Лес запомнит твою доброту." % relationships.get_reaction("ilara"))
+	elif quests.active_quest_id.is_empty() or quests.active_quest_id == "grove_spirits":
+		if not quests.states["grove_spirits"]["started"]:
+			quests.start_quest("grove_spirits")
+			_show_dialogue("Хранительница Илара", "Лес теряет свой свет. Собери три духовных цветка у старых камней и принеси их мне.")
+		elif quests.is_ready_to_complete("grove_spirits"):
+			if quests.complete_quest("grove_spirits"):
+				_grant_quest_reward("grove_spirits")
+				relationships.adjust("ilara", 20)
+				_reveal_ilara_cache()
+				_show_relationship_change("ilara", 20)
+			_spawn_guardian(Vector2(1020, 580))
+			_show_dialogue("Хранительница Илара", "Ты вернул лесу его сияние. Прими эту награду.")
+		else:
+			_show_dialogue("Хранительница Илара", "Ищи духовные цветы вдоль древней тропы. Их свет виден даже в сумерках.")
+	else:
+		_show_dialogue("Хранительница Илара", "Заверши начатое дело, прежде чем браться за новое.")
+	_refresh_hud()
+
+func _spawn_cartographer() -> void:
+	var cartographer := NPC_SCRIPT.new() as WorldNpc
+	cartographer.display_name = "Мира, картограф"
+	add_child(cartographer)
+	cartographer.global_position = Vector2(205, 485)
+	cartographer.interacted.connect(_on_cartographer_interacted)
+
+func _on_cartographer_interacted(_source: Node2D) -> void:
+	const quest_id := "lost_cartographer_notes"
+	if quests.is_completed(quest_id):
+		var choice_id: String = str(quests.states[quest_id].get("choice", ""))
+		if relationships.get_score("mira") >= 20:
+			_show_dialogue("Мира, картограф", "Теперь я знаю, что могу тебе доверять. Я отметила на карте старый тайник с припасами — он находится к югу от лагеря.")
+		elif choice_id == "supplies":
+			_show_dialogue("Мира, картограф", "%s. Надеюсь, припасы пригодились. Я уже начала восстанавливать безопасные тропы по копии дневника." % relationships.get_reaction("mira"))
+		else:
+			_show_dialogue("Мира, картограф", "%s. Благодарю за возвращённый дневник. Монеты — малая плата за такую помощь." % relationships.get_reaction("mira"))
+	elif not quests.is_completed("moonleaf_gathering"):
+		_show_dialogue("Мира, картограф", "Я ищу страницы своего полевого дневника. Но сначала помоги старейшине Элиану — поселению сейчас нужнее твоя помощь.")
+	elif not quests.active_quest_id.is_empty() and quests.active_quest_id != quest_id:
+		_show_dialogue("Мира, картограф", "Понимаю, у тебя уже есть важное дело. Найди меня, когда освободишься.")
+	elif not bool(quests.states[quest_id]["started"]):
+		quests.start_quest(quest_id)
+		_show_dialogue("Мира, картограф", "Ветер разметал страницы моего полевого дневника возле старого лагеря. Найди два обрывка на поляне и принеси их мне. Там записаны безопасные тропы через лес.")
+	elif quests.is_ready_to_complete(quest_id):
+		_show_dialogue_choices("Мира, картограф", "Ты нашёл обе страницы! Я хочу отблагодарить тебя. Что тебе сейчас нужнее?", [
+			{"id": "gold", "label": "Взять 35 золотых монет"},
+			{"id": "supplies", "label": "Попросить 2 зелья маны и 10 монет"}
+		])
+	else:
+		_show_dialogue("Мира, картограф", "Ищи страницы у старого лагеря, чуть восточнее от меня. На них нарисованы отметки безопасных троп.")
+	_refresh_hud()
+
+func _on_dialogue_choice_selected(choice_id: String) -> void:
+	if choice_id == "merchant_quest_start":
+		_start_merchant_supply_quest()
+		return
+	if choice_id == "hunter_quest_start":
+		_start_hunter_quest()
+		return
+	if choice_id == "hunter_reward:gold" or choice_id == "hunter_reward:supplies":
+		_complete_hunter_quest(choice_id.trim_prefix("hunter_reward:"))
+		return
+	if choice_id == "hunter_craft:mantle":
+		_craft_wolfskin_mantle()
+		return
+	if choice_id == "hunter_craft:later":
+		hud.close_dialogue()
+		player.set_physics_process(true)
+		return
+	if choice_id == "blacksmith_craft:reinforce_mantle":
+		_craft_blacksmith_item("reinforce_wolfskin_mantle")
+		return
+	if choice_id == "blacksmith_craft:ironbound_staff":
+		_craft_blacksmith_item("forge_ironbound_staff")
+		return
+	if choice_id == "blacksmith_craft:later":
+		hud.close_dialogue()
+		player.set_physics_process(true)
+		return
+	if choice_id == "merchant_supply:fair" or choice_id == "merchant_supply:clinic":
+		_complete_merchant_supply_quest(choice_id.trim_prefix("merchant_supply:"))
+		return
+	if choice_id.begins_with("merchant_buy:"):
+		_purchase_merchant_item(choice_id.trim_prefix("merchant_buy:"))
+		return
+	if choice_id == "merchant_close":
+		hud.close_dialogue()
+		player.set_physics_process(true)
+		return
+	if quests.is_ready_to_complete("moonleaf_gathering"):
+		_complete_elder_quest_choice(choice_id)
+		return
+	const quest_id := "lost_cartographer_notes"
+	if not quests.is_ready_to_complete(quest_id):
+		return
+	var reward: Dictionary = quests.get_choice_reward(quest_id, choice_id)
+	if reward.is_empty() or not quests.complete_quest(quest_id):
+		return
+	quests.states[quest_id]["choice"] = choice_id
+	var relationship_gain: int = 20 if choice_id == "supplies" else 8
+	relationships.adjust("mira", relationship_gain)
+	if relationships.get_score("mira") >= 20:
+		_reveal_cartographer_cache()
+	player.add_experience(int(reward.get("experience", 0)))
+	player.add_gold(int(reward.get("gold", 0)))
+	var items: Variant = reward.get("items", [])
+	if items is Array:
+		for item in items:
+			if item is Dictionary:
+				player.add_item(str(item.get("id", "")), int(item.get("amount", 1)))
+	hud.close_dialogue()
+	player.set_physics_process(true)
+	if relationships.get_score("mira") >= 20:
+		hud.show_message("Доверие с Мирой: +%d — %s. Тайник отмечен на карте." % [relationship_gain, relationships.get_rank("mira")], 4.0)
+	else:
+		_show_relationship_change("mira", relationship_gain)
+	_refresh_hud()
+
+func _complete_elder_quest_choice(choice_id: String) -> void:
+	const quest_id := "moonleaf_gathering"
+	var reward: Dictionary = quests.get_choice_reward(quest_id, choice_id)
+	if reward.is_empty() or not quests.complete_quest(quest_id):
+		return
+	quests.states[quest_id]["choice"] = choice_id
+	var relationship_gain: int = 20 if choice_id == "village" else 5
+	relationships.adjust("elder", relationship_gain)
+	if relationships.get_score("elder") >= 20:
+		_reveal_elder_cache()
+	player.add_experience(int(reward.get("experience", 0)))
+	player.add_gold(int(reward.get("gold", 0)))
+	hud.close_dialogue()
+	player.set_physics_process(true)
+	if relationships.get_score("elder") >= 20:
+		hud.show_message("Элиан благодарен за помощь поселению. Доверие +%d. Тайник отмечен на карте." % relationship_gain, 4.0)
+	else:
+		_show_relationship_change("elder", relationship_gain)
+	_refresh_hud()
+
+func _reveal_elder_cache() -> void:
+	var markers: Dictionary = discovered_landmarks.get("greenreach", {})
+	if markers.has("elder_hidden_storehouse"):
+		return
+	markers["elder_hidden_storehouse"] = {"position": [960.0, 175.0], "kind": "secret"}
+	discovered_landmarks["greenreach"] = markers
+	if current_region == "greenreach":
+		_update_minimap()
+
+func _spawn_merchant() -> void:
+	var merchant := NPC_SCRIPT.new() as WorldNpc
+	merchant.display_name = "Торговец Бран"
+	merchant.outfit_color = Color(0.25, 0.48, 0.31)
+	add_child(merchant)
+	merchant.global_position = Vector2(365, 205)
+	merchant.interacted.connect(_on_merchant_interacted)
+
+func _on_merchant_interacted(_source: Node2D) -> void:
+	_show_merchant_menu()
+
+func _spawn_hunter() -> void:
+	var hunter := NPC_SCRIPT.new() as WorldNpc
+	hunter.display_name = "Торен, охотник"
+	hunter.outfit_color = Color(0.48, 0.39, 0.25)
+	add_child(hunter)
+	hunter.global_position = Vector2(315, 330)
+	hunter.interacted.connect(_on_hunter_interacted)
+
+func _spawn_blacksmith() -> void:
+	var blacksmith := NPC_SCRIPT.new() as WorldNpc
+	blacksmith.display_name = "Кузнец Борин"
+	blacksmith.outfit_color = Color(0.42, 0.48, 0.58)
+	add_child(blacksmith)
+	blacksmith.global_position = Vector2(455, 330)
+	blacksmith.interacted.connect(_on_blacksmith_interacted)
+
+func _on_blacksmith_interacted(_source: Node2D) -> void:
+	var choices: Array[Dictionary] = []
+	var mantle_status: Dictionary = crafting_service.get_recipe_status(player, "reinforce_wolfskin_mantle")
+	var staff_status: Dictionary = crafting_service.get_recipe_status(player, "forge_ironbound_staff")
+	if bool(mantle_status.get("success", false)):
+		choices.append({"id": "blacksmith_craft:reinforce_mantle", "label": "Укрепить волчью накидку — 2 шкуры, 30 золота"})
+	if bool(staff_status.get("success", false)):
+		choices.append({"id": "blacksmith_craft:ironbound_staff", "label": "Усилить посох железом — 3 руды, 50 золота"})
+	if not choices.is_empty():
+		choices.append({"id": "blacksmith_craft:later", "label": "В другой раз"})
+		_show_dialogue_choices("Борин, кузнец", "Приноси материалы — и я превращу обычное снаряжение в надёжное оружие и броню. Выбирай работу:", choices)
+	else:
+		var requirements := "Для усиления накидки: волчья накидка, 2 волчьи шкуры и 30 золота. "
+		requirements += "Для железного посоха: посох ученика, 3 железной руды и 50 золота."
+		var missing := str(mantle_status.get("message", "")) + " " + str(staff_status.get("message", ""))
+		_show_dialogue("Борин, кузнец", "Я работаю с тем, что принесли. " + requirements + "\n" + missing)
+
+func _craft_blacksmith_item(recipe_id: String) -> void:
+	var result: Dictionary = crafting_service.craft(player, recipe_id)
+	hud.close_dialogue()
+	player.set_physics_process(true)
+	hud.show_message(str(result.get("message", "Кузнец не смог выполнить заказ.")), 3.0)
+	_refresh_hud()
+
+func _on_hunter_interacted(_source: Node2D) -> void:
+	const quest_id := "toren_wolf_hunt"
+	if quests.is_completed(quest_id) and int(player.inventory.get("wolf_pelt", 0)) >= 3 and int(player.inventory.get("wolfskin_mantle", 0)) == 0 and str(player.equipment.get("armor", "")) != "wolfskin_mantle":
+		_show_dialogue_choices("Торен, охотник", "Три волчьи шкуры — отличный материал. Я могу сшить тебе прочную волчью накидку: она защитит от ударов. Отдашь шкуры?", [
+			{"id": "hunter_craft:mantle", "label": "Сшить волчью накидку — 3 шкуры"},
+			{"id": "hunter_craft:later", "label": "Пока оставить шкуры"}
+		])
+	elif quests.is_completed(quest_id):
+		_show_dialogue("Торен, охотник", "Шкуры уже высушены, а тропы снова безопасны. %s." % relationships.get_reaction("toren"))
+	elif quests.is_ready_to_complete(quest_id):
+		_show_dialogue_choices("Торен, охотник", "Три волка больше не угрожают дороге. Какую награду предпочитаешь?", [
+			{"id": "hunter_reward:gold", "label": "35 золота и 40 опыта"},
+			{"id": "hunter_reward:supplies", "label": "20 золота, 2 зелья здоровья и 60 опыта"}
+		])
+	elif bool(quests.states[quest_id].get("started", false)):
+		_show_dialogue("Торен, охотник", "В Зачарованном лесу ещё рыщут волки. Победи трёх и возвращайся. Сейчас: %d/3." % int(quests.states[quest_id].get("progress", 0)))
+	elif not quests.is_completed("moonleaf_gathering"):
+		_show_dialogue("Торен, охотник", "Сначала помоги старейшине Элиану. После этого поговорим о волках.")
+	elif not quests.active_quest_id.is_empty():
+		_show_dialogue("Торен, охотник", "Закончи текущее поручение, и я расскажу об охоте.")
+	else:
+		_show_dialogue_choices("Торен, охотник", "Я Торен. Волки спустились из леса и нападают на путников. Поможешь проредить стаю?", [
+			{"id": "hunter_quest_start", "label": "Взяться за охоту"}
+		])
+	_refresh_hud()
+
+func _craft_wolfskin_mantle() -> void:
+	if int(player.inventory.get("wolf_pelt", 0)) < 3 or int(player.inventory.get("wolfskin_mantle", 0)) > 0 or str(player.equipment.get("armor", "")) == "wolfskin_mantle":
+		hud.show_message("Нужно три волчьи шкуры, а накидка уже может быть только одна.", 3.0)
+		return
+	player.inventory["wolf_pelt"] = int(player.inventory["wolf_pelt"]) - 3
+	if int(player.inventory["wolf_pelt"]) <= 0:
+		player.inventory.erase("wolf_pelt")
+	player.add_item("wolfskin_mantle")
+	hud.close_dialogue()
+	player.set_physics_process(true)
+	hud.show_message("Торен сшил волчью накидку! Она ждёт в инвентаре.", 3.0)
+	_refresh_hud()
+
+func _start_hunter_quest() -> void:
+	if not quests.is_completed("moonleaf_gathering") or not quests.active_quest_id.is_empty():
+		return
+	if quests.start_quest("toren_wolf_hunt"):
+		_show_dialogue("Торен, охотник", "Найди трёх волков в Зачарованном лесу. Победи их и возвращайся за наградой.")
+		_refresh_hud()
+
+func _complete_hunter_quest(choice_id: String) -> void:
+	const quest_id := "toren_wolf_hunt"
+	var reward: Dictionary = quests.get_choice_reward(quest_id, choice_id)
+	if reward.is_empty() or not quests.is_ready_to_complete(quest_id):
+		return
+	if not quests.complete_quest(quest_id):
+		return
+	quests.states[quest_id]["choice"] = choice_id
+	var reward_gold := int(reward.get("gold", 0))
+	var reward_xp := int(reward.get("experience", 0))
+	player.add_gold(reward_gold)
+	player.add_experience(reward_xp)
+	var items: Variant = reward.get("items", [])
+	var item_summary := ""
+	if items is Array:
+		for item in items:
+			if item is Dictionary:
+				var item_id := str(item.get("id", ""))
+				var amount := maxi(1, int(item.get("amount", 1)))
+				if not item_id.is_empty():
+					player.add_item(item_id, amount)
+					item_summary += ", %s ×%d" % ["Зелье здоровья" if item_id == "health_potion" else item_id, amount]
+	var trust_gain := int(reward.get("toren_trust", 0))
+	relationships.adjust("toren", trust_gain)
+	hud.close_dialogue()
+	player.set_physics_process(true)
+	hud.show_message("Охота завершена! +%d золота, +%d опыта%s. Доверие Торена +%d." % [reward_gold, reward_xp, item_summary, trust_gain], 4.0)
+	_refresh_hud()
+
+func _show_merchant_menu() -> void:
+	const quest_id := "bran_supply_run"
+	var reputation: int = relationships.get_score("elder")
+	var bran_trust: int = relationships.get_score("bran")
+	var discount_percent: int = merchant_shop.get_discount_percent(reputation)
+	var choices: Array[Dictionary] = []
+	var message := "Добро пожаловать! Чем могу помочь?"
+	if quests.is_completed(quest_id):
+		message = "Благодаря тебе лавка снова получает товары. %s." % relationships.get_reaction("bran")
+	elif quests.is_ready_to_complete(quest_id):
+		message = "Ты вернул все три ящика! Теперь решим, как распределить припасы."
+		choices.append({"id": "merchant_supply:fair", "label": "Продать припасы — 40 золота"})
+		choices.append({"id": "merchant_supply:clinic", "label": "Передать часть лечебнице — 15 золота"})
+	elif bool(quests.states[quest_id].get("started", false)):
+		message = "Осталось найти ящики с припасами: %d из 3." % int(quests.states[quest_id].get("progress", 0))
+	elif quests.is_completed("moonleaf_gathering") and quests.active_quest_id.is_empty():
+		choices.append({"id": "merchant_quest_start", "label": "Помочь вернуть потерянные поставки"})
+	if discount_percent > 0:
+		message += "\nЗа помощь поселению действует скидка %d%%." % discount_percent
+	else:
+		message += "\nПомоги поселению — и я предложу лучшие цены."
+	for offer in merchant_shop.get_offers(reputation, bran_trust):
+		var offer_label: String
+		if offer.has("trade_currency"):
+			var currency_name := "зелья маны" if str(offer["trade_currency"]) == "mana_potion" else str(offer["trade_currency"])
+			offer_label = "Обменять %d × %s на %s" % [int(offer["trade_amount"]), currency_name, str(offer["name"])]
+		else:
+			offer_label = "Купить %s — %d золота" % [str(offer.get("name", "Товар")), int(offer.get("price", 0))]
+		choices.append({"id": "merchant_buy:" + str(offer.get("id", "")), "label": offer_label})
+	choices.append({"id": "merchant_close", "label": "Завершить торговлю"})
+	_show_dialogue_choices("Торговец Бран", message, choices)
+
+func _start_merchant_supply_quest() -> void:
+	const quest_id := "bran_supply_run"
+	if not quests.is_completed("moonleaf_gathering") or not quests.active_quest_id.is_empty():
+		_show_dialogue("Торговец Бран", "Сначала помоги старейшине и закончи текущее поручение. Тогда поговорим о поставках.")
+		return
+	if quests.start_quest(quest_id):
+		var supply_positions: Array[Vector2] = [Vector2(445, 470), Vector2(635, 520), Vector2(865, 430)]
+		for index in range(supply_positions.size()):
+			_spawn_herb(supply_positions[index], "supply_crate_%d" % index, "Потерянный ящик с припасами")
+		_show_dialogue("Торговец Бран", "Три ящика с лечебными травами и инструментами пропали на дороге к поселению. Найди их в Зелёных Пределах. Без этих поставок лечебница скоро останется без лекарств.")
+		_refresh_hud()
+
+func _complete_merchant_supply_quest(choice_id: String) -> void:
+	const quest_id := "bran_supply_run"
+	var reward: Dictionary = quests.get_choice_reward(quest_id, choice_id)
+	if reward.is_empty() or not quests.is_ready_to_complete(quest_id) or not quests.complete_quest(quest_id):
+		return
+	quests.states[quest_id]["choice"] = choice_id
+	player.add_experience(int(reward.get("experience", 0)))
+	player.add_gold(int(reward.get("gold", 0)))
+	var bran_gain: int = int(reward.get("bran_trust", 0))
+	var elder_gain: int = int(reward.get("elder_trust", 0))
+	relationships.adjust("bran", bran_gain)
+	if elder_gain > 0:
+		relationships.adjust("elder", elder_gain)
+	hud.close_dialogue()
+	player.set_physics_process(true)
+	if choice_id == "clinic":
+		hud.show_message("Припасы переданы лечебнице. Доверие Брана +%d, доверие поселения +%d." % [bran_gain, elder_gain], 4.0)
+	else:
+		hud.show_message("Бран выплатил награду за возвращённые поставки. Доверие +%d." % bran_gain, 3.5)
+	_refresh_hud()
+
+func _purchase_merchant_item(item_id: String) -> void:
+	var result: Dictionary = merchant_shop.purchase(player, item_id, relationships.get_score("elder"), relationships.get_score("bran"))
+	if bool(result.get("success", false)):
+		if result.has("trade_currency"):
+			hud.show_message("Обмен завершён: получено %s." % str(result.get("name", item_id)), 2.5)
+		else:
+			hud.show_message("Куплено: %s за %d золота." % [str(result.get("name", item_id)), int(result.get("price", 0))], 2.5)
+	else:
+		hud.show_message(str(result.get("message", "Покупка не удалась.")), 2.5)
+	_show_merchant_menu()
+
+func _spawn_elder() -> void:
+	elder = NPC_SCRIPT.new() as WorldNpc
+	elder.display_name = "Старейшина Элиан"
+	add_child(elder)
+	elder.global_position = Vector2(250, 205)
+	elder.interacted.connect(_on_elder_interacted)
+
+func _spawn_herb(spawn_position: Vector2, item_id: String = "moonleaf", label: String = "Лунный лист") -> void:
+	var herb := COLLECTIBLE_SCRIPT.new() as WorldCollectible
+	herb.item_id = item_id
+	herb.display_name = label
+	add_child(herb)
+	herb.global_position = spawn_position
+	herb.interacted.connect(_on_herb_interacted)
+
+func _spawn_guardian(spawn_position: Vector2) -> void:
+	if guardian_defeated:
+		return
+	for actor in get_children():
+		if actor is GroveGuardian and not actor.is_queued_for_deletion():
+			return
+	var boss := GUARDIAN_SCRIPT.new() as GroveGuardian
+	boss.position = spawn_position
+	add_child(boss)
+	boss.defeated.connect(func(xp: int) -> void: _on_guardian_defeated(xp, boss.global_position))
+
+func _on_guardian_defeated(xp: int, death_position: Vector2) -> void:
+	if guardian_defeated:
+		return
+	guardian_defeated = true
+	player.add_experience(xp)
+	player.add_gold(100)
+	_spawn_loot(death_position, "ancient_relic")
+	hud.show_message("Хранитель побеждён! +100 золота. Древний артефакт ждёт!", 3.5)
+
+func _spawn_shaman(spawn_position: Vector2) -> void:
+	var shaman := SHAMAN_SCRIPT.new() as ForestShaman
+	shaman.position = spawn_position
+	add_child(shaman)
+	shaman.defeated.connect(func(xp: int) -> void: _on_enemy_defeated(xp, shaman.global_position))
+
+func _spawn_wolf(spawn_position: Vector2) -> void:
+	var wolf := WOLF_SCRIPT.new() as ForestWolf
+	wolf.position = spawn_position
+	add_child(wolf)
+	wolf.defeated.connect(func(xp: int) -> void: _on_wolf_defeated(xp, wolf.global_position))
+
+func _spawn_slime(spawn_position: Vector2) -> void:
+	var slime := ENEMY_SCRIPT.new() as SlimeEnemy
+	slime.position = spawn_position
+	add_child(slime)
+	slime.defeated.connect(func(xp: int) -> void: _on_enemy_defeated(xp, spawn_position))
+
+func _find_nearest_interactable() -> Node2D:
+	var nearest: Node2D = null
+	var nearest_distance := 28.0
+	for candidate in get_tree().get_nodes_in_group("interactables"):
+		var candidate_2d := candidate as Node2D
+		if candidate_2d == null or not is_instance_valid(candidate_2d):
+			continue
+		var distance := player.global_position.distance_to(candidate_2d.global_position)
+		if distance < nearest_distance:
+			nearest_distance = distance
+			nearest = candidate_2d
+	return nearest
+
+func _try_interact() -> void:
+	var target := _find_nearest_interactable()
+	if target == null:
+		hud.show_message("Здесь пока нечего исследовать.", 1.5)
+		return
+	if target.has_method("interact"):
+		target.interact()
+
+func _reveal_ilara_cache() -> void:
+	var markers: Dictionary = discovered_landmarks.get("moonlit_grove", {})
+	if markers.has("ilara_ancient_cache"):
+		return
+	markers["ilara_ancient_cache"] = {"position": [975.0, 640.0], "kind": "secret"}
+	discovered_landmarks["moonlit_grove"] = markers
+	if current_region == "moonlit_grove":
+		_update_minimap()
+
+func _reveal_cartographer_cache() -> void:
+	var markers: Dictionary = discovered_landmarks.get("greenreach", {})
+	if markers.has("secret_cartographer_cache"):
+		return
+	markers["secret_cartographer_cache"] = {"position": [335.0, 495.0], "kind": "secret"}
+	discovered_landmarks["greenreach"] = markers
+	if current_region == "greenreach":
+		_update_minimap()
+
+func _show_relationship_change(npc_id: String, amount: int) -> void:
+	hud.show_message("Отношение: %s (%+d) — %s" % [relationships.get_name(npc_id), amount, relationships.get_rank(npc_id)], 3.0)
+
+func _show_dialogue(speaker: String, message: String) -> void:
+	player.set_physics_process(false)
+	hud.show_dialogue(speaker, message)
+
+func _show_dialogue_choices(speaker: String, message: String, choices: Array[Dictionary]) -> void:
+	player.set_physics_process(false)
+	hud.show_dialogue_choices(speaker, message, choices)
+
+func _grant_quest_reward(quest_id: String) -> void:
+	var reward: Dictionary = quests.get_reward(quest_id)
+	player.add_experience(int(reward.get("experience", 0)))
+	player.add_gold(int(reward.get("gold", 0)))
+
+func _on_elder_interacted(_source: Node2D) -> void:
+	if quests.is_completed("moonleaf_gathering"):
+		if relationships.get_score("elder") >= 20:
+			_show_dialogue("Старейшина Элиан", "Ты доказал, что думаешь не только о себе. Я открыл для тебя старое хранилище у северных руин — там поселение прятало припасы во время войны.")
+		else:
+			_show_dialogue("Старейшина Элиан", "%s. Ты помог нашему поселению. На востоке есть тропа в Зачарованный лес. Найди хранительницу Илару — возможно, ей нужна помощь." % relationships.get_reaction("elder"))
+	elif quests.active_quest_id.is_empty():
+		quests.start_quest("moonleaf_gathering")
+		_show_dialogue("Старейшина Элиан", "Юный странник, ночной туман отравляет наш лес. Принеси мне три лунных листа — они растут вдоль старой тропы. Я щедро тебя отблагодарю.")
+	elif quests.is_ready_to_complete("moonleaf_gathering"):
+		_show_dialogue_choices("Старейшина Элиан", "Ты спас наши запасы от порчи. Я обещал награду. Но поселению тоже тяжело пережить эту зиму. Как поступим?", [
+			{"id": "payment", "label": "Принять полную награду — 25 золота"},
+			{"id": "village", "label": "Оставить большую часть награды поселению"}
+		])
+	else:
+		_show_dialogue("Старейшина Элиан", "Лунные листья растут вдоль старой тропы. Будь осторожен — слизни стали агрессивнее.")
+	_refresh_hud()
+
+func _on_herb_interacted(source: Node2D) -> void:
+	var herb := source as WorldCollectible
+	var required_quest: String = "grove_spirits" if current_region == "moonlit_grove" else "moonleaf_gathering"
+	if herb == null:
+		return
+	if herb.item_id.begins_with("supply_crate_"):
+		const supply_quest_id := "bran_supply_run"
+		if quests.active_quest_id == supply_quest_id and not quests.is_completed(supply_quest_id):
+			var crate_index := int(herb.item_id.trim_prefix("supply_crate_"))
+			var collected_crates: Array = quests.states[supply_quest_id].get("collected_crates", [])
+			if crate_index >= 0 and crate_index < 3 and not collected_crates.has(crate_index):
+				collected_crates.append(crate_index)
+				quests.states[supply_quest_id]["collected_crates"] = collected_crates
+				quests.add_progress(supply_quest_id, 1)
+				herb.queue_free()
+				var found: int = int(quests.states[supply_quest_id].get("progress", 0))
+				hud.show_message("Возвращён ящик с припасами: %d/3." % found, 2.0)
+				if quests.is_ready_to_complete(supply_quest_id):
+					hud.show_message("Все три ящика найдены! Вернитесь к Брану.", 3.0)
+		else:
+			hud.show_message("Потерянный ящик с припасами. Бран наверняка знает, кому он принадлежит.", 2.5)
+		_refresh_hud()
+		return
+	if herb.item_id.begins_with("iron_ore_node_"):
+		if bool(gathered_resource_nodes.get(herb.item_id, false)):
+			herb.queue_free()
+			return
+		gathered_resource_nodes[herb.item_id] = true
+		player.add_item("iron_ore", 1)
+		herb.queue_free()
+		hud.show_message("Железная руда собрана. Всего: %d." % int(player.inventory.get("iron_ore", 0)), 2.0)
+		_refresh_hud()
+		return
+	if herb.item_id == "map_fragment":
+		const side_quest_id := "lost_cartographer_notes"
+		if quests.active_quest_id == side_quest_id and not quests.is_completed(side_quest_id):
+			quests.add_progress(side_quest_id, 1)
+			herb.queue_free()
+			hud.show_message("Найден обрывок полевого дневника.", 2.0)
+			if quests.is_ready_to_complete(side_quest_id):
+				hud.show_message("Обе страницы найдены! Вернитесь к Мире.", 3.0)
+		else:
+			hud.show_message("Обрывок полевого дневника. Возможно, Мира знает, кому он принадлежит.", 2.5)
+		_refresh_hud()
+		return
+	if quests.active_quest_id == required_quest and not quests.is_completed(required_quest):
+		quests.add_progress(required_quest, 1)
+		source.queue_free()
+		hud.show_message(herb.display_name + " собран.", 1.5)
+		if quests.is_ready_to_complete(required_quest):
+			hud.show_message("Все предметы собраны! Вернитесь к хранителю.", 3.0)
+	else:
+		hud.show_message(herb.display_name + ". Поговорите с местным хранителем, чтобы узнать, зачем он нужен.", 2.5)
+	_refresh_hud()
+
+func _on_wolf_defeated(xp_reward: int, death_position: Vector2) -> void:
+	if quests.active_quest_id == "toren_wolf_hunt" and not quests.is_completed("toren_wolf_hunt"):
+		quests.add_progress("toren_wolf_hunt", 1)
+		var progress: int = int(quests.states["toren_wolf_hunt"].get("progress", 0))
+		hud.show_message("Волк побеждён! Охота: %d/3." % progress, 2.0)
+		if quests.is_ready_to_complete("toren_wolf_hunt"):
+			hud.show_message("Стая отступила. Вернись к Торену за наградой.", 3.0)
+	_refresh_hud()
+	_spawn_loot(death_position, "wolf_pelt")
+	_on_enemy_defeated(xp_reward, death_position)
+
+func _on_enemy_defeated(xp_reward: int, death_position: Vector2) -> void:
+	player.add_experience(xp_reward)
+	defeated_enemies += 1
+	var drops: Array[String] = ["apprentice_staff", "leather_armor", "mana_amulet"]
+	_spawn_loot(death_position, drops[(defeated_enemies - 1) % 3] if defeated_enemies <= 3 else ("health_potion" if defeated_enemies % 2 == 1 else "mana_potion"))
+	hud.show_message("Противник побеждён! +%d опыта" % xp_reward, 1.5)
+
+func _spawn_loot(drop_position: Vector2, item_id: String) -> void:
+	var loot := LOOT_SCRIPT.new() as WorldLoot
+	loot.item_id = item_id
+	loot.item_name = item_id
+	loot.position = drop_position
+	add_child(loot)
+	loot.collected.connect(_on_loot_collected)
+
+func _on_loot_collected(item_id: String, amount: int) -> void:
+	player.add_item(item_id, amount)
+	var names: Dictionary = {"health_potion": "Зелье здоровья", "mana_potion": "Зелье маны", "apprentice_staff": "Посох ученика", "leather_armor": "Кожаная броня", "mana_amulet": "Амулет маны", "ancient_relic": "Древний артефакт"}
+	hud.show_message("Получено: %s ×%d" % [names.get(item_id, item_id), amount], 2.0)
+
+func _on_inventory_unequip(slot: String) -> void:
+	if hud.dialogue_visible or get_tree().paused:
+		return
+	if player.unequip_slot(slot):
+		hud.show_message("Экипировка снята.", 1.5)
+		hud.refresh_inventory(player)
+
+func _on_inventory_use(item_id: String) -> void:
+	if item_id == "wolf_pelt":
+		hud.show_message("Волчья шкура — материал для охотничьего снаряжения. Соберите три и поговорите с Тореном.", 3.0)
+		return
+	var definition: Dictionary = player.get_item_definition(item_id)
+	if not str(definition.get("slot", "")).is_empty():
+		if player.equip_item(item_id):
+			hud.show_message("Предмет экипирован!", 1.5)
+		else:
+			hud.show_message("Невозможно экипировать.", 1.5)
+		hud.refresh_inventory(player)
+		return
+	var label: String = "Зелье здоровья" if item_id == "health_potion" else ("Звёздная эссенция" if item_id == "starlight_essence" else "Зелье маны")
+	_use_consumable(item_id, label)
+
+func _use_consumable(item_id: String, label: String) -> void:
+	if hud == null or hud.dialogue_visible or get_tree().paused:
+		return
+	if player.use_item(item_id):
+		hud.show_message("Использовано: " + label, 1.5)
+		hud.refresh_inventory(player)
+	else:
+		hud.show_message("Нет зелья или восстановление не требуется.", 1.5)
+
+func _on_level_up(new_level: int) -> void:
+	pending_level_choices.append(new_level)
+	if hud != null and not game_over:
+		hud.show_message("НОВЫЙ УРОВЕНЬ: %d! Здоровье и мана восстановлены." % new_level, 2.5)
+		_present_next_level_choice()
+
+func _present_next_level_choice() -> void:
+	if pending_level_choices.is_empty() or game_over or hud == null or hud.talent_visible:
+		return
+	var available: Array[Dictionary] = []
+	for talent_id in talent_definitions:
+		var definition: Dictionary = talent_definitions[talent_id]
+		var rank: int = int(player.talents.get(talent_id, 0))
+		var maximum: int = int(definition.get("max_rank", 3))
+		if rank < maximum:
+			available.append({
+				"id": str(talent_id),
+				"name": str(definition.get("name", talent_id)),
+				"description": str(definition.get("description", "")),
+				"rank": rank,
+				"max_rank": maximum
+			})
+	if available.is_empty():
+		pending_level_choices.clear()
+		hud.show_message("Все таланты изучены. Следующий уровень принесёт новые возможности.", 3.0)
+		return
+	available.shuffle()
+	var choices: Array[Dictionary] = []
+	for index in range(mini(3, available.size())):
+		choices.append(available[index])
+	hud.show_talent_choices(choices)
+	get_tree().paused = true
+
+func _on_talent_selected(talent_id: String) -> void:
+	if not hud.talent_visible or not player.apply_talent(talent_id):
+		return
+	if not pending_level_choices.is_empty():
+		pending_level_choices.pop_front()
+	hud.hide_talent_choices()
+	if pending_level_choices.is_empty():
+		get_tree().paused = false
+		hud.show_message("Талант изучен: " + str(talent_definitions.get(talent_id, {}).get("name", talent_id)), 2.5)
+	else:
+		_present_next_level_choice()
+	_refresh_hud()
+
+func _update_spell_hud() -> void:
+	var spell: Dictionary = spell_definitions.get(selected_spell_id, {})
+	hud.update_spell(str(spell.get("name", selected_spell_id)), int(spell.get("mana_cost", 0)), player.mana, cast_cooldown_remaining, cast_cooldown_total)
+
+func select_spell(spell_id: String) -> void:
+	if not spell_definitions.has(spell_id):
+		return
+	selected_spell_id = spell_id
+	var data: Dictionary = spell_definitions[spell_id]
+	hud.show_message("Магия: " + str(data.get("name", spell_id)), 1.5)
+	_update_spell_hud()
+
+func _cast_spell() -> void:
+	if cast_cooldown_remaining > 0.0:
+		return
+	var spell: Dictionary = spell_definitions.get(selected_spell_id, {})
+	var mana_cost := int(spell.get("mana_cost", 8))
+	var spell_damage := int(spell.get("damage", 18)) + player.get_spell_bonus(selected_spell_id)
+	if not player.spend_mana(mana_cost):
+		hud.show_message("Недостаточно маны.", 1.2)
+		return
+	var direction := (get_global_mouse_position() - player.global_position).normalized()
+	if direction.length_squared() < 0.01:
+		direction = player.facing
+	var bolt := BOLT_SCENE.instantiate() as MagicBolt
+	if bolt == null:
+		push_error("Не удалось создать огненный шар")
+		return
+	bolt.speed = float(spell.get("projectile_speed", 255))
+	bolt.setup(direction, spell_damage)
+	bolt.configure_effect(selected_spell_id, float(spell.get("slow_multiplier", 1.0)), float(spell.get("slow_duration", 0.0)) + player.get_slow_duration_bonus())
+	bolt.configure_burning(int(spell.get("burn_damage", 0)) + player.get_burn_damage_bonus(), float(spell.get("burn_duration", 0.0)))
+	bolt.chain_targets = int(spell.get("chain_targets", 0)) + player.get_chain_targets_bonus()
+	bolt.chain_radius = float(spell.get("chain_radius", 0.0))
+	bolt.chain_damage_factor = float(spell.get("chain_damage_factor", 0.65))
+	add_child(bolt)
+	bolt.global_position = player.global_position + direction * 12.0
+	cast_cooldown_total = float(spell.get("cooldown", 0.25)) * player.get_cooldown_multiplier()
+	cast_cooldown_remaining = cast_cooldown_total
+	_update_spell_hud()
+
+func _refresh_hud() -> void:
+	if hud != null and player != null and quests != null:
+		hud.update_status(player, quests)
+
+func _position_array(pos: Vector2) -> Array[float]:
+	return [pos.x, pos.y]
+
+func _read_position(value: Variant, fallback: Vector2) -> Vector2:
+	if value is Array and value.size() == 2:
+		return Vector2(float(value[0]), float(value[1]))
+	return fallback
+
+
+func _on_player_died() -> void:
+	if game_over:
+		return
+	game_over = true
+	pending_level_choices.clear()
+	if hud != null:
+		hud.hide_talent_choices()
+		hud.show_defeat(not SAVE_SCRIPT.load_snapshot(save_path).is_empty())
+	get_tree().paused = true
+
+func _restart_run() -> void:
+	get_tree().paused = false
+	game_over = false
+	get_tree().change_scene_to_file("res://scenes/main.tscn")
+
+func _load_from_defeat() -> void:
+	load_game()
+
+func make_save_snapshot() -> Dictionary:
+	var alive_enemies: Array = []
+	var herbs: Array = []
+	var loot_items: Array = []
+	for node in get_children():
+		if node.is_queued_for_deletion():
+			continue
+		if node is SlimeEnemy:
+			var kind: String = "guardian" if node is GroveGuardian else ("shaman" if node is ForestShaman else ("wolf" if node is ForestWolf else "slime"))
+			alive_enemies.append({"position": _position_array(node.global_position), "hp": node.health, "home": _position_array(node.home_position), "kind": kind, "burn_remaining": node.burn_time_left, "burn_tick": node.burn_tick_timer, "burn_damage": node.burn_damage})
+		elif node is WorldCollectible:
+			herbs.append({"position": _position_array(node.global_position), "id": node.item_id, "name": node.display_name})
+		elif node is WorldLoot:
+			loot_items.append({"position": _position_array(node.global_position), "id": node.item_id, "amount": node.amount})
+	return {
+		"player": {
+			"position": _position_array(player.global_position),
+			"health": player.health, "max_health": player.max_health,
+			"mana": player.mana, "max_mana": player.max_mana,
+			"level": player.level, "experience": player.experience,
+			"experience_to_next": player.experience_to_next,
+			"gold": player.gold,
+			"inventory": player.inventory.duplicate(true),
+			"equipment": player.equipment.duplicate(true),
+			"talents": player.talents.duplicate(true), "starlight_essence_used": player.starlight_essence_used
+		},
+		"quest": {"states": quests.states.duplicate(true), "active": quests.active_quest_id},
+		"world": {"region": current_region, "relationships": relationships.make_snapshot(), "enemies": alive_enemies, "herbs": herbs, "loot": loot_items, "defeated": defeated_enemies, "guardian_defeated": guardian_defeated, "discovered": discovered_enemies.duplicate(true), "landmarks": discovered_landmarks.duplicate(true), "opened_chests": opened_chests.duplicate(true), "gathered_resource_nodes": gathered_resource_nodes.duplicate(true)},
+		"magic": selected_spell_id
+	}
+
+func save_game() -> bool:
+	if game_over:
+		if hud != null:
+			hud.set_defeat_message("После поражения нельзя перезаписать сохранение. Загрузите прежний прогресс или начните заново.")
+		return false
+	var success: bool = SAVE_SCRIPT.save_snapshot(make_save_snapshot(), save_path)
+	if hud != null:
+		hud.show_message("Игра сохранена (F9 — загрузить)" if success else "Ошибка сохранения!", 2.0)
+	return success
+
+func load_game() -> bool:
+	var data: Dictionary = SAVE_SCRIPT.load_snapshot(save_path)
+	if data.is_empty():
+		if game_over and hud != null:
+			hud.set_defeat_message("Сохранение не найдено или повреждено. Можно начать новое приключение.")
+		elif hud != null:
+			hud.show_message("Сохранение не найдено или повреждено.", 2.0)
+		return false
+	var recovering_from_defeat: bool = game_over
+	if recovering_from_defeat:
+		get_tree().paused = false
+		game_over = false
+	var restored: bool = restore_save_snapshot(data)
+	if restored:
+		if hud != null:
+			hud.hide_defeat()
+	elif recovering_from_defeat:
+		game_over = true
+		get_tree().paused = true
+		if hud != null:
+			hud.set_defeat_message("Не удалось восстановить сохранение. Попробуйте начать заново.")
+	return restored
+
+func restore_save_snapshot(data: Dictionary) -> bool:
+	# Validate the entire payload before changing any player, quest, or world state.
+	if not SAVE_SCRIPT.validate_snapshot(data):
+		return false
+	var character: Dictionary = data["player"]
+	var quest_data: Dictionary = data["quest"]
+	var world_data: Dictionary = data["world"]
+	guardian_defeated = bool(world_data.get("guardian_defeated", false))
+	discovered_enemies = world_data.get("discovered", {}).duplicate(true)
+	discovered_landmarks = world_data.get("landmarks", {}).duplicate(true)
+	opened_chests = world_data.get("opened_chests", {}).duplicate(true)
+	gathered_resource_nodes = world_data.get("gathered_resource_nodes", {}).duplicate(true)
+	relationships.restore_snapshot(world_data.get("relationships", {}))
+	var saved_region: String = str(world_data.get("region", "greenreach"))
+	_set_region(saved_region, _read_position(character.get("position"), Vector2(130, 210)), false)
+	for quest_id in quest_data["states"]:
+		if quests.states.has(quest_id) and quest_data["states"][quest_id] is Dictionary:
+			quests.states[quest_id] = quest_data["states"][quest_id].duplicate(true)
+	quests.active_quest_id = str(quest_data.get("active", ""))
+	player.level = maxi(1, int(character.get("level", 1)))
+	player.experience = maxi(0, int(character.get("experience", 0)))
+	player.experience_to_next = maxi(1, int(character.get("experience_to_next", 40)))
+	player.gold = maxi(0, int(character.get("gold", 0)))
+	player.max_health = maxi(1, int(character.get("max_health", 100)))
+	player.max_mana = maxi(1, int(character.get("max_mana", 60)))
+	player.health = clampi(int(character.get("health", player.max_health)), 1, player.max_health)
+	player.mana = clampi(int(character.get("mana", player.max_mana)), 0, player.max_mana)
+	player.inventory = character["inventory"].duplicate(true)
+	player.equipment = {"weapon": "", "armor": "", "amulet": "", "relic": ""}
+	for slot in player.equipment.keys():
+		var saved_item: String = str(character["equipment"].get(slot, ""))
+		if not saved_item.is_empty() and player._slot_for_item(saved_item) == str(slot):
+			player.equipment[slot] = saved_item
+	player.talents = character.get("talents", {}).duplicate(true)
+	player.starlight_essence_used = maxi(0, int(character.get("starlight_essence_used", 0)))
+	pending_level_choices.clear()
+	if hud.talent_visible:
+		hud.hide_talent_choices()
+	player.global_position = _read_position(character.get("position"), Vector2(130, 210))
+	# Recreate dynamic world state; queued old nodes must be removed from scene tree immediately.
+	for node in get_children():
+		if node is SlimeEnemy or node is WorldCollectible or node is WorldLoot or node is MagicBolt or node is EnemyMagicOrb:
+			remove_child(node)
+			node.queue_free()
+	for herb_data in world_data["herbs"]:
+		if herb_data is Dictionary:
+			_spawn_herb(_read_position(herb_data.get("position"), Vector2.ZERO), str(herb_data.get("id", "moonleaf")), str(herb_data.get("name", "Лунный лист")))
+		else:
+			_spawn_herb(_read_position(herb_data, Vector2.ZERO))
+	for enemy_data in world_data["enemies"]:
+		if not enemy_data is Dictionary:
+			continue
+		var enemy_kind: String = str(enemy_data.get("kind", "wolf" if current_region == "moonlit_grove" else "slime"))
+		if enemy_kind == "guardian":
+			_spawn_guardian(_read_position(enemy_data.get("position"), Vector2(1020, 580)))
+		elif enemy_kind == "shaman":
+			_spawn_shaman(_read_position(enemy_data.get("position"), Vector2(730, 360)))
+		elif enemy_kind == "wolf":
+			_spawn_wolf(_read_position(enemy_data.get("position"), Vector2(475, 430)))
+		else:
+			_spawn_slime(_read_position(enemy_data.get("position"), Vector2(475, 350)))
+		var enemy: SlimeEnemy = get_child(get_child_count() - 1) as SlimeEnemy
+		if enemy != null:
+			enemy.health = clampi(int(enemy_data.get("hp", enemy.max_health)), 1, enemy.max_health)
+			if enemy is GroveGuardian and enemy.health <= enemy.max_health / 2:
+				(enemy as GroveGuardian).enraged = true
+				enemy.move_speed = 44.0
+				enemy.attack_cooldown_duration = 1.2
+			enemy.home_position = _read_position(enemy_data.get("home"), enemy.global_position)
+			enemy.burn_time_left = maxf(0.0, float(enemy_data.get("burn_remaining", 0.0)))
+			enemy.burn_damage = maxi(0, int(enemy_data.get("burn_damage", 0)))
+			enemy.burn_tick_timer = clampf(float(enemy_data.get("burn_tick", 0.5)), 0.001, enemy.burn_tick_interval)
+	for loot_data in world_data["loot"]:
+		if not loot_data is Dictionary:
+			continue
+		_spawn_loot(_read_position(loot_data.get("position"), Vector2.ZERO), str(loot_data.get("id", "health_potion")))
+		var drop: WorldLoot = get_child(get_child_count() - 1) as WorldLoot
+		if drop != null:
+			drop.amount = maxi(1, int(loot_data.get("amount", 1)))
+	defeated_enemies = maxi(0, int(world_data.get("defeated", 0)))
+	var spell_id: String = str(data.get("magic", "fireball"))
+	if spell_definitions.has(spell_id):
+		selected_spell_id = spell_id
+	cast_cooldown_remaining = 0.0
+	cast_cooldown_total = 0.0
+	if hud.inventory_open:
+		hud.toggle_inventory(player)
+	if hud.bestiary_visible:
+		hud.toggle_bestiary(bestiary_entries, discovered_enemies)
+	player.stats_changed.emit()
+	_update_minimap()
+	_refresh_hud()
+	hud.show_message("Прогресс загружен!", 2.0)
+	return true
+
+func _go_to_title() -> void:
+	get_tree().paused = false
+	get_tree().change_scene_to_file("res://scenes/title_menu.tscn")

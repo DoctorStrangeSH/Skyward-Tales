@@ -1,0 +1,92 @@
+{
+  "items": {
+    "apprentice_staff": {
+      "name": "Посох ученика",
+      "description": "+5 урона всем заклинаниям",
+      "slot": "weapon",
+      "rarity": "common",
+      "spell_bonus": {
+        "*": 5
+      }
+    },
+    "leather_armor": {
+      "name": "Кожаная броня",
+      "description": "Снижает входящий урон на 4",
+      "slot": "armor",
+      "rarity": "common",
+      "armor": 4
+    },
+    "mana_amulet": {
+      "name": "Амулет маны",
+      "description": "+20 к максимальному запасу маны",
+      "slot": "amulet",
+      "rarity": "uncommon",
+      "max_mana": 20
+    },
+    "pyromancer_core": {
+      "name": "Сердце пироманта",
+      "description": "+4 урона огненному шару и +1 урону каждого тика горения",
+      "slot": "relic",
+      "rarity": "rare",
+      "spell_bonus": {
+        "fireball": 4
+      },
+      "burn_damage_bonus": 1
+    },
+    "frost_heart": {
+      "name": "Сердце ледника",
+      "description": "+4 урона ледяной стреле и +0,75 секунды замедления",
+      "slot": "relic",
+      "rarity": "rare",
+      "spell_bonus": {
+        "frostbolt": 4
+      },
+      "slow_duration_bonus": 0.75
+    },
+    "storm_eye": {
+      "name": "Око бури",
+      "description": "+4 урона цепной молнии и +1 дополнительный прыжок",
+      "slot": "relic",
+      "rarity": "rare",
+      "spell_bonus": {
+        "chain_lightning": 4
+      },
+      "chain_targets_bonus": 1
+    },
+    "reinforced_wolf_mantle": {
+      "name": "Усиленная волчья накидка",
+      "description": "Волчья шкура, укреплённая металлическими пластинами. Снижает входящий урон на 9.",
+      "slot": "armor",
+      "rarity": "rare",
+      "armor": 9
+    },
+    "wolf_pelt": {
+      "name": "Волчья шкура",
+      "description": "Материал для охотничьего снаряжения. Торен использует три шкуры для пошива накидки.",
+      "slot": "",
+      "rarity": "common"
+    },
+    "wolfskin_mantle": {
+      "name": "Волчья накидка",
+      "description": "Прочная накидка из волчьих шкур. Снижает входящий урон на 6.",
+      "slot": "armor",
+      "rarity": "uncommon",
+      "armor": 6
+    },
+    "iron_ore": {
+      "name": "Железная руда",
+      "description": "Кузнечный материал. Борин использует руду для создания и усиления оружия.",
+      "slot": "",
+      "rarity": "common"
+    },
+    "ironbound_staff": {
+      "name": "Железный посох",
+      "description": "Посох ученика, усиленный железной оправой. +8 урона всем заклинаниям.",
+      "slot": "weapon",
+      "rarity": "uncommon",
+      "spell_bonus": {
+        "*": 8
+      }
+    }
+  }
+}
