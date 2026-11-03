@@ -499,30 +499,31 @@ func _start_hunter_quest() -> void:
 
 func _complete_hunter_quest(choice_id: String) -> void:
 	const quest_id := "toren_wolf_hunt"
-	if not quests.is_ready_to_complete(quest_id):
-		return
-	var reward_gold := 35
-	var reward_xp := 40
-	var potion_count := 0
-	if choice_id == "supplies":
-		reward_gold = 20
-		reward_xp = 60
-		potion_count = 2
-	elif choice_id != "gold":
+	var reward: Dictionary = quests.get_choice_reward(quest_id, choice_id)
+	if reward.is_empty() or not quests.is_ready_to_complete(quest_id):
 		return
 	if not quests.complete_quest(quest_id):
 		return
 	quests.states[quest_id]["choice"] = choice_id
+	var reward_gold := int(reward.get("gold", 0))
+	var reward_xp := int(reward.get("experience", 0))
 	player.add_gold(reward_gold)
 	player.add_experience(reward_xp)
-	if potion_count > 0:
-		player.add_item("health_potion", potion_count)
-	var trust_gain := 15 if choice_id == "supplies" else 8
+	var items: Variant = reward.get("items", [])
+	var item_summary := ""
+	if items is Array:
+		for item in items:
+			if item is Dictionary:
+				var item_id := str(item.get("id", ""))
+				var amount := maxi(1, int(item.get("amount", 1)))
+				if not item_id.is_empty():
+					player.add_item(item_id, amount)
+					item_summary += ", %s ×%d" % ["Зелье здоровья" if item_id == "health_potion" else item_id, amount]
+	var trust_gain := int(reward.get("toren_trust", 0))
 	relationships.adjust("toren", trust_gain)
 	hud.close_dialogue()
 	player.set_physics_process(true)
-	var extra := ", зелья здоровья ×%d" % potion_count if potion_count > 0 else ""
-	hud.show_message("Охота завершена! +%d золота, +%d опыта%s. Доверие Торена +%d." % [reward_gold, reward_xp, extra, trust_gain], 4.0)
+	hud.show_message("Охота завершена! +%d золота, +%d опыта%s. Доверие Торена +%d." % [reward_gold, reward_xp, item_summary, trust_gain], 4.0)
 	_refresh_hud()
 
 func _show_merchant_menu() -> void:
