@@ -28,6 +28,28 @@
     "reward": {
       "experience": 25,
       "gold": 35
+    },
+    "choices": {
+      "gold": {
+        "label": "Взять 35 золотых монет",
+        "reward": {
+          "experience": 25,
+          "gold": 35
+        }
+      },
+      "supplies": {
+        "label": "Попросить припасы",
+        "reward": {
+          "experience": 25,
+          "gold": 10,
+          "items": [
+            {
+              "id": "mana_potion",
+              "amount": 2
+            }
+          ]
+        }
+      }
     }
   }
 ]
