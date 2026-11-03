@@ -5,7 +5,9 @@
       "description": "+5 урона всем заклинаниям",
       "slot": "weapon",
       "rarity": "common",
-      "spell_bonus": {"*": 5}
+      "spell_bonus": {
+        "*": 5
+      }
     },
     "leather_armor": {
       "name": "Кожаная броня",
@@ -26,7 +28,9 @@
       "description": "+4 урона огненному шару и +1 урону каждого тика горения",
       "slot": "relic",
       "rarity": "rare",
-      "spell_bonus": {"fireball": 4},
+      "spell_bonus": {
+        "fireball": 4
+      },
       "burn_damage_bonus": 1
     },
     "frost_heart": {
@@ -34,7 +38,9 @@
       "description": "+4 урона ледяной стреле и +0,75 секунды замедления",
       "slot": "relic",
       "rarity": "rare",
-      "spell_bonus": {"frostbolt": 4},
+      "spell_bonus": {
+        "frostbolt": 4
+      },
       "slow_duration_bonus": 0.75
     },
     "storm_eye": {
@@ -42,7 +48,9 @@
       "description": "+4 урона цепной молнии и +1 дополнительный прыжок",
       "slot": "relic",
       "rarity": "rare",
-      "spell_bonus": {"chain_lightning": 4},
+      "spell_bonus": {
+        "chain_lightning": 4
+      },
       "chain_targets_bonus": 1
     },
     "reinforced_wolf_mantle": {
@@ -64,6 +72,21 @@
       "slot": "armor",
       "rarity": "uncommon",
       "armor": 6
+    },
+    "iron_ore": {
+      "name": "Железная руда",
+      "description": "Кузнечный материал. Борин использует руду для создания и усиления оружия.",
+      "slot": "",
+      "rarity": "common"
+    },
+    "ironbound_staff": {
+      "name": "Железный посох",
+      "description": "Посох ученика, усиленный железной оправой. +8 урона всем заклинаниям.",
+      "slot": "weapon",
+      "rarity": "uncommon",
+      "spell_bonus": {
+        "*": 8
+      }
     }
   }
 }
