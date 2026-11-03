@@ -62,3 +62,9 @@ func get_active_summary() -> String:
 		int(state["progress"]),
 		int(definition.get("target", 1))
 	]
+
+func get_reward(quest_id: String) -> Dictionary:
+	if not definitions.has(quest_id):
+		return {}
+	var reward: Variant = definitions[quest_id].get("reward", {})
+	return reward if reward is Dictionary else {}

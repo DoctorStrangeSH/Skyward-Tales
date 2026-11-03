@@ -467,3 +467,10 @@ Equipment milestone verification: Godot 4.7.2 workflow run `41443674839` complet
 - `GameHud.show_defeat()` сохраняет очистку остальных окон и флаг `defeat_visible`, делегирует обновление текста и доступности кнопки загрузки в `DefeatPanel.show_defeat()`; `hide_defeat()` сохраняет прежнюю разблокировку паузы.
 - Поля `defeat_panel`, `defeat_hint_label`, `defeat_load_button` остаются совместимыми алиасами. Сигналы `defeat_restart_requested`, `defeat_load_requested`, `defeat_menu_requested` неизменны.
 - Добавлен `tests/defeat_panel.gd` в CI рядом с `tests/death_flow.gd`. На момент коммита требуется подтвердить итог CI и ручное QA. Не сливать Draft PR #1 без ручного QA.
+
+
+## 26. Первое развитие RPG после рефакторинга — 2026-11-03
+
+- Награды за `moonleaf_gathering` и `grove_spirits` теперь выдаются через `_grant_quest_reward()` и `QuestManager.get_reward()` из `data/quests.json`. Числа наград остались прежними (50 XP/25 gold, 90 XP/50 gold).
+- Добавлен `tests/quest_rewards.gd`: проверяется каталог, отсутствие награды у неизвестного квеста, настраиваемая награда 17 XP/13 gold. Старые тесты двух сюжетных квестов остаются.
+- Для будущих дополнительных квестов не хардкодить награды в обработчиках NPC. Не сливать Draft PR #1 без ручной QA. Исходный HEAD `9af37f7ef25ec39d1cfc2bbde3b9ff86414e1328`.
