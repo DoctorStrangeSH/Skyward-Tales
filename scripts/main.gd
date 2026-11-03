@@ -209,6 +209,12 @@ func _populate_region() -> void:
 		_spawn_elder()
 		_spawn_cartographer()
 		_spawn_merchant()
+		var supply_state: Dictionary = quests.states.get("bran_supply_run", {})
+		if bool(supply_state.get("started", false)) and not quests.is_completed("bran_supply_run"):
+			var supply_remaining: int = 3 - int(supply_state.get("progress", 0))
+			var supply_positions: Array[Vector2] = [Vector2(445, 470), Vector2(635, 520), Vector2(865, 430)]
+			for index in range(clampi(supply_remaining, 0, supply_positions.size())):
+				_spawn_herb(supply_positions[index], "supply_crate", "Потерянный ящик с припасами")
 		var fragments_remaining: int = 0
 		if not quests.is_completed("lost_cartographer_notes"):
 			var fragment_state: Dictionary = quests.states.get("lost_cartographer_notes", {})
@@ -365,6 +371,12 @@ func _on_cartographer_interacted(_source: Node2D) -> void:
 	_refresh_hud()
 
 func _on_dialogue_choice_selected(choice_id: String) -> void:
+	if choice_id == "merchant_quest_start":
+		_start_merchant_supply_quest()
+		return
+	if choice_id == "merchant_supply:fair" or choice_id == "merchant_supply:clinic":
+		_complete_merchant_supply_quest(choice_id.trim_prefix("merchant_supply:"))
+		return
 	if choice_id.begins_with("merchant_buy:"):
 		_purchase_merchant_item(choice_id.trim_prefix("merchant_buy:"))
 		return
@@ -442,21 +454,72 @@ func _on_merchant_interacted(_source: Node2D) -> void:
 	_show_merchant_menu()
 
 func _show_merchant_menu() -> void:
+	const quest_id := "bran_supply_run"
 	var reputation: int = relationships.get_score("elder")
 	var discount_percent: int = merchant_shop.get_discount_percent(reputation)
 	var choices: Array[Dictionary] = []
+	var message := "Добро пожаловать! Чем могу помочь?"
+	if quests.is_completed(quest_id):
+		message = "Благодаря тебе лавка снова получает товары. %s." % relationships.get_reaction("bran")
+	elif quests.is_ready_to_complete(quest_id):
+		message = "Ты вернул все три ящика! Теперь решим, как распределить припасы."
+		choices.append({"id": "merchant_supply:fair", "label": "Продать припасы — 40 золота"})
+		choices.append({"id": "merchant_supply:clinic", "label": "Передать часть лечебнице — 15 золота"})
+	elif bool(quests.states[quest_id].get("started", false)):
+		message = "Осталось найти ящики с припасами: %d из 3." % int(quests.states[quest_id].get("progress", 0))
+	elif quests.is_completed("moonleaf_gathering") and quests.active_quest_id.is_empty():
+		choices.append({"id": "merchant_quest_start", "label": "Помочь вернуть потерянные поставки"})
+	if discount_percent > 0:
+		message += "\nЗа помощь поселению действует скидка %d%%." % discount_percent
+	else:
+		message += "\nПомоги поселению — и я предложу лучшие цены."
 	for offer in merchant_shop.get_offers(reputation):
 		choices.append({
 			"id": "merchant_buy:" + str(offer.get("id", "")),
 			"label": "Купить %s — %d золота" % [str(offer.get("name", "Товар")), int(offer.get("price", 0))]
 		})
 	choices.append({"id": "merchant_close", "label": "Завершить торговлю"})
-	var message := "Добро пожаловать! Чем могу помочь?"
-	if discount_percent > 0:
-		message += "\nЗа помощь поселению действует скидка %d%%." % discount_percent
-	else:
-		message += "\nПомоги поселению — и я предложу лучшие цены."
 	_show_dialogue_choices("Торговец Бран", message, choices)
+
+func _start_merchant_supply_quest() -> void:
+	const quest_id := "bran_supply_run"
+	if not quests.is_completed("moonleaf_gathering") or not quests.active_quest_id.is_empty():
+		_show_dialogue("Торговец Бран", "Сначала помоги старейшине и закончи текущее поручение. Тогда поговорим о поставках.")
+		return
+	if quests.start_quest(quest_id):
+		for at in [Vector2(445, 470), Vector2(635, 520), Vector2(865, 430)]:
+			_spawn_herb(at, "supply_crate", "Потерянный ящик с припасами")
+		_show_dialogue("Торговец Бран", "Три ящика с лечебными травами и инструментами пропали на дороге к поселению. Найди их в Зелёных Пределах. Без этих поставок лечебница скоро останется без лекарств.")
+		_refresh_hud()
+
+func _complete_merchant_supply_quest(choice_id: String) -> void:
+	const quest_id := "bran_supply_run"
+	var reward: Dictionary = quests.get_choice_reward(quest_id, choice_id)
+	if reward.is_empty() or not quests.is_ready_to_complete(quest_id) or not quests.complete_quest(quest_id):
+		return
+	quests.states[quest_id]["choice"] = choice_id
+	player.add_experience(int(reward.get("experience", 0)))
+	player.add_gold(int(reward.get("gold", 0)))
+	var bran_gain: int = int(reward.get("bran_trust", 0))
+	var elder_gain: int = int(reward.get("elder_trust", 0))
+	relationships.adjust("bran", bran_gain)
+	if elder_gain > 0:
+		relationships.adjust("elder", elder_gain)
+	hud.close_dialogue()
+	player.set_physics_process(true)
+	if choice_id == "clinic":
+		hud.show_message("Припасы переданы лечебнице. Доверие Брана +%d, доверие поселения +%d." % [bran_gain, elder_gain], 4.0)
+	else:
+		hud.show_message("Бран выплатил награду за возвращённые поставки. Доверие +%d." % bran_gain, 3.5)
+	_refresh_hud()
+
+func _purchase_merchant_item(item_id: String) -> void:
+	var result: Dictionary = merchant_shop.purchase(player, item_id, relationships.get_score("elder"))
+	if bool(result.get("success", false)):
+		hud.show_message("Куплено: %s за %d золота." % [str(result.get("name", item_id)), int(result.get("price", 0))], 2.5)
+	else:
+		hud.show_message(str(result.get("message", "Покупка не удалась.")), 2.5)
+	_show_merchant_menu()
 
 func _purchase_merchant_item(item_id: String) -> void:
 	var result: Dictionary = merchant_shop.purchase(player, item_id, relationships.get_score("elder"))
@@ -596,6 +659,19 @@ func _on_herb_interacted(source: Node2D) -> void:
 	var herb := source as WorldCollectible
 	var required_quest: String = "grove_spirits" if current_region == "moonlit_grove" else "moonleaf_gathering"
 	if herb == null:
+		return
+	if herb.item_id == "supply_crate":
+		const supply_quest_id := "bran_supply_run"
+		if quests.active_quest_id == supply_quest_id and not quests.is_completed(supply_quest_id):
+			quests.add_progress(supply_quest_id, 1)
+			herb.queue_free()
+			var found: int = int(quests.states[supply_quest_id].get("progress", 0))
+			hud.show_message("Возвращён ящик с припасами: %d/3." % found, 2.0)
+			if quests.is_ready_to_complete(supply_quest_id):
+				hud.show_message("Все три ящика найдены! Вернитесь к Брану.", 3.0)
+		else:
+			hud.show_message("Потерянный ящик с припасами. Бран наверняка знает, кому он принадлежит.", 2.5)
+		_refresh_hud()
 		return
 	if herb.item_id == "map_fragment":
 		const side_quest_id := "lost_cartographer_notes"
