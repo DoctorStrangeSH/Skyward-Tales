@@ -8,6 +8,7 @@ const ENEMY_SCRIPT := preload("res://scripts/enemy.gd")
 const LOOT_SCRIPT := preload("res://scripts/loot.gd")
 const CHEST_SCRIPT := preload("res://scripts/treasure_chest.gd")
 const SAVE_SCRIPT := preload("res://scripts/save_system.gd")
+const RELATIONSHIP_SCRIPT := preload("res://scripts/npc_relationships.gd")
 const GATE_SCRIPT := preload("res://scripts/region_gate.gd")
 const WOLF_SCRIPT := preload("res://scripts/forest_wolf.gd")
 const SHAMAN_SCRIPT := preload("res://scripts/forest_shaman.gd")
@@ -16,6 +17,7 @@ const GUARDIAN_SCRIPT := preload("res://scripts/grove_guardian.gd")
 var player: PlayerCharacter
 var hud: GameHud
 var quests: QuestManager
+var relationships: NpcRelationships
 var elder: WorldNpc
 var nearby_interactable: Node2D
 var spell_definitions: Dictionary = {}
@@ -43,6 +45,7 @@ func _ready() -> void:
 	bestiary_entries = catalogs.bestiary
 	world = get_node("World") as Node2D
 	quests = QuestManager.new()
+	relationships = RELATIONSHIP_SCRIPT.new()
 	player = PLAYER_SCENE.instantiate() as PlayerCharacter
 	add_child(player)
 	player.global_position = Vector2(130, 210)
@@ -302,7 +305,7 @@ func _spawn_grove_warden() -> void:
 
 func _on_grove_warden_interacted(_source: Node2D) -> void:
 	if quests.is_completed("grove_spirits"):
-		_show_dialogue("Хранительница Илара", "Духи снова поют. Лес запомнит твою доброту.")
+		_show_dialogue("Хранительница Илара", "%s. Лес запомнит твою доброту." % relationships.get_reaction("ilara"))
 	elif quests.active_quest_id.is_empty() or quests.active_quest_id == "grove_spirits":
 		if not quests.states["grove_spirits"]["started"]:
 			quests.start_quest("grove_spirits")
@@ -310,6 +313,8 @@ func _on_grove_warden_interacted(_source: Node2D) -> void:
 		elif quests.is_ready_to_complete("grove_spirits"):
 			if quests.complete_quest("grove_spirits"):
 				_grant_quest_reward("grove_spirits")
+				relationships.adjust("ilara", 12)
+				_show_relationship_change("ilara", 12)
 			_spawn_guardian(Vector2(1020, 580))
 			_show_dialogue("Хранительница Илара", "Ты вернул лесу его сияние. Прими эту награду.")
 		else:
@@ -330,9 +335,9 @@ func _on_cartographer_interacted(_source: Node2D) -> void:
 	if quests.is_completed(quest_id):
 		var choice_id: String = str(quests.states[quest_id].get("choice", ""))
 		if choice_id == "supplies":
-			_show_dialogue("Мира, картограф", "Надеюсь, припасы пригодились. Я уже начала восстанавливать безопасные тропы по копии дневника.")
+			_show_dialogue("Мира, картограф", "%s. Надеюсь, припасы пригодились. Я уже начала восстанавливать безопасные тропы по копии дневника." % relationships.get_reaction("mira"))
 		else:
-			_show_dialogue("Мира, картограф", "Благодарю за возвращённый дневник. Монеты — малая плата за такую помощь.")
+			_show_dialogue("Мира, картограф", "%s. Благодарю за возвращённый дневник. Монеты — малая плата за такую помощь." % relationships.get_reaction("mira"))
 	elif not quests.is_completed("moonleaf_gathering"):
 		_show_dialogue("Мира, картограф", "Я ищу страницы своего полевого дневника. Но сначала помоги старейшине Элиану — поселению сейчас нужнее твоя помощь.")
 	elif not quests.active_quest_id.is_empty() and quests.active_quest_id != quest_id:
@@ -357,6 +362,8 @@ func _on_dialogue_choice_selected(choice_id: String) -> void:
 	if reward.is_empty() or not quests.complete_quest(quest_id):
 		return
 	quests.states[quest_id]["choice"] = choice_id
+	relationships.adjust("mira", 10)
+	_show_relationship_change("mira", 10)
 	player.add_experience(int(reward.get("experience", 0)))
 	player.add_gold(int(reward.get("gold", 0)))
 	var items: Variant = reward.get("items", [])
@@ -443,6 +450,9 @@ func _try_interact() -> void:
 	if target.has_method("interact"):
 		target.interact()
 
+func _show_relationship_change(npc_id: String, amount: int) -> void:
+	hud.show_message("Отношение: %s (%+d) — %s" % [relationships.get_name(npc_id), amount, relationships.get_rank(npc_id)], 3.0)
+
 func _show_dialogue(speaker: String, message: String) -> void:
 	player.set_physics_process(false)
 	hud.show_dialogue(speaker, message)
@@ -458,13 +468,15 @@ func _grant_quest_reward(quest_id: String) -> void:
 
 func _on_elder_interacted(_source: Node2D) -> void:
 	if quests.is_completed("moonleaf_gathering"):
-		_show_dialogue("Старейшина Элиан", "Ты помог нашему поселению. На востоке есть тропа в Зачарованный лес. Найди хранительницу Илару — возможно, ей нужна помощь.")
+		_show_dialogue("Старейшина Элиан", "%s. Ты помог нашему поселению. На востоке есть тропа в Зачарованный лес. Найди хранительницу Илару — возможно, ей нужна помощь." % relationships.get_reaction("elder"))
 	elif quests.active_quest_id.is_empty():
 		quests.start_quest("moonleaf_gathering")
 		_show_dialogue("Старейшина Элиан", "Юный странник, ночной туман отравляет наш лес. Принеси мне три лунных листа — они растут вдоль старой тропы. Я щедро тебя отблагодарю.")
 	elif quests.is_ready_to_complete("moonleaf_gathering"):
 		if quests.complete_quest("moonleaf_gathering"):
 			_grant_quest_reward("moonleaf_gathering")
+			relationships.adjust("elder", 8)
+			_show_relationship_change("elder", 8)
 		_show_dialogue("Старейшина Элиан", "Ты принёс все три! Пусть древние звёзды хранят тебя. Прими эти монеты и знания.")
 	else:
 		_show_dialogue("Старейшина Элиан", "Лунные листья растут вдоль старой тропы. Будь осторожен — слизни стали агрессивнее.")
@@ -690,7 +702,7 @@ func make_save_snapshot() -> Dictionary:
 			"talents": player.talents.duplicate(true), "starlight_essence_used": player.starlight_essence_used
 		},
 		"quest": {"states": quests.states.duplicate(true), "active": quests.active_quest_id},
-		"world": {"region": current_region, "enemies": alive_enemies, "herbs": herbs, "loot": loot_items, "defeated": defeated_enemies, "guardian_defeated": guardian_defeated, "discovered": discovered_enemies.duplicate(true), "landmarks": discovered_landmarks.duplicate(true), "opened_chests": opened_chests.duplicate(true)},
+		"world": {"region": current_region, "relationships": relationships.make_snapshot(), "enemies": alive_enemies, "herbs": herbs, "loot": loot_items, "defeated": defeated_enemies, "guardian_defeated": guardian_defeated, "discovered": discovered_enemies.duplicate(true), "landmarks": discovered_landmarks.duplicate(true), "opened_chests": opened_chests.duplicate(true)},
 		"magic": selected_spell_id
 	}
 
@@ -738,6 +750,7 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 	discovered_enemies = world_data.get("discovered", {}).duplicate(true)
 	discovered_landmarks = world_data.get("landmarks", {}).duplicate(true)
 	opened_chests = world_data.get("opened_chests", {}).duplicate(true)
+	relationships.restore_snapshot(world_data.get("relationships", {}))
 	var saved_region: String = str(world_data.get("region", "greenreach"))
 	_set_region(saved_region, _read_position(character.get("position"), Vector2(130, 210)), false)
 	for quest_id in quest_data["states"]:
