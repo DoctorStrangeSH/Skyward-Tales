@@ -1,0 +1,15 @@
+{
+  "recipes": {
+    "reinforce_wolfskin_mantle": {
+      "name": "Усиленная волчья накидка",
+      "description": "Укрепить волчью накидку металлическими пластинами.",
+      "gold_cost": 30,
+      "unique_output": true,
+      "ingredients": [
+        {"item_id": "wolfskin_mantle", "amount": 1},
+        {"item_id": "wolf_pelt", "amount": 2}
+      ],
+      "output": {"item_id": "reinforced_wolf_mantle", "amount": 1}
+    }
+  }
+}
