@@ -35,6 +35,10 @@ func _run() -> void:
 		return
 	if not _verify(game.player.get_armor() == 6, "crafted mantle grants six armor"):
 		return
+	game.player.add_item("wolf_pelt", 3)
+	game._on_hunter_interacted(null)
+	if not _verify(game.hud.dialogue_choices_container.get_child_count() == 0, "equipped mantle cannot be crafted a second time"):
+		return
 	if not _verify(not game.player.remove_item("wolf_pelt", 1), "cannot remove more materials than owned"):
 		return
 	var snapshot: Dictionary = game.make_save_snapshot()
