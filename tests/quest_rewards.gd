@@ -19,6 +19,12 @@ func _run() -> void:
 		return
 	if not _verify(quests.get_reward("no_such_quest").is_empty(), "unknown quests should have no reward"):
 		return
+	if not _verify(quests.get_choice_reward("lost_cartographer_notes", "gold").get("gold") == 35, "gold choice reward is data-driven"):
+		return
+	if not _verify(quests.get_choice_reward("lost_cartographer_notes", "supplies").get("items", []).size() == 1, "supplies choice reward includes items"):
+		return
+	if not _verify(quests.get_choice_reward("lost_cartographer_notes", "unknown").is_empty(), "unknown choice has no reward"):
+		return
 	quests.definitions["test_reward"] = {"target": 1, "title": "Награда", "reward": {"experience": 17, "gold": 13}}
 	quests.states["test_reward"] = {"started": false, "completed": false, "progress": 0}
 	if not _verify(quests.start_quest("test_reward"), "quest start failed"):
