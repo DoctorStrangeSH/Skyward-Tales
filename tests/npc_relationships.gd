@@ -30,10 +30,11 @@ func _initialize() -> void:
 	restored.restore_snapshot(snapshot)
 	if not _verify(restored.get_score("elder") == 34, "relationship survives snapshot restore"):
 		return
+	var mira_before_malformed_restore: int = restored.get_score("mira")
 	restored.restore_snapshot({"elder": 9999, "unknown_npc": 50, "mira": "bad"})
 	if not _verify(restored.get_score("elder") == 100, "restored score is clamped"):
 		return
-	if not _verify(restored.get_score("mira") == 0, "malformed relationship value is ignored"):
+	if not _verify(restored.get_score("mira") == mira_before_malformed_restore, "malformed relationship value is ignored"):
 		return
 	var old_save := RELATIONSHIPS_SCRIPT.new()
 	old_save.restore_snapshot({})
