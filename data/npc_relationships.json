@@ -11,6 +11,10 @@
     "mira": {
       "name": "Мира, картограф",
       "starting_score": 0
+    },
+    "bran": {
+      "name": "Бран, торговец",
+      "starting_score": 0
     }
   }
 }
