@@ -428,3 +428,34 @@ def echo_warden(facing: str, frame: int) -> Canvas:
             b.part(b.ellipse(sx, sy, 2.2, 4), CRYSTAL)
     b.outline(hex_color("#1a1030"))
     return b.canvas()
+
+
+# --- Sky Sentinel (Keepers' construct) ------------------------------------------
+
+MARBLE = r4("#f8f8fc", "#c6cadc", "#8a8ca8", "#5a5a7a")
+BRASS = r4("#fff2a8", "#ffd45c", "#d99a2e", "#8a5a22")
+
+
+def sentinel(facing: str, frame: int) -> Canvas:
+    """Floating marble construct with a brass collar and one glowing eye."""
+    b = Body(32)
+    bob = [0, -1, -1, 0][frame]
+    b.shadow(16, 29, 7, 1.8, 70)
+    side = facing == "right"
+    back = facing in ("up", "up_right")
+    cy = 17 + bob
+    b.part(b.ellipse(16, cy + 5, 5 if not side else 4, 6), MARBLE, sphere=(14, cy + 2, 7))
+    b.part(b.rect(10 if not side else 12, cy - 1, 21 if not side else 19, cy + 1), BRASS)
+    b.part(b.ellipse(16 + (1 if side else 0), cy - 5, 5.5, 5), MARBLE, sphere=(14, cy - 8, 6))
+    for sx in ((-8, 7) if not side else (-6,)):
+        b.part(b.ellipse(16 + sx + (0.5 if sx > 0 else 0), cy + 2 - bob, 2.2, 3.4), BRASS)
+    if not back:
+        ex = 16 + (3 if side else (1 if facing == "down_right" else 0))
+        b.dot(ex, cy - 5, hex_color("#9cfff0"))
+        b.dot(ex + 1, cy - 5, hex_color("#ffffff"))
+        b.dot(ex, cy - 4, hex_color("#3fd6d0"))
+    else:
+        b.dot(16, cy - 6, BRASS[1])
+    b.dot(16, cy + 10 + (frame % 2), hex_color("#9cfff0"))
+    b.outline(hex_color("#22203a"))
+    return b.canvas()

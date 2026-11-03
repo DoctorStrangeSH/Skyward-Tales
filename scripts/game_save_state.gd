@@ -11,7 +11,8 @@ const FALLBACK_ENEMY_POSITIONS := {
 	"wolf": Vector2(475, 430),
 	"slime": Vector2(475, 350),
 	"bat": Vector2(700, 470),
-	"echo": Vector2(1000, 660)
+	"echo": Vector2(1000, 660),
+	"sentinel": Vector2(640, 500)
 }
 
 static func _position_array(pos: Vector2) -> Array[float]:
@@ -77,6 +78,11 @@ static func apply(game: SkywardGame, data: Dictionary) -> bool:
 	var player := game.player
 	game.guardian_defeated = bool(world_data.get("guardian_defeated", false))
 	game.director.restore_snapshot(world_data.get("story_flags", {}))
+	if game.director.has_flag("mira_companion"):
+		game.ensure_companion()
+	elif game.companion != null:
+		game.companion.queue_free()
+		game.companion = null
 	game.discovered_enemies = world_data.get("discovered", {}).duplicate(true)
 	game.discovered_landmarks = world_data.get("landmarks", {}).duplicate(true)
 	game.opened_chests = world_data.get("opened_chests", {}).duplicate(true)

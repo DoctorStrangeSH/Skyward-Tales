@@ -9,7 +9,7 @@ const MAP_WIDTH := 80
 const MAP_HEIGHT := 54
 const COLLISION_WORLD := 4
 const ART_DIR := "res://assets/world/"
-const PROP_TEXTURES := {"ruins": "ruins.png", "standing_stones": "standing_stones.png", "crystal_altar": "crystal_altar.png"}
+const PROP_TEXTURES := {"ruins": "ruins.png", "standing_stones": "standing_stones.png", "crystal_altar": "crystal_altar.png", "sky_archive": "sky_archive.png"}
 
 var region_id: String = "greenreach"
 var terrain: Dictionary = {}
@@ -83,7 +83,16 @@ func _add_ambient() -> void:
 	air.scale_amount_min = 1.0
 	air.scale_amount_max = 2.0 if is_night() else 1.0
 	var gradient := Gradient.new()
-	if is_cave():
+	if str(terrain.get("style", "")) == "sky":
+		# Wind streaks drifting across the island.
+		air.direction = Vector2.RIGHT
+		air.spread = 8.0
+		air.initial_velocity_min = 40.0
+		air.initial_velocity_max = 70.0
+		air.scale_amount_max = 1.0
+		gradient.offsets = PackedFloat32Array([0.0, 0.3, 0.7, 1.0])
+		gradient.colors = PackedColorArray([Color(1, 1, 1, 0), Color(1, 1, 1, 0.55), Color(1, 1, 1, 0.35), Color(1, 1, 1, 0)])
+	elif is_cave():
 		# Crystal motes slowly rising through the dark.
 		air.direction = Vector2.UP
 		air.spread = 25.0
@@ -178,6 +187,13 @@ func _create_world_collisions() -> void:
 	_add_wall(Vector2(size.x * 0.5, size.y + 8.0), Vector2(size.x + 32.0, 16.0))
 	_add_wall(Vector2(-8.0, size.y * 0.5), Vector2(16.0, size.y + 32.0))
 	_add_wall(Vector2(size.x + 8.0, size.y * 0.5), Vector2(16.0, size.y + 32.0))
+	# Islands: invisible walls at the coastline keep the hero off the sky.
+	var margin := float(terrain.get("edge_margin", 0))
+	if margin > 0.0:
+		_add_wall(Vector2(size.x * 0.5, margin * 0.5), Vector2(size.x, margin))
+		_add_wall(Vector2(size.x * 0.5, size.y - margin * 0.5), Vector2(size.x, margin))
+		_add_wall(Vector2(margin * 0.5, size.y * 0.5), Vector2(margin, size.y))
+		_add_wall(Vector2(size.x - margin * 0.5, size.y * 0.5), Vector2(margin, size.y))
 	for blocker in terrain.get("blockers", []):
 		_add_wall(_vec(blocker.get("center")), _vec(blocker.get("size"), Vector2(16, 16)))
 

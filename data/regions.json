@@ -524,6 +524,14 @@
         "position": [60, 440],
         "arrival": [1160, 560],
         "label": "Подъём в Зачарованный лес"
+      },
+      {
+        "target": "sky_island",
+        "position": [1060, 600],
+        "arrival": [640, 800],
+        "label": "Мост света к небу",
+        "requires_quest": "main_echo",
+        "locked_message": "Алтарь молчит. Свет ещё не открыл путь."
       }
     ],
     "secrets": {},
@@ -625,5 +633,143 @@
         }
       }
     ]
+  },
+  "sky_island": {
+    "name": "Небесный остров",
+    "map_color": [0.55, 0.66, 0.86],
+    "herb_quest": "main_archive",
+    "npcs": [
+      {
+        "id": "archivist",
+        "name": "Ориэн, архивариус",
+        "position": [600, 330]
+      }
+    ],
+    "chests": [
+      {
+        "id": "island_garden",
+        "position": [300, 520],
+        "gold": 90,
+        "item": "mana_potion",
+        "amount": 3
+      },
+      {
+        "id": "island_overlook",
+        "position": [1080, 240],
+        "gold": 120,
+        "item": "health_potion",
+        "amount": 3
+      }
+    ],
+    "herbs": [
+      {
+        "id": "memory_crystal",
+        "name": "Кристалл памяти",
+        "position": [260, 250]
+      },
+      {
+        "id": "memory_crystal",
+        "name": "Кристалл памяти",
+        "position": [1000, 460]
+      },
+      {
+        "id": "memory_crystal",
+        "name": "Кристалл памяти",
+        "position": [420, 640]
+      }
+    ],
+    "enemies": [
+      {
+        "kind": "sentinel",
+        "position": [380, 420]
+      },
+      {
+        "kind": "sentinel",
+        "position": [860, 360]
+      },
+      {
+        "kind": "sentinel",
+        "position": [900, 600],
+        "elite": "stone"
+      },
+      {
+        "kind": "sentinel",
+        "position": [560, 560]
+      }
+    ],
+    "gates": [
+      {
+        "target": "crystal_caves",
+        "position": [640, 812],
+        "arrival": [1000, 640],
+        "label": "Спуск по мосту света"
+      }
+    ],
+    "secrets": {},
+    "terrain": {
+      "size": [1280, 864],
+      "style": "sky",
+      "edge_margin": 64,
+      "trails": [
+        [
+          [640, 864],
+          [640, 720],
+          [600, 600],
+          [640, 470],
+          [640, 360]
+        ],
+        [
+          [640, 470],
+          [420, 440],
+          [260, 300]
+        ],
+        [
+          [640, 470],
+          [880, 430],
+          [1060, 280]
+        ],
+        [
+          [600, 600],
+          [420, 640],
+          [300, 560]
+        ]
+      ],
+      "ponds": [
+        {
+          "circle": [840, 560, 34]
+        }
+      ],
+      "trees": [
+        [180, 180],
+        [340, 150],
+        [900, 150],
+        [1150, 360],
+        [160, 420],
+        [220, 680],
+        [760, 720],
+        [1100, 620],
+        [480, 300],
+        [780, 260],
+        [1000, 720],
+        [1180, 180]
+      ],
+      "props": [
+        {
+          "kind": "sky_archive",
+          "position": [640, 300]
+        }
+      ],
+      "blockers": [
+        {
+          "center": [640, 262],
+          "size": [150, 70]
+        },
+        {
+          "center": [840, 560],
+          "size": [56, 50]
+        }
+      ],
+      "bushes": []
+    }
   }
 }

@@ -13,6 +13,8 @@ const DIRECTIONAL_SPRITE_SCRIPT := preload("res://scripts/directional_sprite.gd"
 var visual: DirectionalSprite
 ## "", "quest", "ready" or "service" — set by SkywardGame every few frames.
 var marker: String = ""
+## Companions travel with the hero and are never cleared with the region.
+var is_companion: bool = false
 var _marker_time: float = 0.0
 
 func _ready() -> void:

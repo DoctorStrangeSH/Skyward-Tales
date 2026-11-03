@@ -96,6 +96,11 @@ def render_ground(terrain: dict, pal: dict, seed: int) -> Canvas:
         outer = ndimage.binary_dilation(water_mask, iterations=3) & land & ~shore & ~path
         img[outer] = grass[1]
 
+    sky = terrain.get("style") == "sky"
+    island = None
+    if sky:
+        island = _island_mask(w, h, int(terrain.get("edge_margin", 64)), seed)
+        _paint_sky(img, island, pal, seed)
     canvas = Canvas(w, h)
     canvas.px = img
 
@@ -135,6 +140,8 @@ def render_ground(terrain: dict, pal: dict, seed: int) -> Canvas:
         canvas.put(x + 1, y + 1, dirt[1])
 
     free = ~(path | water_mask | rim)
+    if island is not None:
+        free &= ndimage.binary_erosion(island, iterations=6)
     free = ndimage.binary_erosion(free, iterations=3)
     tuft_density = fbm(w, h, 30.0, seed + 9, 2)
     for _ in range(int(w * h / 120)):
@@ -182,6 +189,38 @@ def _smooth(points: list[tuple[float, float]], iterations: int = 3) -> list[tupl
         result.append(points[-1])
         points = result
     return points
+
+
+def _island_mask(w: int, h: int, margin: int, seed: int) -> np.ndarray:
+    """Rounded island shape with a wobbly coastline."""
+    ys, xs = np.mgrid[0:h, 0:w].astype(np.float32) + 0.5
+    nx = (xs - w / 2) / (w / 2 - margin)
+    ny = (ys - h / 2) / (h / 2 - margin)
+    wobble = (fbm(w, h, 40.0, seed + 77, 2) - 0.5) * 0.18
+    return np.abs(nx) ** 6 + np.abs(ny) ** 6 + wobble <= 1.0
+
+
+def _paint_sky(img: np.ndarray, island: np.ndarray, pal, seed: int) -> None:
+    """Sky and clouds outside the island, a rocky cliff under its south rim."""
+    h, w = island.shape
+    sky, cloud, stone = pal["sky"], pal["cloud"], pal["stone"]
+    rows = np.clip((np.arange(h) / h * len(sky)).astype(int), 0, len(sky) - 1)
+    outside = ~island
+    for y in range(h):
+        img[y][outside[y]] = sky[rows[y]]
+    puffs = fbm(w, h, 26.0, seed + 91, 3)
+    img[outside & (puffs > 0.58)] = cloud[3]
+    img[outside & (puffs > 0.66)] = cloud[5]
+    # Cliff: pixels just below the island edge show the rock it stands on.
+    cliff = np.zeros_like(island)
+    for k in range(1, 14):
+        cliff |= np.roll(island, k, 0) & outside
+    depth = np.zeros((h, w), dtype=int)
+    for k in range(1, 14):
+        depth[np.roll(island, k, 0) & outside & (depth == 0)] = k
+    img[cliff] = np.array(stone)[np.clip(4 - depth[cliff] // 3, 0, 5)]
+    edge = island & ~ndimage.binary_erosion(island, iterations=2)
+    img[edge] = pal["grass"][5]
 
 
 def _crack(canvas: Canvas, x: int, y: int, floor, rng: random.Random) -> None:

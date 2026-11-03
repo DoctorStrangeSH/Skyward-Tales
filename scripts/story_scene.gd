@@ -102,3 +102,7 @@ func _run_effect(step: Dictionary) -> void:
 			Vfx.meteor(game, Vector2(float(to[0]), float(to[1])))
 		"flash":
 			game.hud.flash_screen(Color(0.8, 1.0, 1.0, 0.7), 0.5)
+		"companion_join":
+			game.ensure_companion()
+		"title":
+			game.hud.show_title_card(StoryText.format(str(step.get("text", ""))), 4.0)

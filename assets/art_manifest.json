@@ -177,6 +177,16 @@
    39
   ]
  },
+ "props/gate_sky.png": {
+  "size": [
+   36,
+   48
+  ],
+  "origin": [
+   18,
+   44
+  ]
+ },
  "props/health_potion.png": {
   "size": [
    14,
@@ -245,6 +255,16 @@
   "origin": [
    5,
    14
+  ]
+ },
+ "props/memory_crystal.png": {
+  "size": [
+   20,
+   22
+  ],
+  "origin": [
+   10,
+   18
   ]
  },
  "props/moonleaf.png": {
@@ -387,6 +407,12 @@
    384
   ]
  },
+ "sprites/enemies/sky_sentinel_8dir.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
  "sprites/magic/chain_lightning_8dir.png": {
   "size": [
    128,
@@ -400,6 +426,12 @@
   ]
  },
  "sprites/magic/frostbolt_8dir.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "sprites/npcs/archivist.png": {
   "size": [
    128,
    256
@@ -657,6 +689,78 @@
   "origin": [
    54,
    104
+  ]
+ },
+ "world/sky_archive.png": {
+  "size": [
+   170,
+   130
+  ],
+  "origin": [
+   85,
+   124
+  ]
+ },
+ "world/sky_bush_0.png": {
+  "size": [
+   28,
+   22
+  ],
+  "origin": [
+   14,
+   18
+  ]
+ },
+ "world/sky_bush_1.png": {
+  "size": [
+   28,
+   22
+  ],
+  "origin": [
+   14,
+   18
+  ]
+ },
+ "world/sky_island_canopy.png": {
+  "size": [
+   1280,
+   864
+  ]
+ },
+ "world/sky_island_ground.png": {
+  "size": [
+   1280,
+   864
+  ]
+ },
+ "world/sky_tree_0.png": {
+  "size": [
+   72,
+   84
+  ],
+  "origin": [
+   36,
+   76
+  ]
+ },
+ "world/sky_tree_1.png": {
+  "size": [
+   72,
+   84
+  ],
+  "origin": [
+   36,
+   76
+  ]
+ },
+ "world/sky_tree_2.png": {
+  "size": [
+   56,
+   66
+  ],
+  "origin": [
+   28,
+   58
   ]
  },
  "world/standing_stones.png": {
