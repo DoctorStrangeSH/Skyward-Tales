@@ -34,6 +34,7 @@ var bestiary_entries: Dictionary = {}
 var discovered_enemies: Dictionary = {}
 var discovered_landmarks: Dictionary = {}
 var opened_chests: Dictionary = {}
+var latest_cache_narrative: bool = false
 
 func _ready() -> void:
 	var catalogs: GameCatalogs = GameCatalogs.new()
@@ -248,6 +249,7 @@ func _on_chest_opened(id: String, gold: int, item: String, amount: int) -> void:
 	if opened_chests.has(id):
 		return
 	opened_chests[id] = true
+	latest_cache_narrative = id == "greenreach_cartographer_cache"
 	player.add_gold(gold)
 	if not item.is_empty() and amount > 0:
 		player.add_item(item, amount)
@@ -260,7 +262,11 @@ func _on_chest_bonus(item_id: String, rarity: String) -> void:
 	player.add_item(item_id)
 	var names: Dictionary = {"health_potion": "Зелье здоровья", "mana_amulet": "Амулет маны", "starlight_essence": "Звёздная эссенция", "pyromancer_core": "Сердце пироманта", "frost_heart": "Сердце ледника", "storm_eye": "Око бури"}
 	var rarities: Dictionary = {"common": "ОБЫЧНАЯ", "uncommon": "НЕОБЫЧНАЯ", "rare": "РЕДКАЯ"}
-	hud.show_message("%s НАХОДКА: %s!" % [str(rarities.get(rarity, rarity)), str(names.get(item_id, item_id))], 3.0)
+	if latest_cache_narrative:
+		hud.show_message("Записи картографа найдены! %s НАХОДКА: %s!" % [str(rarities.get(rarity, rarity)), str(names.get(item_id, item_id))], 4.0)
+		latest_cache_narrative = false
+	else:
+		hud.show_message("%s НАХОДКА: %s!" % [str(rarities.get(rarity, rarity)), str(names.get(item_id, item_id))], 3.0)
 
 func _spawn_gate(target_region: String, gate_position: Vector2, arrival: Vector2, label: String) -> void:
 	var gate := GATE_SCRIPT.new() as RegionGate
