@@ -1,4 +1,5 @@
 name: Godot validation
+# Regression coverage includes hunter crafting and save/load.
 on:
   push:
     branches: [main, feat/godot-rpg-foundation]
