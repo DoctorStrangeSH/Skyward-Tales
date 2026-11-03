@@ -8,6 +8,7 @@ const INVENTORY_RARITY_NAMES := {"common": "ОБЫЧНЫЙ", "uncommon": "НЕО
 const INVENTORY_CONSUMABLE_IDS := ["health_potion", "mana_potion", "starlight_essence"]
 
 var status_label: Label
+var toasts: ToastStack
 var vitals: HudVitals
 var quest_label: Label
 var message_label: Label
@@ -140,17 +141,22 @@ func _ready() -> void:
 	inventory_label.position = Vector2(260, 330)
 	root.add_child(inventory_label)
 
+	# message_label keeps the latest message (used by code and tests); the
+	# player sees the ToastStack instead.
 	message_label = _make_label("", 10, Color(1.0, 0.91, 0.62))
-	message_label.position = Vector2(160, 8)
-	message_label.size = Vector2(330, 28)
-	message_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	message_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	message_label.visible = false
 	root.add_child(message_label)
+	toasts = ToastStack.new()
+	toasts.position = Vector2(160, 6)
+	toasts.size = Vector2(330, 60)
+	toasts.custom_minimum_size = Vector2(330, 0)
+	root.add_child(toasts)
 
 	prompt_label = _make_label("", 9, Color(0.97, 0.97, 0.9))
 	prompt_label.position = Vector2(110, 284)
 	prompt_label.size = Vector2(420, 28)
 	prompt_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	prompt_label.visible = false  # the floating InteractPrompt replaces it
 	root.add_child(prompt_label)
 
 	# Keep public HUD references for existing save, input and regression code.
@@ -286,6 +292,8 @@ func _set_paused(paused: bool) -> void:
 		return
 	get_tree().paused = paused
 	pause_panel.visible = paused
+	if paused:
+		pause_view.show_page(pause_view.main_page)
 
 func open_world_map(region: String, hero: Vector2, landmarks: Dictionary, quest: String) -> void:
 	if world_map_visible or defeat_visible or talent_visible:
@@ -445,6 +453,13 @@ func hide_defeat() -> void:
 func show_message(message: String, duration: float = 3.0) -> void:
 	message_label.text = message
 	message_time = duration
+	if toasts != null:
+		toasts.push(message, duration)
+
+## A one-time tutorial tip; silent if already seen or hints are off.
+func show_tip(tip_id: String, message: String, duration: float = 5.0) -> void:
+	if toasts != null and GameSettings.consume_tip(tip_id):
+		toasts.push(message, duration, "tip")
 
 func set_prompt(message: String) -> void:
 	prompt_label.text = message

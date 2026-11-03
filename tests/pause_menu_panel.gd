@@ -18,7 +18,7 @@ func _run() -> void:
 	if not _assert(hud.pause_panel is PauseMenuPanel and hud.pause_view == hud.pause_panel, "panel compatibility reference"):
 		return
 	var box: VBoxContainer = hud.pause_view.get_child(0) as VBoxContainer
-	if not _assert(box != null and box.get_child_count() == 5, "pause buttons or heading missing"):
+	if not _assert(box != null and box.get_child_count() == 7, "pause buttons or heading missing"):
 		return
 	var calls: Array[String] = []
 	hud.pause_save_requested.connect(func() -> void: calls.append("save"))
