@@ -21,7 +21,8 @@ const ENEMY_SCRIPTS := {
 	"wolf": preload("res://scripts/forest_wolf.gd"),
 	"shaman": preload("res://scripts/forest_shaman.gd"),
 	"guardian": preload("res://scripts/grove_guardian.gd"),
-	"bat": preload("res://scripts/cave_bat.gd")
+	"bat": preload("res://scripts/cave_bat.gd"),
+	"echo": preload("res://scripts/echo_warden.gd")
 }
 const MATERIAL_ITEMS := ["wolf_pelt", "iron_ore"]
 const RARITY_LABELS := {"common": "ОБЫЧНАЯ", "uncommon": "НЕОБЫЧНАЯ", "rare": "РЕДКАЯ"}
@@ -36,6 +37,7 @@ var crafting_service: CraftingService
 var dialogues: NpcDialogues
 var interact_prompt: InteractPrompt
 var story: StoryScene
+var director: StoryDirector
 var pickups: QuestPickups
 var elder: WorldNpc
 var nearby_interactable: Node2D
@@ -73,13 +75,17 @@ func _ready() -> void:
 	# Actors and scenery share one y-sorted space: walk behind trees and ruins.
 	y_sort_enabled = true
 	quests = QuestManager.new()
-	quests.quest_completed.connect(func(_quest_id: String) -> void: request_autosave())
+	quests.quest_completed.connect(func(quest_id: String) -> void:
+		request_autosave()
+		if director != null:
+			director.on_quest_completed(quest_id))
 	relationships = RELATIONSHIP_SCRIPT.new()
 	merchant_shop = MERCHANT_SHOP_SCRIPT.new()
 	crafting_service = CRAFTING_SERVICE_SCRIPT.new()
 	dialogues = NpcDialogues.new(self)
 	pickups = QuestPickups.new(self)
 	story = StoryScene.new(self)
+	director = StoryDirector.new(self)
 	player = PLAYER_SCENE.instantiate() as PlayerCharacter
 	add_child(player)
 	player.global_position = GameSaveState.DEFAULT_PLAYER_POSITION
@@ -124,6 +130,7 @@ func _process(delta: float) -> void:
 	if player == null or hud == null or game_over:
 		return
 	_update_spell_hud()
+	director.update()
 	_marker_clock -= delta
 	if _marker_clock <= 0.0:
 		_marker_clock = 0.25
@@ -249,10 +256,7 @@ func _populate_region() -> void:
 		if not bool(gathered_resource_nodes.get(node_id, false)):
 			_spawn_herb(_vec(node_data.get("position")), node_id, str(node_data.get("name", node_id)))
 	_spawn_pending_supply_crates(layout)
-	for object_data in layout.get("story_objects", []):
-		var quest_id := str(object_data.get("quest", ""))
-		if bool(quests.states.get(quest_id, {}).get("started", false)) and not quests.is_completed(quest_id):
-			_spawn_herb(_vec(object_data.get("position")), str(object_data.get("id", "")), str(object_data.get("name", "")))
+	spawn_story_objects()
 	_spawn_pending_map_fragments(layout)
 	for chest_data in layout.get("chests", []):
 		_spawn_chest(str(chest_data.get("id", "")), _vec(chest_data.get("position")), int(chest_data.get("gold", 0)), str(chest_data.get("item", "")), int(chest_data.get("amount", 0)))
@@ -339,6 +343,20 @@ func start_new_story(hero_name: String, gender: String) -> void:
 		hud.show_tip("controls", "Совет: Esc — пауза, там же управление и настройки.", 6.0)
 		_refresh_hud())
 
+## Places story objects whose quest is active (skips ones already present).
+func spawn_story_objects() -> void:
+	for object_data in _layout().get("story_objects", []):
+		var object_id := str(object_data.get("id", ""))
+		var quest_id := str(object_data.get("quest", ""))
+		if not bool(quests.states.get(quest_id, {}).get("started", false)) or quests.is_completed(quest_id):
+			continue
+		var present := false
+		for actor in get_children():
+			if actor is WorldCollectible and actor.item_id == object_id and not actor.is_queued_for_deletion():
+				present = true
+		if not present:
+			_spawn_herb(_vec(object_data.get("position")), object_id, str(object_data.get("name", "")))
+
 ## Story object data (from regions.json) for an item id in the current region.
 func story_object(item_id: String) -> Dictionary:
 	for object_data in _layout().get("story_objects", []):
@@ -366,6 +384,7 @@ func _on_region_travel(target_region: String, arrival: Vector2) -> void:
 		hud.show_message(str(gate_data.get("locked_message", "Путь пока закрыт.")), 2.5)
 		return
 	_set_region(target_region, arrival)
+	director.on_region_entered(current_region)
 	request_autosave()
 
 func _update_minimap() -> void:
@@ -395,6 +414,8 @@ func _discover_nearby_enemies() -> void:
 			hud.show_tip("bestiary", "Совет: K — бестиарий со слабостями врагов.")
 
 static func enemy_kind(enemy: SlimeEnemy) -> String:
+	if enemy is EchoWarden:
+		return "echo"
 	if enemy is GroveGuardian:
 		return "guardian"
 	if enemy is ForestShaman:
@@ -438,7 +459,13 @@ func spawn_enemy(kind: String, spawn_position: Vector2) -> SlimeEnemy:
 		if guardian_defeated:
 			return null
 		for actor in get_children():
-			if actor is GroveGuardian and not actor.is_queued_for_deletion():
+			if actor is GroveGuardian and not actor is EchoWarden and not actor.is_queued_for_deletion():
+				return null
+	if kind == "echo":
+		if director.has_flag("echo_defeated"):
+			return null
+		for actor in get_children():
+			if actor is EchoWarden and not actor.is_queued_for_deletion():
 				return null
 	var enemy := (ENEMY_SCRIPTS[kind] as GDScript).new() as SlimeEnemy
 	enemy.position = spawn_position
@@ -446,6 +473,8 @@ func spawn_enemy(kind: String, spawn_position: Vector2) -> SlimeEnemy:
 	match kind:
 		"guardian":
 			enemy.defeated.connect(func(xp: int) -> void: _on_guardian_defeated(xp, enemy.global_position))
+		"echo":
+			enemy.defeated.connect(func(xp: int) -> void: _on_echo_defeated(xp, enemy.global_position))
 		"wolf":
 			enemy.defeated.connect(func(xp: int) -> void: _on_wolf_defeated(xp, enemy.global_position))
 		_:
@@ -499,25 +528,32 @@ func _spawn_loot(drop_position: Vector2, item_id: String) -> WorldLoot:
 # --- NPCs and dialogue (logic lives in NpcDialogues) ---------------------
 
 func _on_elder_interacted(_source: Node2D) -> void:
-	dialogues.on_elder()
+	if not director.try_talk("elder"):
+		dialogues.on_elder()
 
 func _on_cartographer_interacted(_source: Node2D) -> void:
-	dialogues.on_cartographer()
+	if not director.try_talk("cartographer"):
+		dialogues.on_cartographer()
 
 func _on_grove_warden_interacted(_source: Node2D) -> void:
-	dialogues.on_grove_warden()
+	if not director.try_talk("grove_warden"):
+		dialogues.on_grove_warden()
 
 func _on_merchant_interacted(_source: Node2D) -> void:
-	dialogues.on_merchant()
+	if not director.try_talk("merchant"):
+		dialogues.on_merchant()
 
 func _on_hunter_interacted(_source: Node2D) -> void:
-	dialogues.on_hunter()
+	if not director.try_talk("hunter"):
+		dialogues.on_hunter()
 
 func _on_blacksmith_interacted(_source: Node2D) -> void:
-	dialogues.on_blacksmith()
+	if not director.try_talk("blacksmith"):
+		dialogues.on_blacksmith()
 
 func _on_miner_interacted(_source: Node2D) -> void:
-	dialogues.on_miner()
+	if not director.try_talk("miner"):
+		dialogues.on_miner()
 
 func _on_dialogue_choice_selected(choice_id: String) -> void:
 	dialogues.handle_choice(choice_id)
@@ -607,6 +643,17 @@ func _on_guardian_defeated(xp: int, death_position: Vector2) -> void:
 	player.add_gold(100)
 	_spawn_loot(death_position, "ancient_relic")
 	hud.show_message("Хранитель побеждён! +100 золота. Древний артефакт ждёт!", 3.5)
+	director.on_boss_defeated("guardian")
+	request_autosave()
+
+func _on_echo_defeated(xp: int, death_position: Vector2) -> void:
+	if director.has_flag("echo_defeated"):
+		return
+	director.set_flag("echo_defeated")
+	player.add_experience(xp)
+	_spawn_loot(death_position, "ancient_relic")
+	hud.show_message("Отголосок повержен!", 3.0)
+	director.on_boss_defeated("echo")
 	request_autosave()
 
 func _on_wolf_defeated(xp_reward: int, death_position: Vector2) -> void:

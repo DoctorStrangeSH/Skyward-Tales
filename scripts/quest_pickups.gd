@@ -38,7 +38,15 @@ func _inspect_story_object(herb: WorldCollectible) -> void:
 	var quest_id := str(data.get("quest", ""))
 	if game.story.active:
 		return
+	var spawns: Dictionary = data.get("spawns", {})
 	game.story.play(str(data.get("scene", "")), func() -> void:
+		if not spawns.is_empty():
+			# The scene unleashes a boss; the quest completes when it falls.
+			var pos: Array = spawns.get("position", [0, 0])
+			game.spawn_enemy(str(spawns.get("kind", "")), Vector2(float(pos[0]), float(pos[1])))
+			if is_instance_valid(herb):
+				_collect(herb)
+			return
 		if game.quests.states.has(quest_id) and not game.quests.is_completed(quest_id):
 			game.quests.add_progress(quest_id, 1)
 			if game.quests.complete_quest(quest_id):

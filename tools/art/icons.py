@@ -165,6 +165,20 @@ def lens() -> Canvas:
     return _finish(c)
 
 
+def pattern_key() -> Canvas:
+    c = Canvas(16, 16)
+    glow = ramp("#f6f0ff", "#c9b0ff", "#8a6ae8")
+    c.ellipse(5, 5, 3.5, 3.5, GOLD[1])
+    c.ellipse(5, 5, 1.6, 1.6, glow[1])
+    for i in range(8):
+        c.put(7 + i, 7 + i, GOLD[1])
+        c.put(8 + i, 7 + i, GOLD[2])
+    for x, y in ((11, 13), (13, 11), (12, 14)):
+        c.put(x, y, GOLD[1])
+    c.put(4, 4, hex_color("#ffffff"))
+    return _finish(c)
+
+
 def build() -> dict[str, Canvas]:
     return {
         "apprentice_staff": staff(ramp("#c8f0a0", "#7fcf6a", "#3f8f5a")),
@@ -183,4 +197,5 @@ def build() -> dict[str, Canvas]:
         "wolf_pelt": pelt(),
         "iron_ore": ore(),
         "crystal_lens": lens(),
+        "pattern_key": pattern_key(),
     }

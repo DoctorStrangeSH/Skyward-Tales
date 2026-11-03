@@ -609,6 +609,19 @@
         [71, 53],
         [1015, 647]
       ]
-    }
+    },
+    "story_objects": [
+      {
+        "id": "altar_heart",
+        "name": "Хрустальный алтарь",
+        "quest": "main_echo",
+        "scene": "altar_vail",
+        "position": [1000, 600],
+        "spawns": {
+          "kind": "echo",
+          "position": [1000, 660]
+        }
+      }
+    ]
   }
 }

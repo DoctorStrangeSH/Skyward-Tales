@@ -572,3 +572,20 @@ def sky_shard() -> tuple[Canvas, tuple[int, int]]:
             if d <= 1:
                 c.blend(x, y, glow[2][:3] + (int(55 * (1 - d)),))
     return c, (15, 23)
+
+
+def rune_circle() -> tuple[Canvas, tuple[int, int]]:
+    """Glowing rune ring on the floor in front of the crystal altar."""
+    c = Canvas(40, 18)
+    glow = ramp("#f6f0ff", "#d0b8ff", "#9a7aff", "#5a3ac0")
+    for y in range(18):
+        for x in range(40):
+            d = ((x + 0.5 - 20) / 19) ** 2 + ((y + 0.5 - 9) / 8) ** 2
+            if 0.72 <= d <= 1.0:
+                c.put(x, y, glow[1] if (x + y) % 4 else glow[0])
+            elif d < 0.72:
+                c.blend(x, y, glow[2][:3] + (int(70 * (1 - d)),))
+    for x, y in ((12, 9), (20, 5), (28, 9), (20, 13)):
+        c.put(x, y, glow[0])
+        c.put(x + 1, y, glow[1])
+    return c, (20, 9)
