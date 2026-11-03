@@ -6,6 +6,14 @@ var talents: Dictionary = {}
 var spells: Dictionary = {}
 var regions: Dictionary = {}
 
+static var _shared: GameCatalogs
+
+## One cached copy for code that only reads catalogs.
+static func shared() -> GameCatalogs:
+	if _shared == null:
+		_shared = GameCatalogs.new()
+	return _shared
+
 func _init() -> void:
 	regions = _load_dictionary("res://data/regions.json", "Каталог регионов не найден.")
 	bestiary = _load_dictionary("res://data/bestiary.json", "Каталог бестиария не найден.")

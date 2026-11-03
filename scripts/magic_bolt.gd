@@ -17,6 +17,11 @@ var chain_targets: int = 0
 var chain_radius: float = 0.0
 var chain_damage_factor: float = 0.65
 var visual: DirectionalSprite
+## Skill-tree ultimates: fire explosion radius, extra frost pierces.
+var explode_radius: float = 0.0
+var pierce_left: int = 0
+var freeze_on_hit: bool = false
+var _already_hit: Array[Node2D] = []
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
@@ -63,7 +68,10 @@ func _physics_process(delta: float) -> void:
 		queue_free()
 
 func _on_body_entered(body: Node2D) -> void:
+	if body in _already_hit:
+		return
 	if body.is_in_group("enemies") and body.has_method("take_damage"):
+		_already_hit.append(body)
 		body.take_elemental_damage(damage, _element_for_spell()) if body.has_method("take_elemental_damage") else body.take_damage(damage)
 		if not body.is_queued_for_deletion() and body.has_method("react_to_spell"):
 			body.react_to_spell(spell_id)
@@ -72,12 +80,32 @@ func _on_body_entered(body: Node2D) -> void:
 		if spell_id == "chain_lightning":
 			_apply_chain_lightning(body)
 		if spell_id == "frostbolt" and body.has_method("apply_slow") and slow_duration > 0.0:
-			body.apply_slow(slow_multiplier, slow_duration)
+			body.apply_slow(0.1 if freeze_on_hit else slow_multiplier, maxf(slow_duration, 1.0) if freeze_on_hit else slow_duration)
+		if explode_radius > 0.0:
+			_explode(body)
 		Vfx.spell_impact(get_parent(), global_position, spell_id)
+		if pierce_left > 0:
+			pierce_left -= 1
+			return
 		queue_free()
 	elif body is StaticBody2D:
 		Vfx.spell_impact(get_parent(), global_position, spell_id)
 		queue_free()
+
+## "Пламя феникса": half damage and burning to every enemy around the target.
+func _explode(center_body: Node2D) -> void:
+	var center := center_body.global_position
+	Vfx.burst(get_parent(), center, Vfx.SPELL_COLORS["fireball"], 28, 110.0, 0.5)
+	for candidate in get_tree().get_nodes_in_group("enemies"):
+		var enemy := candidate as Node2D
+		if enemy == null or enemy == center_body or enemy.is_queued_for_deletion():
+			continue
+		if enemy.global_position.distance_to(center) > explode_radius:
+			continue
+		var splash := maxi(1, damage / 2)
+		enemy.take_elemental_damage(splash, "fire") if enemy.has_method("take_elemental_damage") else enemy.take_damage(splash)
+		if not enemy.is_queued_for_deletion() and enemy.has_method("apply_burning") and burn_duration > 0.0:
+			enemy.apply_burning(burn_damage, burn_duration)
 
 func _element_for_spell() -> String:
 	match spell_id:

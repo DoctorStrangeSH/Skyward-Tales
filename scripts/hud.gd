@@ -67,6 +67,9 @@ var bestiary_view: BestiaryPanel
 var bestiary_list: VBoxContainer
 var bestiary_visible: bool = false
 var journal_view: QuestJournalPanel
+var skills_view: SkillTreePanel
+var skills_visible: bool = false
+signal skill_learn_requested(skill_id: String)
 var journal_visible: bool = false
 var minimap: WorldMinimap
 var world_map_panel: PanelContainer
@@ -211,6 +214,9 @@ func _ready() -> void:
 	bestiary_list = bestiary_view.entry_list
 	journal_view = QuestJournalPanel.new()
 	root.add_child(journal_view)
+	skills_view = SkillTreePanel.new()
+	root.add_child(skills_view)
+	skills_view.learn_requested.connect(func(id: String) -> void: skill_learn_requested.emit(id))
 
 	# Dialogue box: portrait on the left, name tag, text and choices.
 	dialogue_panel = PanelContainer.new()
@@ -275,7 +281,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			close_world_map()
 			get_viewport().set_input_as_handled()
 		return
-	if defeat_visible or talent_visible or bestiary_visible or journal_visible:
+	if defeat_visible or talent_visible or overlay_visible():
 		return
 	if event.is_action_pressed("pause"):
 		_set_paused(not get_tree().paused)
@@ -404,7 +410,17 @@ func toggle_bestiary(entries: Dictionary, discovered: Dictionary) -> void:
 
 ## True while a full-screen book (bestiary or quest journal) is open.
 func overlay_visible() -> bool:
-	return bestiary_visible or journal_visible
+	return bestiary_visible or journal_visible or skills_visible
+
+func toggle_skill_tree(player: PlayerCharacter) -> void:
+	skills_visible = not skills_visible
+	skills_view.visible = skills_visible
+	if skills_visible:
+		skills_view.populate(player)
+
+func refresh_skill_tree(player: PlayerCharacter) -> void:
+	if skills_visible:
+		skills_view.populate(player)
 
 func toggle_journal(quests: QuestManager) -> void:
 	journal_visible = not journal_visible
@@ -432,6 +448,9 @@ func show_defeat(can_load: bool) -> void:
 	if journal_visible:
 		journal_view.visible = false
 		journal_visible = false
+	if skills_visible:
+		skills_view.visible = false
+		skills_visible = false
 	hide_talent_choices()
 	pause_panel.visible = false
 	inventory_panel.visible = false

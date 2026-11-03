@@ -31,6 +31,11 @@ var dodge_direction: Vector2 = Vector2.DOWN
 var inventory: Dictionary = {}
 var equipment: Dictionary = {"weapon": "", "armor": "", "amulet": "", "relic": ""}
 var talents: Dictionary = {}
+## Extra skill points from story rewards (on top of one per level).
+var bonus_skill_points: int = 0
+var second_wind_ready_in: float = 0.0
+const SECOND_WIND_COOLDOWN := 90.0
+signal second_wind_triggered
 var starlight_essence_used: int = 0
 var equipment_definitions: Dictionary = {}
 
@@ -59,6 +64,7 @@ func start_dodge() -> bool:
 
 func _physics_process(_delta: float) -> void:
 	dodge_cooldown_left = maxf(0.0, dodge_cooldown_left - _delta)
+	second_wind_ready_in = maxf(0.0, second_wind_ready_in - _delta)
 	if dodge_time_left > 0.0:
 		dodge_time_left = maxf(0.0, dodge_time_left - _delta)
 		velocity = dodge_direction * dodge_speed
@@ -124,6 +130,12 @@ func take_damage(amount: int) -> void:
 		return
 	var previous_health: int = health
 	health = maxi(0, health - maxi(1, amount - get_armor()))
+	if health <= 0 and has_skill("second_wind") and second_wind_ready_in <= 0.0:
+		# Wanderer's ultimate: survive the blow and recover.
+		health = 1 + int(max_health * 0.3)
+		second_wind_ready_in = SECOND_WIND_COOLDOWN
+		Vfx.level_up(get_parent(), global_position)
+		second_wind_triggered.emit()
 	Vfx.flash(visual, Color(1.0, 0.45, 0.45), 0.2)
 	stats_changed.emit()
 	if previous_health > 0 and health <= 0:
@@ -194,23 +206,28 @@ func get_spell_bonus(spell_id: String = "") -> int:
 			bonus += int(spell_bonuses.get("*", 0))
 			bonus += int(spell_bonuses.get(spell_id, 0))
 	bonus += int(talents.get("arcane_power", 0)) * 3
-	if spell_id == "frostbolt":
+	if spell_id == "fireball":
+		bonus += int(talents.get("fire_power", 0)) * 3
+	elif spell_id == "frostbolt":
 		bonus += int(talents.get("frost_lore", 0)) * 3
 	elif spell_id == "chain_lightning":
 		bonus += int(talents.get("storm_focus", 0)) * 3
 	return bonus
 
 func get_burn_damage_bonus() -> int:
-	return _equipped_stat("burn_damage_bonus")
+	return _equipped_stat("burn_damage_bonus") + int(talents.get("lingering_flame", 0))
+
+func has_skill(skill_id: String) -> bool:
+	return int(talents.get(skill_id, 0)) > 0
 
 func get_slow_duration_bonus() -> float:
 	var total: float = 0.0
 	for item_id in equipment.values():
 		total += float(get_item_definition(str(item_id)).get("slow_duration_bonus", 0.0))
-	return total
+	return total + 0.5 * float(talents.get("deep_chill", 0))
 
 func get_chain_targets_bonus() -> int:
-	return _equipped_stat("chain_targets_bonus")
+	return _equipped_stat("chain_targets_bonus") + int(talents.get("arc_reach", 0)) + (3 if has_skill("storm_ultimate") else 0)
 
 func _item_spell_bonus(item_id: String, spell_id: String) -> int:
 	var bonuses: Variant = get_item_definition(item_id).get("spell_bonus", {})
@@ -284,13 +301,10 @@ func get_cooldown_multiplier() -> float:
 
 func apply_talent(talent_id: String) -> bool:
 	var current_rank: int = int(talents.get(talent_id, 0))
-	if current_rank >= 3:
+	var definition: Dictionary = GameCatalogs.shared().talents.get(talent_id, {})
+	if definition.is_empty() or current_rank >= int(definition.get("max_rank", 3)):
 		return false
-	match talent_id:
-		"arcane_power", "frost_lore", "storm_focus", "vitality", "mana_well", "swift_cast":
-			talents[talent_id] = current_rank + 1
-		_:
-			return false
+	talents[talent_id] = current_rank + 1
 	match talent_id:
 		"vitality":
 			max_health += 15

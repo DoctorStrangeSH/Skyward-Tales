@@ -1,8 +1,19 @@
 {
-  "arcane_power": {"name": "Сила арканы", "description": "+3 к урону всех заклинаний за ранг.", "max_rank": 3},
-  "frost_lore": {"name": "Ледяное знание", "description": "+3 к урону «Ледяной стрелы» за ранг.", "max_rank": 3},
-  "storm_focus": {"name": "Грозовой фокус", "description": "+3 к урону «Цепной молнии» за ранг.", "max_rank": 3},
-  "vitality": {"name": "Жизненная сила", "description": "+15 к максимальному здоровью и немедленное восстановление 15 HP.", "max_rank": 3},
-  "mana_well": {"name": "Источник маны", "description": "+12 к максимальной мане и немедленное восстановление 12 MP.", "max_rank": 3},
-  "swift_cast": {"name": "Быстрое плетение", "description": "Сокращает перезарядку всех заклинаний на 8% за ранг.", "max_rank": 3}
+  "fire_power": {"name": "Жар", "branch": "fire", "tier": 1, "max_rank": 3, "description": "+3 к урону «Огненного шара» за ранг."},
+  "lingering_flame": {"name": "Тлеющее пламя", "branch": "fire", "tier": 2, "max_rank": 2, "requires": {"fire_power": 1}, "description": "+1 к урону горения за ранг."},
+  "fire_ultimate": {"name": "Пламя феникса", "branch": "fire", "tier": 3, "max_rank": 1, "requires": {"lingering_flame": 1}, "seal": true, "description": "Огненный шар взрывается: половина урона и горение всем врагам в радиусе 48 px."},
+
+  "frost_lore": {"name": "Ледяное знание", "branch": "ice", "tier": 1, "max_rank": 3, "description": "+3 к урону «Ледяной стрелы» за ранг."},
+  "deep_chill": {"name": "Глубокий холод", "branch": "ice", "tier": 2, "max_rank": 2, "requires": {"frost_lore": 1}, "description": "+0,5 секунды замедления за ранг."},
+  "ice_ultimate": {"name": "Сердце зимы", "branch": "ice", "tier": 3, "max_rank": 1, "requires": {"deep_chill": 1}, "seal": true, "description": "Ледяная стрела пробивает ещё двух врагов и почти замораживает их на секунду."},
+
+  "storm_focus": {"name": "Грозовой фокус", "branch": "lightning", "tier": 1, "max_rank": 3, "description": "+3 к урону «Цепной молнии» за ранг."},
+  "arc_reach": {"name": "Дальний разряд", "branch": "lightning", "tier": 2, "max_rank": 2, "requires": {"storm_focus": 1}, "description": "Молния перескакивает ещё на одного врага за ранг."},
+  "storm_ultimate": {"name": "Гнев бури", "branch": "lightning", "tier": 3, "max_rank": 1, "requires": {"arc_reach": 1}, "seal": true, "description": "Цепная молния делает ещё 3 прыжка и не теряет урон."},
+
+  "vitality": {"name": "Жизненная сила", "branch": "wanderer", "tier": 1, "max_rank": 3, "description": "+15 к максимальному здоровью и немедленное восстановление 15 HP."},
+  "mana_well": {"name": "Источник маны", "branch": "wanderer", "tier": 1, "max_rank": 3, "description": "+12 к максимальной мане и немедленное восстановление 12 MP."},
+  "arcane_power": {"name": "Сила арканы", "branch": "wanderer", "tier": 1, "max_rank": 3, "description": "+3 к урону всех заклинаний за ранг."},
+  "swift_cast": {"name": "Быстрое плетение", "branch": "wanderer", "tier": 2, "max_rank": 3, "requires": {"arcane_power": 1}, "description": "Сокращает перезарядку всех заклинаний на 8% за ранг."},
+  "second_wind": {"name": "Второе дыхание", "branch": "wanderer", "tier": 3, "max_rank": 1, "requires": {"swift_cast": 1}, "seal": true, "description": "Раз в 90 секунд смертельный удар оставляет 1 HP и лечит 30% здоровья."}
 }
