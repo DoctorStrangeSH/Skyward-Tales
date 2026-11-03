@@ -478,7 +478,7 @@ func _spawn_hunter() -> void:
 
 func _on_hunter_interacted(_source: Node2D) -> void:
 	const quest_id := "toren_wolf_hunt"
-	if quests.is_completed(quest_id) and int(player.inventory.get("wolf_pelt", 0)) >= 3 and int(player.inventory.get("wolfskin_mantle", 0)) == 0:
+	if quests.is_completed(quest_id) and int(player.inventory.get("wolf_pelt", 0)) >= 3 and int(player.inventory.get("wolfskin_mantle", 0)) == 0 and str(player.equipment.get("armor", "")) != "wolfskin_mantle":
 		_show_dialogue_choices("Торен, охотник", "Три волчьи шкуры — отличный материал. Я могу сшить тебе прочную волчью накидку: она защитит от ударов. Отдашь шкуры?", [
 			{"id": "hunter_craft:mantle", "label": "Сшить волчью накидку — 3 шкуры"},
 			{"id": "hunter_craft:later", "label": "Пока оставить шкуры"}
@@ -503,7 +503,7 @@ func _on_hunter_interacted(_source: Node2D) -> void:
 	_refresh_hud()
 
 func _craft_wolfskin_mantle() -> void:
-	if int(player.inventory.get("wolf_pelt", 0)) < 3 or int(player.inventory.get("wolfskin_mantle", 0)) > 0:
+	if int(player.inventory.get("wolf_pelt", 0)) < 3 or int(player.inventory.get("wolfskin_mantle", 0)) > 0 or str(player.equipment.get("armor", "")) == "wolfskin_mantle":
 		hud.show_message("Нужно три волчьи шкуры, а накидка уже может быть только одна.", 3.0)
 		return
 	player.inventory["wolf_pelt"] = int(player.inventory["wolf_pelt"]) - 3
