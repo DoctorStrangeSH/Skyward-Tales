@@ -46,6 +46,7 @@ signal talent_selected(talent_id: String)
 var pause_panel: PanelContainer
 var pause_view: PauseMenuPanel
 var defeat_panel: PanelContainer
+var defeat_view: DefeatPanel
 var defeat_hint_label: Label
 var defeat_load_button: Button
 var defeat_visible: bool = false
@@ -184,32 +185,14 @@ func _ready() -> void:
 	pause_view.load_requested.connect(func() -> void: pause_load_requested.emit())
 	pause_view.menu_requested.connect(func() -> void: pause_menu_requested.emit())
 
-	defeat_panel = PanelContainer.new()
-	defeat_panel.position = Vector2(150, 66)
-	defeat_panel.custom_minimum_size = Vector2(340, 228)
-	defeat_panel.mouse_filter = Control.MOUSE_FILTER_STOP
-	defeat_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.055, 0.035, 0.045, 0.99)))
-	root.add_child(defeat_panel)
-	var defeat_box := VBoxContainer.new()
-	defeat_box.add_theme_constant_override("separation", 9)
-	defeat_panel.add_child(defeat_box)
-	var defeat_title := _make_label("ПУТЕШЕСТВИЕ ПРЕРВАНО", 17, Color(1.0, 0.56, 0.48))
-	defeat_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	defeat_box.add_child(defeat_title)
-	var defeat_description := _make_label("Герой пал в бою. Но это ещё не конец истории.", 11, Color(0.91, 0.87, 0.82))
-	defeat_description.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	defeat_box.add_child(defeat_description)
-	defeat_hint_label = _make_label("Выберите, как продолжить.", 10, Color(0.76, 0.82, 0.87))
-	defeat_hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	defeat_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	defeat_box.add_child(defeat_hint_label)
-	_pause_button(defeat_box, "Начать заново", func() -> void: defeat_restart_requested.emit())
-	defeat_load_button = Button.new()
-	defeat_load_button.text = "Загрузить сохранение"
-	defeat_load_button.pressed.connect(func() -> void: defeat_load_requested.emit())
-	defeat_box.add_child(defeat_load_button)
-	_pause_button(defeat_box, "Главное меню", func() -> void: defeat_menu_requested.emit())
-	defeat_panel.visible = false
+	defeat_view = DefeatPanel.new()
+	root.add_child(defeat_view)
+	defeat_panel = defeat_view
+	defeat_hint_label = defeat_view.hint_label
+	defeat_load_button = defeat_view.load_button
+	defeat_view.restart_requested.connect(func() -> void: defeat_restart_requested.emit())
+	defeat_view.load_requested.connect(func() -> void: defeat_load_requested.emit())
+	defeat_view.menu_requested.connect(func() -> void: defeat_menu_requested.emit())
 
 	talent_view = TalentChoicePanel.new()
 	root.add_child(talent_view)
@@ -392,9 +375,7 @@ func show_defeat(can_load: bool) -> void:
 	inventory_open = false
 	dialogue_panel.visible = false
 	dialogue_visible = false
-	defeat_load_button.disabled = not can_load
-	defeat_hint_label.text = "Сохранение найдено. Можно вернуться к последней записи." if can_load else "Сохранений пока нет. Начните новое приключение."
-	defeat_panel.visible = true
+	defeat_view.show_defeat(can_load)
 
 func set_defeat_message(message: String) -> void:
 	if defeat_hint_label != null:

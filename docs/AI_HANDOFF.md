@@ -459,3 +459,11 @@ Equipment milestone verification: Godot 4.7.2 workflow run `41443674839` complet
 - `GameHud._ready()` пересылает внутренние сигналы в прежние `pause_save_requested`, `pause_load_requested`, `pause_menu_requested` и `_set_paused(false)`. Ссылка `pause_panel` сохранена; запреты снятия паузы при поражении/выборе таланта остались в HUD.
 - `tests/pause_menu_panel.gd` проверяет структуру, маршрутизацию сигналов, открытие/закрытие и паузу. Старый тест `tests/title_menu.gd` сохранён; добавлен отдельный шаг CI.
 - Исходный HEAD `ab7d0129cebd33ceabc73ad491466727913b4911`; новый CI необходимо проверить отдельно, так как GitHub ещё не предоставил run для предыдущего коммита на момент ревизии. Draft PR #1 не сливать без ручного QA.
+
+
+## 25. Панель поражения — 2026-11-03
+
+- Добавлен `scripts/defeat_panel.gd` (`DefeatPanel extends PanelContainer`) для UI поражения и кнопок перезапуска, загрузки и главного меню.
+- `GameHud.show_defeat()` сохраняет очистку остальных окон и флаг `defeat_visible`, делегирует обновление текста и доступности кнопки загрузки в `DefeatPanel.show_defeat()`; `hide_defeat()` сохраняет прежнюю разблокировку паузы.
+- Поля `defeat_panel`, `defeat_hint_label`, `defeat_load_button` остаются совместимыми алиасами. Сигналы `defeat_restart_requested`, `defeat_load_requested`, `defeat_menu_requested` неизменны.
+- Добавлен `tests/defeat_panel.gd` в CI рядом с `tests/death_flow.gd`. На момент коммита требуется подтвердить итог CI и ручное QA. Не сливать Draft PR #1 без ручного QA.

@@ -134,6 +134,9 @@ jobs:
       - name: Test game data catalogs
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/game_catalogs.gd
+      - name: Test modular defeat panel
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/defeat_panel.gd
       - name: Test player death, defeat screen and recovery
         run: |
           docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/death_flow.gd
