@@ -85,4 +85,16 @@
       }
     }
   }
+,
+  {
+    "id": "toren_wolf_hunt",
+    "title": "Охота на волков",
+    "description": "Победите трёх волков в Зачарованном лесу и вернитесь к охотнику Торену.",
+    "target": 3,
+    "reward": {"experience": 40, "gold": 35},
+    "choices": {
+      "gold": {"label": "Получить 35 золота и 40 опыта", "reward": {"experience": 40, "gold": 35, "toren_trust": 8}},
+      "supplies": {"label": "Получить 20 золота, 2 зелья здоровья и 60 опыта", "reward": {"experience": 60, "gold": 20, "items": [{"id": "health_potion", "amount": 2}], "toren_trust": 15}}
+    }
+  }
 ]
