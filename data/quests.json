@@ -7,6 +7,22 @@
     "reward": {
       "experience": 50,
       "gold": 25
+    },
+    "choices": {
+      "payment": {
+        "label": "Принять полную награду — 25 золота",
+        "reward": {
+          "experience": 50,
+          "gold": 25
+        }
+      },
+      "village": {
+        "label": "Оставить большую часть награды поселению",
+        "reward": {
+          "experience": 50,
+          "gold": 10
+        }
+      }
     }
   },
   {
