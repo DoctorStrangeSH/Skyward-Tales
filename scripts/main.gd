@@ -61,6 +61,7 @@ func _ready() -> void:
 	hud.defeat_load_requested.connect(_load_from_defeat)
 	hud.defeat_menu_requested.connect(_go_to_title)
 	hud.talent_selected.connect(_on_talent_selected)
+	hud.dialogue_choice_selected.connect(_on_dialogue_choice_selected)
 
 	_populate_region()
 
@@ -327,7 +328,11 @@ func _spawn_cartographer() -> void:
 func _on_cartographer_interacted(_source: Node2D) -> void:
 	const quest_id := "lost_cartographer_notes"
 	if quests.is_completed(quest_id):
-		_show_dialogue("Мира, картограф", "Теперь я смогу восстановить карту. Спасибо, что помог незнакомке в дороге.")
+		var choice_id: String = str(quests.states[quest_id].get("choice", ""))
+		if choice_id == "supplies":
+			_show_dialogue("Мира, картограф", "Надеюсь, припасы пригодились. Я уже начала восстанавливать безопасные тропы по копии дневника.")
+		else:
+			_show_dialogue("Мира, картограф", "Благодарю за возвращённый дневник. Монеты — малая плата за такую помощь.")
 	elif not quests.is_completed("moonleaf_gathering"):
 		_show_dialogue("Мира, картограф", "Я ищу страницы своего полевого дневника. Но сначала помоги старейшине Элиану — поселению сейчас нужнее твоя помощь.")
 	elif not quests.active_quest_id.is_empty() and quests.active_quest_id != quest_id:
@@ -336,11 +341,32 @@ func _on_cartographer_interacted(_source: Node2D) -> void:
 		quests.start_quest(quest_id)
 		_show_dialogue("Мира, картограф", "Ветер разметал страницы моего полевого дневника возле старого лагеря. Найди два обрывка на поляне и принеси их мне. Там записаны безопасные тропы через лес.")
 	elif quests.is_ready_to_complete(quest_id):
-		if quests.complete_quest(quest_id):
-			_grant_quest_reward(quest_id)
-		_show_dialogue("Мира, картограф", "Все страницы на месте! Теперь я смогу восстановить карту. Прими эту скромную награду — ты её заслужил.")
+		_show_dialogue_choices("Мира, картограф", "Ты нашёл обе страницы! Я хочу отблагодарить тебя. Что тебе сейчас нужнее?", [
+			{"id": "gold", "label": "Взять 35 золотых монет"},
+			{"id": "supplies", "label": "Попросить 2 зелья маны и 10 монет"}
+		])
 	else:
 		_show_dialogue("Мира, картограф", "Ищи страницы у старого лагеря, чуть восточнее от меня. На них нарисованы отметки безопасных троп.")
+	_refresh_hud()
+
+func _on_dialogue_choice_selected(choice_id: String) -> void:
+	const quest_id := "lost_cartographer_notes"
+	if not quests.is_ready_to_complete(quest_id):
+		return
+	var reward: Dictionary = quests.get_choice_reward(quest_id, choice_id)
+	if reward.is_empty() or not quests.complete_quest(quest_id):
+		return
+	quests.states[quest_id]["choice"] = choice_id
+	player.add_experience(int(reward.get("experience", 0)))
+	player.add_gold(int(reward.get("gold", 0)))
+	var items: Variant = reward.get("items", [])
+	if items is Array:
+		for item in items:
+			if item is Dictionary:
+				player.add_item(str(item.get("id", "")), int(item.get("amount", 1)))
+	hud.close_dialogue()
+	player.set_physics_process(true)
+	hud.show_message("Мира вручила вам выбранную награду.", 3.0)
 	_refresh_hud()
 
 func _spawn_elder() -> void:
@@ -420,6 +446,10 @@ func _try_interact() -> void:
 func _show_dialogue(speaker: String, message: String) -> void:
 	player.set_physics_process(false)
 	hud.show_dialogue(speaker, message)
+
+func _show_dialogue_choices(speaker: String, message: String, choices: Array[Dictionary]) -> void:
+	player.set_physics_process(false)
+	hud.show_dialogue_choices(speaker, message, choices)
 
 func _grant_quest_reward(quest_id: String) -> void:
 	var reward: Dictionary = quests.get_reward(quest_id)
