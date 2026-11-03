@@ -22,7 +22,7 @@ func _run() -> void:
 	game.quests.add_progress("moonleaf_gathering", 3)
 	game.quests.complete_quest("moonleaf_gathering")
 	game._on_merchant_interacted(null)
-	if not _verify(game.hud.dialogue_label.text.contains("Торговец Бран"), "merchant dialogue opens"):
+	if not _verify(game.hud.dialogue_speaker_label.text.contains("Торговец Бран"), "merchant dialogue opens"):
 		return
 	if not _verify(game.hud.dialogue_choices_container.get_child_count() >= 2, "merchant offers the supply quest"):
 		return

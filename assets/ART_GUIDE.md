@@ -29,6 +29,7 @@ Requires Python 3 with Pillow, numpy and scipy. Output is deterministic.
 | `tools/art/props.py` | Ruins, standing stones, chests, herbs, ore, crates, potions, gates |
 | `tools/art/characters.py` | Chibi humanoid rig: hero, NPCs, forest shaman |
 | `tools/art/creatures.py` | Slime, wolf, grove guardian (48 px), spell projectiles |
+| `tools/art/icons.py` | 16×16 inventory icons (`assets/icons/<item_id>.png`) |
 
 To change a character, edit its `Look` in `characters.py` (colours, hair
 style, hat, robe, staff…) and rebuild. To move scenery, edit the `terrain`
@@ -49,6 +50,7 @@ section of `data/regions.json` and rebuild: collisions and art read the same dat
 | File | Cell | Notes |
 | --- | --- | --- |
 | `sprites/characters/hero_8dir_walk.png` | 32 | Walk cycle |
+| `sprites/characters/hero_8dir_cast.png` | 32 | Casting pose, played via `DirectionalSprite.play_action()` |
 | `sprites/npcs/<npc_id>.png` | 32 | Idle breathing (NPC ids from `data/regions.json`) |
 | `sprites/enemies/forest_slime_true8.png` | 32 | Squash-and-stretch hop |
 | `sprites/enemies/forest_wolf_8dir.png` | 32 | Trot |
@@ -58,7 +60,6 @@ section of `data/regions.json` and rebuild: collisions and art read the same dat
 
 ## Next steps for art
 
-- Attack / hurt / cast animations (currently feedback is a colour flash).
-- Water shimmer and swaying grass via shaders.
-- Item icons for the inventory.
+- Enemy attack and death animations.
+- Swaying grass via a shader.
 - A pixel font for the interface.

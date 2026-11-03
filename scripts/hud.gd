@@ -14,6 +14,9 @@ var message_label: Label
 var prompt_label: Label
 var dialogue_panel: PanelContainer
 var dialogue_label: Label
+var dialogue_speaker_label: Label
+var dialogue_hint_label: Label
+var dialogue_portrait: TextureRect
 var spell_label: Label
 var spell_cooldown_bar: ProgressBar
 var dodge_label: Label
@@ -202,19 +205,55 @@ func _ready() -> void:
 	journal_view = QuestJournalPanel.new()
 	root.add_child(journal_view)
 
+	# Dialogue box: portrait on the left, name tag, text and choices.
 	dialogue_panel = PanelContainer.new()
-	dialogue_panel.position = Vector2(140, 246)
-	dialogue_panel.custom_minimum_size = Vector2(360, 145)
-	dialogue_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.045, 0.06, 0.08, 0.97)))
+	dialogue_panel.position = Vector2(12, 262)
+	dialogue_panel.custom_minimum_size = Vector2(616, 90)
+	var dialogue_style := _panel_style(Color(0.08, 0.07, 0.13, 0.96))
+	dialogue_style.set_border_width_all(2)
+	dialogue_style.set_corner_radius_all(5)
+	dialogue_style.set_content_margin_all(8)
+	dialogue_panel.add_theme_stylebox_override("panel", dialogue_style)
 	root.add_child(dialogue_panel)
 	dialogue_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	dialogue_label = _make_label("", 11, Color(0.95, 0.93, 0.84))
+	var dialogue_row := HBoxContainer.new()
+	dialogue_row.add_theme_constant_override("separation", 10)
+	dialogue_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dialogue_panel.add_child(dialogue_row)
+	var portrait_frame := PanelContainer.new()
+	var portrait_style := StyleBoxFlat.new()
+	portrait_style.bg_color = Color(0.2, 0.32, 0.36)
+	portrait_style.border_color = Color(0.93, 0.78, 0.47)
+	portrait_style.set_border_width_all(1)
+	portrait_style.set_corner_radius_all(3)
+	portrait_frame.add_theme_stylebox_override("panel", portrait_style)
+	portrait_frame.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	portrait_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dialogue_row.add_child(portrait_frame)
+	dialogue_portrait = TextureRect.new()
+	dialogue_portrait.custom_minimum_size = Vector2(64, 64)
+	dialogue_portrait.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	dialogue_portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	dialogue_portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	dialogue_portrait.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	portrait_frame.add_child(dialogue_portrait)
+	var dialogue_column := VBoxContainer.new()
+	dialogue_column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	dialogue_column.add_theme_constant_override("separation", 3)
+	dialogue_column.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dialogue_row.add_child(dialogue_column)
+	dialogue_speaker_label = _make_label("", 11, Color(1.0, 0.85, 0.5))
+	dialogue_column.add_child(dialogue_speaker_label)
+	dialogue_label = _make_label("", 10, Color(0.97, 0.95, 0.88))
 	dialogue_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	dialogue_panel.add_child(dialogue_label)
-	dialogue_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dialogue_label.custom_minimum_size = Vector2(510, 0)
+	dialogue_column.add_child(dialogue_label)
 	dialogue_choices_container = VBoxContainer.new()
-	dialogue_choices_container.add_theme_constant_override("separation", 5)
-	dialogue_panel.add_child(dialogue_choices_container)
+	dialogue_choices_container.add_theme_constant_override("separation", 2)
+	dialogue_column.add_child(dialogue_choices_container)
+	dialogue_hint_label = _make_label("E — продолжить", 8, Color(0.7, 0.72, 0.8))
+	dialogue_hint_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	dialogue_column.add_child(dialogue_hint_label)
 	dialogue_panel.visible = false
 
 func _process(delta: float) -> void:
@@ -410,30 +449,79 @@ func show_message(message: String, duration: float = 3.0) -> void:
 func set_prompt(message: String) -> void:
 	prompt_label.text = message
 
+## Maps a speaker's name to an NPC sprite sheet for the portrait.
+const PORTRAITS := {"Элиан": "elder", "Мира": "cartographer", "Бран": "merchant", "Торен": "hunter", "Борин": "blacksmith", "Илара": "grove_warden"}
+
+func _set_speaker(speaker: String) -> void:
+	dialogue_speaker_label.text = speaker
+	var portrait: Texture2D = null
+	for key in PORTRAITS:
+		if speaker.contains(key):
+			var sheet := WorldArt.texture("sprites/npcs/%s.png" % PORTRAITS[key])
+			if sheet != null:
+				var atlas := AtlasTexture.new()
+				atlas.atlas = sheet
+				atlas.region = Rect2(4, 0, 24, 24)  # head and shoulders of the idle frame
+				portrait = atlas
+			break
+	dialogue_portrait.texture = portrait
+	dialogue_portrait.get_parent().visible = portrait != null
+
+func _layout_dialogue() -> void:
+	# Grow upwards from the bottom edge so long choice lists stay on screen.
+	dialogue_panel.reset_size()
+	dialogue_panel.position.y = 352.0 - dialogue_panel.get_combined_minimum_size().y
+
 func show_dialogue(speaker: String, message: String) -> void:
 	dialogue_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_clear_dialogue_choices()
-	dialogue_label.text = speaker + "\n" + message + "\n\n[ E — закрыть ]"
+	_set_speaker(speaker)
+	dialogue_label.text = message
+	dialogue_hint_label.text = "E — продолжить"
 	dialogue_panel.visible = true
 	dialogue_visible = true
+	_layout_dialogue()
 
 func show_dialogue_choices(speaker: String, message: String, choices: Array[Dictionary]) -> void:
 	dialogue_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	_clear_dialogue_choices()
-	dialogue_label.text = speaker + "\n" + message
+	_set_speaker(speaker)
+	dialogue_label.text = message
+	dialogue_hint_label.text = "Выберите ответ · E — закрыть"
 	for choice in choices:
 		var choice_id: String = str(choice.get("id", ""))
 		var choice_label: String = str(choice.get("label", "Выбрать"))
 		if choice_id.is_empty():
 			continue
 		var button := Button.new()
-		button.text = choice_label
-		button.custom_minimum_size = Vector2(0, 25)
-		button.add_theme_font_size_override("font_size", 10)
+		button.text = "▸ " + choice_label
+		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		button.custom_minimum_size = Vector2(0, 15)
+		button.add_theme_font_size_override("font_size", 9)
+		_style_choice(button)
 		button.pressed.connect(_on_dialogue_choice_pressed.bind(choice_id))
 		dialogue_choices_container.add_child(button)
 	dialogue_panel.visible = true
 	dialogue_visible = true
+	_layout_dialogue()
+
+func _style_choice(button: Button) -> void:
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = Color(0.14, 0.12, 0.2, 0.9)
+	normal.set_corner_radius_all(2)
+	normal.content_margin_left = 6
+	normal.content_margin_top = 1
+	normal.content_margin_bottom = 1
+	var hover := normal.duplicate() as StyleBoxFlat
+	hover.bg_color = Color(0.32, 0.26, 0.16, 0.95)
+	hover.border_color = Color(0.93, 0.78, 0.47)
+	hover.set_border_width_all(1)
+	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override("hover", hover)
+	button.add_theme_stylebox_override("pressed", hover)
+	button.add_theme_stylebox_override("focus", hover)
+	button.add_theme_color_override("font_color", Color(0.95, 0.93, 0.86))
+	button.add_theme_color_override("font_hover_color", Color(1.0, 0.9, 0.6))
 
 func _on_dialogue_choice_pressed(choice_id: String) -> void:
 	dialogue_choice_selected.emit(choice_id)

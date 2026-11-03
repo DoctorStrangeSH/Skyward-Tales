@@ -18,7 +18,7 @@ func _run() -> void:
 	game.quests.add_progress("moonleaf_gathering", 3)
 	game.quests.complete_quest("moonleaf_gathering")
 	game._on_hunter_interacted(null)
-	if not _verify(game.hud.dialogue_label.text.contains("Торен"), "hunter dialogue opens"):
+	if not _verify(game.hud.dialogue_speaker_label.text.contains("Торен"), "hunter dialogue opens"):
 		return
 	game._on_dialogue_choice_selected("hunter_quest_start")
 	if not _verify(game.quests.active_quest_id == "toren_wolf_hunt", "wolf hunt starts"):

@@ -75,7 +75,7 @@ func _run() -> void:
 		return
 	game.relationships.adjust("bran", -50)
 	game._on_merchant_interacted(null)
-	if not _verify(game.hud.dialogue_visible and game.hud.dialogue_label.text.contains("Торговец Бран"), "merchant interaction opens the shop dialogue"):
+	if not _verify(game.hud.dialogue_visible and game.hud.dialogue_speaker_label.text.contains("Торговец Бран"), "merchant interaction opens the shop dialogue"):
 		return
 	if not _verify(game.hud.dialogue_choices_container.get_child_count() == shop.get_offers(20).size() + 1, "shop displays every offer and a close option"):
 		return
