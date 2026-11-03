@@ -17,6 +17,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent))
 import characters  # noqa: E402
 import creatures  # noqa: E402
 import flora  # noqa: E402
+import icons  # noqa: E402
 import props  # noqa: E402
 import terrain  # noqa: E402
 from palettes import STYLES  # noqa: E402
@@ -85,9 +86,13 @@ def build_props() -> None:
         "health_potion": props.potion("red"), "mana_potion": props.potion("blue"),
         "wolf_pelt": props.pelt(), "relic": props.treasure("relic"), "pouch": props.treasure("pouch"),
         "gate_day": props.gate(False), "gate_night": props.gate(True),
+        "marker_quest": props.marker("quest"), "marker_ready": props.marker("ready"),
+        "marker_service": props.marker("service"),
     }
     for name, (canvas, origin) in items.items():
         save(canvas, f"props/{name}.png", origin)
+    for item_id, canvas in icons.build().items():
+        save(canvas, f"icons/{item_id}.png")
 
 
 def main() -> int:

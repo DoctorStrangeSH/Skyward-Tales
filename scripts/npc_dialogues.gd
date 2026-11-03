@@ -40,6 +40,34 @@ func _grant_reward(reward: Dictionary) -> String:
 					summary += ", %s ×%d" % [_item_name(item_id), amount]
 	return summary
 
+# --- Quest markers -------------------------------------------------------
+
+## What floats above an NPC: "quest" (!), "ready" (?), "service" (craft) or "".
+## Mirrors the conditions used by the conversations below.
+func marker_for(npc_id: String) -> String:
+	var quests := game.quests
+	var free: bool = quests.active_quest_id.is_empty()
+	var village_helped: bool = quests.is_completed("moonleaf_gathering")
+	var quest_id: String = {
+		"elder": "moonleaf_gathering", "cartographer": "lost_cartographer_notes",
+		"grove_warden": "grove_spirits", "hunter": "toren_wolf_hunt", "merchant": "bran_supply_run"
+	}.get(npc_id, "")
+	if not quest_id.is_empty():
+		if quests.is_ready_to_complete(quest_id):
+			return "ready"
+		var started: bool = bool(quests.states.get(quest_id, {}).get("started", false))
+		var unlocked: bool = npc_id in ["elder", "grove_warden"] or village_helped
+		var can_take: bool = free or (npc_id == "grove_warden" and quests.active_quest_id == quest_id)
+		if not started and not quests.is_completed(quest_id) and unlocked and can_take:
+			return "quest"
+	if npc_id == "hunter" and quests.is_completed("toren_wolf_hunt") and _can_craft_mantle():
+		return "service"
+	if npc_id == "blacksmith":
+		for recipe in ["reinforce_wolfskin_mantle", "forge_ironbound_staff"]:
+			if bool(game.crafting_service.get_recipe_status(game.player, recipe).get("success", false)):
+				return "service"
+	return ""
+
 # --- Choice routing ------------------------------------------------------
 
 func handle_choice(choice_id: String) -> void:

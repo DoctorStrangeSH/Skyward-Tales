@@ -415,3 +415,28 @@ def gate(night: bool) -> tuple[Canvas, tuple[int, int]]:
         c.put(x, y, portal[0])
     _finish(c)
     return c, (17, 39)
+
+
+def marker(kind: str) -> tuple[Canvas, tuple[int, int]]:
+    """Floating quest markers: '!' new quest, '?' ready to turn in, '*' service."""
+    c = Canvas(11, 15)
+    gold = ramp("#fff6c0", "#ffd45c", "#e0962e", "#8a4a22")
+    blue = ramp("#e8fbff", "#8fe0ff", "#3f9ae0", "#25407a")
+    pal = blue if kind == "service" else gold
+    glyphs = {
+        "quest": ["..###..", "..###..", "..###..", "..###..", "..##...", "..##...", ".......", "..##...", "..##..."],
+        "ready": [".#####.", "###.###", "....###", "...###.", "..###..", "..##...", ".......", "..##...", "..##..."],
+        "service": ["...#...", "...#...", ".#.#.#.", "..###..", "#######", "..###..", ".#.#.#.", "...#...", "...#..."],
+    }
+    rows = glyphs[kind]
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            if ch == "#":
+                shade = 0 if y < 2 or (x < 3 and y < 5) else (1 if y < 6 else 2)
+                c.put(x + 2, y + 2, pal[shade])
+    c.outline(pal[3])
+    solid = Canvas(c.w, c.h)
+    solid.px = c.px.copy()
+    solid.outline(OUTLINE)
+    c.px = solid.px
+    return c, (5, 14)
