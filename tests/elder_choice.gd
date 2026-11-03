@@ -22,13 +22,15 @@ func _run() -> void:
 	if not _verify(game.hud.dialogue_label.text.contains("поселению"), "elder explains the village dilemma"):
 		return
 	var before_gold: int = game.player.gold
+	var before_level: int = game.player.level
 	var before_xp: int = game.player.experience
+	var xp_to_next: int = game.player.experience_to_next
 	game._on_dialogue_choice_selected("village")
 	if not _verify(game.quests.is_completed("moonleaf_gathering"), "village choice completes the quest"):
 		return
 	if not _verify(game.quests.states["moonleaf_gathering"].get("choice", "") == "village", "choice is saved in quest state"):
 		return
-	if not _verify(game.player.gold == before_gold + 10 and game.player.experience == before_xp + 50, "village choice grants its data-driven reward"):
+	if not _verify(game.player.gold == before_gold + 10 and game.player.level == before_level + 1 and game.player.experience == before_xp + 50 - xp_to_next, "village choice grants its data-driven reward and applies level-up XP"):
 		return
 	if not _verify(game.relationships.get_score("elder") == 20, "donating reward grants twenty trust"):
 		return
