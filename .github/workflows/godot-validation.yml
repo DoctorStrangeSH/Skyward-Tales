@@ -1,0 +1,197 @@
+name: Godot validation
+# Regression coverage includes hunter crafting and save/load.
+on:
+  push:
+    branches: [main, feat/godot-rpg-foundation]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate PNG atlas dimensions and transparency
+        run: python3 tools/validate_sprite_atlases.py
+      - name: Import project with Godot 4.7.2
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --editor --import --quit
+      - name: Test spell casting, 8-way sprites and enemy damage
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/magic_smoke.gd
+      - name: Test dodge HUD and unique relic inventory
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/dodge_hud.gd
+      - name: Test enemy health bars, damage numbers and warnings
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/combat_feedback.gd
+      - name: Test player dodge and invulnerability
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/player_dodge.gd
+      - name: Test world collisions and collision masks
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/world_collisions.gd
+      - name: Test obstacle steering and stable detour
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/enemy_steering.gd
+      - name: Test enemy AI state transitions
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/slime_ai.gd
+      - name: Test wolf telegraphed pounce and cooldown
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/wolf_pounce.gd
+      - name: Test forest shaman and enemy projectile
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/forest_shaman.gd
+      - name: Test grove guardian boss phases and victory
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/grove_guardian.gd
+      - name: Test fire burning damage and persistence
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/fire_burning.gd
+      - name: Test chest rarity and rare essence persistence
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/loot_rarity.gd
+      - name: Test treasure chests and persistent rewards
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/treasure_chests.gd
+      - name: Test full region map and quest summary
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/world_map.gd
+      - name: Test minimap, landmark discovery and region travel
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/minimap.gd
+      - name: Test modular bestiary panel
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/bestiary_panel.gd
+      - name: Test bestiary discovery and persistence
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/bestiary.gd
+      - name: Test enemy elemental resistances and vulnerabilities
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/elemental_resistances.gd
+      - name: Test elemental combat visuals
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/elemental_visuals.gd
+      - name: Test elemental steam and shock reactions
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/elemental_reactions.gd
+      - name: Test firestorm elemental synergy and burn spread
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/elemental_synergies.gd
+      - name: Test ice magic and slow expiration
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/frost_magic.gd
+      - name: Test chain lightning targeting and diminishing damage
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/chain_lightning.gd
+      - name: Test combat HUD spell selection and cooldown
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/combat_hud.gd
+      - name: Test loot and consumable inventory
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/loot_inventory.gd
+      - name: Test inventory panel and item interaction
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/inventory_window.gd
+      - name: Test equipment bonuses and spell damage
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/equipment.gd
+      - name: Test equipment slots and removal
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/equipment_unequip.gd
+      - name: Test data-driven equipment catalog and inventory UI
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/equipment_data_driven.gd
+      - name: Test inventory window content population
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/inventory_window_population.gd
+      - name: Test inventory window structure and control forwarding
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/inventory_window.gd
+      - name: Test inventory item component and signals
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/inventory_item_button.gd
+      - name: Test inventory item ordering and category rules
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/inventory_item_order.gd
+      - name: Test inventory filters and sorting
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/inventory_filter_sort.gd
+      - name: Test equipment comparison formatting
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/inventory_comparison_formatter.gd
+      - name: Test equipment comparison panel component
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/equipment_comparison_panel.gd
+      - name: Test equipment comparison and relic effects
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/equipment_comparison.gd
+      - name: Test save/load of quest, equipment and world
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/save_load.gd
+      - name: Test game data catalogs
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/game_catalogs.gd
+      - name: Test modular defeat panel
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/defeat_panel.gd
+      - name: Test player death, defeat screen and recovery
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/death_flow.gd
+      - name: Test modular talent choice panel
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/talent_choice_panel.gd
+      - name: Test level-up talent choices and persistence
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/level_up_talents.gd
+      - name: Test modular pause menu panel
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/pause_menu_panel.gd
+      - name: Test title menu and pause controls
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/title_menu.gd
+      - name: Test world map component and pause handling
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/world_map_panel.gd
+      - name: Test cartographer side quest and persistence
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/cartographer_side_quest.gd
+      - name: Test optional cartographer cache exploration
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/cartographer_cache.gd
+      - name: Test data-driven quest rewards
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/quest_rewards.gd
+      - name: Test village merchant prices and purchases
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/merchant_shop.gd
+      - name: Test Brann supply quest and choices
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/bran_supply_quest.gd
+      - name: Test Toren wolf hunt quest and rewards
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/hunter_wolf_quest.gd
+      - name: Test wolf pelt crafting and equipment
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/wolf_pelt_crafting.gd
+      - name: Test blacksmith crafting and equipment
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/blacksmith_crafting.gd
+      - name: Test iron mining and crafting progression
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/iron_mining_crafting.gd
+      - name: Test elder's consequential quest choice
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/elder_choice.gd
+      - name: Test NPC relationships and persistence
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/npc_relationships.gd
+      - name: Test region travel and grove quest
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --script res://tests/regions_and_grove_quest.gd
+      - name: Headless gameplay smoke test
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project barichello/godot-ci:4.7.2 godot --headless --path . --quit-after 120

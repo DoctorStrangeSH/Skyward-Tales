@@ -1,0 +1,36 @@
+{
+  "fireball": {
+    "name": "Огненный шар",
+    "description": "Огненный шар поджигает выжившую цель на 2 секунды: 3 урона каждые 0,5 с. Повторное попадание продлевает горение, но не складывает его урон.",
+    "mana_cost": 8,
+    "damage": 18,
+    "projectile_speed": 255,
+    "cooldown": 0.25,
+    "school": "fire",
+    "burn_damage": 3,
+    "burn_duration": 2
+  },
+  "frostbolt": {
+    "name": "Ледяная стрела",
+    "description": "Наносит урон и снижает скорость противника на 60% в течение 2.5 секунд.",
+    "mana_cost": 12,
+    "damage": 10,
+    "projectile_speed": 220,
+    "cooldown": 0.55,
+    "school": "ice",
+    "slow_multiplier": 0.4,
+    "slow_duration": 2.5
+  },
+  "chain_lightning": {
+    "name": "Цепная молния",
+    "description": "Первое попадание поражает цель, затем молния перескакивает ещё на двух ближайших врагов в радиусе 150 px от предыдущей цели. На каждом прыжке урон уменьшается. Попадание по горящей цели вызывает Огненную бурю: +4 урона молнией и ослабленное горение врагов в радиусе 64 px.",
+    "mana_cost": 18,
+    "damage": 15,
+    "projectile_speed": 330,
+    "cooldown": 0.8,
+    "school": "lightning",
+    "chain_targets": 2,
+    "chain_radius": 150,
+    "chain_damage_factor": 0.7
+  }
+}
