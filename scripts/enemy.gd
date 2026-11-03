@@ -158,7 +158,7 @@ func _physics_process(delta: float) -> void:
 	match brain_state:
 		BrainState.CHASE:
 			if distance_to_player > attack_range:
-				desired = offset.normalized()
+				desired = _shape_chase(offset.normalized(), delta)
 			elif attack_cooldown <= 0.0 and player.has_method("take_damage"):
 				if attack_windup_duration > 0.0 or attack_lunge_duration > 0.0:
 					_start_special_attack(offset.normalized())
@@ -182,6 +182,10 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity = Vector2.ZERO
 		visual.set_moving(false)
+
+## Hook for subclasses to bend the chase direction (bats zig-zag).
+func _shape_chase(direction: Vector2, _delta: float) -> Vector2:
+	return direction
 
 func _start_special_attack(direction: Vector2) -> void:
 	attack_direction = direction.normalized()

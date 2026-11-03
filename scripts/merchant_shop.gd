@@ -5,6 +5,8 @@ const DATA_PATH := "res://data/merchant_stock.json"
 
 var offers: Dictionary = {}
 var discount_tiers: Array = []
+var sell_prices: Dictionary = {}
+var sell_trust_bonus: Dictionary = {}
 
 func _init() -> void:
 	var file := FileAccess.open(DATA_PATH, FileAccess.READ)
@@ -21,6 +23,48 @@ func _init() -> void:
 		offers = raw_offers.duplicate(true)
 	if raw_tiers is Array:
 		discount_tiers = raw_tiers.duplicate(true)
+	var raw_sell: Variant = parsed.get("sell_prices", {})
+	if raw_sell is Dictionary:
+		sell_prices = raw_sell.duplicate(true)
+	var raw_bonus: Variant = parsed.get("sell_trust_bonus", {})
+	if raw_bonus is Dictionary:
+		sell_trust_bonus = raw_bonus.duplicate(true)
+
+# --- Selling ---------------------------------------------------------------
+
+## How much Bran pays for one item, or -1 if he does not buy it.
+func get_sell_price(item_id: String, bran_trust: int = 0) -> int:
+	if not sell_prices.has(item_id):
+		return -1
+	var price := float(sell_prices[item_id])
+	if bran_trust >= int(sell_trust_bonus.get("trust", 999)):
+		price *= 1.0 + float(sell_trust_bonus.get("bonus", 0.0))
+	return maxi(1, roundi(price))
+
+## Copies the player can sell: equipped items keep one copy on the hero.
+func sellable_count(player: PlayerCharacter, item_id: String) -> int:
+	var count := int(player.inventory.get(item_id, 0))
+	if item_id in player.equipment.values():
+		count -= 1
+	return maxi(0, count)
+
+func get_sell_offers(player: PlayerCharacter, bran_trust: int = 0) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	for item_id in sell_prices:
+		var count := sellable_count(player, str(item_id))
+		if count <= 0:
+			continue
+		result.append({"id": str(item_id), "name": player.get_item_name(str(item_id)), "price": get_sell_price(str(item_id), bran_trust), "count": count})
+	return result
+
+func sell(player: PlayerCharacter, item_id: String, bran_trust: int = 0) -> Dictionary:
+	var price := get_sell_price(item_id, bran_trust)
+	if price < 0:
+		return {"success": false, "message": "Бран такое не покупает."}
+	if sellable_count(player, item_id) <= 0 or not player.remove_item(item_id, 1):
+		return {"success": false, "message": "Нечего продать: надетые вещи не продаются."}
+	player.add_gold(price)
+	return {"success": true, "price": price, "name": player.get_item_name(item_id)}
 
 func get_discount(reputation: int) -> float:
 	var discount := 0.0

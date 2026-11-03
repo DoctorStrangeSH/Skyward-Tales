@@ -21,6 +21,7 @@ func _ready() -> void:
 	retreat_distance = 120.0
 	visual.modulate = base_visual_tint
 	combat_feedback.elite = true
+	combat_feedback.bar_y = -46.0
 	combat_feedback.set_health(health, max_health)
 
 func take_damage(amount: int) -> void:

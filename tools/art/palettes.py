@@ -29,4 +29,20 @@ NIGHT = {
     "flowers": [ramp("#8ff7ef", "#3aa9b0"), ramp("#c9a2ff", "#7b5bc4"), ramp("#e6f4ff", "#8aa2c0")],
 }
 
-STYLES = {"day": DAY, "night": NIGHT}
+CAVE = {
+    # "grass" is the cave floor, "dirt" the worn path, "leaf" the rock walls.
+    "grass": ramp("#0e0c18", "#17142a", "#201c38", "#2a2546", "#363056", "#463f6a", "#5c5486"),
+    "dirt": ramp("#1a1624", "#2a2434", "#3a3346", "#4c4458", "#625a70", "#807a90"),
+    "water": ramp("#0a1030", "#141e5a", "#22348a", "#3a5cc0", "#7aa6f0", "#d6e8ff"),
+    "stone": ramp("#14121f", "#221f33", "#34304a", "#4a4664", "#67638a", "#9690b8"),
+    "leaf": ramp("#0a0912", "#14121f", "#211d33", "#2e2a46", "#3e395c", "#524c74", "#6a6494"),
+    "bark": ramp("#14121f", "#221f33", "#34304a", "#4a4664", "#67638a"),
+    "moss": ramp("#1d3a4a", "#245a62", "#2f7a78", "#4aa69a"),
+    "shadow": hex_color("#05040c", 120),
+    "outline": hex_color("#06050c"),
+    "glow": ramp("#9a7aff", "#d0b8ff", "#f6f0ff"),
+    "crystal": ramp("#f6f0ff", "#d0b8ff", "#9a7aff", "#6a4ad8", "#3a2a8a"),
+    "flowers": [ramp("#d0b8ff", "#7a5ad8"), ramp("#8fe0ff", "#3a8ac8"), ramp("#f6f0ff", "#9a90c0")],
+}
+
+STYLES = {"day": DAY, "night": NIGHT, "cave": CAVE}

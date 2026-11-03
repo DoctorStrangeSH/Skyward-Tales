@@ -324,3 +324,50 @@ def projectile(kind: str):
         return c
 
     return draw
+
+
+# --- crystal bat ----------------------------------------------------------------
+
+WING = r4("#b8fbff", "#5fdcf0", "#2a9ec8", "#1a5a88")
+BATFUR = r4("#8a7a9a", "#5a4a6a", "#3a2e48", "#221a30")
+
+
+def bat(facing: str, frame: int) -> Canvas:
+    """Hovering bat: wings flap through 4 frames; body bobs above its shadow."""
+    b = Body(32)
+    b.shadow(16, 29, 6, 1.6, 60)
+    lift = [0, -2, -1, 1][frame]
+    cy = 15 + lift
+    span = [11, 7, 4, 9][frame]
+    wing_y = [-3, -1, 2, 1][frame]
+    side = facing == "right"
+    back = facing in ("up", "up_right")
+    if side:
+        # Profile: one wing towards the camera, one behind.
+        b.part(b.ellipse(14, cy + wing_y, span * 0.6, 3.5), WING)
+        b.part(b.ellipse(16, cy, 4.2, 4.5), BATFUR, sphere=(15, cy - 2, 5))
+        b.part(b.ellipse(19, cy - 1, 2.6, 2.4), BATFUR, separate=False)
+        b.part(b.rect(17, cy - 6, 17, cy - 4) | b.rect(19, cy - 6, 19, cy - 4), BATFUR, separate=False)
+        b.dot(20, cy - 1, hex_color("#9cfff0"))
+        b.part(b.ellipse(17, cy + wing_y + 1, span * 0.7, 3.2), WING)
+    else:
+        for sign in (-1, 1):
+            wing = b.ellipse(16 + sign * (span * 0.55 + 2), cy + wing_y, span * 0.6, 3.6)
+            wing |= b.ellipse(16 + sign * (span * 0.9 + 2), cy + wing_y + 2, 2.0, 2.0)
+            b.part(wing, WING)
+            for k in range(1, 3):
+                b.dot(16 + sign * (k * span // 3 + 2), cy + wing_y + 2, WING[3])
+        b.part(b.ellipse(16, cy, 4.6, 5), BATFUR, sphere=(14, cy - 3, 6))
+        for sign in (-1, 1):
+            b.part(b.rect(16 + sign * 3 - (1 if sign < 0 else 0), cy - 7, 16 + sign * 3 - (1 if sign < 0 else 0), cy - 4), BATFUR, separate=False)
+        if not back:
+            sx = 1 if facing == "down_right" else 0
+            for ex in (14 + sx, 18 + sx):
+                b.dot(ex, cy - 1, hex_color("#9cfff0"))
+            b.dot(15 + sx, cy + 2, hex_color("#ffffff"))
+            b.dot(17 + sx, cy + 2, hex_color("#ffffff"))
+        # Crystal growing on its back/head.
+        b.dot(16, cy - 5, hex_color("#d0b8ff"))
+        b.dot(16, cy - 6, hex_color("#f6f0ff"))
+    b.outline(hex_color("#120e22"))
+    return b.canvas()

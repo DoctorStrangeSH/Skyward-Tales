@@ -152,6 +152,19 @@ def ore() -> Canvas:
     return _finish(c)
 
 
+def lens() -> Canvas:
+    c = Canvas(16, 16)
+    for x in range(3, 13):
+        c.put(x, 3 + abs(x - 8) // 3, GOLD[2])
+    c.ellipse(8, 10, 4, 4, GOLD[1])
+    for y in range(7, 14):
+        for x in range(5, 12):
+            if ((x - 8) / 2.6) ** 2 + ((y - 10) / 2.6) ** 2 <= 1:
+                c.put(x, y, hex_color("#d0b8ff") if x < 8 else hex_color("#9a7aff"))
+    c.put(7, 9, hex_color("#ffffff"))
+    return _finish(c)
+
+
 def build() -> dict[str, Canvas]:
     return {
         "apprentice_staff": staff(ramp("#c8f0a0", "#7fcf6a", "#3f8f5a")),
@@ -169,4 +182,5 @@ def build() -> dict[str, Canvas]:
         "ancient_relic": relic(),
         "wolf_pelt": pelt(),
         "iron_ore": ore(),
+        "crystal_lens": lens(),
     }

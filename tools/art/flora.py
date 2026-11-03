@@ -157,3 +157,79 @@ def canopy_border(width: int, height: int, pal, seed: int, depth: int = 26, glow
             m = region[:h, :w, 3] > 0
             dest[m] = region[:h, :w][m]
     return canvas
+
+
+def crystal_cluster(seed: int, pal, size: str = "large") -> tuple[Canvas, tuple[int, int]]:
+    """Glowing crystal formation used in caves instead of trees."""
+    rng = random.Random(seed)
+    width, height = (48, 64) if size == "large" else (36, 46)
+    canvas = Canvas(width, height)
+    base_x, base_y = width // 2, height - 6
+    for y in range(base_y - 4, base_y + 5):
+        for x in range(2, width - 2):
+            dx = (x + 0.5 - base_x) / (width / 2 - 3)
+            dy = (y + 0.5 - base_y) / 4
+            if dx * dx + dy * dy <= 1:
+                canvas.blend(x, y, pal["shadow"])
+    crystal = pal["crystal"]
+    count = 5 if size == "large" else 3
+    shards = []
+    for i in range(count):
+        t = (i - (count - 1) / 2) / max(1, count - 1)
+        h = (height - 14) * (1 - abs(t) * 0.55) * rng.uniform(0.75, 1.0)
+        w = rng.uniform(3.5, 5.5)
+        lean = t * rng.uniform(4, 9)
+        shards.append((base_x + t * width * 0.45, h, w, lean))
+    shards.sort(key=lambda s: -s[1])  # tallest at the back
+    for sx, h, w, lean in shards:
+        top = base_y - h
+        for y in range(int(top), base_y + 1):
+            p = (y - top) / max(1, h)
+            cx = sx + lean * (1 - p)
+            half = w * min(1.0, p * 3.0 + 0.15)
+            for x in range(int(cx - half), int(cx + half) + 1):
+                rel = (x + 0.5 - (cx - half)) / (2 * half + 0.01)
+                level = 0 if rel < 0.22 else (1 if rel < 0.5 else (2 if rel < 0.8 else 3))
+                if p > 0.85:
+                    level = min(4, level + 1)
+                canvas.put(x, y, crystal[level])
+        canvas.put(int(sx + lean), int(top) + 1, crystal[0])
+    # Rocky base.
+    rock = pal["stone"]
+    for x in range(base_x - width // 3, base_x + width // 3):
+        for y in range(base_y - 3, base_y + 1):
+            if (x * 7 + y * 3) % 5 and abs(x - base_x) < width // 3 - (base_y - y):
+                canvas.put(x, y, rock[3] if y == base_y - 3 else rock[2])
+    canvas.outline(pal["outline"])
+    # Soft glow halo, added after the outline so it has no hard edge.
+    glow = pal["crystal"][2]
+    for y in range(height):
+        for x in range(width):
+            if canvas.alpha(x, y) == 255:
+                continue
+            d = ((x + 0.5 - base_x) / (width * 0.5)) ** 2 + ((y + 0.5 - (base_y - height * 0.35)) / (height * 0.5)) ** 2
+            if d <= 1:
+                canvas.blend(x, y, glow[:3] + (int(38 * (1 - d)),))
+    return canvas, (base_x, base_y)
+
+
+def rock_pile(seed: int, pal) -> tuple[Canvas, tuple[int, int]]:
+    """Small cave boulders with a crystal shard (decor, like bushes)."""
+    rng = random.Random(seed)
+    canvas = Canvas(26, 20)
+    base_x, base_y = 13, 16
+    stone = pal["stone"]
+    for cx, cy, r in ((9, 12, 5.5), (16, 11, 6), (13, 14, 5)):
+        for y in range(canvas.h):
+            for x in range(canvas.w):
+                d = math.hypot(x + 0.5 - cx, (y + 0.5 - cy) * 1.2)
+                if d <= r:
+                    lit = (cx - x) * 0.6 + (cy - y) * 0.8
+                    canvas.put(x, y, stone[4] if lit > 2.5 else (stone[3] if lit > -1.5 else stone[2]))
+    crystal = pal["crystal"]
+    sx = 13 + rng.randint(-4, 4)
+    for i in range(6):
+        canvas.put(sx, 8 - i, crystal[1] if i < 4 else crystal[0])
+        canvas.put(sx + 1, 8 - i, crystal[2])
+    canvas.outline(pal["outline"])
+    return canvas, (base_x, base_y)

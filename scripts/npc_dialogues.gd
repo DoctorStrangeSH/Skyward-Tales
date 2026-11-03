@@ -50,14 +50,15 @@ func marker_for(npc_id: String) -> String:
 	var village_helped: bool = quests.is_completed("moonleaf_gathering")
 	var quest_id: String = {
 		"elder": "moonleaf_gathering", "cartographer": "lost_cartographer_notes",
-		"grove_warden": "grove_spirits", "hunter": "toren_wolf_hunt", "merchant": "bran_supply_run"
+		"grove_warden": "grove_spirits", "hunter": "toren_wolf_hunt", "merchant": "bran_supply_run",
+		"miner": "crystal_heart"
 	}.get(npc_id, "")
 	if not quest_id.is_empty():
 		if quests.is_ready_to_complete(quest_id):
 			return "ready"
 		var started: bool = bool(quests.states.get(quest_id, {}).get("started", false))
-		var unlocked: bool = npc_id in ["elder", "grove_warden"] or village_helped
-		var can_take: bool = free or (npc_id == "grove_warden" and quests.active_quest_id == quest_id)
+		var unlocked: bool = npc_id in ["elder", "grove_warden", "miner"] or village_helped
+		var can_take: bool = free or (npc_id in ["grove_warden", "miner"] and quests.active_quest_id == quest_id)
 		if not started and not quests.is_completed(quest_id) and unlocked and can_take:
 			return "quest"
 	if npc_id == "hunter" and quests.is_completed("toren_wolf_hunt") and _can_craft_mantle():
@@ -89,6 +90,10 @@ func handle_choice(choice_id: String) -> void:
 				_complete_hunter_quest(choice_id.trim_prefix("hunter_reward:"))
 			elif choice_id.begins_with("merchant_supply:"):
 				_complete_merchant_supply_quest(choice_id.trim_prefix("merchant_supply:"))
+			elif choice_id.begins_with("miner_reward:"):
+				_complete_miner_quest(choice_id.trim_prefix("miner_reward:"))
+			elif choice_id.begins_with("merchant_sell:"):
+				_sell_to_merchant(choice_id.trim_prefix("merchant_sell:"))
 			elif choice_id.begins_with("merchant_buy:"):
 				_purchase_merchant_item(choice_id.trim_prefix("merchant_buy:"))
 			elif game.quests.is_ready_to_complete("moonleaf_gathering"):
@@ -304,6 +309,41 @@ func _craft_blacksmith_item(recipe_id: String) -> void:
 	game.hud.show_message(str(result.get("message", "Кузнец не смог выполнить заказ.")), 3.0)
 	game._refresh_hud()
 
+# --- Miner Dorn ------------------------------------------------------------
+
+func on_miner() -> void:
+	const quest_id := "crystal_heart"
+	const speaker := "Дорн, рудокоп"
+	var quests := game.quests
+	if quests.is_completed(quest_id):
+		_say(speaker, "%s. Пещера снова поёт ровно — кристаллы больше не трескаются. Заходи, если найдёшь ещё руду." % game.relationships.get_reaction("dorn"))
+	elif quests.is_ready_to_complete(quest_id):
+		_ask(speaker, "Четыре эхо-кристалла! Слышишь, как звенят? Гильдия хорошо заплатит… или я огранщу один для тебя.", [
+			{"id": "miner_reward:guild", "label": "Сдать кристаллы гильдии — 80 золота"},
+			{"id": "miner_reward:lens", "label": "Огранить хрустальную линзу (+30 маны, молния сильнее)"}
+		])
+	elif bool(quests.states[quest_id].get("started", false)):
+		_say(speaker, "Эхо-кристаллы светятся вдоль тоннелей. Нашёл %d из 4. Осторожнее с летучими мышами — молния их пугает." % int(quests.states[quest_id].get("progress", 0)))
+	elif not quests.active_quest_id.is_empty():
+		_say(speaker, "Вижу, у тебя свои заботы. Закончи их — тогда поговорим о кристаллах.")
+	else:
+		quests.start_quest(quest_id)
+		_say(speaker, "Ну и ну, кто-то прошёл мимо хранителя! Я Дорн. Пещера гудит — её эхо-кристаллы перегружены. Собери четыре, пока они не взорвались, и принеси мне.")
+	game._refresh_hud()
+
+func _complete_miner_quest(choice_id: String) -> void:
+	const quest_id := "crystal_heart"
+	var reward: Dictionary = game.quests.get_choice_reward(quest_id, choice_id)
+	if reward.is_empty() or not game.quests.complete_quest(quest_id):
+		return
+	game.quests.states[quest_id]["choice"] = choice_id
+	var item_summary := _grant_reward(reward)
+	var gain := int(reward.get("dorn_trust", 0))
+	game.relationships.adjust("dorn", gain)
+	_close()
+	game.hud.show_message("Сердце пещеры успокоено! +%d золота, +%d опыта%s. Доверие Дорна +%d." % [int(reward.get("gold", 0)), int(reward.get("experience", 0)), item_summary, gain], 4.0)
+	game._refresh_hud()
+
 # --- Merchant Bran -------------------------------------------------------
 
 func on_merchant() -> void:
@@ -335,8 +375,36 @@ func on_merchant() -> void:
 		else:
 			offer_label = "Купить %s — %d золота" % [str(offer.get("name", "Товар")), int(offer.get("price", 0))]
 		choices.append({"id": "merchant_buy:" + str(offer.get("id", "")), "label": offer_label})
+	if not game.merchant_shop.get_sell_offers(game.player, bran_trust).is_empty():
+		choices.append({"id": "merchant_sell:menu", "label": "Продать вещи"})
 	choices.append({"id": "merchant_close", "label": "Завершить торговлю"})
 	_ask("Торговец Бран", message, choices)
+
+func _show_sell_menu() -> void:
+	var bran_trust: int = game.relationships.get_score("bran")
+	var choices: Array[Dictionary] = []
+	for offer in game.merchant_shop.get_sell_offers(game.player, bran_trust):
+		choices.append({"id": "merchant_sell:" + str(offer["id"]), "label": "Продать %s (×%d) — %d золота" % [offer["name"], offer["count"], offer["price"]]})
+	choices.append({"id": "merchant_sell:back", "label": "Назад к товарам"})
+	var message := "Что продашь? Надетые вещи я не возьму." if choices.size() > 1 else "Продавать больше нечего."
+	if bran_trust >= int(game.merchant_shop.sell_trust_bonus.get("trust", 999)):
+		message += "\nДругу поселения плачу на 10% больше."
+	_ask("Торговец Бран", message, choices)
+
+func _sell_to_merchant(item_id: String) -> void:
+	if item_id == "menu":
+		_show_sell_menu()
+		return
+	if item_id == "back":
+		on_merchant()
+		return
+	var result: Dictionary = game.merchant_shop.sell(game.player, item_id, game.relationships.get_score("bran"))
+	if bool(result.get("success", false)):
+		game.hud.show_message("Продано: %s за %d золота." % [str(result["name"]), int(result["price"])], 2.5)
+	else:
+		game.hud.show_message(str(result.get("message", "Продажа не удалась.")), 2.5)
+	_show_sell_menu()
+	game._refresh_hud()
 
 func _start_merchant_supply_quest() -> void:
 	const quest_id := "bran_supply_run"

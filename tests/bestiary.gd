@@ -7,12 +7,13 @@ func _run() -> void:
 	var game: Node2D = load("res://scenes/main.tscn").instantiate()
 	root.add_child(game)
 	await process_frame
-	if game.bestiary_entries.size() != 4:
-		push_error("BESTIARY TEST: catalog must list four enemies")
+	var total: int = game.bestiary_entries.size()
+	if total != 5:
+		push_error("BESTIARY TEST: catalog must list five enemies")
 		quit(1)
 		return
 	game.hud.toggle_bestiary(game.bestiary_entries, game.discovered_enemies)
-	if not game.hud.bestiary_visible or game.hud.bestiary_list.get_child_count() != 4:
+	if not game.hud.bestiary_visible or game.hud.bestiary_list.get_child_count() != total:
 		push_error("BESTIARY TEST: undiscovered entries should be hidden")
 		quit(1)
 		return
@@ -33,7 +34,7 @@ func _run() -> void:
 		quit(1)
 		return
 	game.hud.toggle_bestiary(game.bestiary_entries, game.discovered_enemies)
-	if game.hud.bestiary_list.get_child_count() <= 4:
+	if game.hud.bestiary_list.get_child_count() <= total:
 		push_error("BESTIARY TEST: known entry details absent")
 		quit(1)
 		return

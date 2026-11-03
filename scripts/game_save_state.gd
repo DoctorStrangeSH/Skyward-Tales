@@ -9,7 +9,8 @@ const FALLBACK_ENEMY_POSITIONS := {
 	"guardian": Vector2(1020, 580),
 	"shaman": Vector2(730, 360),
 	"wolf": Vector2(475, 430),
-	"slime": Vector2(475, 350)
+	"slime": Vector2(475, 350),
+	"bat": Vector2(700, 470)
 }
 
 static func _position_array(pos: Vector2) -> Array[float]:

@@ -77,7 +77,7 @@ func _run() -> void:
 	game._on_merchant_interacted(null)
 	if not _verify(game.hud.dialogue_visible and game.hud.dialogue_speaker_label.text.contains("Торговец Бран"), "merchant interaction opens the shop dialogue"):
 		return
-	if not _verify(game.hud.dialogue_choices_container.get_child_count() == shop.get_offers(20).size() + 1, "shop displays every offer and a close option"):
+	if not _verify(game.hud.dialogue_choices_container.get_child_count() == shop.get_offers(20).size() + 1 + (0 if shop.get_sell_offers(game.player).is_empty() else 1), "shop displays every offer, selling and a close option"):
 		return
 	var before_health_potions: int = int(game.player.inventory.get("health_potion", 0))
 	game._on_dialogue_choice_selected("merchant_buy:health_potion")
