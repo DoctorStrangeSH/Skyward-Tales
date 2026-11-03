@@ -127,7 +127,7 @@ static func _restore_world_actors(game: SkywardGame, world_data: Dictionary) -> 
 	for enemy_data in world_data["enemies"]:
 		if not enemy_data is Dictionary:
 			continue
-		var kind: String = str(enemy_data.get("kind", "wolf" if game.current_region == "moonlit_grove" else "slime"))
+		var kind: String = str(enemy_data.get("kind", "slime"))
 		if not FALLBACK_ENEMY_POSITIONS.has(kind):
 			kind = "slime"
 		var enemy := game.spawn_enemy(kind, read_position(enemy_data.get("position"), FALLBACK_ENEMY_POSITIONS[kind]))
