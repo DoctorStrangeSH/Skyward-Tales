@@ -209,6 +209,7 @@ func _populate_region() -> void:
 		_spawn_elder()
 		_spawn_cartographer()
 		_spawn_merchant()
+		_spawn_hunter()
 		var supply_state: Dictionary = quests.states.get("bran_supply_run", {})
 		if bool(supply_state.get("started", false)) and not quests.is_completed("bran_supply_run"):
 			var collected_crates: Array = supply_state.get("collected_crates", [])
@@ -375,6 +376,12 @@ func _on_dialogue_choice_selected(choice_id: String) -> void:
 	if choice_id == "merchant_quest_start":
 		_start_merchant_supply_quest()
 		return
+	if choice_id == "hunter_quest_start":
+		_start_hunter_quest()
+		return
+	if choice_id == "hunter_reward:gold" or choice_id == "hunter_reward:supplies":
+		_complete_hunter_quest(choice_id.trim_prefix("hunter_reward:"))
+		return
 	if choice_id == "merchant_supply:fair" or choice_id == "merchant_supply:clinic":
 		_complete_merchant_supply_quest(choice_id.trim_prefix("merchant_supply:"))
 		return
@@ -453,6 +460,70 @@ func _spawn_merchant() -> void:
 
 func _on_merchant_interacted(_source: Node2D) -> void:
 	_show_merchant_menu()
+
+func _spawn_hunter() -> void:
+	var hunter := NPC_SCRIPT.new() as WorldNpc
+	hunter.display_name = "Торен, охотник"
+	hunter.outfit_color = Color(0.48, 0.39, 0.25)
+	add_child(hunter)
+	hunter.global_position = Vector2(315, 330)
+	hunter.interacted.connect(_on_hunter_interacted)
+
+func _on_hunter_interacted(_source: Node2D) -> void:
+	const quest_id := "toren_wolf_hunt"
+	if quests.is_completed(quest_id):
+		_show_dialogue("Торен, охотник", "Шкуры уже высушены, а тропы снова безопасны. %s." % relationships.get_reaction("toren"))
+	elif quests.is_ready_to_complete(quest_id):
+		_show_dialogue_choices("Торен, охотник", "Три волка больше не угрожают дороге. Какую награду предпочитаешь?", [
+			{"id": "hunter_reward:gold", "label": "35 золота и 40 опыта"},
+			{"id": "hunter_reward:supplies", "label": "20 золота, 2 зелья здоровья и 60 опыта"}
+		])
+	elif bool(quests.states[quest_id].get("started", false)):
+		_show_dialogue("Торен, охотник", "В Зачарованном лесу ещё рыщут волки. Победи трёх и возвращайся. Сейчас: %d/3." % int(quests.states[quest_id].get("progress", 0)))
+	elif not quests.is_completed("moonleaf_gathering"):
+		_show_dialogue("Торен, охотник", "Сначала помоги старейшине Элиану. После этого поговорим о волках.")
+	elif not quests.active_quest_id.is_empty():
+		_show_dialogue("Торен, охотник", "Закончи текущее поручение, и я расскажу об охоте.")
+	else:
+		_show_dialogue_choices("Торен, охотник", "Я Торен. Волки спустились из леса и нападают на путников. Поможешь проредить стаю?", [
+			{"id": "hunter_quest_start", "label": "Взяться за охоту"}
+		])
+	_refresh_hud()
+
+func _start_hunter_quest() -> void:
+	if not quests.is_completed("moonleaf_gathering") or not quests.active_quest_id.is_empty():
+		return
+	if quests.start_quest("toren_wolf_hunt"):
+		_show_dialogue("Торен, охотник", "Найди трёх волков в Зачарованном лесу. Победи их и возвращайся за наградой.")
+		_refresh_hud()
+
+func _complete_hunter_quest(choice_id: String) -> void:
+	const quest_id := "toren_wolf_hunt"
+	if not quests.is_ready_to_complete(quest_id):
+		return
+	var reward_gold := 35
+	var reward_xp := 40
+	var potion_count := 0
+	if choice_id == "supplies":
+		reward_gold = 20
+		reward_xp = 60
+		potion_count = 2
+	elif choice_id != "gold":
+		return
+	if not quests.complete_quest(quest_id):
+		return
+	quests.states[quest_id]["choice"] = choice_id
+	player.add_gold(reward_gold)
+	player.add_experience(reward_xp)
+	if potion_count > 0:
+		player.add_item("health_potion", potion_count)
+	var trust_gain := 15 if choice_id == "supplies" else 8
+	relationships.adjust("toren", trust_gain)
+	hud.close_dialogue()
+	player.set_physics_process(true)
+	var extra := ", зелья здоровья ×%d" % potion_count if potion_count > 0 else ""
+	hud.show_message("Охота завершена! +%d золота, +%d опыта%s. Доверие Торена +%d." % [reward_gold, reward_xp, extra, trust_gain], 4.0)
+	_refresh_hud()
 
 func _show_merchant_menu() -> void:
 	const quest_id := "bran_supply_run"
@@ -575,7 +646,7 @@ func _spawn_wolf(spawn_position: Vector2) -> void:
 	var wolf := WOLF_SCRIPT.new() as ForestWolf
 	wolf.position = spawn_position
 	add_child(wolf)
-	wolf.defeated.connect(func(xp: int) -> void: _on_enemy_defeated(xp, wolf.global_position))
+	wolf.defeated.connect(func(xp: int) -> void: _on_wolf_defeated(xp, wolf.global_position))
 
 func _spawn_slime(spawn_position: Vector2) -> void:
 	var slime := ENEMY_SCRIPT.new() as SlimeEnemy
@@ -700,6 +771,16 @@ func _on_herb_interacted(source: Node2D) -> void:
 	else:
 		hud.show_message(herb.display_name + ". Поговорите с местным хранителем, чтобы узнать, зачем он нужен.", 2.5)
 	_refresh_hud()
+
+func _on_wolf_defeated(xp_reward: int, death_position: Vector2) -> void:
+	if quests.active_quest_id == "toren_wolf_hunt" and not quests.is_completed("toren_wolf_hunt"):
+		quests.add_progress("toren_wolf_hunt", 1)
+		var progress: int = int(quests.states["toren_wolf_hunt"].get("progress", 0))
+		hud.show_message("Волк побеждён! Охота: %d/3." % progress, 2.0)
+		if quests.is_ready_to_complete("toren_wolf_hunt"):
+			hud.show_message("Стая отступила. Вернись к Торену за наградой.", 3.0)
+	_refresh_hud()
+	_on_enemy_defeated(xp_reward, death_position)
 
 func _on_enemy_defeated(xp_reward: int, death_position: Vector2) -> void:
 	player.add_experience(xp_reward)
