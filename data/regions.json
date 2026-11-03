@@ -1,6 +1,8 @@
 {
   "greenreach": {
     "name": "Зелёные Пределы",
+    "map_color": [0.18, 0.32, 0.19],
+    "herb_quest": "moonleaf_gathering",
     "npcs": [
       {
         "id": "elder",
@@ -110,7 +112,9 @@
         "target": "moonlit_grove",
         "position": [1120, 205],
         "arrival": [140, 430],
-        "label": "Тропа в Зачарованный лес"
+        "label": "Тропа в Зачарованный лес",
+        "requires_quest": "moonleaf_gathering",
+        "locked_message": "Сначала помогите старейшине с лунными листьями."
       }
     ],
     "secrets": {
@@ -226,6 +230,8 @@
   },
   "moonlit_grove": {
     "name": "Зачарованный лес",
+    "map_color": [0.11, 0.27, 0.23],
+    "herb_quest": "grove_spirits",
     "npcs": [
       {
         "id": "grove_warden",

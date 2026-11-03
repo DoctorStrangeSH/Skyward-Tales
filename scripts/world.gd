@@ -14,16 +14,14 @@ const PROP_TEXTURES := {"ruins": "ruins.png", "standing_stones": "standing_stone
 var region_id: String = "greenreach"
 var terrain: Dictionary = {}
 var art_manifest: Dictionary = {}
-var _regions: Dictionary = {}
 
 func _ready() -> void:
 	y_sort_enabled = true
-	_regions = _load_json("res://data/regions.json")
 	art_manifest = _load_json("res://assets/art_manifest.json")
 	_build()
 
 func configure_region(new_region_id: String) -> void:
-	region_id = "moonlit_grove" if new_region_id == "moonlit_grove" else "greenreach"
+	region_id = RegionCatalog.resolve(new_region_id)
 	for child in get_children():
 		remove_child(child)
 		child.queue_free()
@@ -37,9 +35,8 @@ func is_night() -> bool:
 	return str(terrain.get("style", "day")) == "night"
 
 func _build() -> void:
-	var region: Dictionary = _regions.get(region_id, {})
-	terrain = region.get("terrain", {})
-	var style := "night" if is_night() else "day"
+	terrain = RegionCatalog.terrain(region_id)
+	var style := RegionCatalog.style(region_id)
 	_add_layer(region_id + "_ground.png", -100)
 	_add_layer(region_id + "_canopy.png", 60)
 	var trees: Array = terrain.get("trees", [])

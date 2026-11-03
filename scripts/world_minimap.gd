@@ -26,13 +26,15 @@ func _map_point(point: Vector2) -> Vector2:
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, Vector2(132, 108)), Color(0.07, 0.06, 0.11, 0.84))
 	draw_rect(Rect2(Vector2(0, 0), Vector2(132, 108)), Color(0.93, 0.78, 0.47, 0.85), false, 1.0)
-	var name: String = "ЗАЧАРОВАННЫЙ ЛЕС" if region_id == "moonlit_grove" else "ЗЕЛЁНЫЕ ПРЕДЕЛЫ"
+	var name: String = RegionCatalog.display_name(region_id).to_upper()
 	draw_string(ThemeDB.fallback_font, Vector2(7, 16), name, HORIZONTAL_ALIGNMENT_LEFT, 126, 10, Color(0.92, 0.88, 0.64))
-	draw_rect(Rect2(Vector2(8, 25), MAP_SIZE), Color(0.11, 0.27, 0.23) if region_id == "moonlit_grove" else Color(0.18, 0.32, 0.19))
-	# Simple route silhouette, matching each region's general direction.
-	var route: Array = [Vector2(70, 205), Vector2(320, 245), Vector2(630, 255), Vector2(900, 205), Vector2(1120, 205)] if region_id == "greenreach" else [Vector2(40, 430), Vector2(330, 360), Vector2(650, 445), Vector2(960, 365), Vector2(1220, 365)]
-	for i in range(route.size() - 1):
-		draw_line(_map_point(route[i]), _map_point(route[i + 1]), Color(0.57, 0.45, 0.29), 2.0)
+	draw_rect(Rect2(Vector2(8, 25), MAP_SIZE), RegionCatalog.map_color(region_id))
+	# Trails come straight from the region's terrain data.
+	for trail in RegionCatalog.terrain(region_id).get("trails", []):
+		for i in range(trail.size() - 1):
+			var a := Vector2(float(trail[i][0]), float(trail[i][1]))
+			var b := Vector2(float(trail[i + 1][0]), float(trail[i + 1][1]))
+			draw_line(_map_point(a), _map_point(b), Color(0.57, 0.45, 0.29), 2.0)
 	for id in known_landmarks:
 		var data: Dictionary = known_landmarks[id]
 		var coordinates: Array = data.get("position", [])

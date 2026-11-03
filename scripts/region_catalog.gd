@@ -1,0 +1,59 @@
+extends RefCounted
+class_name RegionCatalog
+
+## Cached read-only access to data/regions.json. Every region-specific rule
+## (name, map colour, gate requirements, which quest its herbs advance) lives
+## in the data, so adding a region needs no code changes.
+
+const PATH := "res://data/regions.json"
+const DEFAULT_REGION := "greenreach"
+
+static var _regions: Dictionary = {}
+
+static func all() -> Dictionary:
+	if _regions.is_empty():
+		var file := FileAccess.open(PATH, FileAccess.READ)
+		if file != null:
+			var parsed: Variant = JSON.parse_string(file.get_as_text())
+			if parsed is Dictionary:
+				_regions = parsed
+		if _regions.is_empty():
+			push_warning("Каталог регионов не найден: " + PATH)
+	return _regions
+
+static func has(region_id: String) -> bool:
+	return all().has(region_id)
+
+static func get_region(region_id: String) -> Dictionary:
+	var region: Variant = all().get(region_id, {})
+	return region if region is Dictionary else {}
+
+static func resolve(region_id: String) -> String:
+	return region_id if has(region_id) else DEFAULT_REGION
+
+static func display_name(region_id: String) -> String:
+	return str(get_region(region_id).get("name", region_id))
+
+static func terrain(region_id: String) -> Dictionary:
+	var value: Variant = get_region(region_id).get("terrain", {})
+	return value if value is Dictionary else {}
+
+static func style(region_id: String) -> String:
+	return str(terrain(region_id).get("style", "day"))
+
+static func map_color(region_id: String) -> Color:
+	var value: Variant = get_region(region_id).get("map_color", [0.18, 0.32, 0.19])
+	if value is Array and value.size() == 3:
+		return Color(float(value[0]), float(value[1]), float(value[2]))
+	return Color(0.18, 0.32, 0.19)
+
+## Quest advanced by collecting this region's herbs (e.g. moonleaf → elder).
+static func herb_quest(region_id: String) -> String:
+	return str(get_region(region_id).get("herb_quest", ""))
+
+## The gate leading from `from_region` to `target`, or {} if none.
+static func gate(from_region: String, target: String) -> Dictionary:
+	for gate_data in get_region(from_region).get("gates", []):
+		if gate_data is Dictionary and str(gate_data.get("target", "")) == target:
+			return gate_data
+	return {}

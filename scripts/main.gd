@@ -22,7 +22,6 @@ const ENEMY_SCRIPTS := {
 	"shaman": preload("res://scripts/forest_shaman.gd"),
 	"guardian": preload("res://scripts/grove_guardian.gd")
 }
-const REGION_NAMES := {"greenreach": "Зелёные Пределы", "moonlit_grove": "Зачарованный лес"}
 const MATERIAL_ITEMS := ["wolf_pelt", "iron_ore"]
 const RARITY_LABELS := {"common": "ОБЫЧНАЯ", "uncommon": "НЕОБЫЧНАЯ", "rare": "РЕДКАЯ"}
 const CARTOGRAPHER_CACHE_ID := "greenreach_cartographer_cache"
@@ -303,14 +302,14 @@ func _clear_region_actors() -> void:
 	nearby_interactable = null
 
 func _set_region(region_id: String, arrival: Vector2, notify: bool = true) -> void:
-	current_region = "moonlit_grove" if region_id == "moonlit_grove" else "greenreach"
+	current_region = RegionCatalog.resolve(region_id)
 	_clear_region_actors()
 	if world != null and world.has_method("configure_region"):
 		world.configure_region(current_region)
 	_populate_region()
 	player.global_position = arrival
 	if notify and hud != null:
-		hud.show_message("Локация: " + str(REGION_NAMES.get(current_region, current_region)), 2.5)
+		hud.show_message("Локация: " + RegionCatalog.display_name(current_region), 2.5)
 	_refresh_hud()
 
 func _apply_camera_limits() -> void:
@@ -324,8 +323,13 @@ func _apply_camera_limits() -> void:
 	camera.limit_bottom = int(size.y)
 
 func _on_region_travel(target_region: String, arrival: Vector2) -> void:
-	if target_region == "moonlit_grove" and not quests.is_completed("moonleaf_gathering"):
-		hud.show_message("Сначала помогите старейшине с лунными листьями.", 2.5)
+	var gate_data := RegionCatalog.gate(current_region, target_region)
+	var required := str(gate_data.get("requires_quest", ""))
+	if not required.is_empty() and not quests.is_completed(required):
+		hud.show_message(str(gate_data.get("locked_message", "Путь пока закрыт.")), 2.5)
+		return
+	if bool(gate_data.get("requires_guardian", false)) and not guardian_defeated:
+		hud.show_message(str(gate_data.get("locked_message", "Путь пока закрыт.")), 2.5)
 		return
 	_set_region(target_region, arrival)
 	request_autosave()
@@ -441,6 +445,7 @@ func _spawn_gate(target_region: String, gate_position: Vector2, arrival: Vector2
 	gate.target_region = target_region
 	gate.arrival_position = arrival
 	gate.display_name = label
+	gate.art_style = RegionCatalog.style(current_region)
 	add_child(gate)
 	gate.global_position = gate_position
 	gate.travel_requested.connect(_on_region_travel)
