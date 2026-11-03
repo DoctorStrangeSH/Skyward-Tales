@@ -38,6 +38,19 @@
     "main": true
   },
   {
+    "id": "main_star_map",
+    "title": "Карта звездопада",
+    "description": "Поговорите с картографом Мирой о падающих осколках.",
+    "target": 1,
+    "reward": {
+      "experience": 30,
+      "gold": 0
+    },
+    "main": true,
+    "talk_to": "cartographer",
+    "talk_scene": "mira_star_map"
+  },
+  {
     "id": "grove_spirits",
     "title": "Шёпот Зачарованного леса",
     "description": "Соберите три духовных цветка и вернитесь к хранительнице Иларе.",
@@ -45,6 +58,17 @@
     "reward": {
       "experience": 90,
       "gold": 50
+    },
+    "main": true
+  },
+  {
+    "id": "main_guardian",
+    "title": "Страж ордена",
+    "description": "Освободите Древнего хранителя у рунических камней от безумия.",
+    "target": 1,
+    "reward": {
+      "experience": 60,
+      "gold": 0
     },
     "main": true
   },
@@ -175,6 +199,17 @@
           "dorn_trust": 20
         }
       }
+    },
+    "main": true
+  },
+  {
+    "id": "main_echo",
+    "title": "Отголосок",
+    "description": "Спуститесь к хрустальному алтарю и остановите чужака в тёмном плаще.",
+    "target": 1,
+    "reward": {
+      "experience": 200,
+      "gold": 150
     },
     "main": true
   }

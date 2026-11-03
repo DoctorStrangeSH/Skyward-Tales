@@ -10,7 +10,8 @@ const FALLBACK_ENEMY_POSITIONS := {
 	"shaman": Vector2(730, 360),
 	"wolf": Vector2(475, 430),
 	"slime": Vector2(475, 350),
-	"bat": Vector2(700, 470)
+	"bat": Vector2(700, 470),
+	"echo": Vector2(1000, 660)
 }
 
 static func _position_array(pos: Vector2) -> Array[float]:
@@ -57,6 +58,7 @@ static func capture(game: SkywardGame) -> Dictionary:
 			"region": game.current_region, "relationships": game.relationships.make_snapshot(),
 			"enemies": alive_enemies, "herbs": herbs, "loot": loot_items,
 			"defeated": game.defeated_enemies, "guardian_defeated": game.guardian_defeated,
+			"story_flags": game.director.make_snapshot(),
 			"discovered": game.discovered_enemies.duplicate(true), "landmarks": game.discovered_landmarks.duplicate(true),
 			"opened_chests": game.opened_chests.duplicate(true), "gathered_resource_nodes": game.gathered_resource_nodes.duplicate(true)
 		},
@@ -72,6 +74,7 @@ static func apply(game: SkywardGame, data: Dictionary) -> bool:
 	var world_data: Dictionary = data["world"]
 	var player := game.player
 	game.guardian_defeated = bool(world_data.get("guardian_defeated", false))
+	game.director.restore_snapshot(world_data.get("story_flags", {}))
 	game.discovered_enemies = world_data.get("discovered", {}).duplicate(true)
 	game.discovered_landmarks = world_data.get("landmarks", {}).duplicate(true)
 	game.opened_chests = world_data.get("opened_chests", {}).duplicate(true)

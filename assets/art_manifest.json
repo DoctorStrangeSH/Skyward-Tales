@@ -59,6 +59,12 @@
    16
   ]
  },
+ "icons/pattern_key.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/pyromancer_core.png": {
   "size": [
    16,
@@ -93,6 +99,16 @@
   "size": [
    16,
    16
+  ]
+ },
+ "props/altar_heart.png": {
+  "size": [
+   40,
+   18
+  ],
+  "origin": [
+   20,
+   9
   ]
  },
  "props/chest_closed.png": {
@@ -335,6 +351,12 @@
    256
   ]
  },
+ "sprites/enemies/echo_warden_8dir.png": {
+  "size": [
+   192,
+   384
+  ]
+ },
  "sprites/enemies/forest_shaman_8dir.png": {
   "size": [
    128,
@@ -414,6 +436,12 @@
   ]
  },
  "sprites/npcs/miner.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "sprites/npcs/vail.png": {
   "size": [
    128,
    256

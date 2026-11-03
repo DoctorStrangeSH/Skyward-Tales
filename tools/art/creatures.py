@@ -371,3 +371,60 @@ def bat(facing: str, frame: int) -> Canvas:
         b.dot(16, cy - 6, hex_color("#f6f0ff"))
     b.outline(hex_color("#120e22"))
     return b.canvas()
+
+
+# --- Echo Warden (act I boss, 48 px) -------------------------------------------
+
+CRYSTAL = r4("#f6f0ff", "#c9b0ff", "#8a6ae8", "#4a34a8")
+CORE = r4("#ffffff", "#9cfff0", "#3fd6d0", "#1f8a8a")
+
+
+def echo_warden(facing: str, frame: int) -> Canvas:
+    """A floating crystal colossus: faceted body, orbiting shards, glowing core."""
+    b = Body(48)
+    bob = [0, -1, -2, -1][frame]
+    b.shadow(24, 44, 14, 3.2, 80)
+    cy = 24 + bob
+    back = facing in ("up", "up_right")
+    side = facing == "right"
+    # Orbiting shards behind the body.
+    for k in range(3):
+        angle = (frame * 0.5 + k * 2.1)
+        sx = 24 + math.cos(angle) * 17
+        sy = cy - 2 + math.sin(angle) * 6
+        if math.sin(angle) < 0:
+            b.part(b.ellipse(sx, sy, 2.2, 4), CRYSTAL)
+    # Main faceted body: stacked diamond silhouette.
+    w = 9 if side else 12
+    body = np.zeros((48, 48), dtype=bool)
+    for y in range(8 + bob, 40 + bob):
+        t = (y - (8 + bob)) / 32
+        half = w * (t * 2.2 if t < 0.45 else (1 - t) * 1.8 + 0.1)
+        x0, x1 = int(24 - half), int(24 + half)
+        if x1 > x0:
+            body[y, max(0, x0):min(48, x1 + 1)] = True
+    b.part(body, CRYSTAL, sphere=(19, cy - 6, 16))
+    # Facet lines.
+    for y in range(12 + bob, 36 + bob, 5):
+        for x in range(24 - w, 24 + w):
+            if body[y, x] and (x + y) % 3 == 0:
+                b.dot(x, y, CRYSTAL[3])
+    if not back:
+        # Core and eyes.
+        core_x = 24 + (3 if side else (2 if facing == "down_right" else 0))
+        b.part(b.ellipse(core_x, cy + 2, 3.6, 3.6), CORE, separate=False)
+        b.dot(core_x - 1, cy + 1, hex_color("#ffffff"))
+        eye_y = cy - 9
+        eyes = [core_x - 4, core_x + 3] if not side else [core_x + 3]
+        for ex in eyes:
+            b.dot(ex, eye_y, CORE[1])
+            b.dot(ex + 1, eye_y, CORE[1])
+    # Shards in front.
+    for k in range(3):
+        angle = (frame * 0.5 + k * 2.1)
+        sx = 24 + math.cos(angle) * 17
+        sy = cy - 2 + math.sin(angle) * 6
+        if math.sin(angle) >= 0:
+            b.part(b.ellipse(sx, sy, 2.2, 4), CRYSTAL)
+    b.outline(hex_color("#1a1030"))
+    return b.canvas()

@@ -113,6 +113,11 @@
       "spell_bonus": {
         "chain_lightning": 3
       }
+    },
+    "pattern_key": {
+      "name": "Ключ Узора",
+      "description": "Подарок духа стража. Открывает путь к сердцу Узора.",
+      "rarity": "rare"
     }
   }
 }

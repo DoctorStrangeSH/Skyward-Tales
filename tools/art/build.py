@@ -85,6 +85,7 @@ def build_characters() -> None:
     save(creatures.build_sheet(creatures.wolf, 32), "sprites/enemies/forest_wolf_8dir.png")
     save(creatures.build_sheet(creatures.guardian, 48), "sprites/enemies/grove_guardian_8dir.png")
     save(creatures.build_sheet(creatures.bat, 32), "sprites/enemies/cave_bat_8dir.png")
+    save(creatures.build_sheet(creatures.echo_warden, 48), "sprites/enemies/echo_warden_8dir.png")
     save(creatures.build_sheet(creatures.projectile("fire"), 32), "sprites/magic/fireball_8dir.png")
     save(creatures.build_sheet(creatures.projectile("frost"), 32), "sprites/magic/frostbolt_8dir.png")
     save(creatures.build_sheet(creatures.projectile("lightning"), 32), "sprites/magic/chain_lightning_8dir.png")
@@ -99,7 +100,7 @@ def build_props() -> None:
         "health_potion": props.potion("red"), "mana_potion": props.potion("blue"),
         "wolf_pelt": props.pelt(), "relic": props.treasure("relic"), "pouch": props.treasure("pouch"),
         "gate_day": props.gate(False), "gate_night": props.gate(True), "gate_cave": props.cave_gate(),
-        "echo_crystal": props.herb("echo_crystal"), "sky_shard": props.sky_shard(),
+        "echo_crystal": props.herb("echo_crystal"), "sky_shard": props.sky_shard(), "altar_heart": props.rune_circle(),
         "marker_quest": props.marker("quest"), "marker_ready": props.marker("ready"),
         "marker_service": props.marker("service"), "key_e": props.key_badge(),
     }

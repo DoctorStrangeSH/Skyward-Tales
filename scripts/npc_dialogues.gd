@@ -46,6 +46,8 @@ func _grant_reward(reward: Dictionary) -> String:
 ## Mirrors the conditions used by the conversations below.
 func marker_for(npc_id: String) -> String:
 	var quests := game.quests
+	if game.director != null and game.director.talk_target() == npc_id:
+		return "ready"
 	var free: bool = quests.active_quest_id.is_empty()
 	var village_helped: bool = quests.is_completed("moonleaf_gathering")
 	var quest_id: String = {
