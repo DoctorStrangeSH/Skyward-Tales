@@ -15,13 +15,25 @@ var animation_frame: int = 0
 var is_moving: bool = false
 var _animation_clock: float = 0.0
 
+## Atlas textures are shared between all sprites that use the same file.
+static var _texture_cache: Dictionary = {}
+
+static func _get_texture(texture_path: String) -> Texture2D:
+	if _texture_cache.has(texture_path):
+		return _texture_cache[texture_path]
+	# Imported resource: works in the editor and in exported builds.
+	var loaded := load(texture_path) as Texture2D
+	if loaded == null:
+		# Fallback for a project that has not been imported yet.
+		var image := Image.new()
+		if image.load(texture_path) == OK:
+			loaded = ImageTexture.create_from_image(image)
+	if loaded != null:
+		_texture_cache[texture_path] = loaded
+	return loaded
+
 func configure(texture_path: String, frames: int = 4, directions: int = 8, visual_scale: float = 1.0, fps: float = 8.0) -> void:
-	var image := Image.new()
-	var image_error := image.load(texture_path)
-	if image_error == OK:
-		texture = ImageTexture.create_from_image(image)
-	else:
-		texture = load(texture_path) as Texture2D
+	texture = _get_texture(texture_path)
 	frames_per_direction = maxi(1, frames)
 	direction_count = maxi(1, directions)
 	animation_fps = maxf(1.0, fps)
