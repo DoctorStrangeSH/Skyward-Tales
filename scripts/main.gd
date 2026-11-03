@@ -305,7 +305,10 @@ func _spawn_grove_warden() -> void:
 
 func _on_grove_warden_interacted(_source: Node2D) -> void:
 	if quests.is_completed("grove_spirits"):
-		_show_dialogue("Хранительница Илара", "%s. Лес запомнит твою доброту." % relationships.get_reaction("ilara"))
+		if relationships.get_score("ilara") >= 20:
+			_show_dialogue("Хранительница Илара", "Лес доверяет тебе. Я отметила на карте древний тайник у камней — там хранятся припасы для тех, кто защищает рощу.")
+		else:
+			_show_dialogue("Хранительница Илара", "%s. Лес запомнит твою доброту." % relationships.get_reaction("ilara"))
 	elif quests.active_quest_id.is_empty() or quests.active_quest_id == "grove_spirits":
 		if not quests.states["grove_spirits"]["started"]:
 			quests.start_quest("grove_spirits")
@@ -313,8 +316,9 @@ func _on_grove_warden_interacted(_source: Node2D) -> void:
 		elif quests.is_ready_to_complete("grove_spirits"):
 			if quests.complete_quest("grove_spirits"):
 				_grant_quest_reward("grove_spirits")
-				relationships.adjust("ilara", 12)
-				_show_relationship_change("ilara", 12)
+				relationships.adjust("ilara", 20)
+				_reveal_ilara_cache()
+				_show_relationship_change("ilara", 20)
 			_spawn_guardian(Vector2(1020, 580))
 			_show_dialogue("Хранительница Илара", "Ты вернул лесу его сияние. Прими эту награду.")
 		else:
@@ -456,6 +460,15 @@ func _try_interact() -> void:
 		return
 	if target.has_method("interact"):
 		target.interact()
+
+func _reveal_ilara_cache() -> void:
+	var markers: Dictionary = discovered_landmarks.get("moonlit_grove", {})
+	if markers.has("ilara_ancient_cache"):
+		return
+	markers["ilara_ancient_cache"] = {"position": [975.0, 640.0], "kind": "secret"}
+	discovered_landmarks["moonlit_grove"] = markers
+	if current_region == "moonlit_grove":
+		_update_minimap()
 
 func _reveal_cartographer_cache() -> void:
 	var markers: Dictionary = discovered_landmarks.get("greenreach", {})
