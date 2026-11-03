@@ -1,0 +1,16 @@
+{
+  "npcs": {
+    "elder": {
+      "name": "Старейшина Элиан",
+      "starting_score": 0
+    },
+    "ilara": {
+      "name": "Хранительница Илара",
+      "starting_score": 0
+    },
+    "mira": {
+      "name": "Мира, картограф",
+      "starting_score": 0
+    }
+  }
+}
