@@ -361,6 +361,9 @@ func _on_cartographer_interacted(_source: Node2D) -> void:
 	_refresh_hud()
 
 func _on_dialogue_choice_selected(choice_id: String) -> void:
+	if quests.is_ready_to_complete("moonleaf_gathering"):
+		_complete_elder_quest_choice(choice_id)
+		return
 	const quest_id := "lost_cartographer_notes"
 	if not quests.is_ready_to_complete(quest_id):
 		return
@@ -386,6 +389,35 @@ func _on_dialogue_choice_selected(choice_id: String) -> void:
 	else:
 		_show_relationship_change("mira", relationship_gain)
 	_refresh_hud()
+
+func _complete_elder_quest_choice(choice_id: String) -> void:
+	const quest_id := "moonleaf_gathering"
+	var reward: Dictionary = quests.get_choice_reward(quest_id, choice_id)
+	if reward.is_empty() or not quests.complete_quest(quest_id):
+		return
+	quests.states[quest_id]["choice"] = choice_id
+	var relationship_gain: int = 20 if choice_id == "village" else 5
+	relationships.adjust("elder", relationship_gain)
+	if relationships.get_score("elder") >= 20:
+		_reveal_elder_cache()
+	player.add_experience(int(reward.get("experience", 0)))
+	player.add_gold(int(reward.get("gold", 0)))
+	hud.close_dialogue()
+	player.set_physics_process(true)
+	if relationships.get_score("elder") >= 20:
+		hud.show_message("Элиан благодарен за помощь поселению. Доверие +%d. Тайник отмечен на карте." % relationship_gain, 4.0)
+	else:
+		_show_relationship_change("elder", relationship_gain)
+	_refresh_hud()
+
+func _reveal_elder_cache() -> void:
+	var markers: Dictionary = discovered_landmarks.get("greenreach", {})
+	if markers.has("elder_hidden_storehouse"):
+		return
+	markers["elder_hidden_storehouse"] = {"position": [960.0, 175.0], "kind": "secret"}
+	discovered_landmarks["greenreach"] = markers
+	if current_region == "greenreach":
+		_update_minimap()
 
 func _spawn_elder() -> void:
 	elder = NPC_SCRIPT.new() as WorldNpc
@@ -497,16 +529,18 @@ func _grant_quest_reward(quest_id: String) -> void:
 
 func _on_elder_interacted(_source: Node2D) -> void:
 	if quests.is_completed("moonleaf_gathering"):
-		_show_dialogue("Старейшина Элиан", "%s. Ты помог нашему поселению. На востоке есть тропа в Зачарованный лес. Найди хранительницу Илару — возможно, ей нужна помощь." % relationships.get_reaction("elder"))
+		if relationships.get_score("elder") >= 20:
+			_show_dialogue("Старейшина Элиан", "Ты доказал, что думаешь не только о себе. Я открыл для тебя старое хранилище у северных руин — там поселение прятало припасы во время войны.")
+		else:
+			_show_dialogue("Старейшина Элиан", "%s. Ты помог нашему поселению. На востоке есть тропа в Зачарованный лес. Найди хранительницу Илару — возможно, ей нужна помощь." % relationships.get_reaction("elder"))
 	elif quests.active_quest_id.is_empty():
 		quests.start_quest("moonleaf_gathering")
 		_show_dialogue("Старейшина Элиан", "Юный странник, ночной туман отравляет наш лес. Принеси мне три лунных листа — они растут вдоль старой тропы. Я щедро тебя отблагодарю.")
 	elif quests.is_ready_to_complete("moonleaf_gathering"):
-		if quests.complete_quest("moonleaf_gathering"):
-			_grant_quest_reward("moonleaf_gathering")
-			relationships.adjust("elder", 8)
-			_show_relationship_change("elder", 8)
-		_show_dialogue("Старейшина Элиан", "Ты принёс все три! Пусть древние звёзды хранят тебя. Прими эти монеты и знания.")
+		_show_dialogue_choices("Старейшина Элиан", "Ты спас наши запасы от порчи. Я обещал награду. Но поселению тоже тяжело пережить эту зиму. Как поступим?", [
+			{"id": "payment", "label": "Принять полную награду — 25 золота"},
+			{"id": "village", "label": "Оставить большую часть награды поселению"}
+		])
 	else:
 		_show_dialogue("Старейшина Элиан", "Лунные листья растут вдоль старой тропы. Будь осторожен — слизни стали агрессивнее.")
 	_refresh_hud()
