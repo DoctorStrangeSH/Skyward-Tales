@@ -35,6 +35,7 @@ func _run() -> void:
 	game.player.mana = 31
 	game.player.global_position = Vector2(330, 260)
 	game.player.add_gold(77)
+	game.relationships.adjust("mira", 34)
 	game.quests.start_quest("moonleaf_gathering")
 	game.quests.add_progress("moonleaf_gathering", 2)
 	game.selected_spell_id = "frostbolt"
@@ -47,6 +48,7 @@ func _run() -> void:
 	game.player.mana = 1
 	game.player.inventory.clear()
 	game.player.gold = 0
+	game.relationships.adjust("mira", -34)
 	game.player.equipment["amulet"] = ""
 	game.player.max_mana = 60
 	game.player.global_position = Vector2(60, 60)
@@ -65,6 +67,8 @@ func _run() -> void:
 	if not _require(int(game.quests.states["moonleaf_gathering"]["progress"]) == 2, "quest progress failed"):
 		return
 	if not _require(game.selected_spell_id == "frostbolt", "spell selection failed"):
+		return
+	if not _require(game.relationships.get_score("mira") == 34, "NPC relationship failed to persist"):
 		return
 
 	# The file loader must reject malformed nested world data as well.
