@@ -53,7 +53,7 @@ def build_world() -> None:
         save(flora.canopy_border(w, h, border_pal, seed=200 + index, glow=glow), f"world/{region_id}_canopy.png")
         for variant in range(3):
             size = "large" if variant != 2 else "small"
-            if style == "cave":
+            if style in ("cave", "rift"):
                 canvas, origin = flora.crystal_cluster(300 + index * 10 + variant, pal, size)
             elif style == "spires":
                 canvas, origin = flora.stone_spire(300 + index * 10 + variant, pal, size)
@@ -61,7 +61,7 @@ def build_world() -> None:
                 canvas, origin = flora.tree(300 + index * 10 + variant, pal, size, glow=glow)
             save(canvas, f"world/{style}_tree_{variant}.png", origin)
         for variant in range(2):
-            if style == "cave":
+            if style in ("cave", "rift"):
                 canvas, origin = flora.rock_pile(400 + index * 10 + variant, pal)
             else:
                 canvas, origin = flora.bush(400 + index * 10 + variant, pal, glow=glow)
@@ -86,6 +86,8 @@ def build_characters() -> None:
     for npc_id, look in characters.NPCS.items():
         save(characters.portrait_sheet(look), f"sprites/npcs/{npc_id}.png")
     save(characters.sheet(characters.SHAMAN), "sprites/enemies/forest_shaman_8dir.png")
+    save(characters.sheet(characters.NPCS["vail"]), "sprites/enemies/vail_8dir.png")
+    save(characters.sheet(characters.SHADE), "sprites/enemies/rift_shade_8dir.png")
     save(creatures.build_sheet(creatures.slime, 32), "sprites/enemies/forest_slime_true8.png")
     save(creatures.build_sheet(creatures.wolf, 32), "sprites/enemies/forest_wolf_8dir.png")
     save(creatures.build_sheet(creatures.guardian, 48), "sprites/enemies/grove_guardian_8dir.png")
@@ -107,7 +109,8 @@ def build_props() -> None:
         "ore_node": props.ore_node(), "supply_crate": props.crate(), "map_fragment": props.scroll(),
         "health_potion": props.potion("red"), "mana_potion": props.potion("blue"),
         "wolf_pelt": props.pelt(), "relic": props.treasure("relic"), "pouch": props.treasure("pouch"),
-        "gate_day": props.gate(False), "gate_night": props.gate(True), "gate_cave": props.cave_gate(), "gate_sky": props.sky_gate(), "gate_spires": props.sky_gate(),
+        "gate_day": props.gate(False), "gate_night": props.gate(True), "gate_cave": props.cave_gate(), "gate_sky": props.sky_gate(), "gate_spires": props.sky_gate(), "gate_rift": props.sky_gate(),
+        "rift_throne": props.rune_circle(("#fbf6ff", "#e6d2ff", "#c9a2ff", "#6a3ac0")),
         "wind_rune": props.herb("wind_rune"), "storm_heart": props.rune_circle(("#ffffff", "#c8f4ff", "#7ad0f0", "#3a7ab0")),
         "memory_crystal": props.herb("memory_crystal"),
         "echo_crystal": props.herb("echo_crystal"), "sky_shard": props.sky_shard(), "altar_heart": props.rune_circle(),

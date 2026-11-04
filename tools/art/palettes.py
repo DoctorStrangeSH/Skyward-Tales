@@ -77,5 +77,23 @@ SPIRES = {
     "flowers": [ramp("#fff2c0", "#e0b84a"), ramp("#f6c0d0", "#c07a9a"), ramp("#ffffff", "#c8c0d8")],
 }
 
-STYLES = {"day": DAY, "night": NIGHT, "cave": CAVE, "sky": SKY, "spires": SPIRES}
-ISLAND_STYLES = ("sky", "spires")
+RIFT = {
+    # Vail's torn island at dusk: violet turf, pale cracked stone, shard crystals.
+    "grass": ramp("#1e1630", "#2a1e42", "#382a56", "#46366a", "#58467e", "#6e5a94", "#8a76ae"),
+    "dirt": ramp("#3a3048", "#544662", "#6e5e7c", "#8a7a98", "#a898b4", "#c8bcd2"),
+    "water": ramp("#1a1040", "#2a1e6a", "#4a36a0", "#7a5ad8", "#b89af0", "#f0e6ff"),
+    "stone": ramp("#1e1830", "#2e2644", "#463c5e", "#62587c", "#847aa0", "#b0a8c8"),
+    "leaf": ramp("#140e22", "#1e1630", "#2e2246", "#40305e", "#56427a", "#6e5896", "#8a74b2"),
+    "bark": ramp("#1e1830", "#2e2644", "#463c5e", "#62587c", "#847aa0"),
+    "moss": ramp("#2a3a5a", "#3a4a72", "#4a5a8a", "#6a7aa8"),
+    "shadow": hex_color("#0a0614", 110),
+    "outline": hex_color("#0c0818"),
+    "glow": ramp("#c9a2ff", "#e6d2ff", "#fbf6ff"),
+    "crystal": ramp("#fbf6ff", "#e6d2ff", "#c9a2ff", "#8a5ae8", "#4a2f9a"),
+    "sky": ramp("#140c2a", "#22143e", "#3a2056", "#5a2e6e"),
+    "cloud": ramp("#2a1a40", "#3e2858", "#563a72", "#6e4e8a", "#8a68a6", "#a888c0", "#c8a8dc"),
+    "flowers": [ramp("#e6d2ff", "#8a5ae8"), ramp("#ffd0f0", "#c06aa8"), ramp("#c8f0ff", "#5a9ad0")],
+}
+
+STYLES = {"day": DAY, "night": NIGHT, "cave": CAVE, "sky": SKY, "spires": SPIRES, "rift": RIFT}
+ISLAND_STYLES = ("sky", "spires", "rift")

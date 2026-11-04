@@ -405,6 +405,108 @@
         {
           "speaker": "cartographer",
           "text": "И Вейл всегда на шаг впереди. Он знает, куда мы идём."
+        }
+      ]
+    },
+    "rift_call": {
+      "steps": [
+        {
+          "speaker": "cartographer",
+          "text": "Смотри — восточный мост. Он ведёт на Расколотый остров."
+        },
+        {
+          "speaker": "cartographer",
+          "text": "Там Вейл. Его тени расползлись по всему острову."
+        },
+        {
+          "speaker": "hero",
+          "text": "Значит, сначала тени. Потом он сам."
+        }
+      ]
+    },
+    "rift_arrival": {
+      "steps": [
+        {
+          "effect": "title",
+          "text": "Расколотый остров"
+        },
+        {
+          "text": "Остров разорван пополам. В трещинах мерцает пустое небо."
+        },
+        {
+          "speaker": "cartographer",
+          "text": "Здесь тихо, как перед бурей. Будь осторожнее, {hero}."
+        }
+      ]
+    },
+    "rift_throne_hint": {
+      "steps": [
+        {
+          "text": "Последняя тень рассеивается. На вершине разлома вспыхивает трон."
+        },
+        {
+          "speaker": "cartographer",
+          "text": "Он ждёт нас. Пойдём вместе."
+        }
+      ]
+    },
+    "vail_confront": {
+      "steps": [
+        {
+          "speaker": "vail",
+          "text": "Ты упрям{ый|ая}, {hero}. Две опоры… Ты продлеваешь агонию."
+        },
+        {
+          "speaker": "hero",
+          "text": "Я спасаю людей, на которых падают острова."
+        },
+        {
+          "speaker": "vail",
+          "text": "Ты спасаешь их на год. Я хочу спасти их навсегда."
+        },
+        {
+          "speaker": "cartographer",
+          "text": "Хватит слов, Вейл!"
+        },
+        {
+          "effect": "flash"
+        },
+        {
+          "text": "Вейл поднимает посох. Тени отвечают ему."
+        }
+      ]
+    },
+    "vail_falls": {
+      "steps": [
+        {
+          "text": "Посох Вейла раскалывается. Он опускается на колено."
+        },
+        {
+          "speaker": "vail",
+          "text": "Хранители не чинили небо. Они держали его — собой. Каждая опора — это Хранитель."
+        },
+        {
+          "speaker": "vail",
+          "text": "Узор умирает, {hero}. Можно кормить его дальше… или опустить острова на землю. Целыми."
+        },
+        {
+          "speaker": "cartographer",
+          "text": "Почему ты не сказал этого раньше?"
+        },
+        {
+          "speaker": "vail",
+          "text": "Кто бы мне поверил? Найди последнюю опору. Там ты решишь сам{|а}."
+        },
+        {
+          "text": "Вейл растворяется в лиловом свете."
+        },
+        {
+          "speaker": "hero",
+          "text": "Мира… что, если он прав?"
+        },
+        {
+          "speaker": "cartographer",
+          "text": "Тогда нам придётся выбрать. Но не сегодня."
         },
         {
           "text": "Продолжение следует…"
@@ -447,6 +549,16 @@
       "after": "main_spires",
       "start": "main_tempest",
       "scene": "storm_hint"
+    },
+    {
+      "after": "main_tempest",
+      "start": "main_rift",
+      "scene": "rift_call"
+    },
+    {
+      "after": "main_rift",
+      "start": "main_vail",
+      "scene": "rift_throne_hint"
     }
   ],
   "on_enter": [
@@ -465,6 +577,11 @@
       "region": "wind_spires",
       "flag": "arrived_spires",
       "scene": "spires_arrival"
+    },
+    {
+      "region": "sky_rift",
+      "flag": "arrived_rift",
+      "scene": "rift_arrival"
     }
   ],
   "bosses": {
@@ -482,6 +599,11 @@
       "completes": "main_tempest",
       "scene": "spire_restored",
       "title": "Вторая опора восстановлена"
+    },
+    "vail": {
+      "completes": "main_vail",
+      "scene": "vail_falls",
+      "title": "Конец Акта II"
     }
   }
 }

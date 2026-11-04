@@ -19,6 +19,8 @@ SHEETS = {
     "sentinel": (ROOT / "assets/sprites/enemies/sky_sentinel_8dir.png", 32),
     "wisp": (ROOT / "assets/sprites/enemies/wind_wisp_8dir.png", 32),
     "tempest": (ROOT / "assets/sprites/enemies/tempest_colossus_8dir.png", 48),
+    "shade": (ROOT / "assets/sprites/enemies/rift_shade_8dir.png", 32),
+    "vail": (ROOT / "assets/sprites/enemies/vail_8dir.png", 32),
     "fireball": (ROOT / "assets/sprites/magic/fireball_8dir.png", 32),
     "frostbolt": (ROOT / "assets/sprites/magic/frostbolt_8dir.png", 32),
     "chain_lightning": (ROOT / "assets/sprites/magic/chain_lightning_8dir.png", 32),
