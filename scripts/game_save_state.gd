@@ -69,7 +69,8 @@ static func capture(game: SkywardGame) -> Dictionary:
 			"defeated": game.defeated_enemies, "guardian_defeated": game.guardian_defeated,
 			"story_flags": game.director.make_snapshot(),
 			"discovered": game.discovered_enemies.duplicate(true), "landmarks": game.discovered_landmarks.duplicate(true),
-			"opened_chests": game.opened_chests.duplicate(true), "gathered_resource_nodes": game.gathered_resource_nodes.duplicate(true)
+			"opened_chests": game.opened_chests.duplicate(true), "gathered_resource_nodes": game.gathered_resource_nodes.duplicate(true),
+			"settlement": game.settlement.make_snapshot()
 		},
 		"magic": game.selected_spell_id
 	}
@@ -94,6 +95,7 @@ static func apply(game: SkywardGame, data: Dictionary) -> bool:
 	game.opened_chests = world_data.get("opened_chests", {}).duplicate(true)
 	game.gathered_resource_nodes = world_data.get("gathered_resource_nodes", {}).duplicate(true)
 	game.relationships.restore_snapshot(world_data.get("relationships", {}))
+	game.settlement.restore_snapshot(world_data.get("settlement", {}))
 	var saved_position := read_position(character.get("position"), DEFAULT_PLAYER_POSITION)
 	game._set_region(str(world_data.get("region", "greenreach")), saved_position, false)
 	for quest_id in quest_data["states"]:

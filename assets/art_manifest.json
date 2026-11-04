@@ -1195,6 +1195,16 @@
    78
   ]
  },
+ "world/village_board.png": {
+  "size": [
+   34,
+   34
+  ],
+  "origin": [
+   17,
+   32
+  ]
+ },
  "world/village_fence_h.png": {
   "size": [
    34,

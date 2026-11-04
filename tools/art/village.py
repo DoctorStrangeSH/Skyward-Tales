@@ -213,6 +213,23 @@ def lamp() -> tuple[Canvas, tuple[int, int]]:
     return c, (6, 32)
 
 
+def board() -> tuple[Canvas, tuple[int, int]]:
+    """Settlement notice board with pinned plans."""
+    c = Canvas(34, 34)
+    c.rect(4, 10, 3, 22, TIMBER[1])
+    c.rect(27, 10, 3, 22, TIMBER[1])
+    c.rect(2, 4, 30, 18, TIMBER[3])
+    c.rect(3, 5, 28, 16, TIMBER[2])
+    _roof(c, 1, 1, 32, 4, ROOF, 9)
+    for x, y, col in ((5, 7, PLASTER[3]), (14, 8, PLASTER[2]), (22, 6, PLASTER[3])):
+        c.rect(x, y, 7, 9, col)
+        c.hline(x + 1, x + 5, y + 3, TIMBER[1])
+        c.hline(x + 1, x + 4, y + 5, TIMBER[1])
+        c.put(x + 3, y, hex_color("#e05a6a"))
+    c.outline(OUTLINE)
+    return c, (17, 32)
+
+
 def plot() -> tuple[Canvas, tuple[int, int]]:
     """Empty building plot: stakes and string around flattened earth."""
     c = Canvas(70, 44)
@@ -245,6 +262,7 @@ def build(root: pathlib.Path) -> None:
         "village_hay": haybale(),
         "village_lamp": lamp(),
         "village_plot": plot(),
+        "village_board": board(),
     }
     manifest_path = root / "assets" / "art_manifest.json"
     art = json.loads(manifest_path.read_text())
