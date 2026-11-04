@@ -138,6 +138,39 @@
   ],
   "feet": 40
  },
+ "settler_cook": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
+ "settler_fisher": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
+ "settler_woodcutter": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
  "shade": {
   "anims": {
    "idle": 6,

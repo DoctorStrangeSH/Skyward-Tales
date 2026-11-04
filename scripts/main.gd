@@ -10,6 +10,7 @@ const BOLT_SCENE := preload("res://scenes/magic_bolt.tscn")
 const NPC_SCRIPT := preload("res://scripts/npc.gd")
 const COLLECTIBLE_SCRIPT := preload("res://scripts/collectible.gd")
 const WAYSTONE_SCRIPT := preload("res://scripts/waystone.gd")
+const SETTLEMENT_OBJECT_SCRIPT := preload("res://scripts/settlement_object.gd")
 const LOOT_SCRIPT := preload("res://scripts/loot.gd")
 const CHEST_SCRIPT := preload("res://scripts/treasure_chest.gd")
 const SAVE_SCRIPT := preload("res://scripts/save_system.gd")
@@ -52,6 +53,7 @@ var loot_rng := RandomNumberGenerator.new()
 var director: StoryDirector
 var pickups: QuestPickups
 var givers: QuestGivers
+var settlement: Settlement
 var elder: WorldNpc
 var nearby_interactable: Node2D
 var spell_definitions: Dictionary = {}
@@ -104,6 +106,7 @@ func _ready() -> void:
 	dialogues = NpcDialogues.new(self)
 	pickups = QuestPickups.new(self)
 	givers = QuestGivers.new(self)
+	settlement = Settlement.new(self)
 	story = StoryScene.new(self)
 	director = StoryDirector.new(self)
 	player = PLAYER_SCENE.instantiate() as PlayerCharacter
@@ -355,6 +358,9 @@ func _populate_region() -> void:
 	var layout := _layout()
 	for npc_data in layout.get("npcs", []):
 		_spawn_npc(npc_data)
+	for npc_data in settlement.npcs_for(current_region):
+		_spawn_npc(npc_data)
+	_spawn_settlement()
 	for node_data in layout.get("resource_nodes", []):
 		var node_id := str(node_data.get("id", ""))
 		if not bool(gathered_resource_nodes.get(node_id, false)):
@@ -430,7 +436,7 @@ func _clear_region_actors() -> void:
 	for node in get_children():
 		if node is WorldNpc and node.is_companion:
 			continue
-		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is MagicBolt or node is EnemyMagicOrb:
+		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is SettlementObject or node is MagicBolt or node is EnemyMagicOrb:
 			remove_child(node)
 			node.queue_free()
 	elder = null
@@ -592,6 +598,43 @@ func _spawn_waystone(layout: Dictionary) -> void:
 	stone.set_awake(waystone_awake(current_region))
 	stone.used.connect(_on_waystone_used)
 
+# --- Settlement: board, plots and houses in the village ----------------------
+
+func _spawn_settlement() -> void:
+	if current_region != settlement.village_region():
+		return
+	var board_pos: Array = settlement.data.get("board", {}).get("position", [0, 0])
+	_spawn_settlement_object("board", "village_board", Vector2(float(board_pos[0]), float(board_pos[1])))
+	for entry in settlement.data.get("plots", []):
+		var p: Array = entry.get("position", [0, 0])
+		var plot_id := str(entry.get("id", ""))
+		var art := "village_plot"
+		var kind := "plot"
+		if settlement.homes.has(plot_id):
+			art = str(settlement.settler(str(settlement.homes[plot_id])).get("house", "village_house_small"))
+			kind = "house"
+		_spawn_settlement_object(kind, art, Vector2(float(p[0]), float(p[1])))
+
+func _spawn_settlement_object(kind: String, art: String, at: Vector2) -> void:
+	var object := SETTLEMENT_OBJECT_SCRIPT.new() as SettlementObject
+	object.kind = kind
+	object.art = art
+	add_child(object)
+	object.global_position = at
+	if kind == "board":
+		object.used.connect(func(_o: SettlementObject) -> void: settlement.open_board())
+
+## Rebuilds the village objects and settlers after a house goes up.
+func refresh_settlement() -> void:
+	for node in get_children():
+		if node is SettlementObject or (node is WorldNpc and node.npc_id.begins_with("settler_")):
+			remove_child(node)
+			node.queue_free()
+	_spawn_settlement()
+	for npc_data in settlement.npcs_for(current_region):
+		_spawn_npc(npc_data)
+	update_npc_markers()
+
 func waystone_awake(region_id: String) -> bool:
 	return director.has_flag("waystone_" + region_id)
 
@@ -703,6 +746,8 @@ func _spawn_npc(npc_data: Dictionary) -> void:
 	var handler := Callable(self, "_on_%s_interacted" % npc_id)
 	if handler.is_valid():
 		npc.interacted.connect(handler)
+	elif settlement.has_settler_npc(npc_id):
+		npc.interacted.connect(func(_source: Node2D) -> void: settlement.talk(npc_id))
 	elif givers.has_giver(npc_id):
 		npc.interacted.connect(func(_source: Node2D) -> void: givers.talk(npc_id))
 	else:

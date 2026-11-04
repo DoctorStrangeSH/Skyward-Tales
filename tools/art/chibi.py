@@ -278,6 +278,13 @@ def main() -> int:
                               RED_MID: (70, 50, 120), RED_LIGHT: (200, 170, 255), MAUVE: (30, 20, 50),
                               SKIN_LIGHT: (96, 80, 140), SKIN_SHADE: (70, 56, 110), INK: (20, 10, 40), GOLD: (230, 210, 255)},
                       ahoge=False, alpha=0.88),
+        # Settlers found around the world (data/settlement.json).
+        "settler_woodcutter": dict(colors={HAIR_LIGHT: (196, 120, 60), HAIR_SHADE: (140, 80, 40), RED_DARK: (120, 36, 30),
+                                           RED_MID: (168, 60, 44), RED_LIGHT: (90, 110, 60), MAUVE: (60, 40, 30)},
+                                   trim=True, ahoge=False, beard=((196, 120, 60), (140, 80, 40)), fill=((120, 36, 30), (168, 60, 44))),
+        "settler_fisher": dict(colors={HAIR_LIGHT: (220, 220, 214), HAIR_SHADE: (170, 172, 170), RED_DARK: (40, 70, 96),
+                                       RED_MID: (60, 104, 136), RED_LIGHT: (220, 190, 90), MAUVE: (40, 50, 60)},
+                               trim=True, ahoge=False, beard=((230, 230, 224), (180, 180, 176)), fill=((40, 70, 96), (60, 104, 136))),
         # Vail: long white hair, violet Keeper robes.
         "vail": dict(colors={RED_DARK: (58, 40, 98), RED_MID: (92, 66, 150), RED_LIGHT: (176, 132, 236), MAUVE: (40, 30, 60),
                              GOLD: (210, 180, 255)}, ahoge=False),
@@ -297,6 +304,19 @@ def main() -> int:
         a[warm, 2] = np.clip(b[warm] * 0.9 + 20, 0, 255).astype(np.uint8)
         ilara[k] = a
     save("grove_warden", ilara, manifest=manifest)
+
+    # Martha the cook: the companion's frame with an apron-white dress.
+    marta = {}
+    for k, v in comp_base.items():
+        a = v.copy()
+        r, g, b = a[:, :, 0].astype(int), a[:, :, 1].astype(int), a[:, :, 2].astype(int)
+        warm = (a[:, :, 3] > 0) & (r > g + 30) & (r > b + 30) & ~mask(a, SKIN_LIGHT, SKIN_SHADE)
+        lum = (r * 0.5 + g * 0.35 + b * 0.15)
+        a[warm, 0] = np.clip(lum[warm] * 1.05 + 70, 0, 255).astype(np.uint8)
+        a[warm, 1] = np.clip(lum[warm] * 1.0 + 64, 0, 255).astype(np.uint8)
+        a[warm, 2] = np.clip(lum[warm] * 0.9 + 50, 0, 255).astype(np.uint8)
+        marta[k] = a
+    save("settler_cook", marta, manifest=manifest)
 
     # Pack NPCs with their own idle animation (one direction, at their table).
     save("blacksmith", {"idle": single_row("Blacksmith/Idle Working.png", 8, 32)}, 32, 32, manifest)
