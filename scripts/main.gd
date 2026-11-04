@@ -264,9 +264,13 @@ func _input(event: InputEvent) -> void:
 			_try_interact()
 		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("cast_spell"):
+		# Clicks on buttons (dialogue choices, menus) must reach the GUI, so the
+		# click is consumed only when it really casts a spell.
+		if get_viewport().gui_get_hovered_control() != null:
+			return
 		if not get_tree().paused and not hud.dialogue_visible and not hud.inventory_open and not hud.overlay_visible():
 			_cast_spell()
-		get_viewport().set_input_as_handled()
+			get_viewport().set_input_as_handled()
 
 ## Returns true when the key was consumed and must not reach other handlers.
 func _handle_key(keycode: Key) -> bool:
