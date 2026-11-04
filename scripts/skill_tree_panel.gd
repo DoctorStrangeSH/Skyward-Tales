@@ -9,6 +9,9 @@ var header: Label
 var columns: HBoxContainer
 var detail: Label
 var buttons: Dictionary = {}
+var group: String = "warrior"
+var group_bar: HBoxContainer
+var _player: PlayerCharacter
 
 func _ready() -> void:
 	position = Vector2(20, 18)
@@ -28,6 +31,20 @@ func _ready() -> void:
 	box.add_child(title)
 	header = _label("", 10, Color(0.9, 0.92, 1.0))
 	box.add_child(header)
+	group_bar = HBoxContainer.new()
+	group_bar.add_theme_constant_override("separation", 4)
+	box.add_child(group_bar)
+	for entry in SkillTree.GROUPS:
+		var tab := Button.new()
+		tab.text = str(entry["name"])
+		tab.toggle_mode = true
+		tab.custom_minimum_size = Vector2(90, 20)
+		tab.add_theme_font_size_override("font_size", UiFont.px(10))
+		tab.focus_mode = Control.FOCUS_NONE
+		UiStyle.small_toggle(tab)
+		var group_id := str(entry["id"])
+		tab.pressed.connect(func() -> void: show_group(group_id))
+		group_bar.add_child(tab)
 	columns = HBoxContainer.new()
 	columns.add_theme_constant_override("separation", 6)
 	box.add_child(columns)
@@ -37,7 +54,15 @@ func _ready() -> void:
 	box.add_child(detail)
 	visible = false
 
+func show_group(group_id: String) -> void:
+	group = group_id
+	if _player != null:
+		populate(_player)
+
 func populate(player: PlayerCharacter) -> void:
+	_player = player
+	for index in group_bar.get_child_count():
+		(group_bar.get_child(index) as Button).button_pressed = str(SkillTree.GROUPS[index]["id"]) == group
 	for child in columns.get_children():
 		columns.remove_child(child)
 		child.queue_free()
@@ -45,8 +70,10 @@ func populate(player: PlayerCharacter) -> void:
 	header.text = "Очки навыков: %d     Печати Неба: %d" % [SkillTree.available_points(player), SkillTree.seals(player)]
 	var defs := SkillTree.definitions()
 	for branch in SkillTree.BRANCHES:
+		if str(branch.get("group", "")) != group:
+			continue
 		var column := VBoxContainer.new()
-		column.custom_minimum_size = Vector2(142, 0)
+		column.custom_minimum_size = Vector2(192, 0)
 		column.add_theme_constant_override("separation", 3)
 		columns.add_child(column)
 		column.add_child(_label(str(branch["name"]), 12, branch["color"]))
@@ -67,7 +94,7 @@ func _skill_button(player: PlayerCharacter, skill_id: String, definition: Dictio
 	button.text = "%s%s  %d/%d" % ["✦ " if seal else "", str(definition.get("name", skill_id)), rank, max_rank]
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.add_theme_font_size_override("font_size", UiFont.px(9))
-	button.custom_minimum_size = Vector2(142, 22)
+	button.custom_minimum_size = Vector2(192, 22)
 	var reason := SkillTree.block_reason(player, skill_id)
 	var style := StyleBoxFlat.new()
 	style.set_corner_radius_all(3)

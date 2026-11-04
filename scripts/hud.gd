@@ -71,6 +71,12 @@ var bestiary_visible: bool = false
 var journal_view: QuestJournalPanel
 var skills_view: SkillTreePanel
 var skills_visible: bool = false
+var hero_visible: bool = false
+var hero_view: HeroPanel
+var hotbar: HBoxContainer
+var hotbar_slots: Array = []
+signal hero_unequip_requested(slot: String)
+signal hero_assign_requested(slot_index: int, skill_id: String)
 signal skill_learn_requested(skill_id: String)
 var journal_visible: bool = false
 var minimap: WorldMinimap
@@ -154,6 +160,23 @@ func _ready() -> void:
 	inventory_label = _make_label("", 9, Color(0.95, 0.9, 0.8))
 	inventory_label.position = Vector2(260, 330)
 	root.add_child(inventory_label)
+	# The skill bar replaces the old dodge box and potion line.
+	dodge_panel.visible = false
+	inventory_label.visible = false
+	hotbar = HBoxContainer.new()
+	hotbar.add_theme_constant_override("separation", 2)
+	hotbar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hotbar.position = Vector2(232, 330)
+	root.add_child(hotbar)
+	for index in 7:
+		if index == 4:
+			var gap := Control.new()
+			gap.custom_minimum_size = Vector2(4, 0)
+			gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			hotbar.add_child(gap)
+		var slot := HotbarSlot.new()
+		hotbar.add_child(slot)
+		hotbar_slots.append(slot)
 
 	# message_label keeps the latest message (used by code and tests); the
 	# player sees the ToastStack instead.
@@ -194,6 +217,11 @@ func _ready() -> void:
 	comparison_subtitle = comparison_view.subtitle_label
 	comparison_grid = comparison_view.stats_grid
 	comparison_description = comparison_view.description_label
+
+	hero_view = HeroPanel.new()
+	root.add_child(hero_view)
+	hero_view.unequip_requested.connect(func(slot: String) -> void: hero_unequip_requested.emit(slot))
+	hero_view.assign_requested.connect(func(index: int, skill_id: String) -> void: hero_assign_requested.emit(index, skill_id))
 
 	pause_view = PauseMenuPanel.new()
 	root.add_child(pause_view)
@@ -427,7 +455,21 @@ func toggle_bestiary(entries: Dictionary, discovered: Dictionary) -> void:
 
 ## True while a full-screen book (bestiary or quest journal) is open.
 func overlay_visible() -> bool:
-	return bestiary_visible or journal_visible or skills_visible
+	return bestiary_visible or journal_visible or skills_visible or hero_visible
+
+func update_hotbar(entries: Array) -> void:
+	for index in mini(entries.size(), hotbar_slots.size()):
+		(hotbar_slots[index] as HotbarSlot).apply(entries[index])
+
+func toggle_hero_panel(player: PlayerCharacter, skills: CombatSkills) -> void:
+	hero_visible = not hero_visible
+	hero_view.visible = hero_visible
+	if hero_visible:
+		hero_view.populate(player, skills)
+
+func refresh_hero_panel(player: PlayerCharacter, skills: CombatSkills) -> void:
+	if hero_visible:
+		hero_view.populate(player, skills)
 
 func toggle_skill_tree(player: PlayerCharacter) -> void:
 	skills_visible = not skills_visible
@@ -468,6 +510,8 @@ func show_defeat(can_load: bool) -> void:
 	if skills_visible:
 		skills_view.visible = false
 		skills_visible = false
+	hero_visible = false
+	hero_view.visible = false
 	hide_talent_choices()
 	pause_panel.visible = false
 	inventory_panel.visible = false

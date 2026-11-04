@@ -59,9 +59,12 @@ func _run() -> void:
 
 	# The tree window.
 	game.hud.toggle_skill_tree(player)
-	if not _verify(game.hud.skills_visible and game.hud.skills_view.columns.get_child_count() == 4, "T window shows four branches"):
+	if not _verify(game.hud.skills_visible and game.hud.skills_view.columns.get_child_count() == 3, "T window shows the three warrior branches"):
 		return
-	if not _verify(game.hud.skills_view.buttons.has("second_wind"), "every skill has a button"):
+	if not _verify(game.hud.skills_view.buttons.has("second_wind") and game.hud.skills_view.buttons.has("blade_mastery"), "warrior skills have buttons"):
+		return
+	game.hud.skills_view.show_group("mage")
+	if not _verify(game.hud.skills_view.buttons.has("fire_ultimate") and not game.hud.skills_view.buttons.has("blade_mastery"), "the mage tab shows the elements"):
 		return
 	game.hud.toggle_skill_tree(player)
 

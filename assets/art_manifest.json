@@ -83,6 +83,12 @@
    16
   ]
  },
+ "icons/iron_sword.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/ironbound_staff.png": {
   "size": [
    16,
@@ -161,7 +167,103 @@
    16
   ]
  },
+ "icons/skill_blade_wave.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skill_chain_lightning.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skill_dodge.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skill_fireball.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skill_fleet.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skill_frostbolt.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skill_keen_eye.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skill_lifeblood.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skill_lunge.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skill_shockwave.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skill_slash.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skill_steady_hand.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skill_toughness.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skill_treasure_sense.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skill_war_cry.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/sky_seal.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skysteel_blade.png": {
   "size": [
    16,
    16
@@ -197,6 +299,12 @@
    16
   ]
  },
+ "icons/steel_sword.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/stone.png": {
   "size": [
    16,
@@ -210,6 +318,12 @@
   ]
  },
  "icons/swift_tonic.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/traveler_sword.png": {
   "size": [
    16,
    16

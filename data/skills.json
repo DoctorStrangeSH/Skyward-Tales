@@ -1,0 +1,19 @@
+{
+  "active": {
+    "lunge": {"name": "Выпад", "level": 1, "cooldown": 4.0, "damage_mult": 1.6, "reach": 72, "description": "Рывок вперёд с клинком: ранит всех врагов на пути."},
+    "shockwave": {"name": "Сотрясение", "level": 3, "cooldown": 8.0, "damage_mult": 1.2, "radius": 56, "stun": 1.2, "description": "Удар мечом о землю: урон вокруг и оглушение на 1,2 с."},
+    "war_cry": {"name": "Боевой клич", "level": 5, "cooldown": 22.0, "duration": 8.0, "power": 0.3, "description": "+30% к урону мечом и магией на 8 секунд."},
+    "blade_wave": {"name": "Волна клинка", "level": 8, "cooldown": 6.0, "damage_mult": 1.4, "reach": 130, "width": 20, "description": "Взмах посылает режущую волну далеко вперёд."},
+    "fireball": {"name": "Огненный шар", "spell": true, "description": "Заклинание: огонь и горение."},
+    "frostbolt": {"name": "Ледяная стрела", "spell": true, "description": "Заклинание: урон и замедление."},
+    "chain_lightning": {"name": "Цепная молния", "spell": true, "description": "Заклинание: перескакивает между врагами."}
+  },
+  "passive": {
+    "steady_hand": {"name": "Твёрдая рука", "level": 2, "description": "+10% к урону мечом."},
+    "toughness": {"name": "Закалка", "level": 4, "description": "+3 к броне."},
+    "keen_eye": {"name": "Зоркий глаз", "level": 6, "description": "5% шанс критического удара мечом (×2 урона)."},
+    "fleet": {"name": "Лёгкий шаг", "level": 7, "description": "+8% к скорости бега."},
+    "lifeblood": {"name": "Живая сталь", "level": 10, "description": "Каждый удар мечом по врагу лечит 1 HP."},
+    "treasure_sense": {"name": "Чутьё на клады", "level": 12, "description": "+15% золота из врагов и сундуков."}
+  }
+}

@@ -54,3 +54,19 @@ static func style_button(button: Button) -> void:
 	button.add_theme_color_override("font_color", TEXT)
 	button.add_theme_color_override("font_hover_color", Color(1, 0.95, 0.75))
 	button.add_theme_color_override("font_disabled_color", MUTED * Color(1, 1, 1, 0.6))
+
+## Compact toggle (tabs, 1–4 slot buttons): gold when pressed.
+static func small_toggle(button: Button) -> void:
+	for state in ["normal", "hover", "pressed", "hover_pressed"]:
+		var box := StyleBoxFlat.new()
+		box.set_corner_radius_all(2)
+		box.set_content_margin_all(1)
+		box.set_border_width_all(1)
+		var on: bool = state.contains("pressed")
+		box.bg_color = Color(0.55, 0.36, 0.16) if on else (Color(0.26, 0.18, 0.12) if state == "hover" else Color(0.16, 0.11, 0.08))
+		box.border_color = Color(1.0, 0.84, 0.45) if on else Color(0.5, 0.38, 0.25)
+		button.add_theme_stylebox_override(state, box)
+	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+	button.add_theme_color_override("font_color", MUTED)
+	button.add_theme_color_override("font_pressed_color", Color(1, 0.95, 0.75))
+	button.add_theme_color_override("font_hover_pressed_color", Color(1, 0.95, 0.75))

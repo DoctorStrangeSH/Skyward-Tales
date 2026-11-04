@@ -124,6 +124,8 @@ CI (`.github/workflows/godot-validation.yml`) гоняет все `tests/*.gd` �
 
 ## 7. Подводные камни (найдены на практике)
 
+- **Циклические ссылки на class_name могут повесить загрузку** (без ошибок, тест просто висит): SkillTreePanel → HeroPanel → CombatSkills → SkywardGame → GameHud → SkillTreePanel. Общие стили — в `UiStyle`, не в окнах.
+
 - Новый уровень больше **не ставит игру на паузу**: он даёт очко навыков (дерево — `T`). Старый `TalentChoicePanel` остался только как компонент; `pending_level_choices` не используется.
 - Характеристики (`power`, `will`, `agility`) — обычные ключи в определении предмета; `player.get_stat()` = уровень−1 + экипировка. Урон заклинания × `get_spell_power_multiplier()`.
 - `spawn_enemy(kind, pos, elite)`: "" — обычный, id — элита, "?" — бросок (только в сюжетной игре). Элита из `regions.json` — поле `"elite"` у врага.
@@ -172,7 +174,7 @@ CI (`.github/workflows/godot-validation.yml`) гоняет все `tests/*.gd` �
 
 ## 8. Что делать дальше (по приоритету)
 
-0. **Этап 9 в ROADMAP — текущий.** Меч готов: `main.gd` → `sword_slash()/sword_spin()/_melee_hit()`, ввод `attack` (ЛКМ) и `cast_spell` (ПКМ), урон `player.get_melee_damage()` (слот `blade`, бонус `melee`). Магия в сюжете открывается флагом `magic_unlocked` после `main_guardian`. Анимации героя slash1/slash2/charge/spin собирает `tools/art/chibi.py` (слой VFX накладывается `over`). Тест: `tests/sword.gd`. Дальше — 9.2 панель героя и навыки.
+0. **Этап 9 в ROADMAP — текущий.** Меч готов: `main.gd` → `sword_slash()/sword_spin()/_melee_hit()`, ввод `attack` (ЛКМ) и `cast_spell` (ПКМ), урон `player.get_melee_damage()` (слот `blade`, бонус `melee`). Магия в сюжете открывается флагом `magic_unlocked` после `main_guardian`. Анимации героя slash1/slash2/charge/spin собирает `tools/art/chibi.py` (слой VFX накладывается `over`). Тест: `tests/sword.gd`. Навыки 1–4: `scripts/combat_skills.gd` (узел `game.skills`, откаты, `hotbar_entries()`), данные `data/skills.json`, слоты `player.skill_slots` (сохраняются), пассивы `player.has_passive()`; удары идут через `main._strike()` (крит, вампиризм) и `_melee_hit/_line_hit`. Окно героя `scripts/hero_panel.gd` (C), панель `scripts/hotbar_slot.gd`. Тест: `tests/combat_skills.gd`. Дальше — 9.3 лут и гринд.
 
 1. **Следовать `docs/ROADMAP.md` по этапам** (интерфейс → сюжет → прокачка). Сюжет одобрен (`docs/STORY.md`), пролог и весь акт I готовы. Этап 3 готов (дерево, характеристики, случайная добыча). Этап 4 почти готов (анимации, телеграфы, отбрасывание, элиты, тряска). Начат этап 8 «Большой мир» (см. ROADMAP): уровни регионов, небесные камни, побочные квестодатели, Туманная топь. Акт II завершён (этап 5): Мира-спутница, Небесный остров, Архив, Ветреные шпили, Буревой колосс, Расколотый остров и Вейл. Есть звук, музыка, hit-stop и релизные сборки. Дальше: третий остров/бой с Вейлом, пиксельный шрифт, звуки окружения, сборка Windows.
 2. **Анимации атаки и гибели врагов** (сейчас вспышка + облачко), анимация удара героя по нему.

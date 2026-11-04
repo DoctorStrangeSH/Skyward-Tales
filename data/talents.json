@@ -15,5 +15,15 @@
   "mana_well": {"name": "Источник маны", "branch": "wanderer", "tier": 1, "max_rank": 3, "description": "+12 к максимальной мане и немедленное восстановление 12 MP."},
   "arcane_power": {"name": "Сила арканы", "branch": "wanderer", "tier": 1, "max_rank": 3, "description": "+3 к урону всех заклинаний за ранг."},
   "swift_cast": {"name": "Быстрое плетение", "branch": "wanderer", "tier": 2, "max_rank": 3, "requires": {"arcane_power": 1}, "description": "Сокращает перезарядку всех заклинаний на 8% за ранг."},
-  "second_wind": {"name": "Второе дыхание", "branch": "wanderer", "tier": 3, "max_rank": 1, "requires": {"swift_cast": 1}, "seal": true, "description": "Раз в 90 секунд смертельный удар оставляет 1 HP и лечит 30% здоровья."}
+  "second_wind": {"name": "Второе дыхание", "branch": "wanderer", "tier": 3, "max_rank": 1, "requires": {"swift_cast": 1}, "seal": true, "description": "Раз в 90 секунд смертельный удар оставляет 1 HP и лечит 30% здоровья."},
+
+  "blade_mastery": {"name": "Мастер клинка", "branch": "blade", "tier": 1, "max_rank": 3, "description": "+3 к урону мечом за ранг."},
+  "keen_edge": {"name": "Острая кромка", "branch": "blade", "tier": 2, "max_rank": 3, "requires": {"blade_mastery": 1}, "description": "+5% к шансу критического удара мечом за ранг."},
+  "whirl_master": {"name": "Вихрь стали", "branch": "blade", "tier": 2, "max_rank": 2, "requires": {"blade_mastery": 1}, "description": "Вихрь заряжается быстрее на 0,15 с и бьёт на 25% сильнее за ранг."},
+  "blade_dance": {"name": "Танец клинков", "branch": "blade", "tier": 3, "max_rank": 1, "requires": {"keen_edge": 1}, "seal": true, "description": "Третий удар комбо — круговой взмах с двойным уроном."},
+
+  "iron_skin": {"name": "Железная кожа", "branch": "guard", "tier": 1, "max_rank": 3, "description": "+2 к броне за ранг."},
+  "battle_rhythm": {"name": "Боевой ритм", "branch": "guard", "tier": 2, "max_rank": 3, "requires": {"iron_skin": 1}, "description": "Навыки 1–4 перезаряжаются на 8% быстрее за ранг."},
+  "bloodthirst": {"name": "Жажда боя", "branch": "guard", "tier": 2, "max_rank": 2, "requires": {"iron_skin": 1}, "description": "Каждый удар мечом лечит 1 HP за ранг."},
+  "unbreakable": {"name": "Несокрушимость", "branch": "guard", "tier": 3, "max_rank": 1, "requires": {"battle_rhythm": 1}, "seal": true, "description": "Получаемый урон −15%, «Сотрясение» оглушает на 1 с дольше."}
 }

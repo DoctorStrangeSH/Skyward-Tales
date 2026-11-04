@@ -21,7 +21,7 @@ func _run() -> void:
 	hud.toggle_inventory(hero)
 	if not _check(hud.inventory_list.get_child_count() == 2, "items were not rendered"):
 		return
-	if not _check(hud.equipment_list.get_child_count() == 4, "equipment slots were not rendered"):
+	if not _check(hud.equipment_list.get_child_count() == 5, "equipment slots were not rendered"):
 		return
 	var item_button: InventoryItemButton = null
 	for child in hud.inventory_list.get_children():
