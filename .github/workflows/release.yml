@@ -40,6 +40,14 @@ jobs:
           test -s build/windows/SkywardTales.exe
           test -s build/linux/SkywardTales.x86_64
 
+      - name: Smoke-run the exported Linux build
+        run: |
+          chmod +x build/linux/SkywardTales.x86_64
+          export HOME="$(mktemp -d)"
+          timeout 120 build/linux/SkywardTales.x86_64 --headless res://scenes/main.tscn --quit-after 300 2>&1 | tee smoke.log
+          # Missing data or textures in the export show up as these warnings.
+          if grep -E "Не найден файл|Нет текстуры|Parse Error|SCRIPT ERROR" smoke.log; then exit 1; fi
+
       - name: Package
         run: |
           cp docs/PLAYING.md build/windows/README.txt
