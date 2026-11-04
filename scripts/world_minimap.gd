@@ -19,6 +19,8 @@ var known_landmarks: Dictionary = {}
 ## Live icons this frame: {"kind", "position": Vector2, "label"?}.
 var live: Array = []
 var follow: bool = true
+## Day progress 0..1 (DayNight.time) and whether the sky is seen here.
+var day_time: float = -1.0
 var _thumb: Texture2D
 var _thumb_region: String = ""
 var _clock: float = 0.0
@@ -86,7 +88,8 @@ func _draw() -> void:
 		draw_rect(Rect2(Vector2(1, 1), HUD_SIZE - Vector2(2, 2)), Color(0.85, 0.66, 0.38), false, 1.0)
 		var font := UiFont.font()
 		draw_string(font, Vector2(6, 13), RegionCatalog.display_name(region_id).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 110, UiFont.px(9), Color(1.0, 0.9, 0.62))
-		draw_string(font, Vector2(6, 13), "ур. %d" % RegionCatalog.level(region_id), HORIZONTAL_ALIGNMENT_RIGHT, HUD_SIZE.x - 12, UiFont.px(8), Color(0.75, 0.85, 1.0))
+		draw_string(font, Vector2(6, 13), "ур. %d" % RegionCatalog.level(region_id), HORIZONTAL_ALIGNMENT_RIGHT, HUD_SIZE.x - 24, UiFont.px(8), Color(0.75, 0.85, 1.0))
+		_draw_sky_clock(Vector2(HUD_SIZE.x - 10, 9))
 	# Beyond the island: sky (or rock underground).
 	var beyond := Color(0.62, 0.78, 0.94)
 	if cave:
@@ -111,7 +114,7 @@ func _draw() -> void:
 		var at := _map_point(marker["position"])
 		var kind: String = marker["kind"]
 		if not area.grow(-2).has_point(at):
-			if kind in ["gate", "quest"] and follow:
+			if kind in ["gate", "quest", "treasure"] and follow:
 				_draw_edge_arrow(area, at, Color(1.0, 0.85, 0.4) if kind == "quest" else Color(0.95, 0.95, 0.8))
 			continue
 		_draw_marker(kind, at, str(marker.get("label", "")))
@@ -176,10 +179,30 @@ func _draw_marker(kind: String, at: Vector2, label: String) -> void:
 			draw_circle(at, 3.0, Color(0.6, 0.15, 0.7))
 			draw_rect(Rect2(at - Vector2(1.5, 1), Vector2(1, 1)), Color.WHITE)
 			draw_rect(Rect2(at + Vector2(0.5, -1), Vector2(1, 1)), Color.WHITE)
+		"treasure":
+			var red := Color(0.95, 0.2, 0.15)
+			draw_line(at + Vector2(-3, -3), at + Vector2(3, 3), Color(0, 0, 0), 3.0)
+			draw_line(at + Vector2(-3, 3), at + Vector2(3, -3), Color(0, 0, 0), 3.0)
+			draw_line(at + Vector2(-3, -3), at + Vector2(3, 3), red, 1.5)
+			draw_line(at + Vector2(-3, 3), at + Vector2(3, -3), red, 1.5)
 		"secret":
 			draw_rect(Rect2(at - Vector2(2, 2), Vector2(4, 4)), Color(0.82, 0.55, 1.0))
 		_:
 			draw_rect(Rect2(at - Vector2(2, 2), Vector2(4, 4)), Color(0.38, 0.83, 0.98))
+
+## Sun by day, moon by night, grey underground.
+func _draw_sky_clock(at: Vector2) -> void:
+	if day_time < 0.0:
+		draw_circle(at, 3.5, Color(0.45, 0.42, 0.5))
+		return
+	var night := day_time >= 0.8 or day_time < 0.22
+	if night:
+		draw_circle(at, 3.8, Color(0.92, 0.94, 1.0))
+		draw_circle(at + Vector2(1.6, -1.0), 3.2, Color(0.17, 0.11, 0.08))
+	else:
+		var warm := day_time < 0.32 or day_time >= 0.7
+		draw_circle(at, 4.6, Color(1.0, 0.7, 0.3, 0.35))
+		draw_circle(at, 3.4, Color(1.0, 0.62, 0.3) if warm else Color(1.0, 0.88, 0.35))
 
 func _draw_edge_arrow(area: Rect2, at: Vector2, color: Color) -> void:
 	var center := area.get_center()

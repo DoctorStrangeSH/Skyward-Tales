@@ -9,7 +9,9 @@ class_name WorldEvents
 ## Events are not saved; the next one comes after a pause.
 
 const INTERVAL := Vector2(150.0, 300.0)
-const KINDS := ["starfall", "elite", "thief", "tailwind"]
+const KINDS := ["starfall", "elite", "thief", "tailwind", "trader", "meteor"]
+const TRADER_TIME := 120.0
+const NPC_SCRIPT := preload("res://scripts/npc.gd")
 const IMP_SCRIPT := preload("res://scripts/loot_imp.gd")
 
 var game: SkywardGame
@@ -55,6 +57,10 @@ func start(kind: String) -> bool:
 			return _thief()
 		"tailwind":
 			return _tailwind()
+		"trader":
+			return _trader()
+		"meteor":
+			return _meteor()
 	return false
 
 func _spot_near(distance_min: float, distance_max: float) -> Vector2:
@@ -132,3 +138,102 @@ func _tailwind() -> bool:
 	Vfx.burst(game, game.player.global_position, [Color(1, 1, 1), Color(0.8, 0.95, 1.0), Color(0.6, 0.85, 1.0, 0)], 20, 90.0, 0.6)
 	GameAudio.play("gust", -4.0, 0.0)
 	return true
+
+
+# --- Wandering trader ----------------------------------------------------------
+
+var trader: WorldNpc
+var trader_offers: Array = []
+
+func _trader() -> bool:
+	if trader != null and is_instance_valid(trader):
+		return false
+	trader = NPC_SCRIPT.new() as WorldNpc
+	trader.npc_id = "merchant"
+	trader.display_name = "Зейн, странствующий торговец"
+	trader.outfit_color = Color(0.35, 0.55, 0.9)
+	game.add_child(trader)
+	trader.global_position = _spot_near(60.0, 110.0)
+	trader.interacted.connect(func(_source: Node2D) -> void: open_trader())
+	trader_offers = _trader_stock()
+	Vfx.sparkle(game, trader.global_position)
+	game.hud.show_title_card("Странствующий торговец", 2.5)
+	game.hud.show_message("Рядом остановился торговец с редкими товарами. Он уйдёт через две минуты.", 4.0)
+	get_tree().create_timer(TRADER_TIME, false).timeout.connect(_trader_leaves)
+	return true
+
+func _trader_stock() -> Array:
+	var level := maxi(1, game.player.level)
+	var stock: Array = []
+	for rarity in ["rare", "epic"]:
+		var item_id := game.player.register_generated_item(LootGenerator.generate(rng, level, rarity))
+		stock.append({"item": item_id, "price": (90 if rarity == "rare" else 220) + level * (12 if rarity == "rare" else 25)})
+	stock.append({"item": TreasureHunt.MAP_ITEM, "price": 60 + level * 6})
+	stock.append({"item": "starlight_essence", "price": 260 + level * 10})
+	return stock
+
+func open_trader() -> void:
+	if trader == null or not is_instance_valid(trader):
+		return
+	var choices: Array[Dictionary] = []
+	for index in trader_offers.size():
+		var offer: Dictionary = trader_offers[index]
+		var definition := game.player.get_item_definition(str(offer["item"]))
+		var rarity := str(definition.get("rarity", ""))
+		var label := "%s%s — %d золота" % [game.player.get_item_name(str(offer["item"])), (" (" + str(game.hud.INVENTORY_RARITY_NAMES.get(rarity, rarity)).to_lower() + ")") if not rarity.is_empty() else "", int(offer["price"])]
+		choices.append({"id": "trader_buy:%d" % index, "label": label})
+	choices.append({"id": "trader_close", "label": "Не сейчас"})
+	game._show_dialogue_choices(trader.display_name, "Редкости со всех островов! Золото у вас есть: %d." % game.player.gold, choices)
+
+func handle_choice(choice_id: String) -> bool:
+	if choice_id == "trader_close":
+		game.hud.close_dialogue()
+		game.player.set_physics_process(true)
+		return true
+	if not choice_id.begins_with("trader_buy:"):
+		return false
+	var index := int(choice_id.trim_prefix("trader_buy:"))
+	if index >= 0 and index < trader_offers.size():
+		var offer: Dictionary = trader_offers[index]
+		if game.player.gold >= int(offer["price"]):
+			game.player.add_gold(-int(offer["price"]))
+			game.player.add_item(str(offer["item"]))
+			trader_offers.remove_at(index)
+			GameAudio.play("pickup", -4.0, 0.0)
+			game.hud.show_message("Куплено: " + game.player.get_item_name(str(offer["item"])), 2.5)
+		else:
+			game.hud.show_message("Не хватает золота.", 2.0)
+	open_trader()
+	return true
+
+func _trader_leaves() -> void:
+	if trader != null and is_instance_valid(trader):
+		Vfx.sparkle(game, trader.global_position)
+		trader.queue_free()
+		game.hud.show_message("Странствующий торговец отправился дальше.", 2.5)
+	trader = null
+
+# --- Meteor ----------------------------------------------------------------------
+
+func _meteor() -> bool:
+	var at := _spot_near(140.0, 220.0)
+	game.hud.show_title_card("Падает метеорит!", 2.5)
+	game.hud.show_message("Небесный камень рухнул неподалёку. Его охраняет звёздный страж.", 4.0)
+	game._streak(at + Vector2(-140, -260), at, Color(1.0, 0.8, 0.5, 1.0), 6.0)
+	get_tree().create_timer(0.35, false).timeout.connect(func() -> void: _meteor_lands(at))
+	return true
+
+func _meteor_lands(at: Vector2) -> void:
+	if game == null or not is_instance_valid(game):
+		return
+	Vfx.burst(game, at, [Color(1, 1, 0.85), Color(1.0, 0.6, 0.25), Color(0.4, 0.2, 0.1, 0)], 30, 140.0, 0.7)
+	game.shake(5.0, 0.4)
+	GameAudio.play("boss_roar", -8.0, 0.0)
+	for i in 4:
+		var loot := game._spawn_loot(at + Vector2.RIGHT.rotated(TAU * i / 4.0) * 18.0, "star_fragment")
+		loot.settle_time = 2.0
+	if rng.randf() < 0.4:
+		game._spawn_loot(at, "starlight_essence").settle_time = 2.0
+	var guard := game.spawn_enemy("sentinel", at + Vector2(0, -24), EliteModifiers.pick(rng))
+	if guard == null:
+		return

@@ -21,6 +21,9 @@ static func all() -> Dictionary:
 			push_warning("Каталог регионов не найден: " + PATH)
 	return _regions
 
+static func ids() -> Array:
+	return all().keys()
+
 static func has(region_id: String) -> bool:
 	return all().has(region_id)
 

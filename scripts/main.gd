@@ -80,6 +80,9 @@ var selected_spell_id: String = "fireball"
 var skills: CombatSkills
 var fishing: Fishing
 var events: WorldEvents
+var day_night: DayNight
+var treasure: TreasureHunt
+var contracts: Contracts
 var cast_cooldown_total: float = 0.0
 var defeated_enemies: int = 0
 var save_path: String = SAVE_SCRIPT.SAVE_PATH
@@ -153,6 +156,18 @@ func _ready() -> void:
 	events.name = "WorldEvents"
 	events.game = self
 	add_child(events)
+	day_night = DayNight.new()
+	day_night.name = "DayNight"
+	day_night.game = self
+	add_child(day_night)
+	treasure = TreasureHunt.new()
+	treasure.name = "TreasureHunt"
+	treasure.game = self
+	add_child(treasure)
+	contracts = Contracts.new()
+	contracts.name = "Contracts"
+	contracts.game = self
+	add_child(contracts)
 	player = PLAYER_SCENE.instantiate() as PlayerCharacter
 	add_child(player)
 	player.global_position = GameSaveState.DEFAULT_PLAYER_POSITION
@@ -281,6 +296,7 @@ func _process(delta: float) -> void:
 		return
 	_update_spell_hud()
 	hud.update_hotbar(skills.hotbar_entries())
+	hud.quest_tracker.extra = contracts.tracker_entries()
 	director.update()
 	# The finale choice comes back until the hero makes it.
 	if quests.is_completed("main_heart") and not director.has_flag("ending_restore") and not director.has_flag("ending_lower"):
@@ -318,6 +334,10 @@ func _interaction_prompt(target: Node2D) -> String:
 		return "E — " + ("готовить" if target.station_id == "kitchen" else "мастерить")
 	if target is DungeonDoor:
 		return "E — печать" if not target.levers.is_empty() else "E — открыть"
+	if target is ContractBoard:
+		return "E — доска заказов"
+	if target is DigSpot:
+		return "E — копать"
 	if target is DungeonLever:
 		return "E — опустить рычаг"
 	if target is SettlementObject:
@@ -471,6 +491,12 @@ func _populate_region() -> void:
 	for npc_data in settlement.npcs_for(current_region):
 		_spawn_npc(npc_data)
 	_spawn_settlement()
+	for spot in layout.get("contract_boards", []):
+		var board := ContractBoard.new()
+		add_child(board)
+		board.global_position = _vec(spot)
+		board.used.connect(func(_b: ContractBoard) -> void: contracts.open_board())
+	treasure.spawn_mark()
 	for node_data in layout.get("resource_nodes", []):
 		var node_id := str(node_data.get("id", ""))
 		if not bool(gathered_resource_nodes.get(node_id, false)):
@@ -549,7 +575,7 @@ func _clear_region_actors() -> void:
 	for node in get_children():
 		if node is WorldNpc and node.is_companion:
 			continue
-		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is SettlementObject or node is GatherNode or node is CraftStation or node is DungeonDoor or node is SpikeTrap or node is FlameVent or node is DungeonLever or node is MagicBolt or node is EnemyMagicOrb:
+		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is SettlementObject or node is GatherNode or node is CraftStation or node is DungeonDoor or node is SpikeTrap or node is FlameVent or node is DungeonLever or node is ContractBoard or node is DigSpot or node is MagicBolt or node is EnemyMagicOrb:
 			remove_child(node)
 			node.queue_free()
 	elder = null
@@ -675,6 +701,13 @@ func _travel(target_region: String, arrival: Vector2) -> void:
 # --- Open world: region levels, waystones, fast travel ----------------------
 
 func _scale_to_region(enemy: SlimeEnemy) -> void:
+	if day_night != null and day_night.night_here() and not enemy is GroveGuardian:
+		# Night: tougher foes, richer rewards.
+		enemy.max_health = int(round(enemy.max_health * 1.2))
+		enemy.attack_damage = int(round(enemy.attack_damage * 1.15))
+		enemy.xp_reward = int(round(enemy.xp_reward * 1.3))
+		enemy.health = enemy.max_health
+		enemy.combat_feedback.set_health(enemy.health, enemy.max_health)
 	var power := RegionCatalog.enemy_power(current_region)
 	if is_equal_approx(power, 1.0) or enemy is GroveGuardian:
 		return
@@ -942,6 +975,8 @@ func _update_minimap() -> void:
 	discovered_landmarks[current_region] = region_markers
 	hud.minimap.update_map(current_region, player.global_position, region_markers)
 	var live := minimap_markers()
+	live.append_array(treasure.minimap_marker())
+	hud.minimap.day_time = day_night.time if day_night.cycles_here() else -1.0
 	hud.minimap.set_live(live, player.facing)
 	if hud.world_map_visible:
 		hud.world_map.set_live(live, player.facing)
@@ -1352,6 +1387,7 @@ func _on_wolf_defeated(xp_reward: int, death_position: Vector2, elite: bool = fa
 func _on_enemy_defeated(xp_reward: int, death_position: Vector2, kind: String = "", elite: bool = false) -> void:
 	player.add_experience(xp_reward)
 	defeated_enemies += 1
+	contracts.on_kill(kind)
 	var starter: Array[String] = ["apprentice_staff", "leather_armor", "mana_amulet"]
 	if defeated_enemies <= starter.size():
 		_spawn_loot(death_position, starter[defeated_enemies - 1])
@@ -1372,6 +1408,8 @@ func chest_tier_reward(tier: String, at: Vector2) -> String:
 			return spawn_generated_loot(at + Vector2(0, 14), "uncommon")
 		"gold":
 			_spawn_loot(at + Vector2(-12, 12), "gold").amount = 40 + 10 * player.level
+			if loot_rng.randf() < 0.35:
+				_spawn_loot(at + Vector2(12, -6), TreasureHunt.MAP_ITEM)
 			return spawn_generated_loot(at + Vector2(10, 14), "rare")
 	return ""
 
@@ -1387,7 +1425,7 @@ func roll_drops(kind: String, at: Vector2, elite: bool = false) -> Array:
 		var coins := loot_rng.randi_range(int(gold_range[0]), int(gold_range[1])) + maxi(0, enemy_power_bonus())
 		if elite:
 			coins *= int(tables.get("elite", {}).get("gold_mult", 3))
-		coins = roundi(float(coins) * player.get_gold_multiplier())
+		coins = roundi(float(coins) * player.get_gold_multiplier() * (1.3 if day_night != null and day_night.night_here() else 1.0))
 		if coins > 0:
 			_spawn_loot(_scatter(at), "gold").amount = coins
 			dropped.append("gold")
@@ -1401,6 +1439,9 @@ func roll_drops(kind: String, at: Vector2, elite: bool = false) -> Array:
 		dropped.append(potion)
 	if not elite and loot_rng.randf() < float(table.get("gear", LootGenerator.drop_chance())):
 		dropped.append(spawn_generated_loot(_scatter(at)))
+	if not RegionCatalog.is_underground(RegionCatalog.style(current_region)) and loot_rng.randf() < 0.03:
+		_spawn_loot(_scatter(at), TreasureHunt.MAP_ITEM)
+		dropped.append(TreasureHunt.MAP_ITEM)
 	return dropped
 
 var _drop_tables: Dictionary = {}
@@ -1458,6 +1499,10 @@ func _on_inventory_unequip(slot: String) -> void:
 		hud.refresh_inventory(player)
 
 func _on_inventory_use(item_id: String) -> void:
+	if item_id == TreasureHunt.MAP_ITEM:
+		treasure.read_map()
+		hud.refresh_inventory(player)
+		return
 	if item_id in MATERIAL_ITEMS or bool(player.get_item_definition(item_id).get("material", false)):
 		hud.show_message("%s — %s" % [player.get_item_name(item_id), player.get_item_description(item_id)], 3.0)
 		return

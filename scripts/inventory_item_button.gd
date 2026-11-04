@@ -42,7 +42,7 @@ func configure(player: PlayerCharacter, id: String, fallback_names: Dictionary, 
 	var rarity_label: String = " • " + str(rarity_names.get(rarity, rarity)).to_lower() if not rarity.is_empty() else ""
 	slot = str(definition.get("slot", ""))
 	var can_equip: bool = not slot.is_empty()
-	var can_consume: bool = consumable_ids.has(item_id)
+	var can_consume: bool = consumable_ids.has(item_id) or definition.has("use")
 	can_use = count > 0 and (can_equip or can_consume)
 	var action_hint: String = "Клик или перетащите в слот героя — надеть" if can_equip else ("Клик — использовать" if can_consume else "Материал: для ремесла или продажи.")
 	summary = "%s ×%d — %s%s%s" % [item_name, count, description, rarity_label, " [НАДЕТО]" if equipped else ""]

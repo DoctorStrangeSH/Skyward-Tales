@@ -625,7 +625,25 @@ def build_ash() -> dict[str, Canvas]:
         "flame_heart": relic(),
         "recipe_obsidian": scroll_icon(),
         "star_fragment": _star_icon(),
+        "treasure_map": _map_icon(),
     }
+
+
+def _map_icon() -> Canvas:
+    c = Canvas(16, 16)
+    paper = ramp("#fff2d0", "#e8d4a4", "#c4a670")
+    c.rect(2, 3, 12, 10, paper[1])
+    c.rect(3, 4, 10, 8, paper[0])
+    for x in (2, 13):
+        c.vline(x, 3, 12, paper[2])
+    c.put(5, 6, hex_color("#7a9a5a"))
+    c.put(6, 7, hex_color("#7a9a5a"))
+    c.put(8, 8, hex_color("#5a8ac0"))
+    red = hex_color("#d0302a")
+    for i in range(3):
+        c.put(9 + i, 6 + i, red)
+        c.put(11 - i, 6 + i, red)
+    return _finish(c)
 
 
 def _star_icon() -> Canvas:

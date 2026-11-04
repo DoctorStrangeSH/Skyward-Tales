@@ -648,6 +648,15 @@
       "crit": 6,
       "lifesteal": 1,
       "value": 500
+    },
+    "treasure_map": {
+      "name": "Карта сокровищ",
+      "description": "Старая карта с крестиком. Используйте, чтобы узнать, где клад.",
+      "rarity": "rare",
+      "value": 40,
+      "use": {
+        "treasure_map": true
+      }
     }
   }
 }

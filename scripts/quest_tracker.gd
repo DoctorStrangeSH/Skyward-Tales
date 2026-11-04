@@ -7,6 +7,8 @@ class_name QuestTracker
 const MAX_ROWS := 4
 var rows: VBoxContainer
 var entries: Array = []
+## Extra lines (village contracts), set by the game.
+var extra: Array = []
 
 func _ready() -> void:
 	position = Vector2(6, 48)
@@ -27,7 +29,7 @@ func refresh(quests: QuestManager) -> void:
 	var active: Array = data["active"]
 	var main := active.filter(func(e: Dictionary) -> bool: return e["main"])
 	var side := active.filter(func(e: Dictionary) -> bool: return not e["main"])
-	var next: Array = (main + side).slice(0, MAX_ROWS)
+	var next: Array = (main + side + extra).slice(0, MAX_ROWS)
 	if str(next) == str(entries) and is_inside_tree() and get_meta("filled", false):
 		return
 	set_meta("filled", true)
@@ -41,7 +43,7 @@ func refresh(quests: QuestManager) -> void:
 		var color := Color(0.6, 1.0, 0.6) if ready else (Color(1.0, 0.86, 0.5) if entry["main"] else Color(0.78, 0.9, 1.0))
 		var label := Label.new()
 		var count := "" if int(entry["target"]) <= 1 else "  %d/%d" % [entry["progress"], entry["target"]]
-		label.text = "%s %s%s%s" % ["★" if entry["main"] else "◆", entry["title"], count, "  ✓ сдать" if ready else ""]
+		label.text = "%s %s%s%s" % ["★" if entry["main"] else ("•" if entry.get("contract", false) else "◆"), entry["title"], count, "  ✓ сдать" if ready else ""]
 		label.add_theme_font_size_override("font_size", UiFont.px(9))
 		label.add_theme_color_override("font_color", color)
 		label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
