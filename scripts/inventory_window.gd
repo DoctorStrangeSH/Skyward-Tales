@@ -21,7 +21,7 @@ func _ready() -> void:
 	style.bg_color = Color(0.045, 0.06, 0.09, 0.97)
 	style.set_corner_radius_all(6)
 	style.set_content_margin_all(8)
-	add_theme_stylebox_override("panel", style)
+	add_theme_stylebox_override("panel", UiStyle.panel(false))
 	var contents := VBoxContainer.new()
 	add_child(contents)
 	contents.add_child(_label("СУМКА  [I — закрыть]", 13, Color(1.0, 0.88, 0.56)))

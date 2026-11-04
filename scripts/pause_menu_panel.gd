@@ -43,7 +43,7 @@ func _ready() -> void:
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(5)
 	style.set_content_margin_all(10)
-	add_theme_stylebox_override("panel", style)
+	add_theme_stylebox_override("panel", UiStyle.panel(false))
 	# Main page stays the first child (tests and HUD rely on it).
 	main_page = _page("ПАУЗА")
 	_button(main_page, "Продолжить", func() -> void: resume_requested.emit())

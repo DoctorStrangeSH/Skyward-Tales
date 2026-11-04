@@ -11,7 +11,7 @@ func _ready() -> void:
 	style.bg_color = Color(0.045, 0.06, 0.08, 0.98)
 	style.set_corner_radius_all(6)
 	style.set_content_margin_all(8)
-	add_theme_stylebox_override("panel", style)
+	add_theme_stylebox_override("panel", UiStyle.panel(false))
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 8)
 	add_child(box)

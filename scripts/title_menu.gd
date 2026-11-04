@@ -66,18 +66,27 @@ func _set_menu_background() -> void:
 	bg.color = Color(0.045, 0.09, 0.105)
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(bg)
-	# The generated meadow, slowly drifting, under a dusk tint.
-	var ground := WorldArt.texture("world/greenreach_ground.png")
-	if ground != null:
-		var art := TextureRect.new()
-		art.texture = ground
-		art.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-		art.position = Vector2(-120, -160)
-		art.size = ground.get_size()
-		add_child(art)
-		var tween := art.create_tween().set_loops()
-		tween.tween_property(art, "position", Vector2(-420, -300), 40.0)
-		tween.tween_property(art, "position", Vector2(-120, -160), 40.0)
+	# The real village (houses, market, forge), slowly drifting, at 2x like
+	# the game camera.
+	# Its own viewport keeps the world's z-layers (canopy above actors) under
+	# the menu.
+	var holder := SubViewportContainer.new()
+	holder.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	holder.stretch = true
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(holder)
+	var view := SubViewport.new()
+	view.size = Vector2i(640, 360)
+	view.canvas_item_default_texture_filter = Viewport.DEFAULT_CANVAS_ITEM_TEXTURE_FILTER_NEAREST
+	holder.add_child(view)
+	var village := load("res://scripts/world.gd").new() as Node2D
+	village.set("region_id", "greenreach")
+	village.scale = Vector2(2, 2)
+	village.position = Vector2(-560, -880)
+	view.add_child(village)
+	var tween := village.create_tween().set_loops()
+	tween.tween_property(village, "position", Vector2(-1180, -980), 45.0)
+	tween.tween_property(village, "position", Vector2(-560, -880), 45.0)
 	var tint := ColorRect.new()
 	tint.color = Color(0.06, 0.04, 0.14, 0.55)
 	tint.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

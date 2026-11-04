@@ -328,7 +328,7 @@ def projectile(kind: str):
 
 # --- crystal bat ----------------------------------------------------------------
 
-WING = r4("#b8fbff", "#5fdcf0", "#2a9ec8", "#1a5a88")
+WING = r4("#f0e2ff", "#c4a8e8", "#8a6ac0", "#54408a")
 BATFUR = r4("#8a7a9a", "#5a4a6a", "#3a2e48", "#221a30")
 
 
@@ -588,3 +588,36 @@ def bog_king(facing: str, frame: int) -> Canvas:
     _toad_body(b, facing, frame, 24, 32 - [0, 0, -1, 0][frame], 1.8, True)
     b.outline(hex_color("#14200e"))
     return b.canvas()
+
+
+# --- Pack style -------------------------------------------------------------------
+
+def soften(canvas: Canvas) -> Canvas:
+    """Brings code-drawn creatures closer to the purchased pack: the near-black
+    outline becomes a dark tint of the body next to it, colours lose a fifth
+    of their saturation and lean warm, pure-white glints are toned down."""
+    import numpy as np
+    px = canvas.px.astype(np.float32)
+    alpha = px[:, :, 3] > 0
+    rgb = px[:, :, :3]
+    luma = rgb @ np.array([0.299, 0.587, 0.114], dtype=np.float32)
+    dark = alpha & (luma < 52)
+    out = rgb.copy()
+    h, w = alpha.shape
+    ys, xs = np.nonzero(dark)
+    for y, x in zip(ys, xs):
+        acc = []
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                yy, xx = y + dy, x + dx
+                if 0 <= yy < h and 0 <= xx < w and alpha[yy, xx] and not dark[yy, xx]:
+                    acc.append(rgb[yy, xx])
+        if acc:
+            out[y, x] = np.mean(acc, axis=0) * 0.42 + np.array([10, 6, 8])
+    grey = (out @ np.array([0.299, 0.587, 0.114], dtype=np.float32))[:, :, None]
+    out = grey + (out - grey) * 0.8
+    out *= np.array([1.03, 1.0, 0.95], dtype=np.float32)
+    glint = alpha & (luma > 240)
+    out[glint] = out[glint] * 0.9
+    canvas.px[:, :, :3] = np.clip(out, 0, 255).astype(np.uint8)
+    return canvas

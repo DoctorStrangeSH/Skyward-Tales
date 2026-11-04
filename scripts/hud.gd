@@ -120,7 +120,7 @@ func _ready() -> void:
 	spell_panel.position = Vector2(6, 318)
 	spell_panel.custom_minimum_size = Vector2(150, 0)
 	spell_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	spell_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.07, 0.06, 0.11, 0.82)))
+	spell_panel.add_theme_stylebox_override("panel", UiStyle.small_panel())
 	root.add_child(spell_panel)
 	var spell_box := VBoxContainer.new()
 	spell_box.add_theme_constant_override("separation", 1)
@@ -135,7 +135,7 @@ func _ready() -> void:
 	dodge_panel.position = Vector2(162, 318)
 	dodge_panel.custom_minimum_size = Vector2(92, 0)
 	dodge_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	dodge_panel.add_theme_stylebox_override("panel", _panel_style(Color(0.07, 0.06, 0.11, 0.82)))
+	dodge_panel.add_theme_stylebox_override("panel", UiStyle.small_panel())
 	root.add_child(dodge_panel)
 	var dodge_box := VBoxContainer.new()
 	dodge_box.add_theme_constant_override("separation", 1)
@@ -231,7 +231,7 @@ func _ready() -> void:
 	dialogue_style.set_border_width_all(2)
 	dialogue_style.set_corner_radius_all(5)
 	dialogue_style.set_content_margin_all(8)
-	dialogue_panel.add_theme_stylebox_override("panel", dialogue_style)
+	dialogue_panel.add_theme_stylebox_override("panel", UiStyle.panel(false, 10))
 	root.add_child(dialogue_panel)
 	dialogue_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var dialogue_row := HBoxContainer.new()
@@ -244,7 +244,7 @@ func _ready() -> void:
 	portrait_style.border_color = Color(0.93, 0.78, 0.47)
 	portrait_style.set_border_width_all(1)
 	portrait_style.set_corner_radius_all(3)
-	portrait_frame.add_theme_stylebox_override("panel", portrait_style)
+	portrait_frame.add_theme_stylebox_override("panel", UiStyle.panel(true, 4))
 	portrait_frame.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	portrait_frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	dialogue_row.add_child(portrait_frame)
@@ -612,22 +612,7 @@ func show_dialogue_choices(speaker: String, message: String, choices: Array[Dict
 	_layout_dialogue()
 
 func _style_choice(button: Button) -> void:
-	var normal := StyleBoxFlat.new()
-	normal.bg_color = Color(0.14, 0.12, 0.2, 0.9)
-	normal.set_corner_radius_all(2)
-	normal.content_margin_left = 6
-	normal.content_margin_top = 1
-	normal.content_margin_bottom = 1
-	var hover := normal.duplicate() as StyleBoxFlat
-	hover.bg_color = Color(0.32, 0.26, 0.16, 0.95)
-	hover.border_color = Color(0.93, 0.78, 0.47)
-	hover.set_border_width_all(1)
-	button.add_theme_stylebox_override("normal", normal)
-	button.add_theme_stylebox_override("hover", hover)
-	button.add_theme_stylebox_override("pressed", hover)
-	button.add_theme_stylebox_override("focus", hover)
-	button.add_theme_color_override("font_color", Color(0.95, 0.93, 0.86))
-	button.add_theme_color_override("font_hover_color", Color(1.0, 0.9, 0.6))
+	UiStyle.style_button(button)
 
 func _on_dialogue_choice_pressed(choice_id: String) -> void:
 	dialogue_choice_selected.emit(choice_id)

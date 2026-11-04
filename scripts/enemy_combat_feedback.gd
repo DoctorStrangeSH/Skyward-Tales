@@ -85,11 +85,13 @@ func _draw() -> void:
 		var width := font.get_string_size(elite_name, HORIZONTAL_ALIGNMENT_LEFT, -1, UiFont.px(8)).x
 		draw_string_outline(font, Vector2(-width / 2.0, bar_y - 3), elite_name, HORIZONTAL_ALIGNMENT_LEFT, -1, UiFont.px(8), 3, Color(0.05, 0.04, 0.08))
 		draw_string(font, Vector2(-width / 2.0, bar_y - 3), elite_name, HORIZONTAL_ALIGNMENT_LEFT, -1, UiFont.px(8), elite_color)
-	var width: float = 34.0 if elite else 25.0
-	var left: float = -width / 2.0
-	draw_rect(Rect2(left - 1, bar_y - 1, width + 2, 7), Color(0.06, 0.08, 0.12))
-	draw_rect(Rect2(left, bar_y, width, 5), Color(0.29, 0.19, 0.20))
-	draw_rect(Rect2(left, bar_y, width * float(health) / float(max_health), 5), Color(0.94, 0.56, 0.24) if elite else Color(0.53, 0.86, 0.53))
+	# Slim bar, shown once the enemy is hurt (always for elites and bosses).
+	if elite or health < max_health:
+		var width: float = 24.0 if elite else 16.0
+		var left: float = -width / 2.0
+		draw_rect(Rect2(left - 1, bar_y + 2, width + 2, 4), Color(0.13, 0.09, 0.08, 0.9))
+		draw_rect(Rect2(left, bar_y + 3, width, 2), Color(0.35, 0.18, 0.16))
+		draw_rect(Rect2(left, bar_y + 3, roundf(width * float(health) / float(max_health)), 2), Color(0.96, 0.6, 0.26) if elite else Color(0.86, 0.32, 0.26))
 	if burning:
 		draw_circle(Vector2(-7, -11), 3.5, Color(1.0, 0.38, 0.1, 0.85))
 		draw_circle(Vector2(4, -14), 2.5, Color(1.0, 0.8, 0.24, 0.86))

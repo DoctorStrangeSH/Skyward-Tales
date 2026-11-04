@@ -326,6 +326,7 @@ def main() -> int:
     build_decor()
     import village
     village.build(ROOT)
+    village.build_ui(ROOT)
     (OUT / "manifest.json").write_text(json.dumps(manifest, indent=1, sort_keys=True) + "\n")
     return 0
 

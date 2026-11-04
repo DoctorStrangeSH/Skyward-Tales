@@ -16,7 +16,7 @@ func _ready() -> void:
 	style.bg_color = Color(0.04, 0.055, 0.075, 0.99)
 	style.set_content_margin_all(8)
 	style.set_corner_radius_all(6)
-	add_theme_stylebox_override("panel", style)
+	add_theme_stylebox_override("panel", UiStyle.panel(false))
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 7)
 	add_child(box)
@@ -55,17 +55,7 @@ func set_destinations(current: String, destinations: Array[String]) -> void:
 		button.disabled = region_id == current
 		button.focus_mode = Control.FOCUS_NONE
 		button.pressed.connect(func() -> void: travel_requested.emit(region_id))
-		for state in ["normal", "hover", "pressed", "disabled"]:
-			var box := StyleBoxFlat.new()
-			box.bg_color = {"normal": Color(0.1, 0.16, 0.24), "hover": Color(0.18, 0.28, 0.4), "pressed": Color(0.08, 0.12, 0.18), "disabled": Color(0.08, 0.1, 0.12)}[state]
-			box.border_color = Color(0.45, 0.7, 0.95, 0.8 if state != "disabled" else 0.25)
-			box.set_border_width_all(1)
-			box.set_corner_radius_all(3)
-			box.content_margin_left = 5
-			box.content_margin_right = 5
-			box.content_margin_top = 2
-			box.content_margin_bottom = 2
-			button.add_theme_stylebox_override(state, box)
+		UiStyle.style_button(button)
 		travel_row.add_child(button)
 
 func _label(value: String, font_size: int, color: Color) -> Label:
