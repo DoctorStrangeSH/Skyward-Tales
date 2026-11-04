@@ -41,6 +41,7 @@ func _build() -> void:
 	terrain = RegionCatalog.terrain(region_id)
 	var style := RegionCatalog.style(region_id)
 	_add_layer(region_id + "_ground.png", -100)
+	_add_apron()
 	_add_layer(region_id + "_canopy.png", 60)
 	var trees: Array = terrain.get("trees", [])
 	for index in range(trees.size()):
@@ -149,6 +150,44 @@ func _pond_points(pond: Dictionary) -> PackedVector2Array:
 			var dist := sqrt(rng.randf()) * float(c[2]) * 0.75
 			result.append(Vector2(float(c[0]), float(c[1])) + Vector2(cos(angle), sin(angle)) * dist)
 	return result
+
+## Floating island: the sky, cliffs and bridges around the map (four strips
+## from tools/art/apron.py), clouds drifting below and cloud shadows above.
+const APRON := 160
+
+func has_apron() -> bool:
+	return ResourceLoader.exists(ART_DIR + region_id + "_apron_top.png")
+
+func _add_apron() -> void:
+	if not has_apron():
+		return
+	var size := map_size()
+	var places := {"top": Vector2(-APRON, -APRON), "bottom": Vector2(-APRON, size.y), "left": Vector2(-APRON, 0), "right": Vector2(size.x, 0)}
+	for side in places:
+		var texture := _texture("%s_apron_%s.png" % [region_id, side])
+		if texture == null:
+			continue
+		var sprite := Sprite2D.new()
+		sprite.name = "Apron_" + side
+		sprite.texture = texture
+		sprite.centered = false
+		sprite.position = places[side]
+		sprite.z_index = -110
+		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		add_child(sprite)
+	var drift := Node2D.new()
+	drift.name = "SkyClouds"
+	drift.z_index = -105
+	drift.set_script(preload("res://scripts/sky_clouds.gd"))
+	drift.set("area", Rect2(-APRON, -APRON, size.x + APRON * 2, size.y + APRON * 2))
+	drift.set("night", is_night())
+	add_child(drift)
+	var shadows := Node2D.new()
+	shadows.name = "CloudShadows"
+	shadows.z_index = -90
+	shadows.set_script(preload("res://scripts/cloud_shadows.gd"))
+	shadows.set("area", Rect2(Vector2.ZERO, size))
+	add_child(shadows)
 
 func _add_layer(file: String, layer_z: int) -> void:
 	var texture := _texture(file)

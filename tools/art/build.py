@@ -19,6 +19,7 @@ import creatures  # noqa: E402
 import flora  # noqa: E402
 import icons  # noqa: E402
 import chests  # noqa: E402
+import apron  # noqa: E402
 import props  # noqa: E402
 import terrain  # noqa: E402
 from palettes import ISLAND_STYLES, STYLES  # noqa: E402
@@ -40,6 +41,10 @@ def save(canvas, rel: str, origin=None) -> None:
 
 def build_world() -> None:
     regions = json.loads((ROOT / "data" / "regions.json").read_text())
+    for variant in range(3):
+        for night in (False, True):
+            canvas, origin = apron.cloud_puff(900 + variant, night)
+            save(canvas, f"world/cloud_puff_{'night' if night else 'day'}_{variant}.png", origin)
     for index, (region_id, region) in enumerate(regions.items()):
         t = region.get("terrain")
         if not t:
@@ -63,6 +68,10 @@ def build_world() -> None:
                 save(canvas, f"world/{style}_bush_{variant}.png", origin)
             continue
         border_pal = dict(pal, leaf=pal["cloud"], outline=pal["cloud"][0]) if style in ISLAND_STYLES else pal
+        if style not in ("cave", "crypt"):
+            apron_terrain = dict(t, _gates=[g["position"] for g in region.get("gates", [])])
+            for side, strip in apron.render(apron_terrain, pal, seed=500 + index).items():
+                save(strip, f"world/{region_id}_apron_{side}.png")
         save(flora.canopy_border(w, h, border_pal, seed=200 + index, glow=glow), f"world/{region_id}_canopy.png")
         for variant in range(3):
             size = "large" if variant != 2 else "small"
