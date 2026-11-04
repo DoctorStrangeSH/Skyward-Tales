@@ -57,7 +57,10 @@ func on_quest_completed(quest_id: String) -> void:
 			continue
 		var next_quest := str(link.get("start", ""))
 		var scene := str(link.get("scene", ""))
+		var title := str(link.get("title", ""))
 		queue_scene(scene, func() -> void:
+			if not title.is_empty():
+				game.hud.show_title_card(title, 4.0)
 			if not next_quest.is_empty() and game.quests.start_quest(next_quest):
 				game.hud.show_message("Новая глава: " + str(game.quests.definitions[next_quest].get("title", "")), 3.0)
 				game.spawn_story_objects()
@@ -106,7 +109,9 @@ func on_boss_defeated(kind: String) -> void:
 			game.player.add_item(item)
 			game.hud.show_message("Получено: " + game.player.get_item_name(item), 3.0)
 		if data.has("title"):
-			game.hud.show_title_card(str(data["title"]), 4.0))
+			game.hud.show_title_card(str(data["title"]), 4.0)
+		if bool(data.get("finale", false)):
+			game.offer_finale())
 
 func _complete(quest_id: String) -> void:
 	var quests := game.quests

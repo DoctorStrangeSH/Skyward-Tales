@@ -86,6 +86,10 @@ func handle_choice(choice_id: String) -> void:
 		return
 	if game.crafting != null and game.crafting.handle_choice(choice_id):
 		return
+	if choice_id.begins_with("finale:"):
+		_close()
+		game.choose_finale(choice_id.trim_prefix("finale:"))
+		return
 	match choice_id:
 		"merchant_quest_start":
 			_start_merchant_supply_quest()

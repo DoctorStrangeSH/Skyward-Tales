@@ -847,6 +847,16 @@
    13
   ]
  },
+ "props/keeper_echo.png": {
+  "size": [
+   20,
+   22
+  ],
+  "origin": [
+   10,
+   18
+  ]
+ },
  "props/key_e.png": {
   "size": [
    13,
@@ -974,6 +984,16 @@
   ],
   "origin": [
    13,
+   18
+  ]
+ },
+ "props/pattern_core.png": {
+  "size": [
+   20,
+   22
+  ],
+  "origin": [
+   10,
    18
   ]
  },
@@ -2423,6 +2443,42 @@
   "origin": [
    14,
    18
+  ]
+ },
+ "world/sky_heart_apron_bottom.png": {
+  "size": [
+   1600,
+   160
+  ]
+ },
+ "world/sky_heart_apron_left.png": {
+  "size": [
+   160,
+   864
+  ]
+ },
+ "world/sky_heart_apron_right.png": {
+  "size": [
+   160,
+   864
+  ]
+ },
+ "world/sky_heart_apron_top.png": {
+  "size": [
+   1600,
+   160
+  ]
+ },
+ "world/sky_heart_canopy.png": {
+  "size": [
+   1280,
+   864
+  ]
+ },
+ "world/sky_heart_ground.png": {
+  "size": [
+   1280,
+   864
   ]
  },
  "world/sky_island_apron_bottom.png": {

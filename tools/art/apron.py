@@ -180,7 +180,7 @@ def _bridge(canvas: Canvas, gx: int, gy: int, w: int, h: int, m: int, pal, lengt
     rope = hex_color("#e8d8b0")
     edges = {"left": gx - m, "right": m + w - gx, "top": gy - m, "bottom": m + h - gy}
     side = min(edges, key=edges.get)
-    if edges[side] > 90:
+    if edges[side] > 120:
         return
     if side in ("left", "right"):
         step = -1 if side == "left" else 1
