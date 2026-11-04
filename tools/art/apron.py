@@ -152,6 +152,11 @@ def render(terrain: dict, pal: dict, seed: int) -> dict[str, Canvas]:
             if any(abs(px - gx) + abs(py - gy) < 120 for gx, gy in gates):
                 continue
             _bridge(canvas, int(px) + m, int(py) + m, w, h, m, pal, length=26)
+    # Outer rim fades out: unseen in play (the camera stops 110 px out), it
+    # lets the title screen float the island on its own sky.
+    outer = np.minimum(np.minimum(xs, W - 1 - xs), np.minimum(ys, H - 1 - ys)).astype(np.float32)
+    alpha = np.clip(outer / 46.0, 0.0, 1.0)
+    img[..., 3] = (img[..., 3].astype(np.float32) * alpha).astype(np.uint8)
     return {
         "top": _crop(canvas, 0, 0, W, m),
         "bottom": _crop(canvas, 0, m + h, W, m),

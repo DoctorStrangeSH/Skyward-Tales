@@ -1135,6 +1135,24 @@
    256
   ]
  },
+ "ui/title_island.png": {
+  "size": [
+   380,
+   290
+  ]
+ },
+ "ui/title_islet_0.png": {
+  "size": [
+   110,
+   110
+  ]
+ },
+ "ui/title_islet_1.png": {
+  "size": [
+   80,
+   80
+  ]
+ },
  "world/cave_bush_0.png": {
   "size": [
    26,

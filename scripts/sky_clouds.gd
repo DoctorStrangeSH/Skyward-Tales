@@ -5,6 +5,8 @@ extends Node2D
 
 var area := Rect2()
 var night := false
+var count := 14
+var speed_scale := 1.0
 var clouds: Array = []
 var textures: Array = []
 
@@ -17,10 +19,10 @@ func _ready() -> void:
 		return
 	var rng := RandomNumberGenerator.new()
 	rng.seed = int(area.size.x * 7 + area.size.y)
-	for index in 14:
+	for index in count:
 		clouds.append({
 			"pos": Vector2(rng.randf_range(area.position.x, area.end.x), rng.randf_range(area.position.y, area.end.y)),
-			"speed": rng.randf_range(4.0, 11.0),
+			"speed": rng.randf_range(4.0, 11.0) * speed_scale,
 			"texture": textures[index % textures.size()],
 			"alpha": rng.randf_range(0.55, 0.9),
 		})
