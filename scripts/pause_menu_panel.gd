@@ -90,7 +90,7 @@ func _page(title: String) -> VBoxContainer:
 func _toggle(parent: VBoxContainer, title: String, key: String) -> CheckButton:
 	var toggle := CheckButton.new()
 	toggle.text = title
-	toggle.add_theme_font_size_override("font_size", 10)
+	toggle.add_theme_font_size_override("font_size", UiFont.px(10))
 	toggle.button_pressed = GameSettings.get_bool(key)
 	toggle.toggled.connect(func(on: bool) -> void: GameSettings.set_bool(key, on))
 	parent.add_child(toggle)
@@ -117,7 +117,7 @@ func _slider(parent: VBoxContainer, title: String, key: String) -> HSlider:
 func _label(text: String, size: int, color: Color) -> Label:
 	var label := Label.new()
 	label.text = text
-	label.add_theme_font_size_override("font_size", size)
+	label.add_theme_font_size_override("font_size", UiFont.px(size))
 	label.add_theme_color_override("font_color", color)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return label
@@ -125,7 +125,7 @@ func _label(text: String, size: int, color: Color) -> Label:
 func _button(parent: VBoxContainer, title: String, callback: Callable) -> void:
 	var button := Button.new()
 	button.text = title
-	button.add_theme_font_size_override("font_size", 10)
+	button.add_theme_font_size_override("font_size", UiFont.px(10))
 	button.mouse_filter = Control.MOUSE_FILTER_STOP
 	button.pressed.connect(callback)
 	parent.add_child(button)

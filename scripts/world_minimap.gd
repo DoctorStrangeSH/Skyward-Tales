@@ -27,7 +27,7 @@ func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, Vector2(132, 108)), Color(0.07, 0.06, 0.11, 0.84))
 	draw_rect(Rect2(Vector2(0, 0), Vector2(132, 108)), Color(0.93, 0.78, 0.47, 0.85), false, 1.0)
 	var name: String = RegionCatalog.display_name(region_id).to_upper()
-	draw_string(ThemeDB.fallback_font, Vector2(7, 16), name, HORIZONTAL_ALIGNMENT_LEFT, 126, 10, Color(0.92, 0.88, 0.64))
+	draw_string(UiFont.font(), Vector2(7, 16), name, HORIZONTAL_ALIGNMENT_LEFT, 126, UiFont.px(10), Color(0.92, 0.88, 0.64))
 	draw_rect(Rect2(Vector2(8, 25), MAP_SIZE), RegionCatalog.map_color(region_id))
 	# Trails come straight from the region's terrain data.
 	for trail in RegionCatalog.terrain(region_id).get("trails", []):

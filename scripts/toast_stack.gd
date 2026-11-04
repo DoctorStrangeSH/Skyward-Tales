@@ -46,7 +46,7 @@ func push(text: String, duration: float = 2.5, kind: String = "info") -> void:
 	var label := Label.new()
 	label.text = text
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	label.add_theme_font_size_override("font_size", 9)
+	label.add_theme_font_size_override("font_size", UiFont.px(9))
 	label.add_theme_color_override("font_color", colors[2])
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	# Short messages size to their text; long ones wrap at a fixed width.

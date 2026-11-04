@@ -18,7 +18,7 @@ func _ready() -> void:
 	add_child(center)
 	var version := Label.new()
 	version.text = "v" + str(ProjectSettings.get_setting("application/config/version", "dev"))
-	version.add_theme_font_size_override("font_size", 8)
+	version.add_theme_font_size_override("font_size", UiFont.px(8))
 	version.modulate = Color(1, 1, 1, 0.55)
 	version.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	version.offset_left = -60
@@ -34,7 +34,7 @@ func _ready() -> void:
 	var heading := Label.new()
 	heading.text = "SKYWARD TALES"
 	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	heading.add_theme_font_size_override("font_size", 30)
+	heading.add_theme_font_size_override("font_size", UiFont.px(30))
 	heading.add_theme_color_override("font_color", Color(1.0, 0.9, 0.62))
 	heading.add_theme_color_override("font_outline_color", Color(0.1, 0.06, 0.16))
 	heading.add_theme_constant_override("outline_size", 8)
@@ -87,6 +87,7 @@ func _add_button(parent: VBoxContainer, label: String, callback: Callable) -> Bu
 	var button := Button.new()
 	button.text = label
 	button.custom_minimum_size = Vector2(260, 34)
+	button.add_theme_font_size_override("font_size", UiFont.px(18))
 	button.pressed.connect(callback)
 	parent.add_child(button)
 	return button

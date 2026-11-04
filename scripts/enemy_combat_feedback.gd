@@ -81,10 +81,10 @@ func _draw() -> void:
 		draw_line(telegraph_direction * 8.0, tip, Color(1.0, 0.25, 0.2, pulse), 4.0)
 		draw_colored_polygon(PackedVector2Array([tip + telegraph_direction * 6.0, tip + side * 5.0, tip - side * 5.0]), Color(1.0, 0.3, 0.2, pulse + 0.2))
 	if not elite_name.is_empty():
-		var font := ThemeDB.fallback_font
-		var width := font.get_string_size(elite_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 8).x
-		draw_string_outline(font, Vector2(-width / 2.0, bar_y - 3), elite_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 8, 3, Color(0.05, 0.04, 0.08))
-		draw_string(font, Vector2(-width / 2.0, bar_y - 3), elite_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 8, elite_color)
+		var font := UiFont.font()
+		var width := font.get_string_size(elite_name, HORIZONTAL_ALIGNMENT_LEFT, -1, UiFont.px(8)).x
+		draw_string_outline(font, Vector2(-width / 2.0, bar_y - 3), elite_name, HORIZONTAL_ALIGNMENT_LEFT, -1, UiFont.px(8), 3, Color(0.05, 0.04, 0.08))
+		draw_string(font, Vector2(-width / 2.0, bar_y - 3), elite_name, HORIZONTAL_ALIGNMENT_LEFT, -1, UiFont.px(8), elite_color)
 	var width: float = 34.0 if elite else 25.0
 	var left: float = -width / 2.0
 	draw_rect(Rect2(left - 1, bar_y - 1, width + 2, 7), Color(0.06, 0.08, 0.12))
@@ -96,9 +96,9 @@ func _draw() -> void:
 	if chilled:
 		draw_arc(Vector2.ZERO, 11.0, 0.0, TAU, 20, Color(0.42, 0.85, 1.0, 0.9), 2.0)
 	if reaction_time > 0.0:
-		draw_string(ThemeDB.fallback_font, Vector2(-22, bar_y - 15.0 - (0.8 - reaction_time) * 15.0), reaction_name, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(0.92, 0.98, 1.0, reaction_time / 0.8))
+		draw_string(UiFont.font(), Vector2(-22, bar_y - 15.0 - (0.8 - reaction_time) * 15.0), reaction_name, HORIZONTAL_ALIGNMENT_LEFT, -1, UiFont.px(10), Color(0.92, 0.98, 1.0, reaction_time / 0.8))
 	if warning:
 		draw_arc(Vector2(0, -1), 13.0 if elite else 10.0, 0.0, TAU, 18, Color(1.0, 0.28, 0.21, 0.9), 2.0)
 	if damage_timer > 0.0:
 		var drift: float = (0.72 - damage_timer) * 20.0
-		draw_string(ThemeDB.fallback_font, Vector2(-6, bar_y - 6.0 - drift), str(damage_amount), HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color(1.0, 0.92, 0.73, damage_timer / 0.72))
+		draw_string(UiFont.font(), Vector2(-6, bar_y - 6.0 - drift), str(damage_amount), HORIZONTAL_ALIGNMENT_LEFT, -1, UiFont.px(12), Color(1.0, 0.92, 0.73, damage_timer / 0.72))

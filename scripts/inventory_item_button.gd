@@ -31,7 +31,7 @@ func configure(player: PlayerCharacter, id: String, fallback_names: Dictionary, 
 	if can_equip:
 		tooltip_text += "\nНаведение: сравнить характеристики"
 	disabled = count <= 0 or not (can_equip or can_consume)
-	add_theme_font_size_override("font_size", 9)
+	add_theme_font_size_override("font_size", UiFont.px(9))
 	custom_minimum_size = Vector2(0, 18)
 	clip_text = true
 	var icon_id: String = str(definition.get("icon", item_id))

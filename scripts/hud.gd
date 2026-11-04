@@ -531,7 +531,7 @@ func show_scene_line(speaker: String, message: String, portrait_path: String) ->
 func show_title_card(text: String, duration: float = 3.0) -> void:
 	var card := Label.new()
 	card.text = text
-	card.add_theme_font_size_override("font_size", 20)
+	card.add_theme_font_size_override("font_size", UiFont.px(20))
 	card.add_theme_color_override("font_color", Color(1.0, 0.92, 0.7))
 	card.add_theme_color_override("font_outline_color", Color(0.05, 0.04, 0.08))
 	card.add_theme_constant_override("outline_size", 5)
@@ -591,7 +591,7 @@ func show_dialogue_choices(speaker: String, message: String, choices: Array[Dict
 		button.text = "▸ " + choice_label
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.custom_minimum_size = Vector2(0, 15)
-		button.add_theme_font_size_override("font_size", 9)
+		button.add_theme_font_size_override("font_size", UiFont.px(9))
 		_style_choice(button)
 		button.pressed.connect(_on_dialogue_choice_pressed.bind(choice_id))
 		dialogue_choices_container.add_child(button)
@@ -651,7 +651,7 @@ func _make_bar(color: Color, width: float, height: float) -> ProgressBar:
 func _make_label(text_value: String, font_size: int, color: Color) -> Label:
 	var label := Label.new()
 	label.text = text_value
-	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_font_size_override("font_size", UiFont.px(font_size))
 	label.add_theme_color_override("font_color", color)
 	label.add_theme_color_override("font_outline_color", Color(0.05, 0.04, 0.08))
 	label.add_theme_constant_override("outline_size", 3)

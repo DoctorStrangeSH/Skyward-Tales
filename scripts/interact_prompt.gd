@@ -33,7 +33,7 @@ func _draw() -> void:
 	WorldArt.draw_prop(self, "props/key_e.png")
 	if verb.is_empty():
 		return
-	var font := ThemeDB.fallback_font
+	var font := UiFont.font()
 	var at := Vector2(8, -2)
-	draw_string_outline(font, at, verb, HORIZONTAL_ALIGNMENT_LEFT, -1, 8, 3, Color(0.05, 0.04, 0.08))
-	draw_string(font, at, verb, HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color(1.0, 0.96, 0.85))
+	draw_string_outline(font, at, verb, HORIZONTAL_ALIGNMENT_LEFT, -1, UiFont.px(8), 3, Color(0.05, 0.04, 0.08))
+	draw_string(font, at, verb, HORIZONTAL_ALIGNMENT_LEFT, -1, UiFont.px(8), Color(1.0, 0.96, 0.85))

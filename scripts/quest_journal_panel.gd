@@ -99,7 +99,7 @@ func _wrapped(value: String, color: Color) -> Label:
 func _label(value: String, font_size: int, color: Color) -> Label:
 	var result := Label.new()
 	result.text = value
-	result.add_theme_font_size_override("font_size", font_size)
+	result.add_theme_font_size_override("font_size", UiFont.px(font_size))
 	result.add_theme_color_override("font_color", color)
 	result.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return result
