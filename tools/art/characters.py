@@ -525,3 +525,10 @@ SHADE = Look(hair=r4("#8a6ac8", "#6a4aa8", "#4a3080", "#2e1e58"), hair_style="lo
              staff=None,
              accent=r4("#ffffff", "#e6d2ff", "#c9a2ff", "#8a5ae8"),
              eye=hex_color("#fbf6ff"), outline=hex_color("#120a22"), belt=hex_color("#e6d2ff"), buckle=None)
+
+
+NPCS["herbalist"] = Look(hair=r4("#c8b894", "#a8946c", "#80704c", "#584a30"), hair_style="long",
+                         top=r4("#a8c48a", "#7e9e62", "#5a7a44", "#3a522c"), robe=True, scarf=True,
+                         skin=r4("#f0d0b0", "#d8b08c", "#b48a6a", "#8a6248"),
+                         accent=r4("#f4ffff", "#b8f4ff", "#5ad0e8", "#2a7a90"),
+                         eye=hex_color("#3a5a3a"), belt=hex_color("#6a5232"), buckle=None)

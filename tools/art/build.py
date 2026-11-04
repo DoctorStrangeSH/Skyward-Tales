@@ -95,6 +95,8 @@ def build_characters() -> None:
     save(creatures.build_sheet(creatures.echo_warden, 48), "sprites/enemies/echo_warden_8dir.png")
     save(creatures.build_sheet(creatures.sentinel, 32), "sprites/enemies/sky_sentinel_8dir.png")
     save(creatures.build_sheet(creatures.wisp, 32), "sprites/enemies/wind_wisp_8dir.png")
+    save(creatures.build_sheet(creatures.toad, 32), "sprites/enemies/marsh_toad_8dir.png")
+    save(creatures.build_sheet(creatures.bog_king, 48), "sprites/enemies/bog_king_8dir.png")
     save(creatures.build_sheet(creatures.tempest, 48), "sprites/enemies/tempest_colossus_8dir.png")
     save(creatures.build_sheet(creatures.projectile("fire"), 32), "sprites/magic/fireball_8dir.png")
     save(creatures.build_sheet(creatures.projectile("frost"), 32), "sprites/magic/frostbolt_8dir.png")
@@ -109,7 +111,9 @@ def build_props() -> None:
         "ore_node": props.ore_node(), "supply_crate": props.crate(), "map_fragment": props.scroll(),
         "health_potion": props.potion("red"), "mana_potion": props.potion("blue"),
         "wolf_pelt": props.pelt(), "relic": props.treasure("relic"), "pouch": props.treasure("pouch"),
-        "gate_day": props.gate(False), "gate_night": props.gate(True), "gate_cave": props.cave_gate(), "gate_sky": props.sky_gate(), "gate_spires": props.sky_gate(), "gate_rift": props.sky_gate(),
+        "gate_day": props.gate(False), "gate_night": props.gate(True), "gate_cave": props.cave_gate(), "gate_sky": props.sky_gate(), "gate_spires": props.sky_gate(), "gate_rift": props.sky_gate(), "gate_marsh": props.gate(False),
+        "waystone_on": props.waystone(True), "waystone_off": props.waystone(False),
+        "marsh_lantern": props.herb("marsh_lantern"),
         "rift_throne": props.rune_circle(("#fbf6ff", "#e6d2ff", "#c9a2ff", "#6a3ac0")),
         "wind_rune": props.herb("wind_rune"), "storm_heart": props.rune_circle(("#ffffff", "#c8f4ff", "#7ad0f0", "#3a7ab0")),
         "memory_crystal": props.herb("memory_crystal"),

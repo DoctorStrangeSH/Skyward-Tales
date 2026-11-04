@@ -94,8 +94,8 @@ func _collect_map_fragment(herb: WorldCollectible) -> void:
 
 func _collect_quest_herb(herb: WorldCollectible) -> void:
 	var quests := game.quests
-	var required_quest: String = RegionCatalog.herb_quest(game.current_region)
-	if quests.active_quest_id != required_quest or quests.is_completed(required_quest):
+	var required_quest: String = herb.quest_id if not herb.quest_id.is_empty() else RegionCatalog.herb_quest(game.current_region)
+	if not quests.is_active(required_quest):
 		game.hud.show_message(herb.display_name + ". Поговорите с местным хранителем, чтобы узнать, зачем он нужен.", 2.5)
 		return
 	quests.add_progress(required_quest, 1)

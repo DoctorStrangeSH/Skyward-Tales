@@ -27,8 +27,27 @@ func start_quest(quest_id: String) -> bool:
 	if not definitions.has(quest_id) or states[quest_id]["completed"]:
 		return false
 	states[quest_id]["started"] = true
-	active_quest_id = quest_id
+	# Side quests ("side": true) run alongside the story and never take the
+	# tracked slot, so any number of them can be open at once.
+	if not is_side(quest_id):
+		active_quest_id = quest_id
 	return true
+
+func is_side(quest_id: String) -> bool:
+	return bool(definitions.get(quest_id, {}).get("side", false))
+
+## Started and not yet completed.
+func is_active(quest_id: String) -> bool:
+	return states.has(quest_id) and bool(states[quest_id]["started"]) and not bool(states[quest_id]["completed"])
+
+## "Title [p/t]" lines for every open side quest, in data order.
+func get_side_summaries() -> Array[String]:
+	var lines: Array[String] = []
+	for quest_id in definitions:
+		if is_side(quest_id) and is_active(quest_id):
+			var mark := " ✓" if is_ready_to_complete(quest_id) else ""
+			lines.append("%s  [%d/%d]%s" % [str(definitions[quest_id].get("title", "")), int(states[quest_id]["progress"]), int(definitions[quest_id].get("target", 1)), mark])
+	return lines
 
 func add_progress(quest_id: String, amount: int = 1) -> void:
 	if not states.has(quest_id):

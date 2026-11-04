@@ -48,6 +48,17 @@ static func map_color(region_id: String) -> Color:
 	return Color(0.18, 0.32, 0.19)
 
 ## Quest advanced by collecting this region's herbs (e.g. moonleaf → elder).
+## Recommended hero level (shown on the map and when entering).
+static func level(region_id: String) -> int:
+	return int(get_region(region_id).get("level", 1))
+
+## Multiplier for enemy health, damage and experience in this region.
+static func enemy_power(region_id: String) -> float:
+	return float(get_region(region_id).get("enemy_power", 1.0))
+
+static func waystone(region_id: String) -> Variant:
+	return get_region(region_id).get("waystone", null)
+
 static func herb_quest(region_id: String) -> String:
 	return str(get_region(region_id).get("herb_quest", ""))
 

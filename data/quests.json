@@ -285,5 +285,60 @@
       "gold": 260
     },
     "main": true
+  },
+  {
+    "id": "marsh_lanterns",
+    "title": "Болотные огни",
+    "description": "Соберите четыре болотных огня у воды для травницы Веданы.",
+    "target": 4,
+    "side": true,
+    "reward": {
+      "experience": 90,
+      "gold": 40,
+      "items": [
+        {
+          "id": "mana_potion",
+          "amount": 2
+        }
+      ]
+    }
+  },
+  {
+    "id": "marsh_toads",
+    "title": "Жабья напасть",
+    "description": "Прогоните шесть болотных жаб, разоряющих грядки Веданы.",
+    "target": 6,
+    "side": true,
+    "kill_kind": "toad",
+    "requires_quest": "marsh_lanterns",
+    "reward": {
+      "experience": 140,
+      "gold": 60,
+      "items": [
+        {
+          "id": "health_potion",
+          "amount": 3
+        }
+      ]
+    }
+  },
+  {
+    "id": "marsh_king",
+    "title": "Король топи",
+    "description": "Одолейте Болотного короля в сердце топи, на юго-востоке.",
+    "target": 1,
+    "side": true,
+    "kill_kind": "bog_king",
+    "requires_quest": "marsh_toads",
+    "reward": {
+      "experience": 300,
+      "gold": 180,
+      "items": [
+        {
+          "id": "frost_heart",
+          "amount": 1
+        }
+      ]
+    }
   }
 ]

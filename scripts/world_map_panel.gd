@@ -1,8 +1,12 @@
 extends PanelContainer
 class_name WorldMapPanel
 
+signal travel_requested(region_id: String)
+
 var map_view: WorldMinimap
 var quest_label: Label
+var travel_row: HFlowContainer
+var title_label: Label
 
 func _ready() -> void:
 	position = Vector2(94, 7)
@@ -16,18 +20,53 @@ func _ready() -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 7)
 	add_child(box)
-	box.add_child(_label("КАРТА РЕГИОНА — [M закрыть]", 15, Color(0.99, 0.87, 0.58)))
+	title_label = _label("КАРТА РЕГИОНА — [M закрыть]", 15, Color(0.99, 0.87, 0.58))
+	box.add_child(title_label)
 	var canvas := Control.new()
-	canvas.custom_minimum_size = Vector2(428, 268)
+	canvas.custom_minimum_size = Vector2(428, 236)
 	box.add_child(canvas)
 	map_view = preload("res://scripts/world_minimap.gd").new() as WorldMinimap
 	map_view.position = Vector2(42, 3)
-	map_view.scale = Vector2(2.4, 2.4)
+	map_view.position = Vector2(62, 2)
+	map_view.scale = Vector2(2.2, 2.2)
 	canvas.add_child(map_view)
 	quest_label = _label("Задание: исследуйте мир.", 10, Color(0.83, 0.89, 0.91))
 	quest_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(quest_label)
+	travel_row = HFlowContainer.new()
+	travel_row.add_theme_constant_override("h_separation", 4)
+	travel_row.add_theme_constant_override("v_separation", 3)
+	box.add_child(travel_row)
 	visible = false
+
+## One button per awakened sky stone: "Name · ур. N".
+func set_destinations(current: String, destinations: Array[String]) -> void:
+	for child in travel_row.get_children():
+		travel_row.remove_child(child)
+		child.queue_free()
+	if destinations.is_empty():
+		travel_row.add_child(_label("Пробуждайте небесные камни, чтобы перемещаться между землями.", 9, Color(0.62, 0.7, 0.78)))
+		return
+	travel_row.add_child(_label("Переместиться:", 9, Color(0.75, 0.88, 1.0)))
+	for region_id in destinations:
+		var button := Button.new()
+		button.text = "%s · ур. %d" % [RegionCatalog.display_name(region_id), RegionCatalog.level(region_id)]
+		button.add_theme_font_size_override("font_size", UiFont.px(9))
+		button.disabled = region_id == current
+		button.focus_mode = Control.FOCUS_NONE
+		button.pressed.connect(func() -> void: travel_requested.emit(region_id))
+		for state in ["normal", "hover", "pressed", "disabled"]:
+			var box := StyleBoxFlat.new()
+			box.bg_color = {"normal": Color(0.1, 0.16, 0.24), "hover": Color(0.18, 0.28, 0.4), "pressed": Color(0.08, 0.12, 0.18), "disabled": Color(0.08, 0.1, 0.12)}[state]
+			box.border_color = Color(0.45, 0.7, 0.95, 0.8 if state != "disabled" else 0.25)
+			box.set_border_width_all(1)
+			box.set_corner_radius_all(3)
+			box.content_margin_left = 5
+			box.content_margin_right = 5
+			box.content_margin_top = 2
+			box.content_margin_bottom = 2
+			button.add_theme_stylebox_override(state, box)
+		travel_row.add_child(button)
 
 func _label(value: String, font_size: int, color: Color) -> Label:
 	var label := Label.new()
@@ -39,5 +78,6 @@ func _label(value: String, font_size: int, color: Color) -> Label:
 
 func show_region(region: String, hero: Vector2, landmarks: Dictionary, quest: String) -> void:
 	map_view.update_map(region, hero, landmarks)
+	title_label.text = "%s · ур. %d" % [RegionCatalog.display_name(region).to_upper(), RegionCatalog.level(region)]
 	quest_label.text = "ЗАДАНИЕ: " + quest
 	visible = true

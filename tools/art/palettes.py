@@ -95,5 +95,19 @@ RIFT = {
     "flowers": [ramp("#e6d2ff", "#8a5ae8"), ramp("#ffd0f0", "#c06aa8"), ramp("#c8f0ff", "#5a9ad0")],
 }
 
-STYLES = {"day": DAY, "night": NIGHT, "cave": CAVE, "sky": SKY, "spires": SPIRES, "rift": RIFT}
+MARSH = {
+    # Misty marsh: murky teal grass, peat paths, dark still water, mossy trees.
+    "grass": ramp("#18281e", "#203826", "#2c4a30", "#3a5c38", "#4c6e40", "#62824a", "#7e9a5a"),
+    "dirt": ramp("#2a2218", "#3e3222", "#54452e", "#6a5a3c", "#85744e", "#a08e64"),
+    "water": ramp("#0e1e1e", "#16302e", "#1e4440", "#2e5e54", "#4a8070", "#8ab8a0"),
+    "stone": ramp("#1e2420", "#2e3630", "#424c44", "#5a665a", "#768474", "#98a690"),
+    "leaf": ramp("#101e14", "#18301c", "#224226", "#2e5430", "#3e683a", "#528046", "#6c9a56"),
+    "bark": ramp("#1e1a14", "#2e281e", "#423a2a", "#584e38", "#706448"),
+    "moss": ramp("#2c4a30", "#3a5c38", "#4c6e40", "#62824a"),
+    "shadow": hex_color("#06100a", 100),
+    "outline": hex_color("#0a120c"),
+    "flowers": [ramp("#c8f0ff", "#5ab0c8"), ramp("#f0f0c0", "#a8a060"), ramp("#e0c8f0", "#8a6aa8")],
+}
+
+STYLES = {"day": DAY, "night": NIGHT, "cave": CAVE, "sky": SKY, "spires": SPIRES, "rift": RIFT, "marsh": MARSH}
 ISLAND_STYLES = ("sky", "spires", "rift")

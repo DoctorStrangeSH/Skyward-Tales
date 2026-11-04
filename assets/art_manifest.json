@@ -173,6 +173,16 @@
    39
   ]
  },
+ "props/gate_marsh.png": {
+  "size": [
+   34,
+   44
+  ],
+  "origin": [
+   17,
+   39
+  ]
+ },
  "props/gate_night.png": {
   "size": [
    34,
@@ -283,6 +293,16 @@
    14
   ]
  },
+ "props/marsh_lantern.png": {
+  "size": [
+   20,
+   22
+  ],
+  "origin": [
+   10,
+   18
+  ]
+ },
  "props/memory_crystal.png": {
   "size": [
    20,
@@ -383,6 +403,26 @@
    18
   ]
  },
+ "props/waystone_off.png": {
+  "size": [
+   26,
+   42
+  ],
+  "origin": [
+   13,
+   39
+  ]
+ },
+ "props/waystone_on.png": {
+  "size": [
+   26,
+   42
+  ],
+  "origin": [
+   13,
+   39
+  ]
+ },
  "props/wind_rune.png": {
   "size": [
    20,
@@ -427,6 +467,12 @@
    256
   ]
  },
+ "sprites/enemies/bog_king_8dir.png": {
+  "size": [
+   192,
+   384
+  ]
+ },
  "sprites/enemies/cave_bat_8dir.png": {
   "size": [
    128,
@@ -461,6 +507,12 @@
   "size": [
    192,
    384
+  ]
+ },
+ "sprites/enemies/marsh_toad_8dir.png": {
+  "size": [
+   128,
+   256
   ]
  },
  "sprites/enemies/rift_shade_8dir.png": {
@@ -536,6 +588,12 @@
   ]
  },
  "sprites/npcs/grove_warden.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "sprites/npcs/herbalist.png": {
   "size": [
    128,
    256
@@ -694,6 +752,68 @@
   ]
  },
  "world/greenreach_ground.png": {
+  "size": [
+   1280,
+   864
+  ]
+ },
+ "world/marsh_bush_0.png": {
+  "size": [
+   28,
+   22
+  ],
+  "origin": [
+   14,
+   18
+  ]
+ },
+ "world/marsh_bush_1.png": {
+  "size": [
+   28,
+   22
+  ],
+  "origin": [
+   14,
+   18
+  ]
+ },
+ "world/marsh_tree_0.png": {
+  "size": [
+   72,
+   84
+  ],
+  "origin": [
+   36,
+   76
+  ]
+ },
+ "world/marsh_tree_1.png": {
+  "size": [
+   72,
+   84
+  ],
+  "origin": [
+   36,
+   76
+  ]
+ },
+ "world/marsh_tree_2.png": {
+  "size": [
+   56,
+   66
+  ],
+  "origin": [
+   28,
+   58
+  ]
+ },
+ "world/misty_marsh_canopy.png": {
+  "size": [
+   1280,
+   864
+  ]
+ },
+ "world/misty_marsh_ground.png": {
   "size": [
    1280,
    864
