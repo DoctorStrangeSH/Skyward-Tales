@@ -1,0 +1,64 @@
+name: Build game
+
+# Builds Windows and Linux versions. Every push to main leaves a downloadable
+# artifact on the run page; pushing a tag like v0.3.0 also publishes a Release.
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  GODOT_IMAGE: barichello/godot-ci:4.7.2
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Export Windows and Linux builds
+        run: |
+          docker run --rm -v "${PWD}:/project" -w /project "$GODOT_IMAGE" bash -c '
+            set -eu
+            mkdir -p build/windows build/linux
+            godot --headless --path . --editor --import --quit
+            godot --headless --path . --export-release "Windows Desktop" build/windows/SkywardTales.exe
+            godot --headless --path . --export-release "Linux" build/linux/SkywardTales.x86_64
+          '
+          sudo chown -R "$USER" build
+          ls -la build/windows build/linux
+          test -s build/windows/SkywardTales.exe
+          test -s build/linux/SkywardTales.x86_64
+
+      - name: Package
+        run: |
+          cp docs/PLAYING.md build/windows/README.txt
+          cp docs/PLAYING.md build/linux/README.txt
+          (cd build/windows && zip -9 -r ../SkywardTales-windows.zip .)
+          (cd build/linux && chmod +x SkywardTales.x86_64 && zip -9 -r ../SkywardTales-linux.zip .)
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SkywardTales-${{ github.sha }}
+          path: |
+            build/SkywardTales-windows.zip
+            build/SkywardTales-linux.zip
+          retention-days: 30
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" build/SkywardTales-windows.zip build/SkywardTales-linux.zip \
+            --title "Skyward Tales ${GITHUB_REF_NAME}" --notes-file docs/RELEASE_NOTES.md --prerelease

@@ -3,7 +3,9 @@ config_version=5
 [application]
 config/name="Skyward Tales"
 run/main_scene="res://scenes/title_menu.tscn"
+config/version="0.3.0"
 config/features=PackedStringArray("4.7", "GL Compatibility")
+config/icon="res://assets/icon.png"
 
 [display]
 window/size/viewport_width=640

@@ -13,6 +13,17 @@ func _ready() -> void:
 	var center := CenterContainer.new()
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(center)
+	var version := Label.new()
+	version.text = "v" + str(ProjectSettings.get_setting("application/config/version", "dev"))
+	version.add_theme_font_size_override("font_size", 8)
+	version.modulate = Color(1, 1, 1, 0.55)
+	version.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	version.offset_left = -60
+	version.offset_top = -16
+	version.offset_right = -6
+	version.offset_bottom = -4
+	version.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	add_child(version)
 	menu_column = VBoxContainer.new()
 	menu_column.custom_minimum_size = Vector2(300, 0)
 	menu_column.add_theme_constant_override("separation", 8)
