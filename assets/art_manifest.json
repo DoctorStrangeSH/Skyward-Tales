@@ -745,6 +745,116 @@
    58
   ]
  },
+ "world/decor_armor_stand.png": {
+  "size": [
+   14,
+   33
+  ],
+  "origin": [
+   7,
+   31
+  ]
+ },
+ "world/decor_bookcase.png": {
+  "size": [
+   25,
+   30
+  ],
+  "origin": [
+   12,
+   28
+  ]
+ },
+ "world/decor_forge.png": {
+  "size": [
+   50,
+   60
+  ],
+  "origin": [
+   25,
+   58
+  ]
+ },
+ "world/decor_potion_table.png": {
+  "size": [
+   25,
+   36
+  ],
+  "origin": [
+   12,
+   34
+  ]
+ },
+ "world/decor_potted_plant.png": {
+  "size": [
+   10,
+   18
+  ],
+  "origin": [
+   5,
+   16
+  ]
+ },
+ "world/decor_stall_blue.png": {
+  "size": [
+   64,
+   55
+  ],
+  "origin": [
+   32,
+   53
+  ]
+ },
+ "world/decor_stall_orange.png": {
+  "size": [
+   62,
+   55
+  ],
+  "origin": [
+   31,
+   53
+  ]
+ },
+ "world/decor_stall_white.png": {
+  "size": [
+   66,
+   55
+  ],
+  "origin": [
+   33,
+   53
+  ]
+ },
+ "world/decor_wagon.png": {
+  "size": [
+   46,
+   49
+  ],
+  "origin": [
+   23,
+   47
+  ]
+ },
+ "world/decor_weapon_rack.png": {
+  "size": [
+   19,
+   21
+  ],
+  "origin": [
+   9,
+   19
+  ]
+ },
+ "world/decor_workbench.png": {
+  "size": [
+   30,
+   18
+  ],
+  "origin": [
+   15,
+   16
+  ]
+ },
  "world/greenreach_canopy.png": {
   "size": [
    1280,

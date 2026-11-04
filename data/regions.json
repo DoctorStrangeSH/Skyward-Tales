@@ -31,6 +31,12 @@
         "name": "Кузнец Борин",
         "position": [455, 330],
         "outfit_color": [0.42, 0.48, 0.58]
+      },
+      {
+        "id": "alchemist",
+        "name": "Лира",
+        "position": [604, 366],
+        "outfit_color": [0.4, 0.3, 0.6]
       }
     ],
     "resource_nodes": [
@@ -178,6 +184,38 @@
         {
           "kind": "ruins",
           "position": [966, 150]
+        },
+        {
+          "kind": "decor_forge",
+          "position": [502, 322]
+        },
+        {
+          "kind": "decor_armor_stand",
+          "position": [420, 328]
+        },
+        {
+          "kind": "decor_weapon_rack",
+          "position": [540, 326]
+        },
+        {
+          "kind": "decor_stall_orange",
+          "position": [298, 176]
+        },
+        {
+          "kind": "decor_stall_blue",
+          "position": [434, 176]
+        },
+        {
+          "kind": "decor_wagon",
+          "position": [140, 500]
+        },
+        {
+          "kind": "decor_bookcase",
+          "position": [632, 352]
+        },
+        {
+          "kind": "decor_potted_plant",
+          "position": [575, 360]
         }
       ],
       "blockers": [
@@ -188,6 +226,38 @@
         {
           "center": [966, 119],
           "size": [92, 58]
+        },
+        {
+          "center": [502, 315.0],
+          "size": [44, 14]
+        },
+        {
+          "center": [420, 324.0],
+          "size": [12, 8]
+        },
+        {
+          "center": [540, 322.0],
+          "size": [18, 8]
+        },
+        {
+          "center": [298, 170.0],
+          "size": [56, 12]
+        },
+        {
+          "center": [434, 170.0],
+          "size": [56, 12]
+        },
+        {
+          "center": [140, 493.0],
+          "size": [44, 14]
+        },
+        {
+          "center": [632, 348.0],
+          "size": [24, 8]
+        },
+        {
+          "center": [575, 357.0],
+          "size": [8, 6]
         }
       ],
       "bushes": [

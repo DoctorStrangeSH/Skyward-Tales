@@ -50,9 +50,7 @@ func _ready() -> void:
 	mana = max_mana
 	visual = DIRECTIONAL_SPRITE_SCRIPT.new() as DirectionalSprite
 	visual.name = "DirectionalVisual"
-	visual.configure(_walk_sheet(), 4, 8, 1.0, 8.0)
-	visual.offset = Vector2(0.0, -14.0)
-	visual.set_direction_vector(facing)
+	_apply_look()
 	Vfx.enable_flash(visual)
 	add_child(visual)
 
@@ -63,7 +61,8 @@ func start_dodge() -> bool:
 	dodge_direction = input_direction.normalized() if input_direction.length_squared() > 0.01 else facing.normalized()
 	dodge_time_left = dodge_duration
 	dodge_cooldown_left = get_dodge_cooldown()
-	visual.modulate = Color(0.55, 0.94, 1.0, 0.72)
+	if not visual.play_named("roll", dodge_duration):
+		visual.modulate = Color(0.55, 0.94, 1.0, 0.72)
 	return true
 
 func _physics_process(_delta: float) -> void:
@@ -105,6 +104,19 @@ const CAST_F_SHEET := "res://assets/sprites/characters/hero_f_8dir_cast.png"
 var hero_name: String = "Арен"
 var hero_gender: String = "m"
 
+func _chibi_id() -> String:
+	return "hero_f" if hero_gender == "f" else "hero_m"
+
+## Pack chibi sprites when built (tools/art/chibi.py), else the drawn sheets.
+func _apply_look() -> void:
+	var keep := visual.direction_index
+	if not visual.configure_chibi(_chibi_id(), 10.0):
+		visual.chibi_id = ""
+		visual.configure(_walk_sheet(), 4, 8, 1.0, 8.0)
+		visual.offset = Vector2(0.0, -14.0)
+	visual.direction_index = keep
+	visual.set_direction_vector(facing)
+
 func _walk_sheet() -> String:
 	return HERO_F_SHEET if hero_gender == "f" else HERO_SHEET
 
@@ -117,17 +129,15 @@ func set_identity(new_name: String, gender: String) -> void:
 	hero_name = StoryText.hero_name
 	hero_gender = StoryText.hero_gender
 	if visual != null:
-		var keep := visual.direction_index
-		visual.configure(_walk_sheet(), 4, 8, 1.0, 8.0)
-		visual.direction_index = keep
-		visual.set_direction_vector(facing)
+		_apply_look()
 
 ## Turns the hero towards the target and plays the casting pose.
 func play_cast(direction: Vector2) -> void:
 	if direction.length_squared() > 0.01:
 		facing = direction.normalized()
 		visual.set_direction_vector(facing)
-	visual.play_action(_cast_sheet(), 0.32)
+	if not visual.play_named("cast", 0.32):
+		visual.play_action(_cast_sheet(), 0.32)
 
 func take_damage(amount: int) -> void:
 	if dodge_time_left > 0.0 or health <= 0:
@@ -136,6 +146,8 @@ func take_damage(amount: int) -> void:
 	health = maxi(0, health - maxi(1, amount - get_armor()))
 	if health < previous_health:
 		hurt.emit(previous_health - health)
+		if visual != null and not visual.is_playing_action():
+			visual.play_named("hit", 0.22)
 	if health <= 0 and has_skill("second_wind") and second_wind_ready_in <= 0.0:
 		# Wanderer's ultimate: survive the blow and recover.
 		health = 1 + int(max_health * 0.3)

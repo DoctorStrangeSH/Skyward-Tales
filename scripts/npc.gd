@@ -20,7 +20,13 @@ var _marker_time: float = 0.0
 func _ready() -> void:
 	add_to_group("interactables")
 	var sheet := "res://assets/sprites/npcs/%s.png" % npc_id
-	if not npc_id.is_empty() and ResourceLoader.exists(sheet):
+	if not npc_id.is_empty() and DIRECTIONAL_SPRITE_SCRIPT.has_chibi(npc_id):
+		visual = DIRECTIONAL_SPRITE_SCRIPT.new() as DirectionalSprite
+		visual.configure_chibi(npc_id, 9.0)
+		visual.set_direction_vector(Vector2.DOWN)
+		visual.set_moving(false)
+		add_child(visual)
+	elif not npc_id.is_empty() and ResourceLoader.exists(sheet):
 		visual = DIRECTIONAL_SPRITE_SCRIPT.new() as DirectionalSprite
 		visual.configure(sheet, 4, 8, 1.0, 2.5)
 		visual.offset = Vector2(0.0, -14.0)

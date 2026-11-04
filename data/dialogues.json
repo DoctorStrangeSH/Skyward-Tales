@@ -9,7 +9,9 @@
     "miner": "Дорн, рудокоп",
     "vail": "Вейл Безоблачный",
     "guardian_spirit": "Дух стража",
-    "archivist": "Ориэн, архивариус"
+    "archivist": "Ориэн, архивариус",
+    "alchemist": "Лира, алхимик",
+    "herbalist": "Ведана, травница"
   },
   "scenes": {
     "prologue": {

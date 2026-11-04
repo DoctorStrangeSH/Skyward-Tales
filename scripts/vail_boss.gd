@@ -20,8 +20,10 @@ func _ready() -> void:
 	# GroveGuardian picks its own sheet in _ready; swap in Vail afterwards.
 	sprite_sheet = "res://assets/sprites/enemies/vail_8dir.png"
 	sprite_offset = Vector2(0.0, -14.0)
-	visual.configure(sprite_sheet, 4, 8, sprite_scale, 6.0)
-	visual.offset = sprite_offset
+	# Vail in the pack style when the chibi sheets are built.
+	if not visual.configure_chibi("vail", 8.0, 1.6):
+		visual.configure(sprite_sheet, 4, 8, sprite_scale, 6.0)
+		visual.offset = sprite_offset
 	home = global_position
 	elemental_multipliers = {"fire": 1.0, "ice": 1.0, "lightning": 1.0}
 	max_health = 420

@@ -89,6 +89,9 @@ func _speaker_name(speaker_id: String) -> String:
 	return str(speakers.get(speaker_id, speaker_id))
 
 func _portrait(speaker_id: String) -> String:
+	var face_id := ("hero_f" if StoryText.hero_gender == "f" else "hero_m") if speaker_id == "hero" else speaker_id
+	if not face_id.is_empty() and ResourceLoader.exists("res://assets/sprites/portraits/%s.png" % face_id):
+		return "sprites/portraits/%s.png" % face_id
 	if speaker_id == "hero":
 		return "sprites/characters/%s.png" % ("hero_f_8dir_walk" if StoryText.hero_gender == "f" else "hero_8dir_walk")
 	if speaker_id.is_empty():
