@@ -7,8 +7,9 @@ var stats_grid: GridContainer
 var description_label: Label
 
 func _ready() -> void:
-	position = Vector2(300, 30)
-	custom_minimum_size = Vector2(330, 300)
+	# Over the hero doll while a bag item is hovered.
+	position = Vector2(16, 40)
+	custom_minimum_size = Vector2(196, 0)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.035, 0.055, 0.085, 0.98)

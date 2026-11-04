@@ -21,7 +21,7 @@ func _run() -> void:
 		return
 	if not _require(hud.inventory_filter == hud.inventory_view.filter_button and hud.inventory_sort == hud.inventory_view.sort_button, "filter/sort aliases missing"):
 		return
-	if not _require(hud.inventory_filter.get_item_count() == 3 and hud.inventory_sort.get_item_count() == 3, "filter/sort choices changed"):
+	if not _require(hud.inventory_filter.get_item_count() == 4 and hud.inventory_sort.get_item_count() == 3, "filter/sort choices changed"):
 		return
 	if not _require(not hud.inventory_view.visible, "inventory starts visible"):
 		return

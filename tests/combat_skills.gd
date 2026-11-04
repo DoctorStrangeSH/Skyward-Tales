@@ -104,10 +104,10 @@ func _run() -> void:
 	hero.add_item("iron_sword")
 	hero.equip_item("iron_sword")
 	game._handle_key(KEY_C)
-	if not game.hud.hero_visible or not game.hud.hero_view.slot_buttons.has("blade") or game.hud.hero_view.slot_buttons["blade"].disabled:
+	if not game.hud.hero_visible or not game.hud.inventory_view.slot_buttons.has("blade") or game.hud.inventory_view.slot_buttons["blade"].disabled:
 		return _fail("C opens the hero panel with the equipped blade")
-	game.hud.hero_view.show_tab("skills")
-	if not game.hud.hero_view.skill_rows.has("lunge") or not game.hud.hero_view.skill_rows.has("keen_eye"):
+	game.hud.inventory_view.show_tab("skills")
+	if not game.hud.inventory_view.skills_view.skill_rows.has("lunge") or not game.hud.inventory_view.skills_view.skill_rows.has("keen_eye"):
 		return _fail("the skills tab lists actives and passives")
 	game._handle_key(KEY_C)
 	if game.hud.hero_visible:

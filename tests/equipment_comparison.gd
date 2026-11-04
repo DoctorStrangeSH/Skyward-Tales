@@ -96,7 +96,7 @@ func _run() -> void:
 	hud.toggle_inventory(hero)
 	var frost_button: Button = null
 	for child in hud.inventory_list.get_children():
-		if child is Button and child.text.contains("Сердце ледника"):
+		if child is InventoryItemButton and child.summary.contains("Сердце ледника"):
 			frost_button = child
 			break
 	if not _require(frost_button != null, "relic candidate was not shown in inventory"):

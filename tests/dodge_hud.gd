@@ -26,9 +26,9 @@ func _run() -> void:
 	ui.refresh_inventory(game.player)
 	var found: bool = false
 	for button in ui.inventory_list.get_children():
-		if button is Button and button.text.contains("Древний артефакт"):
+		if button is InventoryItemButton and button.summary.contains("Древний артефакт"):
 			found = true
-			if not button.disabled:
+			if button.can_use:
 				push_error("DODGE HUD TEST: boss trophy should not be consumable")
 				quit(1)
 				return

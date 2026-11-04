@@ -27,9 +27,9 @@ func _run() -> void:
 	if not _require(game.hud.inventory_list.get_child_count() == 1, "unknown catalog item is not listed"):
 		return
 	var item_button: Button = game.hud.inventory_list.get_child(0) as Button
-	if not _require(item_button != null and item_button.text.contains("Фокус испытания"), "catalog name is not shown"):
+	if not _require(item_button is InventoryItemButton and item_button.summary.contains("Фокус испытания"), "catalog name is not shown"):
 		return
-	if not _require(item_button.tooltip_text.contains("экипировать"), "catalog action hint is missing"):
+	if not _require(item_button.tooltip_text.contains("надеть"), "catalog action hint is missing"):
 		return
 	game._on_inventory_use("test_focus")
 	if not _require(str(hero.equipment.get("relic", "")) == "test_focus", "new catalog item was not equipped"):
@@ -45,7 +45,7 @@ func _run() -> void:
 	if not _require(int(hero.inventory.get("test_focus", 0)) == 1, "unequipped item was not returned"):
 		return
 	var returned_item_button: Button = game.hud.inventory_list.get_child(0) as Button
-	if not _require(game.hud.inventory_list.get_child_count() == 1 and returned_item_button != null and returned_item_button.text.contains("Фокус испытания"), "inventory did not refresh after unequip"):
+	if not _require(game.hud.inventory_list.get_child_count() == 1 and returned_item_button is InventoryItemButton and returned_item_button.summary.contains("Фокус испытания"), "inventory did not refresh after unequip"):
 		return
 	print("DATA-DRIVEN EQUIPMENT TEST OK: catalog discovery, equip, effect, unequip and UI refresh")
 	quit(0)

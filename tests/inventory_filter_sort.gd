@@ -14,7 +14,7 @@ func _item_button_text(hud: GameHud, index: int) -> String:
 	if index < 0 or index >= hud.inventory_list.get_child_count():
 		return ""
 	var button: Button = hud.inventory_list.get_child(index) as Button
-	return button.text if button != null else ""
+	return button.summary if button is InventoryItemButton else (button.text if button != null else "")
 
 func _run() -> void:
 	var game: Node2D = load("res://scenes/main.tscn").instantiate()
