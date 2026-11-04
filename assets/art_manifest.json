@@ -17,6 +17,18 @@
    16
   ]
  },
+ "icons/ash_cloak.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/ash_hide.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/bat_wing.png": {
   "size": [
    16,
@@ -65,6 +77,24 @@
    16
   ]
  },
+ "icons/ember_coal.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/ember_core.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/ember_fish.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/fang_charm.png": {
   "size": [
    16,
@@ -78,6 +108,12 @@
   ]
  },
  "icons/fish_stew.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/flame_heart.png": {
   "size": [
    16,
    16
@@ -155,6 +191,12 @@
    16
   ]
  },
+ "icons/magma_eel.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/mana_amulet.png": {
   "size": [
    16,
@@ -168,6 +210,18 @@
   ]
  },
  "icons/marsh_catfish.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/obsidian_blade.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/obsidian_shard.png": {
   "size": [
    16,
    16
@@ -210,6 +264,12 @@
   ]
  },
  "icons/recipe_hearty_stew.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/recipe_obsidian.png": {
   "size": [
    16,
    16
@@ -384,6 +444,12 @@
   ]
  },
  "icons/spirit_dust.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/star_fragment.png": {
   "size": [
    16,
    16
@@ -592,6 +658,16 @@
   ]
  },
  "props/echo_crystal.png": {
+  "size": [
+   20,
+   22
+  ],
+  "origin": [
+   10,
+   18
+  ]
+ },
+ "props/ember_coal.png": {
   "size": [
    20,
    22
@@ -1211,6 +1287,92 @@
   "size": [
    80,
    80
+  ]
+ },
+ "world/ash_bush_0.png": {
+  "size": [
+   26,
+   20
+  ],
+  "origin": [
+   13,
+   16
+  ]
+ },
+ "world/ash_bush_1.png": {
+  "size": [
+   26,
+   20
+  ],
+  "origin": [
+   13,
+   16
+  ]
+ },
+ "world/ash_tree_0.png": {
+  "size": [
+   44,
+   60
+  ],
+  "origin": [
+   22,
+   56
+  ]
+ },
+ "world/ash_tree_1.png": {
+  "size": [
+   44,
+   60
+  ],
+  "origin": [
+   22,
+   56
+  ]
+ },
+ "world/ash_tree_2.png": {
+  "size": [
+   34,
+   46
+  ],
+  "origin": [
+   17,
+   42
+  ]
+ },
+ "world/ashen_waste_apron_bottom.png": {
+  "size": [
+   1920,
+   160
+  ]
+ },
+ "world/ashen_waste_apron_left.png": {
+  "size": [
+   160,
+   1080
+  ]
+ },
+ "world/ashen_waste_apron_right.png": {
+  "size": [
+   160,
+   1080
+  ]
+ },
+ "world/ashen_waste_apron_top.png": {
+  "size": [
+   1920,
+   160
+  ]
+ },
+ "world/ashen_waste_canopy.png": {
+  "size": [
+   1600,
+   1080
+  ]
+ },
+ "world/ashen_waste_ground.png": {
+  "size": [
+   1600,
+   1080
   ]
  },
  "world/cave_bush_0.png": {

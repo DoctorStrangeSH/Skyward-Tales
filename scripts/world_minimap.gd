@@ -78,7 +78,8 @@ func _texture() -> Texture2D:
 
 func _draw() -> void:
 	var area := _area()
-	var cave := RegionCatalog.style(region_id) in ["cave", "crypt"]
+	var style := RegionCatalog.style(region_id)
+	var cave := style in ["cave", "crypt"]
 	if follow:
 		# Frame: dark wood, a gold line, the region banner.
 		draw_rect(Rect2(Vector2.ZERO, HUD_SIZE), Color(0.17, 0.11, 0.08, 0.95))
@@ -87,7 +88,14 @@ func _draw() -> void:
 		draw_string(font, Vector2(6, 13), RegionCatalog.display_name(region_id).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 110, UiFont.px(9), Color(1.0, 0.9, 0.62))
 		draw_string(font, Vector2(6, 13), "ур. %d" % RegionCatalog.level(region_id), HORIZONTAL_ALIGNMENT_RIGHT, HUD_SIZE.x - 12, UiFont.px(8), Color(0.75, 0.85, 1.0))
 	# Beyond the island: sky (or rock underground).
-	draw_rect(area, Color(0.12, 0.1, 0.16) if cave else Color(0.62, 0.78, 0.94))
+	var beyond := Color(0.62, 0.78, 0.94)
+	if cave:
+		beyond = Color(0.12, 0.1, 0.16)
+	elif style == "ash":
+		beyond = Color(0.34, 0.22, 0.2)
+	elif style in ["night", "marsh", "rift"]:
+		beyond = Color(0.2, 0.24, 0.42)
+	draw_rect(area, beyond)
 	var texture := _texture()
 	var world_rect := Rect2(_origin(), _world_size() * _scale())
 	var visible := world_rect.intersection(area)

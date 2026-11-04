@@ -70,6 +70,7 @@ func _add_decor_bushes(style: String) -> void:
 ## Fireflies at night, drifting pollen by day, and glints on the water.
 func _add_ambient() -> void:
 	var size := map_size()
+	_add_weather(size)
 	var air := CPUParticles2D.new()
 	air.name = "AmbientParticles"
 	air.amount = 90 if is_night() else 45
@@ -150,6 +151,40 @@ func _pond_points(pond: Dictionary) -> PackedVector2Array:
 			var dist := sqrt(rng.randf()) * float(c[2]) * 0.75
 			result.append(Vector2(float(c[0]), float(c[1])) + Vector2(cos(angle), sin(angle)) * dist)
 	return result
+
+## Weather by land: embers and ash over the Ashen Waste, snow on the Pass.
+func _add_weather(size: Vector2) -> void:
+	var style := str(terrain.get("style", "day"))
+	if style == "ash":
+		_weather("Embers", size, 70, 5.0, Vector2.UP, Vector2(0, -14), 10.0, 26.0, Color(1.0, 0.62, 0.2), 1.0, 2.0)
+		_weather("Ash", size, 120, 9.0, Vector2(0.3, 1.0), Vector2(4, 10), 6.0, 14.0, Color(0.7, 0.66, 0.64, 0.8), 1.0, 1.5)
+	elif style == "mountain":
+		_weather("Snow", size, 160, 10.0, Vector2(0.25, 1.0), Vector2(6, 12), 10.0, 22.0, Color(0.96, 0.98, 1.0, 0.9), 1.0, 2.0)
+
+func _weather(id: String, size: Vector2, amount: int, life: float, direction: Vector2, gravity: Vector2, speed_min: float, speed_max: float, color: Color, scale_min: float, scale_max: float) -> void:
+	var particles := CPUParticles2D.new()
+	particles.name = "Weather" + id
+	particles.amount = amount
+	particles.lifetime = life
+	particles.preprocess = life
+	particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	particles.emission_rect_extents = size * 0.5
+	particles.position = size * 0.5
+	particles.direction = direction
+	particles.spread = 20.0
+	particles.gravity = gravity
+	particles.initial_velocity_min = speed_min
+	particles.initial_velocity_max = speed_max
+	particles.scale_amount_min = scale_min
+	particles.scale_amount_max = scale_max
+	var fade := Gradient.new()
+	fade.set_color(0, Color(color, 0.0))
+	fade.add_point(0.2, color)
+	fade.add_point(0.8, color)
+	fade.set_color(fade.get_point_count() - 1, Color(color, 0.0))
+	particles.color_ramp = fade
+	particles.z_index = 50
+	add_child(particles)
 
 ## Floating island: the sky, cliffs and bridges around the map (four strips
 ## from tools/art/apron.py), clouds drifting below and cloud shadows above.

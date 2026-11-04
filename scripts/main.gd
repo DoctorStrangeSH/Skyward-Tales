@@ -23,7 +23,7 @@ const MERCHANT_SHOP_SCRIPT := preload("res://scripts/merchant_shop.gd")
 const CRAFTING_SERVICE_SCRIPT := preload("res://scripts/crafting_service.gd")
 const GATE_SCRIPT := preload("res://scripts/region_gate.gd")
 ## Story bosses: defeated once (flag "<kind>_defeated"), never respawn.
-const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой колосс", "vail": "Вейл", "bog_king": "Болотный король", "crab_king": "Краб-король", "giant": "Горный великан", "crypt_lord": "Повелитель склепа"}
+const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой колосс", "vail": "Вейл", "bog_king": "Болотный король", "crab_king": "Краб-король", "giant": "Горный великан", "crypt_lord": "Повелитель склепа", "ash_lord": "Владыка Пепла"}
 const ENEMY_SCRIPTS := {
 	"slime": preload("res://scripts/enemy.gd"),
 	"wolf": preload("res://scripts/forest_wolf.gd"),
@@ -43,7 +43,11 @@ const ENEMY_SCRIPTS := {
 	"giant": preload("res://scripts/mountain_giant.gd"),
 	"skeleton": preload("res://scripts/skeleton.gd"),
 	"crypt_lord": preload("res://scripts/crypt_lord.gd"),
-	"sentinel": preload("res://scripts/sky_sentinel.gd")
+	"sentinel": preload("res://scripts/sky_sentinel.gd"),
+	"ember_hound": preload("res://scripts/ember_hound.gd"),
+	"magma_golem": preload("res://scripts/magma_golem.gd"),
+	"ash_cultist": preload("res://scripts/ash_cultist.gd"),
+	"ash_lord": preload("res://scripts/ash_lord.gd")
 }
 const MATERIAL_ITEMS := ["wolf_pelt", "iron_ore"]
 const RARITY_LABELS := {"common": "ОБЫЧНАЯ", "uncommon": "НЕОБЫЧНАЯ", "rare": "РЕДКАЯ"}
@@ -73,6 +77,7 @@ var cast_cooldown_remaining: float = 0.0
 var selected_spell_id: String = "fireball"
 var skills: CombatSkills
 var fishing: Fishing
+var events: WorldEvents
 var cast_cooldown_total: float = 0.0
 var defeated_enemies: int = 0
 var save_path: String = SAVE_SCRIPT.SAVE_PATH
@@ -142,6 +147,10 @@ func _ready() -> void:
 	fishing.name = "Fishing"
 	fishing.game = self
 	add_child(fishing)
+	events = WorldEvents.new()
+	events.name = "WorldEvents"
+	events.game = self
+	add_child(events)
 	player = PLAYER_SCENE.instantiate() as PlayerCharacter
 	add_child(player)
 	player.global_position = GameSaveState.DEFAULT_PLAYER_POSITION
@@ -238,7 +247,7 @@ func update_music() -> void:
 			GameAudio.music("boss")
 			return
 	var style := RegionCatalog.style(current_region)
-	GameAudio.music({"night": "night", "cave": "caves", "sky": "sky", "spires": "sky", "rift": "night", "marsh": "night", "coast": "sky", "mountain": "caves", "crypt": "caves"}.get(style, "meadow"))
+	GameAudio.music({"night": "night", "cave": "caves", "sky": "sky", "spires": "sky", "rift": "night", "marsh": "night", "coast": "sky", "mountain": "caves", "crypt": "caves", "ash": "night"}.get(style, "meadow"))
 
 func shake(strength: float, duration: float) -> void:
 	if not GameSettings.get_bool("screen_shake"):
@@ -921,7 +930,7 @@ func minimap_markers() -> Array:
 			var kind := "enemy"
 			if enemy_kind(actor) in STORY_BOSSES:
 				kind = "boss"
-			elif not actor.elite_id.is_empty():
+			elif not actor.elite_id.is_empty() or actor is LootImp:
 				kind = "elite"
 			result.append({"kind": kind, "position": at})
 	return result
@@ -939,6 +948,16 @@ func _discover_nearby_enemies() -> void:
 			hud.show_tip("bestiary", "Совет: K — бестиарий со слабостями врагов.")
 
 static func enemy_kind(enemy: SlimeEnemy) -> String:
+	if enemy is LootImp:
+		return "loot_imp"
+	if enemy is AshLord:
+		return "ash_lord"
+	if enemy is EmberHound:
+		return "ember_hound"
+	if enemy is MagmaGolem:
+		return "magma_golem"
+	if enemy is AshCultist:
+		return "ash_cultist"
 	if enemy is CryptLord:
 		return "crypt_lord"
 	if enemy is VailBoss:
@@ -1042,7 +1061,7 @@ func spawn_enemy(kind: String, spawn_position: Vector2, elite: String = "") -> S
 	match kind:
 		"guardian":
 			enemy.defeated.connect(func(xp: int) -> void: _on_guardian_defeated(xp, enemy.global_position))
-		"echo", "tempest", "vail", "bog_king", "crab_king", "giant", "crypt_lord":
+		"echo", "tempest", "vail", "bog_king", "crab_king", "giant", "crypt_lord", "ash_lord":
 			enemy.defeated.connect(func(xp: int) -> void: _on_story_boss_defeated(kind, xp, enemy.global_position))
 		"wolf":
 			enemy.defeated.connect(func(xp: int) -> void:

@@ -213,6 +213,7 @@ def build() -> dict[str, Canvas]:
         **build_combat(),
         **build_materials(),
         **build_fish(),
+        **build_ash(),
     }
 
 
@@ -584,3 +585,58 @@ def build_fish() -> dict[str, Canvas]:
         "golden_fish": fish_icon(ramp("#fffbe0", "#ffd45c", "#c88a2a"), 4.2),
         "old_boot": boot_icon(),
     }
+
+
+def build_ash() -> dict[str, Canvas]:
+    ember = ramp("#fff0b0", "#ffb040", "#e0601e", "#8a2a10")
+    obsidian = ramp("#8a7a90", "#4a3e52", "#2a2230", "#16121a")
+    hide = ramp("#8a7a70", "#5a4c46", "#3a302c")
+    core = Canvas(16, 16)
+    core.ellipse(8, 8, 5, 5, ember[3])
+    core.ellipse(8, 8, 3.6, 3.6, ember[2])
+    core.ellipse(7.5, 7.5, 2, 2, ember[1])
+    core.put(7, 7, ember[0])
+    shard = Canvas(16, 16)
+    for y in range(2, 14):
+        half = (y - 2) // 3 if y < 9 else (13 - y) // 2
+        for x in range(8 - half, 9 + half):
+            shard.put(x, y, obsidian[1] if x < 8 else obsidian[2])
+    shard.put(7, 4, obsidian[0])
+    pelt = Canvas(16, 16)
+    pelt.rect(3, 4, 10, 8, hide[1])
+    pelt.rect(4, 5, 8, 2, hide[0])
+    for x in (3, 12):
+        pelt.rect(x - 1, 3, 2, 2, hide[2])
+        pelt.rect(x - 1, 11, 2, 2, hide[2])
+    pelt.put(6, 9, ember[2])
+    pelt.put(9, 8, ember[2])
+    coal = Canvas(16, 16)
+    coal.ellipse(8, 9, 5, 4, obsidian[2])
+    coal.put(6, 8, ember[1])
+    coal.put(9, 10, ember[2])
+    coal.put(10, 7, ember[0])
+    return {
+        "ember_core": _finish(core), "obsidian_shard": _finish(shard), "ash_hide": _finish(pelt),
+        "ember_coal": _finish(coal),
+        "ember_fish": fish_icon(ramp("#fff0b0", "#ff8a2a", "#a8341a"), 4.6),
+        "magma_eel": fish_icon(ramp("#ffd070", "#c4461a", "#5a1206"), 6.0),
+        "obsidian_blade": sword(ramp("#b8a8c8", "#5a4a68", "#2a2232"), GOLD, "#ff8a2a"),
+        "ash_cloak": armor(ramp("#9a8a80", "#5a4c46", "#3a302c"), ramp("#ffc060", "#e0601e", "#8a2a10")),
+        "flame_heart": relic(),
+        "recipe_obsidian": scroll_icon(),
+        "star_fragment": _star_icon(),
+    }
+
+
+def _star_icon() -> Canvas:
+    c = Canvas(16, 16)
+    gold = ramp("#fffbe0", "#ffe07a", "#e0a030")
+    for i in range(-5, 6):
+        c.put(8 + i, 8, gold[1] if abs(i) < 3 else gold[2])
+        c.put(8, 8 + i, gold[1] if abs(i) < 3 else gold[2])
+    for i in range(-2, 3):
+        c.put(8 + i, 8 + i, gold[1])
+        c.put(8 + i, 8 - i, gold[1])
+    c.put(8, 8, gold[0])
+    c.put(7, 7, gold[0])
+    return _finish(c)

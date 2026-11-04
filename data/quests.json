@@ -472,5 +472,64 @@
         }
       ]
     }
+  },
+  {
+    "id": "ash_hounds",
+    "title": "Стая пепла",
+    "description": "Прогоните шесть пепельных псов, что рыщут у лагеря Игната.",
+    "target": 6,
+    "side": true,
+    "kill_kind": "ember_hound",
+    "reward": {
+      "experience": 320,
+      "gold": 140,
+      "items": [
+        {
+          "id": "health_potion",
+          "amount": 3
+        }
+      ]
+    }
+  },
+  {
+    "id": "ash_embers",
+    "title": "Пылающий уголь",
+    "description": "Соберите для Игната четыре куска пылающего угля по всей пустоши.",
+    "target": 4,
+    "side": true,
+    "requires_quest": "ash_hounds",
+    "reward": {
+      "experience": 360,
+      "gold": 160,
+      "items": [
+        {
+          "id": "ember_core",
+          "amount": 2
+        }
+      ]
+    }
+  },
+  {
+    "id": "ash_lord",
+    "title": "Владыка Пепла",
+    "description": "Одолейте Владыку Пепла в кратере на северо-востоке.",
+    "target": 1,
+    "side": true,
+    "kill_kind": "ash_lord",
+    "requires_quest": "ash_embers",
+    "reward": {
+      "experience": 700,
+      "gold": 400,
+      "items": [
+        {
+          "id": "recipe_obsidian",
+          "amount": 1
+        },
+        {
+          "id": "flame_heart",
+          "amount": 1
+        }
+      ]
+    }
   }
 ]

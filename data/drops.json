@@ -1,18 +1,188 @@
 {
   "_comment": "Per-monster drops. gold: [min, max] coins with gold_chance; items: each rolls its own chance; gear: chance of a rolled equipment piece; potion: chance of a potion.",
-  "defaults": {"gold": [2, 5], "gold_chance": 0.7, "items": [], "gear": 0.07, "potion": 0.2},
-  "monsters": {
-    "slime": {"gold": [1, 4], "items": [{"item": "slime_gel", "chance": 0.5}], "gear": 0.05},
-    "wolf": {"gold": [3, 7], "items": [{"item": "wolf_fang", "chance": 0.35}], "gear": 0.08},
-    "shaman": {"gold": [8, 14], "gold_chance": 1.0, "items": [{"item": "spirit_dust", "chance": 0.6}, {"item": "bluebell", "chance": 0.4}], "gear": 0.22, "potion": 0.45},
-    "bat": {"gold": [3, 6], "items": [{"item": "bat_wing", "chance": 0.5}], "gear": 0.07},
-    "wisp": {"gold": [5, 9], "items": [{"item": "wind_essence", "chance": 0.45}], "gear": 0.1},
-    "shade": {"gold": [8, 14], "items": [{"item": "shadow_essence", "chance": 0.5}], "gear": 0.16},
-    "toad": {"gold": [4, 8], "items": [{"item": "slime_gel", "chance": 0.4}, {"item": "toad_venom", "chance": 0.3}], "gear": 0.08},
-    "crab": {"gold": [4, 9], "items": [{"item": "crab_shell", "chance": 0.55}, {"item": "fish", "chance": 0.25}], "gear": 0.08},
-    "golem": {"gold": [9, 16], "items": [{"item": "iron_ore", "chance": 0.6}, {"item": "stone", "chance": 0.5}], "gear": 0.14},
-    "skeleton": {"gold": [5, 10], "items": [{"item": "bone", "chance": 0.6}], "gear": 0.14},
-    "sentinel": {"gold": [10, 18], "items": [{"item": "gear_cog", "chance": 0.5}], "gear": 0.16}
+  "defaults": {
+    "gold": [2, 5],
+    "gold_chance": 0.7,
+    "items": [],
+    "gear": 0.07,
+    "potion": 0.2
   },
-  "elite": {"gold_mult": 3, "gear_min": "uncommon"}
+  "monsters": {
+    "slime": {
+      "gold": [1, 4],
+      "items": [
+        {
+          "item": "slime_gel",
+          "chance": 0.5
+        }
+      ],
+      "gear": 0.05
+    },
+    "wolf": {
+      "gold": [3, 7],
+      "items": [
+        {
+          "item": "wolf_fang",
+          "chance": 0.35
+        }
+      ],
+      "gear": 0.08
+    },
+    "shaman": {
+      "gold": [8, 14],
+      "gold_chance": 1.0,
+      "items": [
+        {
+          "item": "spirit_dust",
+          "chance": 0.6
+        },
+        {
+          "item": "bluebell",
+          "chance": 0.4
+        }
+      ],
+      "gear": 0.22,
+      "potion": 0.45
+    },
+    "bat": {
+      "gold": [3, 6],
+      "items": [
+        {
+          "item": "bat_wing",
+          "chance": 0.5
+        }
+      ],
+      "gear": 0.07
+    },
+    "wisp": {
+      "gold": [5, 9],
+      "items": [
+        {
+          "item": "wind_essence",
+          "chance": 0.45
+        }
+      ],
+      "gear": 0.1
+    },
+    "shade": {
+      "gold": [8, 14],
+      "items": [
+        {
+          "item": "shadow_essence",
+          "chance": 0.5
+        }
+      ],
+      "gear": 0.16
+    },
+    "toad": {
+      "gold": [4, 8],
+      "items": [
+        {
+          "item": "slime_gel",
+          "chance": 0.4
+        },
+        {
+          "item": "toad_venom",
+          "chance": 0.3
+        }
+      ],
+      "gear": 0.08
+    },
+    "crab": {
+      "gold": [4, 9],
+      "items": [
+        {
+          "item": "crab_shell",
+          "chance": 0.55
+        },
+        {
+          "item": "fish",
+          "chance": 0.25
+        }
+      ],
+      "gear": 0.08
+    },
+    "golem": {
+      "gold": [9, 16],
+      "items": [
+        {
+          "item": "iron_ore",
+          "chance": 0.6
+        },
+        {
+          "item": "stone",
+          "chance": 0.5
+        }
+      ],
+      "gear": 0.14
+    },
+    "skeleton": {
+      "gold": [5, 10],
+      "items": [
+        {
+          "item": "bone",
+          "chance": 0.6
+        }
+      ],
+      "gear": 0.14
+    },
+    "sentinel": {
+      "gold": [10, 18],
+      "items": [
+        {
+          "item": "gear_cog",
+          "chance": 0.5
+        }
+      ],
+      "gear": 0.16
+    },
+    "ember_hound": {
+      "gold": [6, 11],
+      "items": [
+        {
+          "item": "ash_hide",
+          "chance": 0.5
+        },
+        {
+          "item": "ember_core",
+          "chance": 0.12
+        }
+      ],
+      "gear": 0.1
+    },
+    "magma_golem": {
+      "gold": [12, 20],
+      "items": [
+        {
+          "item": "obsidian_shard",
+          "chance": 0.55
+        },
+        {
+          "item": "ember_core",
+          "chance": 0.25
+        }
+      ],
+      "gear": 0.16
+    },
+    "ash_cultist": {
+      "gold": [12, 20],
+      "gold_chance": 1.0,
+      "items": [
+        {
+          "item": "ember_core",
+          "chance": 0.3
+        },
+        {
+          "item": "spirit_dust",
+          "chance": 0.3
+        }
+      ],
+      "gear": 0.2,
+      "potion": 0.4
+    }
+  },
+  "elite": {
+    "gold_mult": 3,
+    "gear_min": "uncommon"
+  }
 }

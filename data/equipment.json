@@ -543,6 +543,94 @@
       "rarity": "common",
       "material": true,
       "value": 1
+    },
+    "ash_hide": {
+      "name": "Пепельная шкура",
+      "description": "Жёсткая шкура пепельного пса, не горит.",
+      "slot": "",
+      "rarity": "common",
+      "material": true,
+      "value": 8
+    },
+    "ember_core": {
+      "name": "Тлеющее ядро",
+      "description": "Сердце огня, вечно тёплое. Ценный материал.",
+      "slot": "",
+      "rarity": "uncommon",
+      "material": true,
+      "value": 20
+    },
+    "obsidian_shard": {
+      "name": "Осколок обсидиана",
+      "description": "Острый вулканический камень.",
+      "slot": "",
+      "rarity": "common",
+      "material": true,
+      "value": 10
+    },
+    "ember_coal": {
+      "name": "Пылающий уголь",
+      "description": "Уголь, что горит без пламени. Нужен Игнату.",
+      "slot": "",
+      "rarity": "common",
+      "material": true,
+      "value": 0
+    },
+    "ember_fish": {
+      "name": "Огнепёрка",
+      "description": "Рыба, живущая в лаве. Тёплая на ощупь.",
+      "slot": "",
+      "rarity": "rare",
+      "material": true,
+      "value": 40
+    },
+    "magma_eel": {
+      "name": "Магмовый угорь",
+      "description": "Скользкий угорь из лавовых озёр.",
+      "slot": "",
+      "rarity": "epic",
+      "material": true,
+      "value": 60
+    },
+    "obsidian_blade": {
+      "name": "Обсидиановый клинок",
+      "description": "+28 к урону мечом, +5% к шансу крита.",
+      "slot": "blade",
+      "rarity": "epic",
+      "melee": 28,
+      "crit": 5,
+      "value": 260
+    },
+    "ash_cloak": {
+      "name": "Пепельный плащ",
+      "description": "Плащ из пепельных шкур: +9 брони, +2 ловкости.",
+      "slot": "armor",
+      "rarity": "rare",
+      "armor": 9,
+      "agility": 2,
+      "value": 120
+    },
+    "flame_heart": {
+      "name": "Сердце пламени",
+      "description": "Реликвия: +4 к силе, +3 к урону мечом.",
+      "slot": "relic",
+      "rarity": "epic",
+      "power": 4,
+      "melee": 3,
+      "value": 200
+    },
+    "recipe_obsidian": {
+      "name": "Рецепт: обсидиановый клинок",
+      "description": "Научит ковать обсидиановый клинок у горна мастера.",
+      "rarity": "epic"
+    },
+    "star_fragment": {
+      "name": "Осколок звезды",
+      "description": "Тёплый светящийся осколок упавшей звезды. Дорого стоит.",
+      "slot": "",
+      "rarity": "uncommon",
+      "material": true,
+      "value": 30
     }
   }
 }

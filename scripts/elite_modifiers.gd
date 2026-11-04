@@ -28,6 +28,11 @@ static func roll(rng: RandomNumberGenerator) -> String:
 	var ids: Array = data().get("modifiers", {}).keys()
 	return str(ids[rng.randi_range(0, ids.size() - 1)]) if not ids.is_empty() else ""
 
+## Always an elite modifier (world events).
+static func pick(rng: RandomNumberGenerator) -> String:
+	var ids: Array = data().get("modifiers", {}).keys()
+	return str(ids[rng.randi_range(0, ids.size() - 1)]) if not ids.is_empty() else ""
+
 ## Applies an elite modifier to a freshly created (not yet ready) enemy.
 static func apply(enemy: SlimeEnemy, elite_id: String) -> void:
 	if not has(elite_id):
