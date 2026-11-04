@@ -515,3 +515,13 @@ SHAMAN = Look(hair=r4("#5a6a4a", "#43503a", "#2e382a", "#1e241e"), hair_style="l
               staff=r4("#c9a07a", "#8f6a4a", "#5e4434", "#3f2c26"),
               accent=r4("#e2fffb", "#9cfff0", "#3fd6d0", "#1f8a8a"),
               outline=hex_color("#10202a"), belt=hex_color("#2e6a5a"), buckle=None)
+
+
+# Vail's shadow echo: hooded, faceless, violet glow.
+SHADE = Look(hair=r4("#8a6ac8", "#6a4aa8", "#4a3080", "#2e1e58"), hair_style="long",
+             top=r4("#a68ae0", "#7a5ac0", "#553a96", "#33226a"), robe=True, scarf=False,
+             cape=r4("#7a5ac0", "#553a96", "#33226a", "#1e1244"),
+             skin=r4("#4a3a72", "#3a2c5e", "#2a1e48", "#1c1234"),
+             staff=None,
+             accent=r4("#ffffff", "#e6d2ff", "#c9a2ff", "#8a5ae8"),
+             eye=hex_color("#fbf6ff"), outline=hex_color("#120a22"), belt=hex_color("#e6d2ff"), buckle=None)

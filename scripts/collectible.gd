@@ -21,6 +21,6 @@ func art_name() -> String:
 		return "ore_node"
 	if item_id.begins_with("supply_crate_"):
 		return "supply_crate"
-	if item_id in ["map_fragment", "spirit_blossom", "echo_crystal", "sky_shard", "altar_heart", "memory_crystal", "wind_rune", "storm_heart"]:
+	if item_id in ["map_fragment", "spirit_blossom", "echo_crystal", "sky_shard", "altar_heart", "memory_crystal", "wind_rune", "storm_heart", "rift_throne"]:
 		return item_id
 	return "moonleaf"

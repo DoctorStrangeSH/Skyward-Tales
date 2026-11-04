@@ -17,7 +17,7 @@ const MERCHANT_SHOP_SCRIPT := preload("res://scripts/merchant_shop.gd")
 const CRAFTING_SERVICE_SCRIPT := preload("res://scripts/crafting_service.gd")
 const GATE_SCRIPT := preload("res://scripts/region_gate.gd")
 ## Story bosses: defeated once (flag "<kind>_defeated"), never respawn.
-const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой колосс"}
+const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой колосс", "vail": "Вейл"}
 const ENEMY_SCRIPTS := {
 	"slime": preload("res://scripts/enemy.gd"),
 	"wolf": preload("res://scripts/forest_wolf.gd"),
@@ -27,6 +27,8 @@ const ENEMY_SCRIPTS := {
 	"echo": preload("res://scripts/echo_warden.gd"),
 	"wisp": preload("res://scripts/wind_wisp.gd"),
 	"tempest": preload("res://scripts/tempest_colossus.gd"),
+	"shade": preload("res://scripts/rift_shade.gd"),
+	"vail": preload("res://scripts/vail_boss.gd"),
 	"sentinel": preload("res://scripts/sky_sentinel.gd")
 }
 const MATERIAL_ITEMS := ["wolf_pelt", "iron_ore"]
@@ -142,6 +144,25 @@ func _ready() -> void:
 	_refresh_hud()
 
 ## Camera shake (off when the "Тряска экрана" setting is disabled).
+## Quests with "kill_kind" count defeats of that enemy kind; a main quest
+## completes itself (and continues the story chain) when the count is reached.
+func _track_kill_quests(enemy: SlimeEnemy, kind: String) -> void:
+	for quest_id in quests.definitions:
+		if str(quests.definitions[quest_id].get("kill_kind", "")) != kind:
+			continue
+		enemy.defeated.connect(func(_xp: int) -> void: _on_kill_quest_progress(quest_id))
+
+func _on_kill_quest_progress(quest_id: String) -> void:
+	if not bool(quests.states[quest_id].get("started", false)) or quests.is_completed(quest_id):
+		return
+	quests.add_progress(quest_id, 1)
+	var target := int(quests.definitions[quest_id].get("target", 1))
+	var progress := int(quests.states[quest_id].get("progress", 0))
+	hud.show_message("%s: %d/%d" % [quests.definitions[quest_id].get("title", ""), mini(progress, target), target], 2.0)
+	if quests.is_ready_to_complete(quest_id) and bool(quests.definitions[quest_id].get("main", false)):
+		director._complete(quest_id)
+	_refresh_hud()
+
 ## Hit-stop: a few frames of near-frozen time make heavy blows land.
 ## Skipped headless so tests keep a steady clock.
 func hit_stop(duration: float) -> void:
@@ -160,7 +181,7 @@ func update_music() -> void:
 			GameAudio.music("boss")
 			return
 	var style := RegionCatalog.style(current_region)
-	GameAudio.music({"night": "night", "cave": "caves", "sky": "sky", "spires": "sky"}.get(style, "meadow"))
+	GameAudio.music({"night": "night", "cave": "caves", "sky": "sky", "spires": "sky", "rift": "night"}.get(style, "meadow"))
 
 func shake(strength: float, duration: float) -> void:
 	if not GameSettings.get_bool("screen_shake"):
@@ -512,12 +533,16 @@ func _discover_nearby_enemies() -> void:
 			hud.show_tip("bestiary", "Совет: K — бестиарий со слабостями врагов.")
 
 static func enemy_kind(enemy: SlimeEnemy) -> String:
+	if enemy is VailBoss:
+		return "vail"
 	if enemy is TempestColossus:
 		return "tempest"
 	if enemy is EchoWarden:
 		return "echo"
 	if enemy is GroveGuardian:
 		return "guardian"
+	if enemy is RiftShade:
+		return "shade"
 	if enemy is SkySentinel:
 		return "sentinel"
 	if enemy is ForestShaman:
@@ -582,13 +607,14 @@ func spawn_enemy(kind: String, spawn_position: Vector2, elite: String = "") -> S
 		EliteModifiers.apply(enemy, elite)
 	add_child(enemy)
 	EliteModifiers.finish(enemy)
+	_track_kill_quests(enemy, kind)
 	if enemy is GroveGuardian:
 		GameAudio.play("boss_roar", -2.0, 0.0)
 		update_music.call_deferred()
 	match kind:
 		"guardian":
 			enemy.defeated.connect(func(xp: int) -> void: _on_guardian_defeated(xp, enemy.global_position))
-		"echo", "tempest":
+		"echo", "tempest", "vail":
 			enemy.defeated.connect(func(xp: int) -> void: _on_story_boss_defeated(kind, xp, enemy.global_position))
 		"wolf":
 			enemy.defeated.connect(func(xp: int) -> void:

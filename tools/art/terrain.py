@@ -96,7 +96,7 @@ def render_ground(terrain: dict, pal: dict, seed: int) -> Canvas:
         outer = ndimage.binary_dilation(water_mask, iterations=3) & land & ~shore & ~path
         img[outer] = grass[1]
 
-    sky = terrain.get("style") in ("sky", "spires")
+    sky = terrain.get("style") in ("sky", "spires", "rift")
     island = None
     if sky:
         island = _island_mask(w, h, int(terrain.get("edge_margin", 64)), seed)

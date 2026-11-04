@@ -262,5 +262,28 @@
       "gold": 200
     },
     "main": true
+  },
+  {
+    "id": "main_rift",
+    "title": "Расколотый остров",
+    "description": "Развейте тени Вейла на Расколотом острове.",
+    "target": 4,
+    "reward": {
+      "experience": 300,
+      "gold": 160
+    },
+    "main": true,
+    "kill_kind": "shade"
+  },
+  {
+    "id": "main_vail",
+    "title": "Трон Вейла",
+    "description": "Поднимитесь к трону в сердце разлома и остановите Вейла.",
+    "target": 1,
+    "reward": {
+      "experience": 420,
+      "gold": 260
+    },
+    "main": true
   }
 ]

@@ -183,6 +183,16 @@
    39
   ]
  },
+ "props/gate_rift.png": {
+  "size": [
+   36,
+   48
+  ],
+  "origin": [
+   18,
+   44
+  ]
+ },
  "props/gate_sky.png": {
   "size": [
    36,
@@ -323,6 +333,16 @@
    14
   ]
  },
+ "props/rift_throne.png": {
+  "size": [
+   40,
+   18
+  ],
+  "origin": [
+   20,
+   9
+  ]
+ },
  "props/sky_shard.png": {
   "size": [
    30,
@@ -443,6 +463,12 @@
    384
   ]
  },
+ "sprites/enemies/rift_shade_8dir.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
  "sprites/enemies/sky_sentinel_8dir.png": {
   "size": [
    128,
@@ -453,6 +479,12 @@
   "size": [
    192,
    384
+  ]
+ },
+ "sprites/enemies/vail_8dir.png": {
+  "size": [
+   128,
+   256
   ]
  },
  "sprites/enemies/wind_wisp_8dir.png": {
@@ -729,6 +761,56 @@
    58
   ]
  },
+ "world/rift_bush_0.png": {
+  "size": [
+   26,
+   20
+  ],
+  "origin": [
+   13,
+   16
+  ]
+ },
+ "world/rift_bush_1.png": {
+  "size": [
+   26,
+   20
+  ],
+  "origin": [
+   13,
+   16
+  ]
+ },
+ "world/rift_tree_0.png": {
+  "size": [
+   48,
+   64
+  ],
+  "origin": [
+   24,
+   58
+  ]
+ },
+ "world/rift_tree_1.png": {
+  "size": [
+   48,
+   64
+  ],
+  "origin": [
+   24,
+   58
+  ]
+ },
+ "world/rift_tree_2.png": {
+  "size": [
+   36,
+   46
+  ],
+  "origin": [
+   18,
+   40
+  ]
+ },
  "world/ruins.png": {
   "size": [
    108,
@@ -776,6 +858,18 @@
   ]
  },
  "world/sky_island_ground.png": {
+  "size": [
+   1280,
+   864
+  ]
+ },
+ "world/sky_rift_canopy.png": {
+  "size": [
+   1280,
+   864
+  ]
+ },
+ "world/sky_rift_ground.png": {
   "size": [
    1280,
    864
