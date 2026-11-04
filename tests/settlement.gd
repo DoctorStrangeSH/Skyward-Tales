@@ -60,6 +60,8 @@ func _run() -> void:
 	if not _verify(game.settlement.homes.is_empty(), "not enough gold, nothing built"):
 		return
 	game.player.gold = 200
+	game.player.add_item("wood", 20)
+	game.player.add_item("stone", 10)
 	game.settlement.open_board()
 	game._on_dialogue_choice_selected("settle_build:woodcutter")
 	await process_frame
@@ -67,7 +69,7 @@ func _run() -> void:
 		return
 	if not _verify(_objects("house") == 1 and _objects("plot") == 2, "the house replaces a plot"):
 		return
-	if not _verify(game.settlement.house_cost("cook") == 90, "the woodcutter makes the next house cheaper"):
+	if not _verify(game.settlement.house_cost("cook") == 90 and int(game.settlement.house_materials("cook")["wood"]) == 6, "the woodcutter makes the next house cheaper (gold and wood)"):
 		return
 
 	# Martha the cook: a meal after every completed quest.

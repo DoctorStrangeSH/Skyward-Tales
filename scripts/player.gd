@@ -66,6 +66,7 @@ func start_dodge() -> bool:
 	return true
 
 func _physics_process(_delta: float) -> void:
+	_update_buffs(_delta)
 	dodge_cooldown_left = maxf(0.0, dodge_cooldown_left - _delta)
 	second_wind_ready_in = maxf(0.0, second_wind_ready_in - _delta)
 	if dodge_time_left > 0.0:
@@ -216,7 +217,7 @@ func get_stat(stat: String) -> int:
 
 ## +2% spell damage per point of power.
 func get_spell_power_multiplier() -> float:
-	return 1.0 + 0.02 * float(get_stat("power"))
+	return (1.0 + 0.02 * float(get_stat("power"))) * (1.0 + buff_value("power"))
 
 ## Base 4 mana per second, +0.3 per point of will.
 func get_mana_regen() -> float:
@@ -227,7 +228,7 @@ func get_dodge_cooldown() -> float:
 	return dodge_cooldown * maxf(0.5, 1.0 - 0.02 * float(get_stat("agility")))
 
 func get_move_speed() -> float:
-	return move_speed * (1.0 + minf(0.25, 0.01 * float(get_stat("agility"))))
+	return move_speed * (1.0 + minf(0.25, 0.01 * float(get_stat("agility")))) * (1.0 + buff_value("speed"))
 
 func get_item_name(item_id: String) -> String:
 	return str(get_item_definition(item_id).get("name", item_id))
@@ -245,7 +246,56 @@ func _equipped_stat(stat: String) -> int:
 	return total
 
 func get_armor() -> int:
-	return _equipped_stat("armor")
+	return _equipped_stat("armor") + int(buff_value("armor"))
+
+# --- Food and elixir buffs ---------------------------------------------------
+
+signal recipe_learned(recipe_item: String)
+## Recipes taught by scrolls ("recipe_*" items).
+var learned_recipes: Dictionary = {}
+## type ("power", "armor", "speed", "regen") -> {value, time, label}
+var buffs: Dictionary = {}
+var _regen_accumulator: float = 0.0
+
+func buff_value(type: String) -> float:
+	return float(buffs.get(type, {}).get("value", 0.0))
+
+func add_buff(type: String, value: float, duration: float, label: String) -> void:
+	buffs[type] = {"value": value, "time": duration, "label": label}
+	stats_changed.emit()
+
+func _update_buffs(delta: float) -> void:
+	if buffs.is_empty():
+		return
+	for type in buffs.keys():
+		buffs[type]["time"] = float(buffs[type]["time"]) - delta
+		if float(buffs[type]["time"]) <= 0.0:
+			buffs.erase(type)
+			stats_changed.emit()
+	if buffs.has("regen") and health > 0 and health < max_health:
+		_regen_accumulator += delta * buff_value("regen")
+		if _regen_accumulator >= 1.0:
+			var healed := mini(int(_regen_accumulator), max_health - health)
+			health += healed
+			_regen_accumulator -= float(healed)
+			stats_changed.emit()
+
+## Food and elixirs described by "use" in equipment.json.
+func _use_generic(item_id: String) -> bool:
+	var effect: Variant = get_item_definition(item_id).get("use", {})
+	if not effect is Dictionary or effect.is_empty():
+		return false
+	var heal := int(effect.get("heal", 0))
+	var restore := int(effect.get("mana", 0))
+	var buff: Variant = effect.get("buff", {})
+	if not buff is Dictionary or buff.is_empty():
+		if (heal > 0 and health >= max_health) and (restore <= 0 or mana >= max_mana):
+			return false
+	health = mini(max_health, health + heal)
+	mana = mini(max_mana, mana + restore)
+	if buff is Dictionary and not buff.is_empty():
+		add_buff(str(buff.get("type", "")), float(buff.get("value", 0.0)), float(buff.get("duration", 60.0)), str(buff.get("label", "")))
+	return true
 
 func get_spell_bonus(spell_id: String = "") -> int:
 	var bonus: int = 0
@@ -406,6 +456,13 @@ func unequip_slot(slot: String) -> bool:
 func add_item(item_id: String, amount: int = 1) -> void:
 	if amount <= 0:
 		return
+	# Recipe scrolls teach the recipe instead of filling the bag.
+	if item_id.begins_with("recipe_"):
+		if not learned_recipes.has(item_id):
+			learned_recipes[item_id] = true
+			recipe_learned.emit(item_id)
+		stats_changed.emit()
+		return
 	inventory[item_id] = int(inventory.get(item_id, 0)) + amount
 	stats_changed.emit()
 
@@ -435,7 +492,8 @@ func use_item(item_id: String) -> bool:
 				return false
 			mana = mini(max_mana, mana + 25)
 		_:
-			return false
+			if not _use_generic(item_id):
+				return false
 	inventory[item_id] = int(inventory[item_id]) - 1
 	if int(inventory[item_id]) <= 0:
 		inventory.erase(item_id)

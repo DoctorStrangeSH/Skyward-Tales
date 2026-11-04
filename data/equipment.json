@@ -123,6 +123,124 @@
       "name": "Печать Неба",
       "description": "Дар побеждённого стража. Открывает высший навык одной ветки (T).",
       "rarity": "rare"
+    },
+    "wood": {
+      "name": "Брёвна",
+      "description": "Строительный материал. Нужен для домов в поселении.",
+      "slot": "",
+      "rarity": "common",
+      "material": true
+    },
+    "stone": {
+      "name": "Камень",
+      "description": "Строительный материал: фундаменты, печи, стены.",
+      "slot": "",
+      "rarity": "common",
+      "material": true
+    },
+    "fish": {
+      "name": "Рыба",
+      "description": "Свежий улов. Повар сварит из неё похлёбку.",
+      "slot": "",
+      "rarity": "common",
+      "material": true
+    },
+    "healroot": {
+      "name": "Целебный корень",
+      "description": "Основа зелий здоровья и сытной еды.",
+      "slot": "",
+      "rarity": "common",
+      "material": true
+    },
+    "bluebell": {
+      "name": "Синецвет",
+      "description": "Голубой цветок — основа зелий маны.",
+      "slot": "",
+      "rarity": "common",
+      "material": true
+    },
+    "fish_stew": {
+      "name": "Рыбная похлёбка",
+      "description": "+40 HP и восстановление 2 HP/с на 60 с.",
+      "rarity": "common",
+      "use": {
+        "heal": 40,
+        "buff": {
+          "type": "regen",
+          "value": 2,
+          "duration": 60,
+          "label": "Сытость"
+        }
+      }
+    },
+    "herb_tea": {
+      "name": "Травяной чай",
+      "description": "+30 MP и +10% силы заклинаний на 120 с.",
+      "rarity": "common",
+      "use": {
+        "mana": 30,
+        "buff": {
+          "type": "power",
+          "value": 0.1,
+          "duration": 120,
+          "label": "Ясность"
+        }
+      }
+    },
+    "hearty_stew": {
+      "name": "Сытное рагу",
+      "description": "+80 HP и +3 брони на 180 с.",
+      "rarity": "uncommon",
+      "use": {
+        "heal": 80,
+        "buff": {
+          "type": "armor",
+          "value": 3,
+          "duration": 180,
+          "label": "Крепость"
+        }
+      }
+    },
+    "power_elixir": {
+      "name": "Эликсир мощи",
+      "description": "+20% силы заклинаний на 120 с.",
+      "rarity": "rare",
+      "use": {
+        "buff": {
+          "type": "power",
+          "value": 0.2,
+          "duration": 120,
+          "label": "Мощь"
+        }
+      }
+    },
+    "swift_tonic": {
+      "name": "Тоник ветра",
+      "description": "+15% скорости на 120 с.",
+      "rarity": "uncommon",
+      "use": {
+        "buff": {
+          "type": "speed",
+          "value": 0.15,
+          "duration": 120,
+          "label": "Ветер"
+        }
+      }
+    },
+    "recipe_hearty_stew": {
+      "name": "Рецепт: сытное рагу",
+      "description": "Научит готовить сытное рагу.",
+      "rarity": "uncommon"
+    },
+    "recipe_power_elixir": {
+      "name": "Рецепт: эликсир мощи",
+      "description": "Научит варить эликсир мощи.",
+      "rarity": "rare"
+    },
+    "recipe_swift_tonic": {
+      "name": "Рецепт: тоник ветра",
+      "description": "Научит варить тоник ветра.",
+      "rarity": "uncommon"
     }
   }
 }

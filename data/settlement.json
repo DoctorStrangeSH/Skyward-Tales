@@ -1,41 +1,114 @@
 {
   "region": "greenreach",
-  "board": {"position": [600, 578]},
+  "board": {
+    "position": [
+      600,
+      578
+    ]
+  },
   "plots": [
-    {"id": "plot_west", "position": [262, 452]},
-    {"id": "plot_east", "position": [1004, 742]},
-    {"id": "plot_south", "position": [870, 884]}
+    {
+      "id": "plot_west",
+      "position": [
+        262,
+        452
+      ]
+    },
+    {
+      "id": "plot_east",
+      "position": [
+        1004,
+        742
+      ]
+    },
+    {
+      "id": "plot_south",
+      "position": [
+        870,
+        884
+      ]
+    }
   ],
   "settlers": {
     "woodcutter": {
       "name": "Ярош, лесоруб",
-      "found": {"region": "moonlit_grove", "position": [760, 500]},
+      "found": {
+        "region": "moonlit_grove",
+        "position": [
+          760,
+          500
+        ]
+      },
       "house": "village_house_small",
       "cost": 60,
       "recruit": "Деревня у тракта? Там, говорят, светлее… Возьмёте лесоруба? Мне бы крышу над головой — а я вам брёвен на все дома.",
       "waiting": "Жду дома, {hero}. Как построишь — сразу за топор.",
       "home": "Добрый дом! С моими брёвнами следующие постройки выйдут дешевле.",
-      "service": {"type": "discount", "value": 0.25, "label": "Стройка дешевле на 25%"}
+      "service": {
+        "type": "discount",
+        "value": 0.25,
+        "label": "Стройка дешевле на 25%: и золото, и материалы"
+      },
+      "materials": {
+        "wood": 4,
+        "stone": 2
+      }
     },
     "cook": {
       "name": "Марта, повариха",
-      "found": {"region": "misty_marsh", "position": [760, 330]},
+      "found": {
+        "region": "misty_marsh",
+        "position": [
+          760,
+          330
+        ]
+      },
       "house": "village_house_large",
       "cost": 120,
       "recruit": "Варю я знатно, только кому тут, в тумане? Найдёшь мне кухню в деревне — каждого накормлю.",
       "waiting": "Мне бы печь да котёл, {hero}. Построишь дом — открою харчевню.",
       "home": "Харчевня открыта! Заходи после каждого дела — накормлю досыта.",
-      "service": {"type": "heal", "label": "Похлёбка: всё здоровье и мана после каждого задания"}
+      "service": {
+        "type": "heal",
+        "label": "Похлёбка: всё здоровье и мана после каждого задания"
+      },
+      "materials": {
+        "wood": 8,
+        "stone": 4
+      }
     },
     "fisher": {
       "name": "Ульф, рыбак",
-      "found": {"region": "crystal_caves", "position": [330, 470]},
+      "found": {
+        "region": "crystal_caves",
+        "position": [
+          330,
+          470
+        ]
+      },
       "house": "village_house_slate",
       "cost": 90,
       "recruit": "Подземное озеро пустое — ни рыбёшки. Говорят, у вас пруды живые? Возьмёшь старика?",
       "waiting": "Удочки собраны. Дело за домом, {hero}.",
       "home": "Вода у вас чистая! Буду делиться уловом — из рыбьей чешуи славные зелья выходят.",
-      "service": {"type": "items", "items": [{"id": "health_potion", "amount": 1}, {"id": "mana_potion", "amount": 1}], "label": "Зелья после каждого задания"}
+      "service": {
+        "type": "items",
+        "items": [
+          {
+            "id": "health_potion",
+            "amount": 1
+          },
+          {
+            "id": "mana_potion",
+            "amount": 1
+          }
+        ],
+        "label": "Зелья после каждого задания"
+      },
+      "materials": {
+        "wood": 6,
+        "stone": 3
+      }
     }
   }
 }

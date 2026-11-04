@@ -18,7 +18,8 @@
       "output": {
         "item_id": "reinforced_wolf_mantle",
         "amount": 1
-      }
+      },
+      "station": "forge"
     },
     "forge_ironbound_staff": {
       "name": "Железный посох",
@@ -37,6 +38,146 @@
       ],
       "output": {
         "item_id": "ironbound_staff",
+        "amount": 1
+      },
+      "station": "forge"
+    },
+    "cook_fish_stew": {
+      "name": "Рыбная похлёбка",
+      "description": "Две рыбы и корень — горячо и сытно.",
+      "gold_cost": 0,
+      "station": "kitchen",
+      "ingredients": [
+        {
+          "item_id": "fish",
+          "amount": 2
+        },
+        {
+          "item_id": "healroot",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "item_id": "fish_stew",
+        "amount": 1
+      }
+    },
+    "cook_herb_tea": {
+      "name": "Травяной чай",
+      "description": "Корень и синецвет — ясная голова.",
+      "gold_cost": 0,
+      "station": "kitchen",
+      "ingredients": [
+        {
+          "item_id": "healroot",
+          "amount": 1
+        },
+        {
+          "item_id": "bluebell",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "item_id": "herb_tea",
+        "amount": 1
+      }
+    },
+    "cook_hearty_stew": {
+      "name": "Сытное рагу",
+      "description": "Три рыбы, два корня — еда для похода.",
+      "gold_cost": 0,
+      "station": "kitchen",
+      "requires_recipe": "recipe_hearty_stew",
+      "ingredients": [
+        {
+          "item_id": "fish",
+          "amount": 3
+        },
+        {
+          "item_id": "healroot",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "item_id": "hearty_stew",
+        "amount": 1
+      }
+    },
+    "brew_health": {
+      "name": "Зелье здоровья",
+      "description": "Два целебных корня.",
+      "gold_cost": 0,
+      "station": "alchemy",
+      "ingredients": [
+        {
+          "item_id": "healroot",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "item_id": "health_potion",
+        "amount": 2
+      }
+    },
+    "brew_mana": {
+      "name": "Зелье маны",
+      "description": "Два синецвета.",
+      "gold_cost": 0,
+      "station": "alchemy",
+      "ingredients": [
+        {
+          "item_id": "bluebell",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "item_id": "mana_potion",
+        "amount": 2
+      }
+    },
+    "brew_power": {
+      "name": "Эликсир мощи",
+      "description": "Синецвет, корень и эхо-кристалл.",
+      "gold_cost": 0,
+      "station": "alchemy",
+      "requires_recipe": "recipe_power_elixir",
+      "ingredients": [
+        {
+          "item_id": "bluebell",
+          "amount": 2
+        },
+        {
+          "item_id": "healroot",
+          "amount": 1
+        },
+        {
+          "item_id": "echo_crystal",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "item_id": "power_elixir",
+        "amount": 1
+      }
+    },
+    "brew_swift": {
+      "name": "Тоник ветра",
+      "description": "Синецвет и перо… то есть рыбья чешуя.",
+      "gold_cost": 0,
+      "station": "alchemy",
+      "requires_recipe": "recipe_swift_tonic",
+      "ingredients": [
+        {
+          "item_id": "bluebell",
+          "amount": 1
+        },
+        {
+          "item_id": "fish",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "item_id": "swift_tonic",
         "amount": 1
       }
     }

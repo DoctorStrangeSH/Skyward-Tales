@@ -84,6 +84,8 @@ func handle_choice(choice_id: String) -> void:
 		return
 	if game.settlement != null and game.settlement.handle_choice(choice_id):
 		return
+	if game.crafting != null and game.crafting.handle_choice(choice_id):
+		return
 	match choice_id:
 		"merchant_quest_start":
 			_start_merchant_supply_quest()

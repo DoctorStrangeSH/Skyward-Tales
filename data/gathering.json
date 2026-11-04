@@ -1,0 +1,87 @@
+{
+  "kinds": {
+    "wood": {
+      "name": "Сухое бревно",
+      "item": "wood",
+      "amount": [
+        2,
+        3
+      ],
+      "respawn": 240,
+      "art": "gather_wood",
+      "verb": "рубить"
+    },
+    "stone": {
+      "name": "Каменная глыба",
+      "item": "stone",
+      "amount": [
+        1,
+        2
+      ],
+      "respawn": 300,
+      "art": "gather_stone",
+      "verb": "дробить"
+    },
+    "fish": {
+      "name": "Рыбное место",
+      "item": "fish",
+      "amount": [
+        1,
+        2
+      ],
+      "respawn": 180,
+      "art": "gather_fish",
+      "verb": "рыбачить"
+    },
+    "healroot": {
+      "name": "Целебный корень",
+      "item": "healroot",
+      "amount": [
+        1,
+        2
+      ],
+      "respawn": 200,
+      "art": "gather_healroot",
+      "verb": "собрать"
+    },
+    "bluebell": {
+      "name": "Синецвет",
+      "item": "bluebell",
+      "amount": [
+        1,
+        2
+      ],
+      "respawn": 200,
+      "art": "gather_bluebell",
+      "verb": "собрать"
+    }
+  },
+  "stations": {
+    "kitchen": {
+      "name": "Котёл",
+      "art": "station_kitchen",
+      "needs_settler": "cook",
+      "locked": "Котёл холодный. Найдите повара, который возьмётся за кухню."
+    },
+    "alchemy": {
+      "name": "Стол алхимика",
+      "art": "decor_potion_table"
+    },
+    "forge": {
+      "name": "Горн",
+      "art": ""
+    }
+  },
+  "placements": {
+    "greenreach": {
+      "kitchen": [
+        700,
+        790
+      ],
+      "alchemy": [
+        972,
+        540
+      ]
+    }
+  }
+}

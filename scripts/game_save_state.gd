@@ -60,7 +60,8 @@ static func capture(game: SkywardGame) -> Dictionary:
 			"talents": player.talents.duplicate(true), "starlight_essence_used": player.starlight_essence_used,
 			"bonus_skill_points": player.bonus_skill_points,
 			"generated_items": player.generated_items.duplicate(true), "generated_counter": player._generated_counter,
-			"hero_name": player.hero_name, "hero_gender": player.hero_gender
+			"hero_name": player.hero_name, "hero_gender": player.hero_gender,
+			"learned_recipes": player.learned_recipes.duplicate()
 		},
 		"quest": {"states": game.quests.states.duplicate(true), "active": game.quests.active_quest_id},
 		"world": {
@@ -70,7 +71,8 @@ static func capture(game: SkywardGame) -> Dictionary:
 			"story_flags": game.director.make_snapshot(),
 			"discovered": game.discovered_enemies.duplicate(true), "landmarks": game.discovered_landmarks.duplicate(true),
 			"opened_chests": game.opened_chests.duplicate(true), "gathered_resource_nodes": game.gathered_resource_nodes.duplicate(true),
-			"settlement": game.settlement.make_snapshot()
+			"settlement": game.settlement.make_snapshot(),
+			"crafting": game.crafting.make_snapshot()
 		},
 		"magic": game.selected_spell_id
 	}
@@ -96,6 +98,7 @@ static func apply(game: SkywardGame, data: Dictionary) -> bool:
 	game.gathered_resource_nodes = world_data.get("gathered_resource_nodes", {}).duplicate(true)
 	game.relationships.restore_snapshot(world_data.get("relationships", {}))
 	game.settlement.restore_snapshot(world_data.get("settlement", {}))
+	game.crafting.restore_snapshot(world_data.get("crafting", {}))
 	var saved_position := read_position(character.get("position"), DEFAULT_PLAYER_POSITION)
 	game._set_region(str(world_data.get("region", "greenreach")), saved_position, false)
 	for quest_id in quest_data["states"]:
@@ -136,6 +139,9 @@ static func _apply_player(player: PlayerCharacter, character: Dictionary) -> voi
 		if not saved_item.is_empty() and player._slot_for_item(saved_item) == str(slot):
 			player.equipment[slot] = saved_item
 	player.talents = character.get("talents", {}).duplicate(true)
+	var recipes: Variant = character.get("learned_recipes", {})
+	player.learned_recipes = recipes.duplicate() if recipes is Dictionary else {}
+	player.buffs = {}
 	player.bonus_skill_points = maxi(0, int(character.get("bonus_skill_points", 0)))
 	player.starlight_essence_used = maxi(0, int(character.get("starlight_essence_used", 0)))
 	# Saves from before character creation default to Арен.

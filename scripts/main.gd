@@ -11,6 +11,8 @@ const NPC_SCRIPT := preload("res://scripts/npc.gd")
 const COLLECTIBLE_SCRIPT := preload("res://scripts/collectible.gd")
 const WAYSTONE_SCRIPT := preload("res://scripts/waystone.gd")
 const SETTLEMENT_OBJECT_SCRIPT := preload("res://scripts/settlement_object.gd")
+const GATHER_NODE_SCRIPT := preload("res://scripts/gather_node.gd")
+const CRAFT_STATION_SCRIPT := preload("res://scripts/craft_station.gd")
 const LOOT_SCRIPT := preload("res://scripts/loot.gd")
 const CHEST_SCRIPT := preload("res://scripts/treasure_chest.gd")
 const SAVE_SCRIPT := preload("res://scripts/save_system.gd")
@@ -54,6 +56,7 @@ var director: StoryDirector
 var pickups: QuestPickups
 var givers: QuestGivers
 var settlement: Settlement
+var crafting: CraftingMenu
 var elder: WorldNpc
 var nearby_interactable: Node2D
 var spell_definitions: Dictionary = {}
@@ -107,6 +110,7 @@ func _ready() -> void:
 	pickups = QuestPickups.new(self)
 	givers = QuestGivers.new(self)
 	settlement = Settlement.new(self)
+	crafting = CraftingMenu.new(self)
 	story = StoryScene.new(self)
 	director = StoryDirector.new(self)
 	player = PLAYER_SCENE.instantiate() as PlayerCharacter
@@ -115,6 +119,9 @@ func _ready() -> void:
 	player.stats_changed.connect(_refresh_hud)
 	player.level_up.connect(_on_level_up)
 	player.died.connect(_on_player_died)
+	player.recipe_learned.connect(func(recipe_item: String) -> void:
+		hud.show_message("Выучен рецепт: " + player.get_item_name(recipe_item).trim_prefix("Рецепт: "), 3.0)
+		GameAudio.play("quest", -4.0, 0.0))
 	player.hurt.connect(func(amount: int) -> void:
 		GameAudio.play("hurt", -3.0)
 		shake(clampf(1.5 + amount * 0.15, 1.5, 4.0), 0.18))
@@ -220,10 +227,15 @@ func _process(delta: float) -> void:
 		return
 	_update_spell_hud()
 	director.update()
+	if not get_tree().paused:
+		crafting.tick(delta)
 	_marker_clock -= delta
 	if _marker_clock <= 0.0:
 		_marker_clock = 0.25
 		update_npc_markers()
+		crafting.refresh_nodes()
+		if not player.buffs.is_empty():
+			_refresh_hud()
 	_discover_nearby_enemies()
 	_update_minimap()
 	hud.update_dodge(player.dodge_cooldown_left, player.dodge_cooldown, player.dodge_time_left > 0.0)
@@ -238,6 +250,12 @@ func _process(delta: float) -> void:
 		interact_prompt.show_for(nearby_interactable, text.trim_prefix("E — "))
 
 func _interaction_prompt(target: Node2D) -> String:
+	if target is GatherNode:
+		return "E — " + target.verb if target.available else "E — пусто"
+	if target is CraftStation:
+		return "E — " + ("готовить" if target.station_id == "kitchen" else "мастерить")
+	if target is SettlementObject:
+		return "E — доска поселения"
 	if target is WorldNpc:
 		return "E — поговорить"
 	if target is RegionGate:
@@ -382,6 +400,7 @@ func _populate_region() -> void:
 			continue
 		spawn_enemy(str(enemy_data.get("kind", "slime")), _vec(enemy_data.get("position")), str(enemy_data.get("elite", "?")))
 	_spawn_waystone(layout)
+	_spawn_gathering(layout)
 	var boss: Dictionary = layout.get("boss", {})
 	if not boss.is_empty() and quests.is_completed(str(boss.get("after_quest", ""))):
 		spawn_region_boss()
@@ -436,7 +455,7 @@ func _clear_region_actors() -> void:
 	for node in get_children():
 		if node is WorldNpc and node.is_companion:
 			continue
-		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is SettlementObject or node is MagicBolt or node is EnemyMagicOrb:
+		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is SettlementObject or node is GatherNode or node is CraftStation or node is MagicBolt or node is EnemyMagicOrb:
 			remove_child(node)
 			node.queue_free()
 	elder = null
@@ -597,6 +616,36 @@ func _spawn_waystone(layout: Dictionary) -> void:
 	stone.global_position = _vec(spot)
 	stone.set_awake(waystone_awake(current_region))
 	stone.used.connect(_on_waystone_used)
+
+# --- Gathering and crafting stations -----------------------------------------
+
+func _spawn_gathering(layout: Dictionary) -> void:
+	var entries: Array = layout.get("gather", [])
+	for index in range(entries.size()):
+		var entry: Dictionary = entries[index]
+		var info := crafting.kind(str(entry.get("kind", "")))
+		if info.is_empty():
+			continue
+		var node := GATHER_NODE_SCRIPT.new() as GatherNode
+		node.key = "%s:%d" % [current_region, index]
+		node.kind = str(entry.get("kind", ""))
+		node.display_name = str(info.get("name", node.kind))
+		node.art = str(info.get("art", "gather_wood"))
+		node.verb = str(info.get("verb", "собрать"))
+		add_child(node)
+		node.global_position = _vec(entry.get("position"))
+		node.set_ready(crafting.is_ready(node.key))
+		node.used.connect(crafting.gather)
+	var stations: Dictionary = crafting.data.get("placements", {}).get(current_region, {})
+	for station_id in stations:
+		var info := crafting.station(str(station_id))
+		var station := CRAFT_STATION_SCRIPT.new() as CraftStation
+		station.station_id = str(station_id)
+		station.display_name = str(info.get("name", station_id))
+		station.art = str(info.get("art", ""))
+		add_child(station)
+		station.global_position = _vec(stations[station_id])
+		station.used.connect(func(s: CraftStation) -> void: crafting.open(s.station_id))
 
 # --- Settlement: board, plots and houses in the village ----------------------
 
@@ -1057,7 +1106,7 @@ func _on_inventory_unequip(slot: String) -> void:
 		hud.refresh_inventory(player)
 
 func _on_inventory_use(item_id: String) -> void:
-	if item_id in MATERIAL_ITEMS:
+	if item_id in MATERIAL_ITEMS or bool(player.get_item_definition(item_id).get("material", false)):
 		hud.show_message("%s — %s" % [player.get_item_name(item_id), player.get_item_description(item_id)], 3.0)
 		return
 	var definition: Dictionary = player.get_item_definition(item_id)

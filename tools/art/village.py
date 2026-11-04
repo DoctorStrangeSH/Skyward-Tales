@@ -326,3 +326,101 @@ def build_ui(root: pathlib.Path) -> None:
     for state in ("normal", "hover", "pressed", "disabled"):
         ui_button(state).save(folder / f"button_{state}.png")
     print("  ui: panel, panel_gold, buttons")
+
+
+# --- Gathering points and the kitchen ---------------------------------------
+
+def gather_wood() -> tuple[Canvas, tuple[int, int]]:
+    c = Canvas(30, 18)
+    for y in range(14, 18):
+        for x in range(2, 28):
+            c.blend(x, y, (20, 14, 10, 50))
+    for k, (x, y) in enumerate(((4, 9), (12, 9), (8, 4))):
+        c.rect(x, y, 14, 6, TIMBER[2] if k != 2 else TIMBER[3])
+        c.hline(x, x + 13, y, TIMBER[4])
+        c.rect(x + 12, y, 3, 6, TIMBER[4])
+        c.put(x + 13, y + 2, TIMBER[1])
+        c.put(x + 13, y + 3, TIMBER[2])
+    c.outline(OUTLINE)
+    return c, (15, 15)
+
+
+def gather_stone() -> tuple[Canvas, tuple[int, int]]:
+    c = Canvas(26, 20)
+    for y in range(4, 18):
+        for x in range(2, 24):
+            d = ((x - 12.5) / 11) ** 2 + ((y - 12) / 7.5) ** 2
+            if d <= 1:
+                c.put(x, y, STONE[4] if y < 9 and x < 14 else (STONE[3] if d < 0.6 else STONE[2]))
+    for x, y in ((8, 10), (15, 8), (12, 14)):
+        c.put(x, y, STONE[1])
+        c.put(x + 1, y, STONE[1])
+    c.outline(OUTLINE)
+    return c, (13, 17)
+
+
+def gather_fish() -> tuple[Canvas, tuple[int, int]]:
+    c = Canvas(24, 12)
+    ripple = (220, 240, 255, 200)
+    for x in range(3, 21):
+        y = 6 + (1 if (x // 3) % 2 else 0)
+        c.blend(x, y, ripple)
+    for x in range(7, 17):
+        c.blend(x, 3, ripple)
+    for x in range(9, 15):
+        c.put(x, 8, hex_color("#2a3a5a"))
+    c.put(15, 7, hex_color("#2a3a5a"))
+    c.put(16, 9, hex_color("#2a3a5a"))
+    return c, (12, 10)
+
+
+def _plant(flower, leaves=GREEN) -> tuple[Canvas, tuple[int, int]]:
+    c = Canvas(16, 16)
+    for x, y in ((7, 12), (6, 11), (9, 11), (5, 13), (10, 13), (8, 10)):
+        c.put(x, y, leaves[3])
+    for x, y in ((4, 12), (11, 12), (7, 9)):
+        c.put(x, y, leaves[2])
+    c.vline(8, 6, 13, leaves[2])
+    for x, y in ((7, 5), (9, 5), (8, 4), (8, 6), (5, 8), (11, 8)):
+        c.put(x, y, flower[1])
+    c.put(8, 5, flower[0])
+    c.outline(OUTLINE)
+    return c, (8, 14)
+
+
+def kitchen() -> tuple[Canvas, tuple[int, int]]:
+    c = Canvas(30, 30)
+    for x, y in ((6, 24), (24, 24)):
+        c.rect(x - 1, 6, 2, y - 4, TIMBER[1])
+    c.hline(4, 26, 6, TIMBER[2])
+    c.vline(15, 6, 12, hex_color("#5a5a5a"))
+    for y in range(12, 23):
+        for x in range(7, 24):
+            if ((x - 15.5) / 8) ** 2 + ((y - 16) / 6) ** 2 <= 1:
+                c.put(x, y, hex_color("#3a3a40") if y > 13 else hex_color("#6a6a72"))
+    c.hline(9, 22, 12, hex_color("#c8a060"))
+    for x in range(10, 22, 3):
+        c.put(x, 11, hex_color("#e8d8a8"))
+    for x, col in ((10, "#ffb040"), (13, "#ff7a2a"), (16, "#ffd060"), (19, "#ff7a2a")):
+        c.put(x, 24, hex_color(col))
+        c.put(x, 23, hex_color("#ffd060"))
+    c.rect(6, 25, 19, 3, STONE[2])
+    c.outline(OUTLINE)
+    return c, (15, 27)
+
+
+def build_gathering(root: pathlib.Path) -> None:
+    items = {
+        "gather_wood": gather_wood(), "gather_stone": gather_stone(), "gather_fish": gather_fish(),
+        "gather_healroot": _plant([hex_color("#ffd0c0"), hex_color("#e05a4a")]),
+        "gather_bluebell": _plant([hex_color("#e0f0ff"), hex_color("#5a8ae0")]),
+        "station_kitchen": kitchen(),
+    }
+    manifest_path = root / "assets" / "art_manifest.json"
+    art = json.loads(manifest_path.read_text())
+    for name, (canvas, origin) in items.items():
+        rel = f"world/{name}.png"
+        canvas.save(root / "assets" / rel)
+        art[rel] = {"size": [canvas.w, canvas.h], "origin": list(origin)}
+    manifest_path.write_text(json.dumps(dict(sorted(art.items())), indent=1) + "\n")
+    print("  gathering: " + ", ".join(items))
