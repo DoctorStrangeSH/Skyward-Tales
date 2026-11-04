@@ -83,7 +83,7 @@ func _add_ambient() -> void:
 	air.scale_amount_min = 1.0
 	air.scale_amount_max = 2.0 if is_night() else 1.0
 	var gradient := Gradient.new()
-	if str(terrain.get("style", "")) == "sky":
+	if str(terrain.get("style", "")) in ["sky", "spires"]:
 		# Wind streaks drifting across the island.
 		air.direction = Vector2.RIGHT
 		air.spread = 8.0

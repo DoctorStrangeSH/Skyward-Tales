@@ -61,4 +61,21 @@ SKY = {
     "flowers": [ramp("#ffffff", "#d8e0f0"), ramp("#ffd6e8", "#e08aac"), ramp("#fff2a8", "#e0b84a")],
 }
 
-STYLES = {"day": DAY, "night": NIGHT, "cave": CAVE, "sky": SKY}
+SPIRES = {
+    # Golden hour high above the clouds: warm stone needles, wind-combed grass.
+    "grass": ramp("#2a3a4a", "#3a5a5a", "#4f7a62", "#76966a", "#a6b476", "#d6d08a", "#f6eaa8"),
+    "dirt": ramp("#5a3e4a", "#7a5a5a", "#9a7a6a", "#bc9a80", "#dabca0", "#f2dcc0"),
+    "water": ramp("#2a3a6a", "#3a5a90", "#5a82b8", "#86aad8", "#b8d0ee", "#f0f6ff"),
+    "stone": ramp("#3a2a3e", "#5a4250", "#7e5e64", "#a6827a", "#ccaa96", "#f0d8c0"),
+    "leaf": ramp("#4a3a2a", "#6a5232", "#8e6e3a", "#b8924a", "#dab65e", "#f2d67a", "#fff0b0"),
+    "bark": ramp("#3a2a3e", "#5a4250", "#7e5e64", "#a6827a", "#ccaa96"),
+    "moss": ramp("#3a5a5a", "#4f7a62", "#76966a", "#a6b476"),
+    "shadow": hex_color("#2a1a3a", 90),
+    "outline": hex_color("#2a1c30"),
+    "sky": ramp("#e8a08a", "#f0b89a", "#f6d0b0", "#fae4c8"),
+    "cloud": ramp("#b88aa0", "#d0a4b4", "#e6c0c8", "#f4d8d8", "#faeae4", "#fff6f0", "#ffffff"),
+    "flowers": [ramp("#fff2c0", "#e0b84a"), ramp("#f6c0d0", "#c07a9a"), ramp("#ffffff", "#c8c0d8")],
+}
+
+STYLES = {"day": DAY, "night": NIGHT, "cave": CAVE, "sky": SKY, "spires": SPIRES}
+ISLAND_STYLES = ("sky", "spires")

@@ -306,9 +306,107 @@
         {
           "speaker": "cartographer",
           "text": "Я нанесу их на карту. Мы их найдём, {hero}."
+        }
+      ]
+    },
+    "spires_departure": {
+      "steps": [
+        {
+          "speaker": "archivist",
+          "text": "Мост к Ветреным шпилям держится, но буря там не утихает."
         },
         {
+          "speaker": "archivist",
+          "text": "Три руны ветра сбились с ритма. Успокойте их — и путь к опоре откроется."
+        },
+        {
+          "speaker": "cartographer",
+          "text": "Восточный край острова. Я уже вижу шпили на карте."
+        }
+      ]
+    },
+    "spires_arrival": {
+      "steps": [
+        {
           "effect": "title",
+          "text": "Ветреные шпили"
+        },
+        {
+          "text": "Каменные иглы режут облака. Ветер воет, как живой."
+        },
+        {
+          "speaker": "cartographer",
+          "text": "Держись ближе, {hero}. Здесь даже воздух охотится."
+        }
+      ]
+    },
+    "mira_runes": {
+      "steps": [
+        {
+          "speaker": "cartographer",
+          "text": "Слышишь? Буря стихла — руны поют в лад."
+        },
+        {
+          "speaker": "cartographer",
+          "text": "Карта показывает сердце бури на вершине. Опора там."
+        },
+        {
+          "speaker": "hero",
+          "text": "Тогда наверх."
+        }
+      ]
+    },
+    "storm_hint": {
+      "steps": [
+        {
+          "text": "На северной вершине бьётся сердце бури — его видно даже сквозь облака."
+        }
+      ]
+    },
+    "tempest_vail": {
+      "steps": [
+        {
+          "speaker": "vail",
+          "text": "Снова ты, {hero}. Эта опора держит небо силой. Я лишь отпускаю его."
+        },
+        {
+          "speaker": "hero",
+          "text": "Ты отпускаешь острова на головы людей."
+        },
+        {
+          "speaker": "cartographer",
+          "text": "Вейл, остановись! Ориэн всё рассказал."
+        },
+        {
+          "speaker": "vail",
+          "text": "Тогда пусть рассудит буря."
+        },
+        {
+          "effect": "flash"
+        },
+        {
+          "text": "Вихрь сжимается в каменного великана. Буревой колосс открывает глаза."
+        }
+      ]
+    },
+    "spire_restored": {
+      "steps": [
+        {
+          "text": "Сердце бури стихает. Ветер ложится ровно, как дыхание."
+        },
+        {
+          "speaker": "cartographer",
+          "text": "Вторая опора… На карте зажглась ещё одна звезда."
+        },
+        {
+          "speaker": "hero",
+          "text": "Осталось пять."
+        },
+        {
+          "speaker": "cartographer",
+          "text": "И Вейл всегда на шаг впереди. Он знает, куда мы идём."
+        },
+        {
           "text": "Продолжение следует…"
         }
       ]
@@ -339,6 +437,16 @@
       "after": "main_bridge",
       "start": "main_archive",
       "scene": "archive_hint"
+    },
+    {
+      "after": "main_archive",
+      "start": "main_spires",
+      "scene": "spires_departure"
+    },
+    {
+      "after": "main_spires",
+      "start": "main_tempest",
+      "scene": "storm_hint"
     }
   ],
   "on_enter": [
@@ -352,6 +460,11 @@
       "flag": "arrived_island",
       "scene": "island_arrival",
       "completes": "main_bridge"
+    },
+    {
+      "region": "wind_spires",
+      "flag": "arrived_spires",
+      "scene": "spires_arrival"
     }
   ],
   "bosses": {
@@ -364,6 +477,11 @@
       "completes": "main_echo",
       "scene": "act1_finale",
       "title": "Конец первого акта"
+    },
+    "tempest": {
+      "completes": "main_tempest",
+      "scene": "spire_restored",
+      "title": "Вторая опора восстановлена"
     }
   }
 }

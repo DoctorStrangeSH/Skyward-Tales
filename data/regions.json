@@ -703,6 +703,14 @@
         "position": [640, 812],
         "arrival": [1000, 640],
         "label": "Спуск по мосту света"
+      },
+      {
+        "target": "wind_spires",
+        "position": [1196, 470],
+        "arrival": [150, 470],
+        "label": "Мост к Ветреным шпилям",
+        "requires_quest": "main_archive",
+        "locked_message": "Мост к шпилям мерцает и гаснет. Сначала поговорите с архивариусом."
       }
     ],
     "secrets": {},
@@ -732,6 +740,11 @@
           [600, 600],
           [420, 640],
           [300, 560]
+        ],
+        [
+          [880, 430],
+          [1060, 470],
+          [1280, 470]
         ]
       ],
       "ponds": [
@@ -770,6 +783,148 @@
         }
       ],
       "bushes": []
+    }
+  },
+  "wind_spires": {
+    "name": "Ветреные шпили",
+    "map_color": [0.86, 0.66, 0.62],
+    "herb_quest": "main_spires",
+    "npcs": [],
+    "chests": [
+      {
+        "id": "spires_ledge",
+        "position": [300, 250],
+        "gold": 140,
+        "item": "mana_potion",
+        "amount": 2
+      },
+      {
+        "id": "spires_nest",
+        "position": [1120, 640],
+        "gold": 110,
+        "item": "health_potion",
+        "amount": 3
+      }
+    ],
+    "herbs": [
+      {
+        "id": "wind_rune",
+        "name": "Руна ветра",
+        "position": [360, 640]
+      },
+      {
+        "id": "wind_rune",
+        "name": "Руна ветра",
+        "position": [700, 520]
+      },
+      {
+        "id": "wind_rune",
+        "name": "Руна ветра",
+        "position": [1040, 470]
+      }
+    ],
+    "story_objects": [
+      {
+        "id": "storm_heart",
+        "name": "Сердце бури",
+        "quest": "main_tempest",
+        "scene": "tempest_vail",
+        "position": [760, 230],
+        "spawns": {
+          "kind": "tempest",
+          "position": [760, 300]
+        }
+      }
+    ],
+    "enemies": [
+      {
+        "kind": "wisp",
+        "position": [420, 520]
+      },
+      {
+        "kind": "wisp",
+        "position": [620, 640]
+      },
+      {
+        "kind": "wisp",
+        "position": [880, 560],
+        "elite": "swift"
+      },
+      {
+        "kind": "wisp",
+        "position": [960, 380]
+      },
+      {
+        "kind": "sentinel",
+        "position": [560, 330]
+      }
+    ],
+    "gates": [
+      {
+        "target": "sky_island",
+        "position": [84, 470],
+        "arrival": [1150, 470],
+        "label": "Мост к Небесному острову"
+      }
+    ],
+    "secrets": {},
+    "terrain": {
+      "size": [1280, 864],
+      "style": "spires",
+      "edge_margin": 64,
+      "trails": [
+        [
+          [0, 470],
+          [200, 470],
+          [360, 600],
+          [560, 560],
+          [700, 520],
+          [880, 470],
+          [1040, 470]
+        ],
+        [
+          [700, 520],
+          [740, 380],
+          [760, 260]
+        ],
+        [
+          [360, 600],
+          [300, 300]
+        ],
+        [
+          [880, 470],
+          [1100, 620]
+        ]
+      ],
+      "ponds": [],
+      "trees": [
+        [200, 200],
+        [150, 330],
+        [480, 170],
+        [560, 720],
+        [860, 720],
+        [1000, 180],
+        [1160, 300],
+        [1180, 760],
+        [260, 760],
+        [460, 420],
+        [920, 640],
+        [620, 420],
+        [1080, 560],
+        [380, 300]
+      ],
+      "props": [],
+      "blockers": [],
+      "bushes": [
+        [250, 560],
+        [640, 600],
+        [820, 420],
+        [1000, 520],
+        [470, 700],
+        [300, 420],
+        [900, 300],
+        [560, 250]
+      ]
     }
   }
 }

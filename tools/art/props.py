@@ -1,6 +1,8 @@
 """Large scenery props drawn in 3/4 top-down view (top faces lighter, fronts darker)."""
 from __future__ import annotations
 
+import math
+
 import random
 
 from pixel import Canvas
@@ -241,9 +243,10 @@ def herb(kind: str) -> tuple[Canvas, tuple[int, int]]:
     glow = {"moonleaf": ramp("#f4fff0", "#c8f0d8", "#7fcfae", "#3f8f7a"),
             "spirit_blossom": ramp("#f4ffff", "#9cfff0", "#3fd6d0", "#1f8a8a"),
             "memory_crystal": ramp("#fffbe0", "#fff2a8", "#ffd45c", "#c88a2a"),
+            "wind_rune": ramp("#ffffff", "#c8f4ff", "#7ad0f0", "#3a7ab0"),
             "echo_crystal": ramp("#f6f0ff", "#d0b8ff", "#9a7aff", "#5a3ac0")}[kind]
     stem = ramp("#8fd862", "#4fa04e", "#2a6a44")
-    if kind != "echo_crystal":
+    if kind not in ("echo_crystal", "memory_crystal", "wind_rune"):
         for y in range(9, 19):
             c.put(10, y, stem[1] if y % 3 else stem[2])
     # Halo.
@@ -252,7 +255,19 @@ def herb(kind: str) -> tuple[Canvas, tuple[int, int]]:
             d = ((x - 10) / 9) ** 2 + ((y - 7) / 7) ** 2
             if d <= 1:
                 c.blend(x, y, glow[2][:3] + (int(45 * (1 - d)),))
-    if kind in ("echo_crystal", "memory_crystal"):
+    if kind == "wind_rune":
+        # Weathered standing stone with a glowing wind spiral.
+        stone = ramp("#f0d8c0", "#ccaa96", "#a6827a", "#7e5e64")
+        for y in range(3, 19):
+            half = 4 if y > 5 else 4 - (6 - y)
+            for x in range(10 - half, 10 + half + 1):
+                c.put(x, y, stone[0] if x < 8 else (stone[1] if x < 12 else stone[2]))
+        for k in range(14):
+            ang = k * 0.55
+            r = 0.4 + k * 0.22
+            c.put(round(10 + math.cos(ang) * r), round(10 + math.sin(ang) * r), glow[1] if k < 10 else glow[0])
+        c.put(10, 10, glow[0])
+    elif kind in ("echo_crystal", "memory_crystal"):
         # Three faceted shards growing from a stone.
         for sx, top, w in ((10, 2, 2), (6, 8, 1), (14, 7, 1)):
             for y in range(top, 18):
@@ -575,10 +590,10 @@ def sky_shard() -> tuple[Canvas, tuple[int, int]]:
     return c, (15, 23)
 
 
-def rune_circle() -> tuple[Canvas, tuple[int, int]]:
-    """Glowing rune ring on the floor in front of the crystal altar."""
+def rune_circle(colors=("#f6f0ff", "#d0b8ff", "#9a7aff", "#5a3ac0")) -> tuple[Canvas, tuple[int, int]]:
+    """Glowing rune ring on the floor (crystal altar, storm heart)."""
     c = Canvas(40, 18)
-    glow = ramp("#f6f0ff", "#d0b8ff", "#9a7aff", "#5a3ac0")
+    glow = ramp(*colors)
     for y in range(18):
         for x in range(40):
             d = ((x + 0.5 - 20) / 19) ** 2 + ((y + 0.5 - 9) / 8) ** 2

@@ -20,7 +20,7 @@ import flora  # noqa: E402
 import icons  # noqa: E402
 import props  # noqa: E402
 import terrain  # noqa: E402
-from palettes import STYLES  # noqa: E402
+from palettes import ISLAND_STYLES, STYLES  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 WORLD = ROOT / "assets" / "world"
@@ -49,12 +49,14 @@ def build_world() -> None:
         print(f"region {region_id} ({style})")
         save(terrain.render_ground(t, pal, seed=100 + index * 17), f"world/{region_id}_ground.png")
         w, h = t["size"]
-        border_pal = dict(pal, leaf=pal["cloud"], outline=pal["cloud"][0]) if style == "sky" else pal
+        border_pal = dict(pal, leaf=pal["cloud"], outline=pal["cloud"][0]) if style in ISLAND_STYLES else pal
         save(flora.canopy_border(w, h, border_pal, seed=200 + index, glow=glow), f"world/{region_id}_canopy.png")
         for variant in range(3):
             size = "large" if variant != 2 else "small"
             if style == "cave":
                 canvas, origin = flora.crystal_cluster(300 + index * 10 + variant, pal, size)
+            elif style == "spires":
+                canvas, origin = flora.stone_spire(300 + index * 10 + variant, pal, size)
             else:
                 canvas, origin = flora.tree(300 + index * 10 + variant, pal, size, glow=glow)
             save(canvas, f"world/{style}_tree_{variant}.png", origin)
@@ -90,6 +92,8 @@ def build_characters() -> None:
     save(creatures.build_sheet(creatures.bat, 32), "sprites/enemies/cave_bat_8dir.png")
     save(creatures.build_sheet(creatures.echo_warden, 48), "sprites/enemies/echo_warden_8dir.png")
     save(creatures.build_sheet(creatures.sentinel, 32), "sprites/enemies/sky_sentinel_8dir.png")
+    save(creatures.build_sheet(creatures.wisp, 32), "sprites/enemies/wind_wisp_8dir.png")
+    save(creatures.build_sheet(creatures.tempest, 48), "sprites/enemies/tempest_colossus_8dir.png")
     save(creatures.build_sheet(creatures.projectile("fire"), 32), "sprites/magic/fireball_8dir.png")
     save(creatures.build_sheet(creatures.projectile("frost"), 32), "sprites/magic/frostbolt_8dir.png")
     save(creatures.build_sheet(creatures.projectile("lightning"), 32), "sprites/magic/chain_lightning_8dir.png")
@@ -103,7 +107,8 @@ def build_props() -> None:
         "ore_node": props.ore_node(), "supply_crate": props.crate(), "map_fragment": props.scroll(),
         "health_potion": props.potion("red"), "mana_potion": props.potion("blue"),
         "wolf_pelt": props.pelt(), "relic": props.treasure("relic"), "pouch": props.treasure("pouch"),
-        "gate_day": props.gate(False), "gate_night": props.gate(True), "gate_cave": props.cave_gate(), "gate_sky": props.sky_gate(),
+        "gate_day": props.gate(False), "gate_night": props.gate(True), "gate_cave": props.cave_gate(), "gate_sky": props.sky_gate(), "gate_spires": props.sky_gate(),
+        "wind_rune": props.herb("wind_rune"), "storm_heart": props.rune_circle(("#ffffff", "#c8f4ff", "#7ad0f0", "#3a7ab0")),
         "memory_crystal": props.herb("memory_crystal"),
         "echo_crystal": props.herb("echo_crystal"), "sky_shard": props.sky_shard(), "altar_heart": props.rune_circle(),
         "marker_quest": props.marker("quest"), "marker_ready": props.marker("ready"),

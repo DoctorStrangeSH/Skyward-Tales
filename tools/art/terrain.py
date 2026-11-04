@@ -96,7 +96,7 @@ def render_ground(terrain: dict, pal: dict, seed: int) -> Canvas:
         outer = ndimage.binary_dilation(water_mask, iterations=3) & land & ~shore & ~path
         img[outer] = grass[1]
 
-    sky = terrain.get("style") == "sky"
+    sky = terrain.get("style") in ("sky", "spires")
     island = None
     if sky:
         island = _island_mask(w, h, int(terrain.get("edge_margin", 64)), seed)
@@ -113,7 +113,9 @@ def render_ground(terrain: dict, pal: dict, seed: int) -> Canvas:
         for i in range(length):
             if water_mask[y, min(w - 1, x + i)]:
                 canvas.put(x + i, y, water[4] if i else water[5])
-    if not night:
+    if not len(water_points):
+        pass
+    elif not night:
         for _ in range(len(water_points) // 1800 + 2):
             y, x = water_points[rng.randrange(len(water_points))]
             if water_depth[y, x] < 7:

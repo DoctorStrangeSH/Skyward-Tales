@@ -459,3 +459,77 @@ def sentinel(facing: str, frame: int) -> Canvas:
     b.dot(16, cy + 10 + (frame % 2), hex_color("#9cfff0"))
     b.outline(hex_color("#22203a"))
     return b.canvas()
+
+
+# --- Wind Spires: wisp and the Tempest Colossus ---------------------------------
+
+WIND = r4("#ffffff", "#d8f4ff", "#94d0ec", "#4a8ab8")
+STORM = r4("#eef2fc", "#b4bedc", "#7e88b0", "#4e5478")
+SPARK = r4("#ffffff", "#fff6a8", "#ffd45c", "#d99a2e")
+
+
+def wisp(facing: str, frame: int) -> Canvas:
+    """Swirling wind spirit: a round head trailing a spiral tail."""
+    b = Body(32)
+    bob = [0, -1, -2, -1][frame]
+    b.shadow(16, 28, 6, 1.6, 55)
+    side = facing == "right"
+    back = facing in ("up", "up_right")
+    cy = 14 + bob
+    tail_dir = -1 if side else 0
+    for k in range(5):
+        t = k / 4
+        ang = frame * 0.9 + k * 1.2
+        tx = 16 + tail_dir * k * 2.2 + math.cos(ang) * (3 - t * 2)
+        ty = cy + 5 + k * 2.2
+        b.part(b.ellipse(tx, ty, 3.4 - t * 2.2, 2.4 - t * 1.4), WIND)
+    b.part(b.ellipse(16 + (1 if side else 0), cy, 6, 5.5), WIND, sphere=(14, cy - 3, 7))
+    for k in range(3):
+        ang = frame * 1.3 + k * 2.1
+        b.dot(16 + math.cos(ang) * 9, cy + math.sin(ang) * 4, WIND[0])
+    if not back:
+        ex = 16 + (3 if side else (1 if facing == "down_right" else 0))
+        for x in ([ex - 2, ex + 2] if not side else [ex + 1]):
+            b.dot(x, cy - 1, hex_color("#2a4a7a"))
+            b.dot(x, cy, hex_color("#2a4a7a"))
+    b.outline(hex_color("#1e2a4a"))
+    return b.canvas()
+
+
+def tempest(facing: str, frame: int) -> Canvas:
+    """Marble giant crowned with a storm cloud, a lightning core in its chest."""
+    b = Body(48)
+    bob = [0, -1, -1, 0][frame]
+    b.shadow(24, 44, 14, 3.2, 85)
+    side = facing == "right"
+    back = facing in ("up", "up_right")
+    cy = 26 + bob
+    w = 8 if side else 11
+    # Floating fists.
+    for sx in ((-15, 15) if not side else (-11,)):
+        b.part(b.ellipse(24 + sx, cy + 6 - (bob if sx > 0 else 0), 4.5, 5), MARBLE, sphere=(22 + sx, cy + 3, 6))
+        b.part(b.rect(24 + sx - 4, cy + 1, 24 + sx + 3, cy + 2), BRASS)
+    b.part(b.ellipse(24, cy + 4, w, 12), MARBLE, sphere=(20, cy - 2, 15))
+    b.part(b.rect(24 - w, cy - 6, 24 + w - 1, cy - 4), BRASS)
+    b.part(b.ellipse(24 + (2 if side else 0), cy - 11, 6.5, 6), MARBLE, sphere=(22, cy - 14, 7))
+    # Storm-cloud crown.
+    for k, (dx, dy, r) in enumerate(((-7, -18, 5), (0, -21, 6), (7, -18, 5), (-3, -15, 4), (4, -15, 4))):
+        b.part(b.ellipse(24 + dx + math.sin(frame + k) * 0.8, cy + dy, r, r * 0.8), STORM, sphere=(20, cy - 24, 10))
+    if not back:
+        core_x = 24 + (3 if side else (2 if facing == "down_right" else 0))
+        b.part(b.ellipse(core_x, cy + 3, 3.4, 3.8), SPARK, separate=False)
+        b.dot(core_x - 1, cy + 2, SPARK[0])
+        for k in range(3):
+            b.dot(core_x + [-1, 1, 0][k] * (frame % 2 + 1), cy + 7 + k, SPARK[1])
+        eyes = [core_x - 3, core_x + 2] if not side else [core_x + 2]
+        for ex in eyes:
+            b.dot(ex, cy - 11, hex_color("#9cf0ff"))
+            b.dot(ex + 1, cy - 11, hex_color("#ffffff"))
+    else:
+        b.part(b.rect(22, cy - 2, 25, cy + 10), BRASS)
+    if frame in (1, 3):
+        x = 24 + (8 if frame == 1 else -9)
+        for k in range(6):
+            b.dot(x + (k % 2), cy - 16 + k * 2, SPARK[0])
+    b.outline(hex_color("#22203a"))
+    return b.canvas()
