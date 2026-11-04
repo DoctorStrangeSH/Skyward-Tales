@@ -144,7 +144,7 @@ func take_damage(amount: int) -> void:
 	if dodge_time_left > 0.0 or health <= 0:
 		return
 	var previous_health: int = health
-	health = maxi(0, health - maxi(1, amount - get_armor()))
+	health = maxi(0, health - maxi(1, roundi(float(amount - get_armor()) * (1.0 - get_damage_reduction()))))
 	if health < previous_health:
 		hurt.emit(previous_health - health)
 		if visual != null and not visual.is_playing_action():
@@ -228,7 +228,7 @@ func get_dodge_cooldown() -> float:
 	return dodge_cooldown * maxf(0.5, 1.0 - 0.02 * float(get_stat("agility")))
 
 func get_move_speed() -> float:
-	return move_speed * (1.0 + minf(0.25, 0.01 * float(get_stat("agility")))) * (1.0 + buff_value("speed"))
+	return move_speed * (1.0 + minf(0.25, 0.01 * float(get_stat("agility")))) * (1.0 + buff_value("speed")) * (1.08 if has_passive("fleet") else 1.0)
 
 func get_item_name(item_id: String) -> String:
 	return str(get_item_definition(item_id).get("name", item_id))
@@ -249,10 +249,62 @@ func _equipped_stat(stat: String) -> int:
 func get_melee_damage() -> int:
 	var damage := 10.0 + 2.0 * float(level - 1) + float(_equipped_stat("melee")) + float(get_stat("power")) * 0.5
 	damage += float(talents.get("blade_mastery", 0)) * 3.0
+	if has_passive("steady_hand"):
+		damage *= 1.1
 	return int(round(damage * (1.0 + buff_value("power"))))
 
 func get_armor() -> int:
-	return _equipped_stat("armor") + int(buff_value("armor"))
+	return _equipped_stat("armor") + int(buff_value("armor")) + 2 * int(talents.get("iron_skin", 0)) + (3 if has_passive("toughness") else 0)
+
+# --- Active skills and passives (data/skills.json) ---------------------------
+
+const SKILL_SLOT_COUNT := 4
+## Hotbar (keys 1–4): active skill or spell ids, "" for an empty slot.
+var skill_slots: Array = ["lunge", "shockwave", "war_cry", "blade_wave"]
+
+static func skill_catalog() -> Dictionary:
+	return GameCatalogs.shared().skills
+
+## Passives switch on by themselves when the hero reaches their level.
+func has_passive(passive_id: String) -> bool:
+	var definition: Dictionary = skill_catalog().get("passive", {}).get(passive_id, {})
+	return not definition.is_empty() and level >= int(definition.get("level", 1))
+
+## Chance (0..1) that a sword hit deals double damage.
+func get_crit_chance() -> float:
+	return (0.05 if has_passive("keen_eye") else 0.0) + 0.05 * float(talents.get("keen_edge", 0))
+
+## Part of incoming damage that is ignored (Unbreakable).
+func get_damage_reduction() -> float:
+	return 0.15 if has_skill("unbreakable") else 0.0
+
+## Health restored by each sword hit.
+func get_melee_lifesteal() -> int:
+	return (1 if has_passive("lifeblood") else 0) + int(talents.get("bloodthirst", 0))
+
+## Gold multiplier from Treasure Sense.
+func get_gold_multiplier() -> float:
+	return 1.15 if has_passive("treasure_sense") else 1.0
+
+## Cooldown multiplier of the hotbar skills (Battle Rhythm).
+func get_skill_cooldown_multiplier() -> float:
+	return maxf(0.6, 1.0 - 0.08 * float(talents.get("battle_rhythm", 0)))
+
+## Puts a skill into a hotbar slot; a skill already on the bar swaps places.
+func assign_skill(slot_index: int, skill_id: String) -> bool:
+	if slot_index < 0 or slot_index >= SKILL_SLOT_COUNT:
+		return false
+	while skill_slots.size() < SKILL_SLOT_COUNT:
+		skill_slots.append("")
+	if not skill_id.is_empty() and not skill_catalog().get("active", {}).has(skill_id):
+		return false
+	var previous := str(skill_slots[slot_index])
+	var existing := skill_slots.find(skill_id)
+	if existing >= 0 and not skill_id.is_empty():
+		skill_slots[existing] = previous
+	skill_slots[slot_index] = skill_id
+	stats_changed.emit()
+	return true
 
 # --- Food and elixir buffs ---------------------------------------------------
 

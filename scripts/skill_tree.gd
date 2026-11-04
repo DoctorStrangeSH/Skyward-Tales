@@ -7,11 +7,14 @@ class_name SkillTree
 ## first; tier-3 skills also cost one "Печать Неба" (sky_seal) from bosses.
 
 const BRANCHES := [
-	{"id": "fire", "name": "Огонь", "color": Color(1.0, 0.6, 0.3)},
-	{"id": "ice", "name": "Лёд", "color": Color(0.55, 0.85, 1.0)},
-	{"id": "lightning", "name": "Молния", "color": Color(0.8, 0.65, 1.0)},
-	{"id": "wanderer", "name": "Странник", "color": Color(0.7, 0.95, 0.6)},
+	{"id": "blade", "name": "Клинок", "group": "warrior", "color": Color(1.0, 0.82, 0.5)},
+	{"id": "guard", "name": "Стойкость", "group": "warrior", "color": Color(0.85, 0.7, 0.6)},
+	{"id": "wanderer", "name": "Странник", "group": "warrior", "color": Color(0.7, 0.95, 0.6)},
+	{"id": "fire", "name": "Огонь", "group": "mage", "color": Color(1.0, 0.6, 0.3)},
+	{"id": "ice", "name": "Лёд", "group": "mage", "color": Color(0.55, 0.85, 1.0)},
+	{"id": "lightning", "name": "Молния", "group": "mage", "color": Color(0.8, 0.65, 1.0)},
 ]
+const GROUPS := [{"id": "warrior", "name": "Воин"}, {"id": "mage", "name": "Маг"}]
 const SEAL_ITEM := "sky_seal"
 
 static func definitions() -> Dictionary:

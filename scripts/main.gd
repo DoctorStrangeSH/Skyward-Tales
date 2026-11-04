@@ -71,6 +71,7 @@ var spell_definitions: Dictionary = {}
 var region_layouts: Dictionary = {}
 var cast_cooldown_remaining: float = 0.0
 var selected_spell_id: String = "fireball"
+var skills: CombatSkills
 var cast_cooldown_total: float = 0.0
 var defeated_enemies: int = 0
 var save_path: String = SAVE_SCRIPT.SAVE_PATH
@@ -100,6 +101,7 @@ var _shake_strength: float = 0.0
 
 func _ready() -> void:
 	loot_rng.randomize()
+	crit_rng.randomize()
 	var catalogs: GameCatalogs = GameCatalogs.new()
 	spell_definitions = catalogs.spells
 	talent_definitions = catalogs.talents
@@ -115,7 +117,8 @@ func _ready() -> void:
 		_refresh_dynamic_props.call_deferred()
 		if quest_id == "main_guardian" and director != null and director.story_mode() and not director.has_flag("magic_unlocked"):
 			director.set_flag("magic_unlocked")
-			hud.show_message("Илара пробудила в вас магию неба! ПКМ — заклинание, 1/2/3 — выбор.", 5.0)
+			_place_spell_on_hotbar("fireball")
+			hud.show_message("Илара пробудила в вас магию неба! Огненный шар — на панели навыков, ПКМ — заклинание. C — навыки.", 5.0)
 			_update_spell_hud()
 		request_autosave()
 		if director != null:
@@ -130,6 +133,10 @@ func _ready() -> void:
 	crafting = CraftingMenu.new(self)
 	story = StoryScene.new(self)
 	director = StoryDirector.new(self)
+	skills = CombatSkills.new()
+	skills.name = "CombatSkills"
+	skills.game = self
+	add_child(skills)
 	player = PLAYER_SCENE.instantiate() as PlayerCharacter
 	add_child(player)
 	player.global_position = GameSaveState.DEFAULT_PLAYER_POSITION
@@ -152,6 +159,13 @@ func _ready() -> void:
 	add_child(interact_prompt)
 	hud.inventory_use_requested.connect(_on_inventory_use)
 	hud.inventory_unequip_requested.connect(_on_inventory_unequip)
+	hud.hero_unequip_requested.connect(func(slot: String) -> void:
+		_on_inventory_unequip(slot)
+		hud.refresh_hero_panel(player, skills))
+	hud.hero_assign_requested.connect(func(index: int, skill_id: String) -> void:
+		if player.assign_skill(index, skill_id):
+			hud.update_hotbar(skills.hotbar_entries())
+		hud.refresh_hero_panel(player, skills))
 	hud.pause_save_requested.connect(save_game)
 	hud.pause_load_requested.connect(load_game)
 	hud.pause_menu_requested.connect(_go_to_title)
@@ -248,6 +262,7 @@ func _process(delta: float) -> void:
 	if player == null or hud == null or game_over:
 		return
 	_update_spell_hud()
+	hud.update_hotbar(skills.hotbar_entries())
 	director.update()
 	if not get_tree().paused:
 		crafting.tick(delta)
@@ -339,6 +354,8 @@ func _handle_key(keycode: Key) -> bool:
 			open_map()
 			return true
 		KEY_K when not world_blocked:
+			if hud.hero_visible:
+				hud.toggle_hero_panel(player, skills)
 			if hud.skills_visible:
 				hud.toggle_skill_tree(player)
 			if hud.inventory_open:
@@ -347,7 +364,18 @@ func _handle_key(keycode: Key) -> bool:
 				hud.toggle_journal(quests)
 			hud.toggle_bestiary(bestiary_entries, discovered_enemies)
 			return true
+		KEY_C when not world_blocked:
+			if hud.hero_visible:
+				hud.toggle_hero_panel(player, skills)
+				return true
+			if hud.inventory_open:
+				hud.toggle_inventory(player)
+			_close_books()
+			hud.toggle_hero_panel(player, skills)
+			return true
 		KEY_T when not world_blocked:
+			if hud.hero_visible:
+				hud.toggle_hero_panel(player, skills)
 			if hud.inventory_open:
 				hud.toggle_inventory(player)
 			if hud.bestiary_visible:
@@ -357,6 +385,8 @@ func _handle_key(keycode: Key) -> bool:
 			hud.toggle_skill_tree(player)
 			return true
 		KEY_J when not world_blocked:
+			if hud.hero_visible:
+				hud.toggle_hero_panel(player, skills)
 			if hud.skills_visible:
 				hud.toggle_skill_tree(player)
 			if hud.inventory_open:
@@ -388,12 +418,11 @@ func _handle_key(keycode: Key) -> bool:
 			_use_consumable("health_potion")
 		KEY_R:
 			_use_consumable("mana_potion")
-		KEY_1:
-			select_spell("fireball")
-		KEY_2:
-			select_spell("frostbolt")
-		KEY_3:
-			select_spell("chain_lightning")
+		KEY_1, KEY_2, KEY_3, KEY_4:
+			if not world_blocked:
+				skills.use_slot(keycode - KEY_1)
+				hud.update_hotbar(skills.hotbar_entries())
+			return true
 	return false
 
 # --- Regions -------------------------------------------------------------
@@ -1095,6 +1124,7 @@ func _on_chest_opened(id: String, gold: int, item: String, amount: int) -> void:
 	opened_chests[id] = true
 	GameAudio.play("chest", -2.0, 0.0)
 	latest_cache_narrative = id == CARTOGRAPHER_CACHE_ID
+	gold = roundi(float(gold) * player.get_gold_multiplier())
 	player.add_gold(gold)
 	var has_item := not item.is_empty() and amount > 0
 	if has_item:
@@ -1310,7 +1340,7 @@ func _update_sword(delta: float) -> void:
 		_combo_step = 0
 	if _attack_holding and not _charging:
 		_attack_held += delta
-		if _attack_held >= CHARGE_TIME and player.health > 0:
+		if _attack_held >= CHARGE_TIME - 0.15 * float(player.talents.get("whirl_master", 0)) and player.health > 0:
 			_charging = true
 			player.visual.play_named("charge", 30.0)
 			Vfx.sparkle(self, player.global_position + Vector2(0, -8))
@@ -1322,12 +1352,19 @@ func sword_slash() -> bool:
 	var direction := _aim_direction()
 	player.facing = direction
 	player.visual.set_direction_vector(direction)
-	var anim := "slash1" if _combo_step == 0 else "slash2"
-	player.visual.play_named(anim, 0.28)
+	var finisher := _combo_step == 2
+	var anim := "spin" if finisher else ("slash1" if _combo_step == 0 else "slash2")
+	player.visual.play_named(anim, 0.36 if finisher else 0.28)
 	var damage := player.get_melee_damage() + (2 if _combo_step == 1 else 0)
-	var hits := _melee_hit(player.global_position, direction, SLASH_REACH, 75.0, damage, 110.0)
+	var hits := 0
+	if finisher:
+		# Blade Dance: the third swing is a full circle at double damage.
+		hits = _melee_hit(player.global_position, direction, SPIN_REACH, 360.0, damage * 2, 150.0)
+		_ring(player.global_position, SPIN_REACH, Color(1.0, 0.85, 0.5, 0.8))
+	else:
+		hits = _melee_hit(player.global_position, direction, SLASH_REACH, 75.0, damage, 110.0)
 	GameAudio.play("dash" if hits == 0 else "hit", -4.0, 0.1)
-	_combo_step = (_combo_step + 1) % 2
+	_combo_step = (_combo_step + 1) % (3 if player.has_skill("blade_dance") else 2)
 	_combo_timer = COMBO_WINDOW
 	attack_cooldown = SLASH_COOLDOWN
 	return true
@@ -1337,7 +1374,7 @@ func sword_spin() -> bool:
 	if player.health <= 0:
 		return false
 	player.visual.play_named("spin", 0.42)
-	var hits := _melee_hit(player.global_position, Vector2.RIGHT, SPIN_REACH, 360.0, int(round(player.get_melee_damage() * 1.8)), 170.0)
+	var hits := _melee_hit(player.global_position, Vector2.RIGHT, SPIN_REACH, 360.0, int(round(player.get_melee_damage() * (1.8 + 0.45 * float(player.talents.get("whirl_master", 0))))), 170.0)
 	GameAudio.play("gust", -4.0, 0.05)
 	Vfx.burst(self, player.global_position, [Color(1, 1, 1), Color(0.8, 0.9, 1.0)], 14, 90.0)
 	if hits > 0:
@@ -1345,22 +1382,101 @@ func sword_spin() -> bool:
 	attack_cooldown = SLASH_COOLDOWN * 2.0
 	return true
 
-## Damages enemies within reach and the arc (degrees); returns how many.
-func _melee_hit(origin: Vector2, direction: Vector2, reach: float, arc: float, damage: int, push: float) -> int:
-	var hits := 0
+## Enemies struck by the latest sword hit (skills add effects to them).
+var last_hit_enemies: Array = []
+## Rolls for crits in tests; seeded randomly in play.
+var crit_rng := RandomNumberGenerator.new()
+
+func _living_enemies() -> Array:
+	var result: Array = []
 	for candidate in get_tree().get_nodes_in_group("enemies"):
 		var enemy := candidate as SlimeEnemy
-		if enemy == null or enemy.is_queued_for_deletion() or enemy.health <= 0:
-			continue
-		var offset := enemy.global_position - origin
+		if enemy != null and not enemy.is_queued_for_deletion() and enemy.health > 0:
+			result.append(enemy)
+	return result
+
+## One sword blow: crit roll, lifesteal, knockback.
+func _strike(enemy: SlimeEnemy, damage: int, push_direction: Vector2, push: float) -> void:
+	var crit := crit_rng.randf() < player.get_crit_chance()
+	if crit:
+		damage *= 2
+		Vfx.sparkle(self, enemy.global_position)
+	enemy.take_damage(damage)
+	enemy.apply_knockback(push_direction, push)
+	last_hit_enemies.append(enemy)
+	var heal := player.get_melee_lifesteal()
+	if heal > 0 and player.health < player.max_health:
+		player.health = mini(player.max_health, player.health + heal)
+		player.stats_changed.emit()
+
+## Damages enemies within reach and the arc (degrees); returns how many.
+func _melee_hit(origin: Vector2, direction: Vector2, reach: float, arc: float, damage: int, push: float) -> int:
+	last_hit_enemies.clear()
+	for enemy in _living_enemies():
+		var offset: Vector2 = enemy.global_position - origin
 		if offset.length() > reach + 8.0:
 			continue
 		if arc < 360.0 and offset.length() > 4.0 and rad_to_deg(absf(direction.angle_to(offset))) > arc * 0.5:
 			continue
-		enemy.take_damage(damage)
-		enemy.apply_knockback(offset.normalized() if offset.length() > 0.1 else direction, push)
-		hits += 1
-	return hits
+		_strike(enemy, damage, offset.normalized() if offset.length() > 0.1 else direction, push)
+	return last_hit_enemies.size()
+
+## Damages enemies in a strip in front of origin (lunge, blade wave).
+func _line_hit(origin: Vector2, direction: Vector2, length: float, width: float, damage: int, push: float) -> int:
+	last_hit_enemies.clear()
+	for enemy in _living_enemies():
+		var offset: Vector2 = enemy.global_position - origin
+		var along := offset.dot(direction)
+		if along < -6.0 or along > length:
+			continue
+		if absf(offset.cross(direction)) > width * 0.5 + 8.0:
+			continue
+		_strike(enemy, damage, direction, push)
+	return last_hit_enemies.size()
+
+## Short-lived white streak (lunge path, blade wave).
+func _streak(from: Vector2, to: Vector2, color: Color, width: float) -> void:
+	var line := Line2D.new()
+	line.points = PackedVector2Array([from, to])
+	line.width = width
+	line.default_color = color
+	line.z_index = 30
+	line.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	line.end_cap_mode = Line2D.LINE_CAP_ROUND
+	add_child(line)
+	var tween := line.create_tween()
+	tween.tween_property(line, "modulate:a", 0.0, 0.25)
+	tween.tween_callback(line.queue_free)
+
+## Expanding ring (shockwave, war cry, blade dance).
+func _ring(at: Vector2, radius: float, color: Color) -> void:
+	var line := Line2D.new()
+	var points := PackedVector2Array()
+	for index in 25:
+		points.append(Vector2.RIGHT.rotated(TAU * index / 24.0) * radius)
+	line.points = points
+	line.width = 2.0
+	line.default_color = color
+	line.z_index = 30
+	line.position = at
+	line.scale = Vector2(0.3, 0.3 * 0.6)
+	add_child(line)
+	var tween := line.create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(line, "scale", Vector2(1.0, 0.6), 0.25)
+	tween.tween_property(line, "modulate:a", 0.0, 0.3)
+	tween.chain().tween_callback(line.queue_free)
+
+## Puts a newly awakened spell into an empty or still-locked hotbar slot.
+func _place_spell_on_hotbar(spell_id: String) -> void:
+	if player.skill_slots.has(spell_id):
+		return
+	for index in player.skill_slots.size():
+		var current := str(player.skill_slots[index])
+		if current.is_empty() or not skills.lock_reason(current).is_empty():
+			player.assign_skill(index, spell_id)
+			return
+	player.assign_skill(PlayerCharacter.SKILL_SLOT_COUNT - 1, spell_id)
 
 # --- Magic -------------------------------------------------------------------
 
@@ -1516,6 +1632,8 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 	return true
 
 func _close_books() -> void:
+	if hud.hero_visible:
+		hud.toggle_hero_panel(player, skills)
 	if hud.skills_visible:
 		hud.toggle_skill_tree(player)
 	if hud.bestiary_visible:

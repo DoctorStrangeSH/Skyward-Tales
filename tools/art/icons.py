@@ -210,6 +210,7 @@ def build() -> dict[str, Canvas]:
         "skysteel_mail": armor(ramp("#e8f8ff", "#8ad0f0", "#3a7ab0"), GOLD),
         "recipe_steel_mail": scroll_icon(), "recipe_skysteel": scroll_icon(), "coal_sack": stone_icon(),
         "recipe_hearty_stew": scroll_icon(), "recipe_power_elixir": scroll_icon(), "recipe_swift_tonic": scroll_icon(),
+        **build_combat(),
     }
 
 
@@ -281,3 +282,162 @@ def scroll_icon() -> Canvas:
     c.put(10, 11, hex_color("#e05a4a"))
     c.outline(hex_color("#302423"))
     return c
+
+
+# --- Swords and skill icons ---------------------------------------------------
+
+def sword(blade, hilt=None, gem_color=None) -> Canvas:
+    c = Canvas(16, 16)
+    hilt = hilt or LEATHER
+    for i in range(9):
+        x, y = 5 + i, 10 - i
+        c.put(x, y, blade[0])
+        c.put(x + 1, y, blade[1])
+        c.put(x, y + 1, blade[2])
+    c.put(14, 1, blade[0])
+    for i in range(-2, 3):
+        c.put(5 + i, 10 + i, GOLD[1] if i else GOLD[0])
+    for i in range(3):
+        c.put(3 - i, 12 + i, hilt[1])
+        c.put(4 - i, 12 + i, hilt[2])
+    c.put(1, 14, GOLD[1])
+    if gem_color:
+        c.put(5, 10, hex_color(gem_color))
+    return _finish(c)
+
+
+def _sky_bg(c: Canvas, colors) -> None:
+    """Round badge behind a skill symbol so skills read apart from items."""
+    c.ellipse(7.5, 7.5, 7.2, 7.2, colors[2])
+    c.ellipse(7.0, 7.0, 6.0, 6.0, colors[1])
+
+
+def skill_icon(kind: str) -> Canvas:
+    c = Canvas(16, 16)
+    white = hex_color("#ffffff")
+    if kind == "lunge":
+        _sky_bg(c, ramp("#fff0c0", "#d08a3a", "#7a3e20"))
+        for i in range(10):
+            c.put(2 + i, 8, white if i > 4 else hex_color("#ffe0a0"))
+        for i in range(3):
+            c.put(11 + i, 8 - i + 1, white)
+            c.put(11 + i, 8 + i - 1, white)
+        c.hline(2, 6, 5, hex_color("#ffd090"))
+        c.hline(2, 6, 11, hex_color("#ffd090"))
+    elif kind == "shockwave":
+        _sky_bg(c, ramp("#f0e0c0", "#9a7a50", "#4e3a28"))
+        c.vline(7, 2, 9, white)
+        c.vline(8, 2, 9, hex_color("#c8d0d8"))
+        c.hline(5, 10, 9, GOLD[1])
+        for x in range(2, 14):
+            c.put(x, 12 - (1 if x in (4, 11) else 0), hex_color("#ffe0a0"))
+        for x, y in ((3, 10), (12, 10), (2, 13), (13, 13)):
+            c.put(x, y, white)
+    elif kind == "war_cry":
+        _sky_bg(c, ramp("#ffd0b0", "#c8402e", "#6a1e1e"))
+        for y, (a, b) in enumerate([(5, 6), (4, 8), (4, 9), (4, 9), (4, 8), (5, 6)]):
+            c.hline(a, b, 5 + y, white)
+        for i in range(3):
+            c.put(10 + i, 4 + i * 3, hex_color("#ffe060"))
+            c.put(11 + i, 4 + i * 3, hex_color("#ffe060"))
+    elif kind == "blade_wave":
+        _sky_bg(c, ramp("#e0f8ff", "#3a8ac0", "#1e3a6a"))
+        for y in range(3, 13):
+            dx = int(round(((y - 8) / 5.0) ** 2 * 4))
+            c.put(9 - dx, y, white)
+            c.put(8 - dx, y, hex_color("#bfefff"))
+        c.hline(2, 5, 8, hex_color("#9fdfff"))
+    elif kind == "slash":
+        _sky_bg(c, ramp("#f8f0e0", "#8a7a6a", "#3e3430"))
+        for i in range(9):
+            c.put(3 + i, 12 - i, white)
+            c.put(4 + i, 12 - i, hex_color("#c8d0d8"))
+    elif kind == "dodge":
+        _sky_bg(c, ramp("#e0fff8", "#3aa08a", "#1e5048"))
+        for i, w in enumerate([2, 4, 6, 7, 6]):
+            c.hline(4, 4 + w, 4 + i * 2, white if i % 2 == 0 else hex_color("#bff0e0"))
+    elif kind in ("fireball", "frostbolt", "chain_lightning"):
+        colors = {"fireball": ramp("#ffe066", "#ff7a2c", "#8a2a1e"),
+                  "frostbolt": ramp("#e8fbff", "#5ab0f0", "#1e3e80"),
+                  "chain_lightning": ramp("#f2e6ff", "#9a6aff", "#3e2a80")}[kind]
+        _sky_bg(c, ramp("#40384e", "#2a2438", "#18141f"))
+        if kind == "fireball":
+            c.ellipse(8, 9, 3.5, 3.5, colors[1])
+            c.ellipse(8, 9.5, 2.0, 2.0, colors[0])
+            for x, y in ((7, 4), (9, 3), (6, 5), (10, 5), (8, 5)):
+                c.put(x, y, colors[1])
+        elif kind == "frostbolt":
+            for i in range(-4, 5):
+                c.put(8 + i, 8, colors[0] if abs(i) < 2 else colors[1])
+                c.put(8, 8 + i, colors[0] if abs(i) < 2 else colors[1])
+                if abs(i) < 3:
+                    c.put(8 + i, 8 + i, colors[1])
+                    c.put(8 + i, 8 - i, colors[1])
+        else:
+            for x, y in ((9, 2), (8, 3), (7, 4), (6, 5), (7, 6), (8, 6), (9, 6), (8, 7), (7, 8), (6, 9), (7, 10), (8, 10), (7, 11), (6, 12), (5, 13)):
+                c.put(x, y, colors[0])
+                c.put(x + 1, y, colors[1])
+    # Passives: a square frame instead of a round badge.
+    elif kind in PASSIVE_SYMBOLS:
+        frame = ramp("#e8d8b0", "#6a5038", "#3a2a20")
+        c.rect(1, 1, 14, 14, frame[2])
+        c.rect(2, 2, 12, 12, frame[1])
+        PASSIVE_SYMBOLS[kind](c)
+    return _finish(c)
+
+
+def _p_steady(c: Canvas) -> None:
+    for i in range(8):
+        c.put(4 + i, 11 - i, hex_color("#eef2f2"))
+    c.hline(3, 7, 10, GOLD[1])
+
+
+def _p_tough(c: Canvas) -> None:
+    for y in range(4, 12):
+        half = 4 if y < 9 else 4 - (y - 8)
+        c.hline(8 - half, 7 + half, y, IRON[1] if y < 8 else IRON[2])
+    c.vline(7, 4, 11, IRON[0])
+
+
+def _p_eye(c: Canvas) -> None:
+    c.ellipse(7.5, 8, 4.5, 2.4, hex_color("#ffffff"))
+    c.ellipse(7.5, 8, 1.8, 1.8, hex_color("#3a8ac0"))
+    c.put(7, 7, hex_color("#ffffff"))
+
+
+def _p_fleet(c: Canvas) -> None:
+    c.rect(5, 5, 3, 5, LEATHER[1])
+    c.rect(5, 9, 6, 2, LEATHER[2])
+    for y in (5, 7):
+        c.hline(9, 11, y, hex_color("#bff0e0"))
+
+
+def _p_life(c: Canvas) -> None:
+    red = ramp("#ffb0b8", "#e04a5a", "#a02a3a")
+    c.ellipse(6, 7, 2.2, 2.2, red[1])
+    c.ellipse(9.5, 7, 2.2, 2.2, red[1])
+    for y in range(8, 12):
+        c.hline(4 + (y - 8), 11 - (y - 8), y, red[1])
+    c.put(5, 6, red[0])
+
+
+def _p_treasure(c: Canvas) -> None:
+    c.ellipse(7.5, 8, 4, 4, GOLD[1])
+    c.ellipse(7.5, 8, 2.6, 2.6, GOLD[2])
+    c.vline(7, 6, 10, GOLD[0])
+
+
+PASSIVE_SYMBOLS = {"steady_hand": _p_steady, "toughness": _p_tough, "keen_eye": _p_eye,
+                   "fleet": _p_fleet, "lifeblood": _p_life, "treasure_sense": _p_treasure}
+
+
+def build_combat() -> dict[str, Canvas]:
+    result = {
+        "traveler_sword": sword(IRON),
+        "iron_sword": sword(ramp("#dfe6ea", "#a3adb6", "#6a7480")),
+        "steel_sword": sword(ramp("#f4f8fc", "#c0ccd8", "#7a8aa0"), gem_color="#5aaaf0"),
+        "skysteel_blade": sword(ramp("#ffffff", "#9cf0ff", "#3a8fe0"), GOLD, "#ffe066"),
+    }
+    for kind in ["lunge", "shockwave", "war_cry", "blade_wave", "slash", "dodge", "fireball", "frostbolt", "chain_lightning", *PASSIVE_SYMBOLS]:
+        result[f"skill_{kind}"] = skill_icon(kind)
+    return result

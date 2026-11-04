@@ -63,7 +63,7 @@ static func capture(game: SkywardGame) -> Dictionary:
 			"gold": player.gold,
 			"inventory": player.inventory.duplicate(true),
 			"equipment": player.equipment.duplicate(true),
-			"talents": player.talents.duplicate(true), "starlight_essence_used": player.starlight_essence_used,
+			"talents": player.talents.duplicate(true), "skill_slots": player.skill_slots.duplicate(), "starlight_essence_used": player.starlight_essence_used,
 			"bonus_skill_points": player.bonus_skill_points,
 			"generated_items": player.generated_items.duplicate(true), "generated_counter": player._generated_counter,
 			"hero_name": player.hero_name, "hero_gender": player.hero_gender,
@@ -151,6 +151,9 @@ static func _apply_player(player: PlayerCharacter, character: Dictionary) -> voi
 		if not saved_item.is_empty() and player._slot_for_item(saved_item) == str(slot):
 			player.equipment[slot] = saved_item
 	player.talents = character.get("talents", {}).duplicate(true)
+	var slots: Variant = character.get("skill_slots", [])
+	if slots is Array and not (slots as Array).is_empty():
+		player.skill_slots = (slots as Array).duplicate()
 	var recipes: Variant = character.get("learned_recipes", {})
 	player.learned_recipes = recipes.duplicate() if recipes is Dictionary else {}
 	player.buffs = {}
