@@ -12,6 +12,7 @@ var toasts: ToastStack
 var vitals: HudVitals
 var quest_label: Label
 var side_quest_label: Label
+var quest_tracker: QuestTracker
 var buff_label: Label
 var message_label: Label
 var prompt_label: Label
@@ -73,6 +74,7 @@ var skills_view: SkillTreePanel
 var skills_visible: bool = false
 var hero_visible: bool = false
 var hero_view: HeroPanel
+var fishing_view: FishingPanel
 var hotbar: HBoxContainer
 var hotbar_slots: Array = []
 signal hero_unequip_requested(slot: String)
@@ -113,6 +115,11 @@ func _ready() -> void:
 	side_quest_label.position = Vector2(8, 63)
 	side_quest_label.size = Vector2(300, 40)
 	root.add_child(side_quest_label)
+	# The tracker panel replaces the two plain lines (kept for old callers).
+	quest_label.visible = false
+	side_quest_label.visible = false
+	quest_tracker = QuestTracker.new()
+	root.add_child(quest_tracker)
 	buff_label = _make_label("", 9, Color(0.72, 1.0, 0.72))
 	buff_label.position = Vector2(504, 116)
 	buff_label.size = Vector2(132, 30)
@@ -219,6 +226,9 @@ func _ready() -> void:
 	comparison_subtitle = comparison_view.subtitle_label
 	comparison_grid = comparison_view.stats_grid
 	comparison_description = comparison_view.description_label
+
+	fishing_view = FishingPanel.new()
+	root.add_child(fishing_view)
 
 	hero_view = HeroPanel.new()
 	root.add_child(hero_view)
@@ -419,6 +429,7 @@ func update_status(player: PlayerCharacter, quests: QuestManager) -> void:
 	if vitals != null:
 		vitals.set_values(player)
 	quest_label.text = "◆ " + quests.get_active_summary()
+	quest_tracker.refresh(quests)
 	var effects: Array[String] = []
 	for type in player.buffs:
 		var buff: Dictionary = player.buffs[type]
@@ -459,6 +470,15 @@ func toggle_bestiary(entries: Dictionary, discovered: Dictionary) -> void:
 func overlay_visible() -> bool:
 	return bestiary_visible or journal_visible or skills_visible or hero_visible
 
+func show_fishing(fishing: Fishing) -> void:
+	fishing_view.show_for(fishing)
+
+func update_fishing(_fishing: Fishing) -> void:
+	fishing_view.refresh()
+
+func hide_fishing() -> void:
+	fishing_view.visible = false
+
 func update_hotbar(entries: Array) -> void:
 	for index in mini(entries.size(), hotbar_slots.size()):
 		(hotbar_slots[index] as HotbarSlot).apply(entries[index])
@@ -483,11 +503,11 @@ func refresh_skill_tree(player: PlayerCharacter) -> void:
 	if skills_visible:
 		skills_view.populate(player)
 
-func toggle_journal(quests: QuestManager) -> void:
+func toggle_journal(quests: QuestManager, player: PlayerCharacter = null) -> void:
 	journal_visible = not journal_visible
 	journal_view.visible = journal_visible
 	if journal_visible:
-		journal_view.populate(quests)
+		journal_view.populate(quests, player)
 
 func show_talent_choices(choices: Array[Dictionary]) -> void:
 	talent_view.populate(choices)

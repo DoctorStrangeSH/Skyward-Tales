@@ -95,6 +95,18 @@
    16
   ]
  },
+ "icons/glow_eel.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/golden_fish.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/healroot.png": {
   "size": [
    16,
@@ -155,7 +167,31 @@
    16
   ]
  },
+ "icons/marsh_catfish.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/old_boot.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/pattern_key.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/perch.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/pike.png": {
   "size": [
    16,
    16
@@ -204,6 +240,12 @@
   ]
  },
  "icons/reinforced_wolf_mantle.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/sea_bass.png": {
   "size": [
    16,
    16
@@ -378,6 +420,12 @@
   ]
  },
  "icons/storm_eye.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/sun_tuna.png": {
   "size": [
    16,
    16

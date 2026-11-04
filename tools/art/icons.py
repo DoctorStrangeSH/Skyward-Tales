@@ -212,6 +212,7 @@ def build() -> dict[str, Canvas]:
         "recipe_hearty_stew": scroll_icon(), "recipe_power_elixir": scroll_icon(), "recipe_swift_tonic": scroll_icon(),
         **build_combat(),
         **build_materials(),
+        **build_fish(),
     }
 
 
@@ -235,10 +236,13 @@ def stone_icon() -> Canvas:
     return c
 
 
-def fish_icon() -> Canvas:
+def fish_icon(sc=None, long: float = 4.5, stripes=None) -> Canvas:
     c = Canvas(16, 16)
-    sc = ramp("#d8f0ff", "#7ab0d8", "#3a6a98")
-    c.ellipse(7, 8, 4.5, 2.6, sc[1])
+    sc = sc or ramp("#d8f0ff", "#7ab0d8", "#3a6a98")
+    c.ellipse(7, 8, long, 2.6, sc[1])
+    if stripes:
+        for x in (6, 8, 10):
+            c.vline(x, 6, 10, hex_color(stripes))
     c.hline(4, 9, 7, sc[0])
     for k in range(3):
         c.vline(12 + k, 8 - k - 1, 8 + k + 1, sc[2])
@@ -557,4 +561,26 @@ def build_materials() -> dict[str, Canvas]:
         "shell_mail": armor(ramp("#ffc0a0", "#e0603a", "#a03a24"), ramp("#fff0d8", "#e8d4b0", "#b89a70")),
         "bone_amulet": relic(),
         "cog_charm": cog(),
+    }
+
+
+def boot_icon() -> Canvas:
+    c = Canvas(16, 16)
+    c.rect(5, 3, 4, 8, LEATHER[2])
+    c.rect(5, 10, 8, 3, LEATHER[1])
+    c.hline(5, 12, 13, LEATHER[3] if len(LEATHER) > 3 else LEATHER[2])
+    c.put(6, 4, LEATHER[0])
+    return _finish(c)
+
+
+def build_fish() -> dict[str, Canvas]:
+    return {
+        "perch": fish_icon(ramp("#f0ffd0", "#9ac850", "#4a7a2a"), 4.5, "#3a5a20"),
+        "pike": fish_icon(ramp("#e0f0d0", "#7a9a6a", "#3a5a3a"), 5.5),
+        "marsh_catfish": fish_icon(ramp("#e8d8c0", "#8a7058", "#4a3a2a"), 5.0),
+        "glow_eel": fish_icon(ramp("#e8fffa", "#5ae8d0", "#1e7a70"), 6.0),
+        "sea_bass": fish_icon(ramp("#e8f4ff", "#8ab4d8", "#3a5a88"), 4.8, "#5a7ab0"),
+        "sun_tuna": fish_icon(ramp("#fff4c0", "#f0b040", "#a8641e"), 5.2),
+        "golden_fish": fish_icon(ramp("#fffbe0", "#ffd45c", "#c88a2a"), 4.2),
+        "old_boot": boot_icon(),
     }

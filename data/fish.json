@@ -1,0 +1,20 @@
+{
+  "_comment": "Fishing: species per region with weight, difficulty (0..1) and size range in cm. 'default' is used where a region has no list.",
+  "species": {
+    "fish": {"difficulty": 0.25, "size": [18, 32]},
+    "perch": {"difficulty": 0.42, "size": [20, 38]},
+    "pike": {"difficulty": 0.68, "size": [45, 90]},
+    "marsh_catfish": {"difficulty": 0.5, "size": [35, 70]},
+    "glow_eel": {"difficulty": 0.72, "size": [40, 80]},
+    "sea_bass": {"difficulty": 0.45, "size": [25, 50]},
+    "sun_tuna": {"difficulty": 0.78, "size": [60, 120]},
+    "golden_fish": {"difficulty": 0.9, "size": [10, 18]},
+    "old_boot": {"difficulty": 0.05, "size": [26, 30]}
+  },
+  "regions": {
+    "default": [["fish", 60], ["perch", 25], ["old_boot", 8], ["golden_fish", 1.5]],
+    "greenreach": [["fish", 55], ["perch", 26], ["pike", 9], ["old_boot", 8], ["golden_fish", 1.5]],
+    "misty_marsh": [["fish", 35], ["marsh_catfish", 30], ["glow_eel", 12], ["pike", 8], ["old_boot", 8], ["golden_fish", 2]],
+    "salt_coast": [["fish", 40], ["sea_bass", 30], ["sun_tuna", 12], ["old_boot", 6], ["golden_fish", 2]]
+  }
+}

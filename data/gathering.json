@@ -29,7 +29,7 @@
         1,
         2
       ],
-      "respawn": 180,
+      "respawn": 75,
       "art": "gather_fish",
       "verb": "рыбачить"
     },
