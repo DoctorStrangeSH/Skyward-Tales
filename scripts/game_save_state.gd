@@ -80,7 +80,8 @@ static func capture(game: SkywardGame) -> Dictionary:
 			"settlement": game.settlement.make_snapshot(),
 			"crafting": game.crafting.make_snapshot(),
 			"visited": game.visited_regions.duplicate(),
-			"doors": game.opened_doors.duplicate()
+			"doors": game.opened_doors.duplicate(),
+			"day": game.day_night.make_snapshot(), "treasure": game.treasure.make_snapshot(), "contracts": game.contracts.make_snapshot()
 		},
 		"magic": game.selected_spell_id
 	}
@@ -107,6 +108,9 @@ static func apply(game: SkywardGame, data: Dictionary) -> bool:
 	game.relationships.restore_snapshot(world_data.get("relationships", {}))
 	game.settlement.restore_snapshot(world_data.get("settlement", {}))
 	game.crafting.restore_snapshot(world_data.get("crafting", {}))
+	game.day_night.restore_snapshot(world_data.get("day", {}))
+	game.treasure.restore_snapshot(world_data.get("treasure", {}))
+	game.contracts.restore_snapshot(world_data.get("contracts", {}))
 	var visited: Variant = world_data.get("visited", {})
 	game.visited_regions = visited.duplicate() if visited is Dictionary else {}
 	var doors: Variant = world_data.get("doors", {})

@@ -56,6 +56,8 @@ func _build() -> void:
 		var file: String = PROP_TEXTURES.get(kind, kind + ".png" if kind.begins_with("decor_") or kind.begins_with("village_") else "")
 		if not file.is_empty():
 			_add_sprite(file, _vec(prop.get("position")))
+			if kind in LIGHT_PROPS:
+				_add_glow(_vec(prop.get("position")) + Vector2(0, -float(LIGHT_PROPS[kind])), kind == "crypt_torch")
 	_add_decor_bushes(style)
 	_add_ambient()
 	_create_world_collisions()
@@ -247,6 +249,31 @@ func _add_sprite(file: String, base: Vector2) -> void:
 	sprite.offset = -Vector2(float(origin[0]), float(origin[1]))
 	sprite.position = base
 	add_child(sprite)
+
+## Lamps and torches cast warm light (seen at night and underground).
+const LIGHT_PROPS := {"village_lamp": 26, "crypt_torch": 18}
+static var _glow_texture: GradientTexture2D
+
+func _add_glow(at: Vector2, always: bool) -> void:
+	if _glow_texture == null:
+		var ramp := Gradient.new()
+		ramp.set_color(0, Color(1, 1, 1, 1))
+		ramp.set_color(1, Color(1, 1, 1, 0))
+		_glow_texture = GradientTexture2D.new()
+		_glow_texture.gradient = ramp
+		_glow_texture.fill = GradientTexture2D.FILL_RADIAL
+		_glow_texture.fill_from = Vector2(0.5, 0.5)
+		_glow_texture.fill_to = Vector2(1.0, 0.5)
+		_glow_texture.width = 128
+		_glow_texture.height = 128
+	var light := PointLight2D.new()
+	light.texture = _glow_texture
+	light.texture_scale = 1.3
+	light.color = Color(1.0, 0.78, 0.45)
+	light.energy = 0.9 if always else 0.0
+	light.position = at
+	light.add_to_group("night_lights" if not always else "torch_lights")
+	add_child(light)
 
 func _texture(file: String) -> Texture2D:
 	var path := ART_DIR + file

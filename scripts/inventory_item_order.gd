@@ -5,7 +5,7 @@ class_name InventoryItemOrder
 static func category(player: PlayerCharacter, item_id: String, consumable_ids: Array) -> String:
 	if not str(player.get_item_definition(item_id).get("slot", "")).is_empty():
 		return "equipment"
-	if consumable_ids.has(item_id):
+	if consumable_ids.has(item_id) or player.get_item_definition(item_id).has("use"):
 		return "consumable"
 	return "other"
 
