@@ -72,6 +72,7 @@ var region_layouts: Dictionary = {}
 var cast_cooldown_remaining: float = 0.0
 var selected_spell_id: String = "fireball"
 var skills: CombatSkills
+var fishing: Fishing
 var cast_cooldown_total: float = 0.0
 var defeated_enemies: int = 0
 var save_path: String = SAVE_SCRIPT.SAVE_PATH
@@ -137,6 +138,10 @@ func _ready() -> void:
 	skills.name = "CombatSkills"
 	skills.game = self
 	add_child(skills)
+	fishing = Fishing.new()
+	fishing.name = "Fishing"
+	fishing.game = self
+	add_child(fishing)
 	player = PLAYER_SCENE.instantiate() as PlayerCharacter
 	add_child(player)
 	player.global_position = GameSaveState.DEFAULT_PLAYER_POSITION
@@ -278,7 +283,7 @@ func _process(delta: float) -> void:
 	_update_minimap()
 	hud.update_dodge(player.dodge_cooldown_left, player.dodge_cooldown, player.dodge_time_left > 0.0)
 	nearby_interactable = _find_nearest_interactable()
-	var busy: bool = hud.dialogue_visible or hud.inventory_open or hud.overlay_visible() or hud.world_map_visible
+	var busy: bool = hud.dialogue_visible or hud.inventory_open or hud.overlay_visible() or hud.world_map_visible or fishing.active()
 	if busy or nearby_interactable == null:
 		hud.set_prompt("")
 		interact_prompt.show_for(null, "")
@@ -310,6 +315,15 @@ func _interaction_prompt(target: Node2D) -> String:
 
 func _input(event: InputEvent) -> void:
 	if game_over or (hud != null and (hud.talent_visible or hud.defeat_visible)):
+		return
+	if fishing != null and fishing.active():
+		# While fishing only E / LMB (hook and reel) and cancel keys matter.
+		if event.is_action_pressed("interact") or event.is_action_pressed("attack"):
+			fishing.press()
+			get_viewport().set_input_as_handled()
+		elif event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_ESCAPE, KEY_W, KEY_A, KEY_S, KEY_D, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT]:
+			fishing.cancel()
+			get_viewport().set_input_as_handled()
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		if _handle_key(event.keycode):
@@ -362,7 +376,7 @@ func _handle_key(keycode: Key) -> bool:
 			if hud.inventory_open:
 				hud.toggle_inventory(player)
 			if hud.journal_visible:
-				hud.toggle_journal(quests)
+				hud.toggle_journal(quests, player)
 			hud.toggle_bestiary(bestiary_entries, discovered_enemies)
 			return true
 		KEY_C when not world_blocked:
@@ -382,7 +396,7 @@ func _handle_key(keycode: Key) -> bool:
 			if hud.bestiary_visible:
 				hud.toggle_bestiary(bestiary_entries, discovered_enemies)
 			if hud.journal_visible:
-				hud.toggle_journal(quests)
+				hud.toggle_journal(quests, player)
 			hud.toggle_skill_tree(player)
 			return true
 		KEY_J when not world_blocked:
@@ -394,7 +408,7 @@ func _handle_key(keycode: Key) -> bool:
 				hud.toggle_inventory(player)
 			if hud.bestiary_visible:
 				hud.toggle_bestiary(bestiary_entries, discovered_enemies)
-			hud.toggle_journal(quests)
+			hud.toggle_journal(quests, player)
 			return true
 	if hud.overlay_visible():
 		return false
@@ -1708,7 +1722,7 @@ func _close_books() -> void:
 	if hud.bestiary_visible:
 		hud.toggle_bestiary(bestiary_entries, discovered_enemies)
 	if hud.journal_visible:
-		hud.toggle_journal(quests)
+		hud.toggle_journal(quests, player)
 
 func _go_to_title() -> void:
 	get_tree().paused = false

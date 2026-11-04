@@ -37,6 +37,8 @@ func gather(node: GatherNode) -> bool:
 		var left := int(ceil(float(cooldowns[node.key]) - play_time))
 		game.hud.show_message("%s: вырастет снова через %d с." % [node.display_name, left], 2.0)
 		return false
+	if node.kind == "fish" and game.fishing != null:
+		return game.fishing.start(node)
 	var info := kind(node.kind)
 	var amount_range: Array = info.get("amount", [1, 1])
 	var amount := game.loot_rng.randi_range(int(amount_range[0]), int(amount_range[1]))
@@ -48,6 +50,11 @@ func gather(node: GatherNode) -> bool:
 	GameAudio.play("pickup", -5.0, 0.08)
 	game.hud.show_message("+%d %s" % [amount, game.player.get_item_name(item_id)], 1.6)
 	return true
+
+## Puts a node to rest (used after a fish is caught).
+func rest_node(node: GatherNode) -> void:
+	cooldowns[node.key] = play_time + float(kind(node.kind).get("respawn", 200))
+	node.set_ready(false)
 
 func refresh_nodes() -> void:
 	for node in game.get_children():

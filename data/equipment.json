@@ -479,6 +479,70 @@
       "agility": 3,
       "armor": 2,
       "value": 70
+    },
+    "perch": {
+      "name": "Окунь",
+      "description": "Полосатый речной окунь. Хорошо продаётся.",
+      "slot": "",
+      "rarity": "uncommon",
+      "material": true,
+      "value": 12
+    },
+    "pike": {
+      "name": "Щука",
+      "description": "Зубастая хищница тихих озёр.",
+      "slot": "",
+      "rarity": "rare",
+      "material": true,
+      "value": 26
+    },
+    "marsh_catfish": {
+      "name": "Болотный сом",
+      "description": "Усатый житель топи.",
+      "slot": "",
+      "rarity": "uncommon",
+      "material": true,
+      "value": 16
+    },
+    "glow_eel": {
+      "name": "Светящийся угорь",
+      "description": "Мерцает в темноте. Ценят алхимики.",
+      "slot": "",
+      "rarity": "rare",
+      "material": true,
+      "value": 30
+    },
+    "sea_bass": {
+      "name": "Морской окунь",
+      "description": "Серебристая морская рыба.",
+      "slot": "",
+      "rarity": "uncommon",
+      "material": true,
+      "value": 14
+    },
+    "sun_tuna": {
+      "name": "Солнечный тунец",
+      "description": "Сильная рыба тёплых вод.",
+      "slot": "",
+      "rarity": "rare",
+      "material": true,
+      "value": 32
+    },
+    "golden_fish": {
+      "name": "Золотая рыбка",
+      "description": "Говорят, приносит удачу. Очень редкая.",
+      "slot": "",
+      "rarity": "legendary",
+      "material": true,
+      "value": 150
+    },
+    "old_boot": {
+      "name": "Старый сапог",
+      "description": "Ну… бывает и так.",
+      "slot": "",
+      "rarity": "common",
+      "material": true,
+      "value": 1
     }
   }
 }

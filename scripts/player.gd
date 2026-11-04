@@ -261,6 +261,8 @@ func get_armor() -> int:
 const SKILL_SLOT_COUNT := 4
 ## Hotbar (keys 1–4): active skill or spell ids, "" for an empty slot.
 var skill_slots: Array = ["lunge", "shockwave", "war_cry", "blade_wave"]
+## Fishing log: species → {"count", "best"} (size record in cm).
+var fish_log: Dictionary = {}
 
 static func skill_catalog() -> Dictionary:
 	return GameCatalogs.shared().skills
