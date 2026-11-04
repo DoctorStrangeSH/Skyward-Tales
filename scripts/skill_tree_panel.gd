@@ -66,7 +66,7 @@ func _skill_button(player: PlayerCharacter, skill_id: String, definition: Dictio
 	var button := Button.new()
 	button.text = "%s%s  %d/%d" % ["✦ " if seal else "", str(definition.get("name", skill_id)), rank, max_rank]
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	button.add_theme_font_size_override("font_size", 9)
+	button.add_theme_font_size_override("font_size", UiFont.px(9))
 	button.custom_minimum_size = Vector2(142, 22)
 	var reason := SkillTree.block_reason(player, skill_id)
 	var style := StyleBoxFlat.new()
@@ -97,7 +97,7 @@ func _skill_button(player: PlayerCharacter, skill_id: String, definition: Dictio
 func _label(text: String, size: int, color: Color) -> Label:
 	var label := Label.new()
 	label.text = text
-	label.add_theme_font_size_override("font_size", size)
+	label.add_theme_font_size_override("font_size", UiFont.px(size))
 	label.add_theme_color_override("font_color", color)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return label

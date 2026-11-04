@@ -28,7 +28,7 @@ func _ready() -> void:
 	var title := Label.new()
 	title.text = "Кто отправится в путь?"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 14)
+	title.add_theme_font_size_override("font_size", UiFont.px(14))
 	title.add_theme_color_override("font_color", Color(1.0, 0.88, 0.6))
 	box.add_child(title)
 	preview = TextureRect.new()

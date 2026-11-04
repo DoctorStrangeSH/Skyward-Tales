@@ -34,7 +34,7 @@ func _ready() -> void:
 	controls.add_theme_constant_override("separation", 4)
 	contents.add_child(controls)
 	filter_button = OptionButton.new()
-	filter_button.add_theme_font_size_override("font_size", 9)
+	filter_button.add_theme_font_size_override("font_size", UiFont.px(9))
 	filter_button.custom_minimum_size = Vector2(118, 18)
 	filter_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	filter_button.add_item("Все предметы", 0)
@@ -44,7 +44,7 @@ func _ready() -> void:
 	filter_button.item_selected.connect(func(index: int) -> void: filter_selected.emit(index))
 	controls.add_child(filter_button)
 	sort_button = OptionButton.new()
-	sort_button.add_theme_font_size_override("font_size", 9)
+	sort_button.add_theme_font_size_override("font_size", UiFont.px(9))
 	sort_button.custom_minimum_size = Vector2(118, 18)
 	sort_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	sort_button.add_item("Порядок", 0)
@@ -65,7 +65,7 @@ func _ready() -> void:
 func _label(value: String, font_size: int, color: Color) -> Label:
 	var result := Label.new()
 	result.text = value
-	result.add_theme_font_size_override("font_size", font_size)
+	result.add_theme_font_size_override("font_size", UiFont.px(font_size))
 	result.add_theme_color_override("font_color", color)
 	result.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return result
@@ -86,7 +86,7 @@ func populate(player: PlayerCharacter, filter_index: int, sort_index: int, prefe
 		var slot_button := Button.new()
 		slot_button.text = "%s: %s" % [slots[slot], player.get_item_name(equipped_item) if not equipped_item.is_empty() else "Пусто"]
 		slot_button.disabled = equipped_item.is_empty()
-		slot_button.add_theme_font_size_override("font_size", 9)
+		slot_button.add_theme_font_size_override("font_size", UiFont.px(9))
 		slot_button.custom_minimum_size = Vector2(0, 16)
 		slot_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		slot_button.pressed.connect(func() -> void: unequip_requested.emit(slot))

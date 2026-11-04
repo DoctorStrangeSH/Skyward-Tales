@@ -14,6 +14,10 @@ window/size/window_width_override=1280
 window/size/window_height_override=720
 window/stretch/mode="viewport"
 
+[gui]
+
+theme/custom="res://assets/ui_theme.tres"
+
 [input]
 move_left={
 "deadzone": 0.2,
