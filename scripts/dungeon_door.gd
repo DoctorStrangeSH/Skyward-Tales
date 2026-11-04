@@ -7,6 +7,8 @@ signal used(door: DungeonDoor)
 
 var door_id: String = ""
 var key_item: String = ""
+## Seal doors open when all these levers are pulled (no key).
+var levers: Array[String] = []
 var is_open: bool = false
 var _body: StaticBody2D
 

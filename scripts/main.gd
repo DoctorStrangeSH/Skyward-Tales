@@ -23,7 +23,7 @@ const MERCHANT_SHOP_SCRIPT := preload("res://scripts/merchant_shop.gd")
 const CRAFTING_SERVICE_SCRIPT := preload("res://scripts/crafting_service.gd")
 const GATE_SCRIPT := preload("res://scripts/region_gate.gd")
 ## Story bosses: defeated once (flag "<kind>_defeated"), never respawn.
-const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой колосс", "vail": "Вейл", "bog_king": "Болотный король", "crab_king": "Краб-король", "giant": "Горный великан", "crypt_lord": "Повелитель склепа", "ash_lord": "Владыка Пепла"}
+const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой колосс", "vail": "Вейл", "bog_king": "Болотный король", "crab_king": "Краб-король", "giant": "Горный великан", "crypt_lord": "Повелитель склепа", "ash_lord": "Владыка Пепла", "forge_titan": "Титан Горнила"}
 const ENEMY_SCRIPTS := {
 	"slime": preload("res://scripts/enemy.gd"),
 	"wolf": preload("res://scripts/forest_wolf.gd"),
@@ -47,7 +47,8 @@ const ENEMY_SCRIPTS := {
 	"ember_hound": preload("res://scripts/ember_hound.gd"),
 	"magma_golem": preload("res://scripts/magma_golem.gd"),
 	"ash_cultist": preload("res://scripts/ash_cultist.gd"),
-	"ash_lord": preload("res://scripts/ash_lord.gd")
+	"ash_lord": preload("res://scripts/ash_lord.gd"),
+	"forge_titan": preload("res://scripts/forge_titan.gd")
 }
 const MATERIAL_ITEMS := ["wolf_pelt", "iron_ore"]
 const RARITY_LABELS := {"common": "ОБЫЧНАЯ", "uncommon": "НЕОБЫЧНАЯ", "rare": "РЕДКАЯ"}
@@ -248,7 +249,7 @@ func update_music() -> void:
 			GameAudio.music("boss")
 			return
 	var style := RegionCatalog.style(current_region)
-	GameAudio.music({"night": "night", "cave": "caves", "sky": "sky", "spires": "sky", "rift": "night", "marsh": "night", "coast": "sky", "mountain": "caves", "crypt": "caves", "ash": "night"}.get(style, "meadow"))
+	GameAudio.music({"night": "night", "cave": "caves", "sky": "sky", "spires": "sky", "rift": "night", "marsh": "night", "coast": "sky", "mountain": "caves", "crypt": "caves", "ash": "night", "magma": "boss"}.get(style, "meadow"))
 
 func shake(strength: float, duration: float) -> void:
 	if not GameSettings.get_bool("screen_shake"):
@@ -311,7 +312,9 @@ func _interaction_prompt(target: Node2D) -> String:
 	if target is CraftStation:
 		return "E — " + ("готовить" if target.station_id == "kitchen" else "мастерить")
 	if target is DungeonDoor:
-		return "E — открыть"
+		return "E — печать" if not target.levers.is_empty() else "E — открыть"
+	if target is DungeonLever:
+		return "E — опустить рычаг"
 	if target is SettlementObject:
 		return "E — доска поселения"
 	if target is WorldNpc:
@@ -541,7 +544,7 @@ func _clear_region_actors() -> void:
 	for node in get_children():
 		if node is WorldNpc and node.is_companion:
 			continue
-		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is SettlementObject or node is GatherNode or node is CraftStation or node is DungeonDoor or node is SpikeTrap or node is MagicBolt or node is EnemyMagicOrb:
+		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is SettlementObject or node is GatherNode or node is CraftStation or node is DungeonDoor or node is SpikeTrap or node is FlameVent or node is DungeonLever or node is MagicBolt or node is EnemyMagicOrb:
 			remove_child(node)
 			node.queue_free()
 	elder = null
@@ -713,17 +716,55 @@ func _spawn_dungeon(layout: Dictionary) -> void:
 		var door := DUNGEON_DOOR_SCRIPT.new() as DungeonDoor
 		door.door_id = str(entry.get("id", ""))
 		door.key_item = str(entry.get("key", ""))
+		for lever_id in entry.get("levers", []):
+			door.levers.append(str(lever_id))
 		door.is_open = bool(opened_doors.get(door.door_id, false))
 		add_child(door)
 		door.global_position = _vec(entry.get("position"))
 		door.used.connect(_on_door_used)
 	for spot in layout.get("traps", []):
-		var trap := SPIKE_TRAP_SCRIPT.new() as SpikeTrap
+		var trap: Node2D
+		if spot is Dictionary and str(spot.get("kind", "")) == "vent":
+			trap = FlameVent.new()
+			spot = spot.get("position")
+		else:
+			trap = SPIKE_TRAP_SCRIPT.new() as SpikeTrap
 		add_child(trap)
 		trap.global_position = _vec(spot)
+	for entry in layout.get("levers", []):
+		var lever := DungeonLever.new()
+		lever.lever_id = str(entry.get("id", ""))
+		lever.pulled = bool(opened_doors.get(lever.lever_id, false))
+		add_child(lever)
+		lever.global_position = _vec(entry.get("position"))
+		lever.used.connect(_on_lever_used)
+
+## Pulling a lever; seals open once all their levers are down.
+func _on_lever_used(lever: DungeonLever) -> void:
+	if lever.pulled:
+		return
+	opened_doors[lever.lever_id] = true
+	lever.set_pulled(true)
+	GameAudio.play("chest", -4.0, 0.1)
+	shake(1.5, 0.15)
+	for node in get_children():
+		if node is DungeonDoor and not node.is_open and not node.levers.is_empty():
+			var done: int = node.levers.filter(func(id: String) -> bool: return bool(opened_doors.get(id, false))).size()
+			if done >= node.levers.size():
+				opened_doors[node.door_id] = true
+				node.set_open(true)
+				shake(3.0, 0.3)
+				hud.show_message("Где-то с грохотом открылась печать!", 3.0)
+			else:
+				hud.show_message("Рычаг опущен. Печать: %d из %d." % [done, node.levers.size()], 2.5)
+	request_autosave()
 
 func _on_door_used(door: DungeonDoor) -> void:
 	if door.is_open:
+		return
+	if not door.levers.is_empty():
+		var done: int = door.levers.filter(func(id: String) -> bool: return bool(opened_doors.get(id, false))).size()
+		hud.show_message("Печать держат рычаги: опущено %d из %d. Найдите остальные." % [done, door.levers.size()], 3.0)
 		return
 	if not player.remove_item(door.key_item, 1):
 		hud.show_message("Заперто. Нужен ключ: %s." % player.get_item_name(door.key_item), 2.5)
@@ -941,6 +982,8 @@ func _discover_nearby_enemies() -> void:
 static func enemy_kind(enemy: SlimeEnemy) -> String:
 	if enemy is LootImp:
 		return "loot_imp"
+	if enemy is ForgeTitan:
+		return "forge_titan"
 	if enemy is AshLord:
 		return "ash_lord"
 	if enemy is EmberHound:
@@ -1052,7 +1095,7 @@ func spawn_enemy(kind: String, spawn_position: Vector2, elite: String = "") -> S
 	match kind:
 		"guardian":
 			enemy.defeated.connect(func(xp: int) -> void: _on_guardian_defeated(xp, enemy.global_position))
-		"echo", "tempest", "vail", "bog_king", "crab_king", "giant", "crypt_lord", "ash_lord":
+		"echo", "tempest", "vail", "bog_king", "crab_king", "giant", "crypt_lord", "ash_lord", "forge_titan":
 			enemy.defeated.connect(func(xp: int) -> void: _on_story_boss_defeated(kind, xp, enemy.global_position))
 		"wolf":
 			enemy.defeated.connect(func(xp: int) -> void:

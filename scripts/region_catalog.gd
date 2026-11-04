@@ -41,6 +41,16 @@ static func terrain(region_id: String) -> Dictionary:
 static func style(region_id: String) -> String:
 	return str(terrain(region_id).get("style", "day"))
 
+const UNDERGROUND := ["cave", "crypt", "magma"]
+const DUNGEONS := ["crypt", "magma"]
+
+## Caves and dungeons: no sky, no weather events.
+static func is_underground(style_id: String) -> bool:
+	return style_id in UNDERGROUND
+
+static func is_dungeon(style_id: String) -> bool:
+	return style_id in DUNGEONS
+
 static func map_color(region_id: String) -> Color:
 	var value: Variant = get_region(region_id).get("map_color", [0.18, 0.32, 0.19])
 	if value is Array and value.size() == 3:

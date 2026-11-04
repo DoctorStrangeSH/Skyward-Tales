@@ -19,8 +19,9 @@ def build(root: Path, region_id: str, terrain: dict) -> Path | None:
     if canopy.exists():
         image.alpha_composite(Image.open(canopy).convert("RGBA"))
     draw = ImageDraw.Draw(image)
-    dark = (24, 64, 40, 255) if terrain.get("style") not in ("cave", "crypt") else (40, 36, 60, 255)
-    light = (64, 120, 62, 255) if terrain.get("style") not in ("cave", "crypt") else (90, 84, 120, 255)
+    under = terrain.get("style") in ("cave", "crypt", "magma")
+    dark = (24, 64, 40, 255) if not under else (40, 36, 60, 255)
+    light = (64, 120, 62, 255) if not under else (90, 84, 120, 255)
     for x, y in terrain.get("trees", []):
         draw.ellipse([x - 13, y - 13, x + 13, y + 11], fill=dark)
         draw.ellipse([x - 9, y - 12, x + 7, y + 2], fill=light)

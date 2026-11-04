@@ -631,6 +631,23 @@
       "rarity": "uncommon",
       "material": true,
       "value": 30
+    },
+    "forge_key": {
+      "name": "Ключ горнила",
+      "description": "Раскалённый ключ из чёрного железа. Открывает камеру в Огненных недрах.",
+      "slot": "",
+      "rarity": "uncommon",
+      "value": 0
+    },
+    "skyfire_blade": {
+      "name": "Небесное пламя",
+      "description": "Легендарный клинок из сердца горнила: +36 к урону мечом, +6% крит, +1 HP за удар.",
+      "slot": "blade",
+      "rarity": "legendary",
+      "melee": 36,
+      "crit": 6,
+      "lifesteal": 1,
+      "value": 500
     }
   }
 }

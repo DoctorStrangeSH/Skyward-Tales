@@ -57,7 +57,7 @@ def build_world() -> None:
         pal = STYLES[style]
         glow = pal.get("glow")
         print(f"region {region_id} ({style})")
-        crypt = style == "crypt"
+        crypt = style in ("crypt", "magma")
         ground = terrain.render_crypt(t, pal, seed=100 + index * 17) if crypt else terrain.render_ground(t, pal, seed=100 + index * 17)
         save(ground, f"world/{region_id}_ground.png")
         w, h = t["size"]
@@ -65,14 +65,18 @@ def build_world() -> None:
             from pixel import Canvas as _Canvas
             save(_Canvas(w, h), f"world/{region_id}_canopy.png")
             for variant in range(3):
-                canvas, origin = flora.stone_spire(300 + index * 10 + variant, pal, "large" if variant != 2 else "small")
+                size = "large" if variant != 2 else "small"
+                if style == "magma":
+                    canvas, origin = flora.crystal_cluster(300 + index * 10 + variant, pal, size)
+                else:
+                    canvas, origin = flora.stone_spire(300 + index * 10 + variant, pal, size)
                 save(canvas, f"world/{style}_tree_{variant}.png", origin)
             for variant in range(2):
                 canvas, origin = flora.rock_pile(400 + index * 10 + variant, pal)
                 save(canvas, f"world/{style}_bush_{variant}.png", origin)
             continue
         border_pal = dict(pal, leaf=pal["cloud"], outline=pal["cloud"][0]) if style in ISLAND_STYLES else pal
-        if style not in ("cave", "crypt"):
+        if style not in ("cave", "crypt", "magma"):
             apron_terrain = dict(t, _gates=[g["position"] for g in region.get("gates", [])])
             for side, strip in apron.render(apron_terrain, pal, seed=500 + index).items():
                 save(strip, f"world/{region_id}_apron_{side}.png")
