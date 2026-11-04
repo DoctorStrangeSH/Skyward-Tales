@@ -8,6 +8,7 @@ var creation: HeroCreationPanel
 
 func _ready() -> void:
 	get_tree().paused = false
+	GameAudio.music("sky")
 	_set_menu_background()
 	var center := CenterContainer.new()
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

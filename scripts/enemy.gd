@@ -384,7 +384,14 @@ func take_damage(amount: int) -> void:
 		combat_feedback.set_health(health, max_health)
 		combat_feedback.show_damage(amount)
 	Vfx.flash(visual)
+	GameAudio.play("hit", -6.0, 0.12)
+	var arena := get_parent()
+	if health > 0 and amount * 4 >= max_health and arena != null and arena.has_method("hit_stop"):
+		arena.hit_stop(0.045)
 	if health <= 0:
+		GameAudio.play("enemy_die", -4.0, 0.1)
+		if arena != null and arena.has_method("hit_stop"):
+			arena.hit_stop(0.06)
 		Vfx.defeat(get_parent(), global_position)
 		Vfx.dissolve(get_parent(), visual)
 		defeated.emit(xp_reward)

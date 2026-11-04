@@ -5,7 +5,7 @@ class_name GameSettings
 ## (separate from save games so they survive a new adventure).
 
 const PATH := "user://settings.cfg"
-const DEFAULTS := {"hints": true, "damage_numbers": true, "screen_shake": true}
+const DEFAULTS := {"hints": true, "damage_numbers": true, "screen_shake": true, "music_volume": 0.6, "sfx_volume": 0.8}
 
 static var _config: ConfigFile
 
@@ -19,6 +19,13 @@ static func get_bool(key: String) -> bool:
 	return bool(_cfg().get_value("options", key, DEFAULTS.get(key, false)))
 
 static func set_bool(key: String, value: bool) -> void:
+	_cfg().set_value("options", key, value)
+	_cfg().save(PATH)
+
+static func get_float(key: String) -> float:
+	return float(_cfg().get_value("options", key, DEFAULTS.get(key, 1.0)))
+
+static func set_float(key: String, value: float) -> void:
 	_cfg().set_value("options", key, value)
 	_cfg().save(PATH)
 
