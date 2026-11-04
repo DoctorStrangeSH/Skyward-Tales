@@ -657,6 +657,62 @@
       "use": {
         "treasure_map": true
       }
+    },
+    "jelly_staff": {
+      "name": "Посох Студня",
+      "description": "Трофей короля слизней: +8 урона всем заклинаниям, +15 маны.",
+      "slot": "weapon",
+      "rarity": "epic",
+      "spell_bonus": {
+        "*": 8
+      },
+      "max_mana": 15,
+      "value": 160
+    },
+    "dusk_fang": {
+      "name": "Клык Мрака",
+      "description": "Трофей сумеречного волка: +6 к урону мечом, +6% крит.",
+      "slot": "relic",
+      "rarity": "epic",
+      "melee": 6,
+      "crit": 6,
+      "value": 180
+    },
+    "toad_crown": {
+      "name": "Корона Квакши",
+      "description": "Трофей жабы-исполина: +5 к воле, +30 к здоровью.",
+      "slot": "amulet",
+      "rarity": "epic",
+      "will": 5,
+      "max_health": 30,
+      "value": 180
+    },
+    "crab_aegis": {
+      "name": "Гранитная эгида",
+      "description": "Трофей гранитного краба: +14 к броне.",
+      "slot": "armor",
+      "rarity": "epic",
+      "armor": 14,
+      "value": 200
+    },
+    "golem_heart": {
+      "name": "Сердце Скалобоя",
+      "description": "Трофей Скалобоя: +6 к броне, +40 к здоровью.",
+      "slot": "relic",
+      "rarity": "epic",
+      "armor": 6,
+      "max_health": 40,
+      "value": 220
+    },
+    "spark_collar": {
+      "name": "Ошейник Искры",
+      "description": "Трофей пламенного пса: +5 к ловкости, +4% крит, +1 HP за удар.",
+      "slot": "amulet",
+      "rarity": "epic",
+      "agility": 5,
+      "crit": 4,
+      "lifesteal": 1,
+      "value": 240
     }
   }
 }

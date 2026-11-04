@@ -39,7 +39,7 @@ func _run() -> void:
 	game.quests.states["moonleaf_gathering"]["completed"] = true
 	game._set_region("moonlit_grove", Vector2(140, 430), false)
 	await process_frame
-	if not _verify(_count(game, func(n: Node) -> bool: return n is ForestWolf) == 2, "grove has two wolves"):
+	if not _verify(_count(game, func(n: Node) -> bool: return n is ForestWolf and not n.has_meta("legend")) == 2, "grove has two wolves"):
 		return
 	if not _verify(_count(game, func(n: Node) -> bool: return n is GroveGuardian) == 0, "guardian is hidden before grove quest"):
 		return

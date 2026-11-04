@@ -1,0 +1,113 @@
+{
+  "_comment": "Legendary beasts: one per land, they roam only at night. Each drops a unique trophy once.",
+  "legends": {
+    "slime_king": {
+      "name": "Студень, король слизней",
+      "kind": "slime",
+      "region": "greenreach",
+      "position": [
+        1150,
+        780
+      ],
+      "health_mult": 4.5,
+      "damage_mult": 1.6,
+      "scale": 1.6,
+      "color": [
+        0.5,
+        1.0,
+        0.6
+      ],
+      "reward": "jelly_staff"
+    },
+    "dusk_wolf": {
+      "name": "Мрак, сумеречный волк",
+      "kind": "wolf",
+      "region": "moonlit_grove",
+      "position": [
+        500,
+        450
+      ],
+      "health_mult": 4.5,
+      "damage_mult": 1.6,
+      "scale": 1.6,
+      "color": [
+        0.55,
+        0.45,
+        1.0
+      ],
+      "reward": "dusk_fang"
+    },
+    "giant_toad": {
+      "name": "Квакша, жаба-исполин",
+      "kind": "toad",
+      "region": "misty_marsh",
+      "position": [
+        430,
+        480
+      ],
+      "health_mult": 4.5,
+      "damage_mult": 1.6,
+      "scale": 1.6,
+      "color": [
+        0.7,
+        1.0,
+        0.4
+      ],
+      "reward": "toad_crown"
+    },
+    "stone_crab": {
+      "name": "Гранитный краб",
+      "kind": "crab",
+      "region": "salt_coast",
+      "position": [
+        450,
+        640
+      ],
+      "health_mult": 4.5,
+      "damage_mult": 1.6,
+      "scale": 1.6,
+      "color": [
+        0.7,
+        0.8,
+        1.0
+      ],
+      "reward": "crab_aegis"
+    },
+    "rock_breaker": {
+      "name": "Скалобой",
+      "kind": "golem",
+      "region": "stone_pass",
+      "position": [
+        330,
+        800
+      ],
+      "health_mult": 4.5,
+      "damage_mult": 1.6,
+      "scale": 1.6,
+      "color": [
+        1.0,
+        0.85,
+        0.5
+      ],
+      "reward": "golem_heart"
+    },
+    "spark_hound": {
+      "name": "Искра, пламенный пёс",
+      "kind": "ember_hound",
+      "region": "ashen_waste",
+      "position": [
+        450,
+        620
+      ],
+      "health_mult": 4.5,
+      "damage_mult": 1.6,
+      "scale": 1.6,
+      "color": [
+        1.0,
+        0.5,
+        0.2
+      ],
+      "reward": "spark_collar"
+    }
+  }
+}

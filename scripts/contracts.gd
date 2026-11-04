@@ -62,9 +62,17 @@ func make_offer() -> Dictionary:
 		"title": "Поставка: %s ×%d" % [game.player.get_item_name(str(item[0])), count],
 		"gold": count * (8 + int(item[1]) * 4), "xp": count * (6 + int(item[1]) * 4)}
 
+## Three different jobs: no two with the same target.
 func _fill_offers() -> void:
-	while offers.size() < 3:
-		offers.append(make_offer())
+	var tries := 0
+	while offers.size() < 3 and tries < 30:
+		tries += 1
+		var offer := make_offer()
+		var key := str(offer.get("kind", offer.get("item", "")))
+		var taken := offers + active
+		if taken.any(func(o: Dictionary) -> bool: return str(o.get("kind", o.get("item", ""))) == key):
+			continue
+		offers.append(offer)
 
 func is_ready(contract: Dictionary) -> bool:
 	if contract.get("type", "") == "deliver":
@@ -138,6 +146,7 @@ func turn_in(contract_id: String) -> bool:
 			game.player.remove_item(str(contract["item"]), int(contract["count"]))
 		active.erase(contract)
 		completed += 1
+		game.achievements.add("contracts")
 		game.player.add_gold(int(contract["gold"]))
 		game.player.add_experience(int(contract["xp"]))
 		if rng.randf() < 0.25:

@@ -83,6 +83,8 @@ var events: WorldEvents
 var day_night: DayNight
 var treasure: TreasureHunt
 var contracts: Contracts
+var legends: Legends
+var achievements: Achievements
 var cast_cooldown_total: float = 0.0
 var defeated_enemies: int = 0
 var save_path: String = SAVE_SCRIPT.SAVE_PATH
@@ -164,6 +166,18 @@ func _ready() -> void:
 	treasure.name = "TreasureHunt"
 	treasure.game = self
 	add_child(treasure)
+	achievements = Achievements.new()
+	achievements.name = "Achievements"
+	achievements.game = self
+	add_child(achievements)
+	legends = Legends.new()
+	legends.name = "Legends"
+	legends.game = self
+	add_child(legends)
+	legends.legend_defeated.connect(func(_id: String) -> void: achievements.add("legends"))
+	fishing.finished.connect(func(caught: String) -> void:
+		if not caught.is_empty():
+			achievements.add("fish"))
 	contracts = Contracts.new()
 	contracts.name = "Contracts"
 	contracts.game = self
@@ -190,6 +204,7 @@ func _ready() -> void:
 	add_child(interact_prompt)
 	hud.inventory_use_requested.connect(_on_inventory_use)
 	hud.inventory_view.set_skills(skills)
+	hud.journal_view.achievements = achievements
 	hud.inventory_unequip_requested.connect(_on_inventory_unequip)
 	hud.handcraft_requested.connect(open_handcraft)
 	hud.hero_unequip_requested.connect(func(slot: String) -> void:
@@ -584,6 +599,8 @@ func _clear_region_actors() -> void:
 func _set_region(region_id: String, arrival: Vector2, notify: bool = true) -> void:
 	current_region = RegionCatalog.resolve(region_id)
 	visited_regions[current_region] = true
+	if achievements != null:
+		achievements.set_max("regions", visited_regions.size())
 	_clear_region_actors()
 	if world != null and world.has_method("configure_region"):
 		world.configure_region(current_region)
@@ -633,6 +650,7 @@ func choose_finale(ending: String) -> void:
 		return
 	player.set_physics_process(true)
 	director.set_flag("ending_" + ending)
+	achievements.add("ending")
 	director.queue_scene("ending_" + ending, func() -> void:
 		hud.show_title_card("Конец · %s" % ("Живое небо" if ending == "restore" else "Звёзды над землёй"), 6.0)
 		hud.show_message("Спасибо за игру! Мир остаётся открытым: побочные задания, подземелья и события ждут.", 8.0)
@@ -1021,6 +1039,8 @@ func minimap_markers() -> Array:
 			var kind := "enemy"
 			if enemy_kind(actor) in STORY_BOSSES:
 				kind = "boss"
+			elif actor.has_meta("legend"):
+				kind = "boss"
 			elif not actor.elite_id.is_empty() or actor is LootImp:
 				kind = "elite"
 			result.append({"kind": kind, "position": at})
@@ -1320,6 +1340,7 @@ func _on_chest_opened(id: String, gold: int, item: String, amount: int) -> void:
 	if opened_chests.has(id):
 		return
 	opened_chests[id] = true
+	achievements.add("chests")
 	GameAudio.play("chest", -2.0, 0.0)
 	latest_cache_narrative = id == CARTOGRAPHER_CACHE_ID
 	gold = roundi(float(gold) * player.get_gold_multiplier())
@@ -1348,6 +1369,7 @@ func _on_guardian_defeated(xp: int, death_position: Vector2) -> void:
 	if guardian_defeated:
 		return
 	guardian_defeated = true
+	achievements.add("bosses")
 	player.add_experience(xp)
 	player.add_gold(100)
 	_spawn_loot(death_position, "ancient_relic")
@@ -1362,6 +1384,7 @@ func _on_story_boss_defeated(kind: String, xp: int, death_position: Vector2) -> 
 	if director.has_flag(kind + "_defeated"):
 		return
 	director.set_flag(kind + "_defeated")
+	achievements.add("bosses")
 	player.add_experience(xp)
 	_spawn_loot(death_position, "ancient_relic")
 	spawn_generated_loot(death_position + Vector2(14, 6), "rare")
@@ -1388,6 +1411,8 @@ func _on_enemy_defeated(xp_reward: int, death_position: Vector2, kind: String = 
 	player.add_experience(xp_reward)
 	defeated_enemies += 1
 	contracts.on_kill(kind)
+	achievements.add("kills")
+	achievements.set_max("gold", player.gold)
 	var starter: Array[String] = ["apprentice_staff", "leather_armor", "mana_amulet"]
 	if defeated_enemies <= starter.size():
 		_spawn_loot(death_position, starter[defeated_enemies - 1])
@@ -1466,6 +1491,7 @@ func _scatter(at: Vector2) -> Vector2:
 func _on_elite_defeated(enemy: SlimeEnemy) -> void:
 	if enemy.elite_id.is_empty():
 		return
+	achievements.add("elites")
 	spawn_generated_loot(enemy.global_position + Vector2(-10, 6), "uncommon")
 	shake(2.5, 0.25)
 
@@ -1528,6 +1554,7 @@ func _use_consumable(item_id: String, label: String = "") -> void:
 
 func _on_level_up(new_level: int) -> void:
 	GameAudio.play("level_up", -2.0, 0.0)
+	achievements.set_max("level", new_level)
 	# No pause: each level gives a skill point to spend in the tree (T).
 	Vfx.level_up(self, player.global_position)
 	if hud != null and not game_over:

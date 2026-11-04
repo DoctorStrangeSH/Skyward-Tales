@@ -107,6 +107,7 @@ func _on_dug(mark: DigSpot) -> void:
 	mark.queue_free()
 	active = {}
 	found += 1
+	game.achievements.add("treasures")
 	var level := RegionCatalog.level(game.current_region)
 	Vfx.burst(game, at, [Color(0.8, 0.65, 0.4), Color(0.55, 0.4, 0.25), Color(0.3, 0.2, 0.1, 0)], 18, 70.0, 0.5)
 	GameAudio.play("chest", -2.0, 0.0)
