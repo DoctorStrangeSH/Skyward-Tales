@@ -46,9 +46,9 @@ func _run() -> void:
 		Input.parse_input_event(e)
 		await process_frame
 	await process_frame
-	if game.player.mana >= mana:
-		push_error("DIALOGUE CLICK TEST FAILED: clicking the world no longer casts")
+	if game.attack_cooldown <= 0.0:
+		push_error("DIALOGUE CLICK TEST FAILED: clicking the world no longer swings the sword")
 		quit(1)
 		return
-	print("DIALOGUE CLICK OK: choices are clickable, world clicks still cast")
+	print("DIALOGUE CLICK OK: choices are clickable, world clicks still swing the sword")
 	quit(0)

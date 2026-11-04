@@ -39,14 +39,14 @@ func _run() -> void:
 		if not _require(directional.direction_index == index, "Wrong 8-way row %d" % index):
 			return
 
-	# Deliver a real left click, not just a direct _cast_spell() call.
+	# Deliver a real right click (spells; the left button is the sword).
 	var click := InputEventMouseButton.new()
-	click.button_index = MOUSE_BUTTON_LEFT
+	click.button_index = MOUSE_BUTTON_RIGHT
 	click.pressed = true
 	click.position = Vector2(300, 180)
 	var initial_mana: int = player.mana
 	game._input(click)
-	if not _require(player.mana < initial_mana, "LMB did not consume mana"):
+	if not _require(player.mana < initial_mana, "RMB did not consume mana"):
 		return
 
 	var bolt: MagicBolt = null
@@ -76,5 +76,5 @@ func _run() -> void:
 	if not _require(slime.health == hp_before - bolt.damage, "Projectile collision does not damage slime"):
 		return
 
-	print("MAGIC TEST OK: LMB cast, mana, projectile, 8 directions, collision damage")
+	print("MAGIC TEST OK: RMB cast, mana, projectile, 8 directions, collision damage")
 	quit(0)

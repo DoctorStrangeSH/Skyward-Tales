@@ -8,7 +8,6 @@ signal cancelled
 
 var gender: String = "m"
 var name_edit: LineEdit
-var preview: TextureRect
 var male_button: Button
 var female_button: Button
 var _name_touched: bool = false
@@ -31,19 +30,13 @@ func _ready() -> void:
 	title.add_theme_font_size_override("font_size", UiFont.px(14))
 	title.add_theme_color_override("font_color", Color(1.0, 0.88, 0.6))
 	box.add_child(title)
-	preview = TextureRect.new()
-	preview.custom_minimum_size = Vector2(96, 96)
-	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	preview.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	preview.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	box.add_child(preview)
+	# Two hero cards with the living idle animation; the chosen one glows.
 	var row := HBoxContainer.new()
 	row.alignment = BoxContainer.ALIGNMENT_CENTER
-	row.add_theme_constant_override("separation", 8)
+	row.add_theme_constant_override("separation", 12)
 	box.add_child(row)
-	male_button = _choice(row, "Юноша", "m")
-	female_button = _choice(row, "Девушка", "f")
+	male_button = _card(row, "Юноша", "m")
+	female_button = _card(row, "Девушка", "f")
 	var name_label := Label.new()
 	name_label.text = "Имя"
 	name_label.add_theme_color_override("font_color", Color(0.85, 0.85, 0.9))
@@ -63,14 +56,52 @@ func _ready() -> void:
 	box.add_child(back)
 	select_gender("m")
 
-func _choice(parent: HBoxContainer, label: String, value: String) -> Button:
+var _cards: Dictionary = {}
+var _frame_clock: float = 0.0
+var _frame: int = 0
+
+func _card(parent: HBoxContainer, label: String, value: String) -> Button:
 	var button := Button.new()
-	button.text = label
 	button.toggle_mode = true
-	button.custom_minimum_size = Vector2(110, 28)
+	button.custom_minimum_size = Vector2(118, 118)
+	button.focus_mode = Control.FOCUS_NONE
 	button.pressed.connect(func() -> void: select_gender(value))
+	var art := TextureRect.new()
+	art.custom_minimum_size = Vector2(96, 96)
+	art.position = Vector2(11, 4)
+	art.size = Vector2(96, 96)
+	art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	art.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	button.add_child(art)
+	var caption := Label.new()
+	caption.text = label
+	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	caption.position = Vector2(0, 100)
+	caption.size = Vector2(118, 14)
+	caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	button.add_child(caption)
 	parent.add_child(button)
+	var atlas := AtlasTexture.new()
+	var sheet := WorldArt.texture("sprites/chibi/%s/idle.png" % ("hero_f" if value == "f" else "hero_m"))
+	if sheet != null:
+		atlas.atlas = sheet
+		atlas.region = Rect2(16, 12, 32, 32)
+	art.texture = atlas
+	_cards[value] = atlas
 	return button
+
+func _process(delta: float) -> void:
+	_frame_clock += delta
+	if _frame_clock < 0.16:
+		return
+	_frame_clock = 0.0
+	_frame = (_frame + 1) % 6
+	for value in _cards:
+		var atlas: AtlasTexture = _cards[value]
+		# The chosen hero breathes; the other stands still.
+		atlas.region = Rect2(16 + 64 * (_frame if value == gender else 0), 12, 32, 32)
 
 func select_gender(value: String) -> void:
 	gender = "f" if value == "f" else "m"
@@ -79,12 +110,8 @@ func select_gender(value: String) -> void:
 	if not _name_touched or name_edit.text.strip_edges().is_empty():
 		name_edit.text = StoryText.DEFAULT_NAMES[gender]
 		_name_touched = false
-	var sheet := WorldArt.texture("sprites/characters/%s.png" % ("hero_f_8dir_walk" if gender == "f" else "hero_8dir_walk"))
-	if sheet != null:
-		var atlas := AtlasTexture.new()
-		atlas.atlas = sheet
-		atlas.region = Rect2(0, 0, 32, 32)
-		preview.texture = atlas
+	for card in _cards:
+		(_cards[card] as AtlasTexture).region.position.x = 16
 
 func hero_data() -> Dictionary:
 	var hero_name := name_edit.text.strip_edges()

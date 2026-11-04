@@ -929,32 +929,32 @@
  },
  "world/coast_tree_0.png": {
   "size": [
-   60,
-   78
+   50,
+   64
   ],
   "origin": [
-   30,
-   72
+   25,
+   58
   ]
  },
  "world/coast_tree_1.png": {
   "size": [
-   60,
-   78
+   50,
+   64
   ],
   "origin": [
-   30,
-   72
+   25,
+   58
   ]
  },
  "world/coast_tree_2.png": {
   "size": [
-   48,
-   60
+   42,
+   52
   ],
   "origin": [
-   24,
-   54
+   21,
+   46
   ]
  },
  "world/crypt_bush_0.png": {
@@ -1101,32 +1101,32 @@
  },
  "world/day_tree_0.png": {
   "size": [
-   72,
-   84
+   58,
+   68
   ],
   "origin": [
-   36,
-   76
+   29,
+   60
   ]
  },
  "world/day_tree_1.png": {
   "size": [
-   72,
-   84
+   58,
+   68
   ],
   "origin": [
-   36,
-   76
+   29,
+   60
   ]
  },
  "world/day_tree_2.png": {
   "size": [
-   56,
-   66
+   46,
+   54
   ],
   "origin": [
-   28,
-   58
+   23,
+   46
   ]
  },
  "world/decor_armor_stand.png": {
@@ -1333,32 +1333,32 @@
  },
  "world/marsh_tree_0.png": {
   "size": [
-   72,
-   84
+   58,
+   68
   ],
   "origin": [
-   36,
-   76
+   29,
+   60
   ]
  },
  "world/marsh_tree_1.png": {
   "size": [
-   72,
-   84
+   58,
+   68
   ],
   "origin": [
-   36,
-   76
+   29,
+   60
   ]
  },
  "world/marsh_tree_2.png": {
   "size": [
-   56,
-   66
+   46,
+   54
   ],
   "origin": [
-   28,
-   58
+   23,
+   46
   ]
  },
  "world/misty_marsh_canopy.png": {
@@ -1407,32 +1407,32 @@
  },
  "world/mountain_tree_0.png": {
   "size": [
-   48,
-   84
+   40,
+   68
   ],
   "origin": [
-   24,
-   78
+   20,
+   62
   ]
  },
  "world/mountain_tree_1.png": {
   "size": [
-   48,
-   84
+   40,
+   68
   ],
   "origin": [
-   24,
-   78
+   20,
+   62
   ]
  },
  "world/mountain_tree_2.png": {
   "size": [
-   38,
-   64
+   32,
+   52
   ],
   "origin": [
-   19,
-   58
+   16,
+   46
   ]
  },
  "world/night_bush_0.png": {
@@ -1457,32 +1457,32 @@
  },
  "world/night_tree_0.png": {
   "size": [
-   72,
-   84
+   58,
+   68
   ],
   "origin": [
-   36,
-   76
+   29,
+   60
   ]
  },
  "world/night_tree_1.png": {
   "size": [
-   72,
-   84
+   58,
+   68
   ],
   "origin": [
-   36,
-   76
+   29,
+   60
   ]
  },
  "world/night_tree_2.png": {
   "size": [
-   56,
-   66
+   46,
+   54
   ],
   "origin": [
-   28,
-   58
+   23,
+   46
   ]
  },
  "world/rift_bush_0.png": {
@@ -1625,32 +1625,32 @@
  },
  "world/sky_tree_0.png": {
   "size": [
-   72,
-   84
+   58,
+   68
   ],
   "origin": [
-   36,
-   76
+   29,
+   60
   ]
  },
  "world/sky_tree_1.png": {
   "size": [
-   72,
-   84
+   58,
+   68
   ],
   "origin": [
-   36,
-   76
+   29,
+   60
   ]
  },
  "world/sky_tree_2.png": {
   "size": [
-   56,
-   66
+   46,
+   54
   ],
   "origin": [
-   28,
-   58
+   23,
+   46
   ]
  },
  "world/spires_bush_0.png": {

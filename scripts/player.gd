@@ -29,7 +29,7 @@ var dodge_time_left: float = 0.0
 var dodge_cooldown_left: float = 0.0
 var dodge_direction: Vector2 = Vector2.DOWN
 var inventory: Dictionary = {}
-var equipment: Dictionary = {"weapon": "", "armor": "", "amulet": "", "relic": ""}
+var equipment: Dictionary = {"blade": "", "weapon": "", "armor": "", "amulet": "", "relic": ""}
 var talents: Dictionary = {}
 ## Rolled equipment definitions by id ("gen_0001"); saved with the hero.
 var generated_items: Dictionary = {}
@@ -244,6 +244,12 @@ func _equipped_stat(stat: String) -> int:
 	for item_id in equipment.values():
 		total += _equipment_stat(str(item_id), stat)
 	return total
+
+## Sword damage: base 10, +2 per level, the blade's "melee", +1 per 2 power.
+func get_melee_damage() -> int:
+	var damage := 10.0 + 2.0 * float(level - 1) + float(_equipped_stat("melee")) + float(get_stat("power")) * 0.5
+	damage += float(talents.get("blade_mastery", 0)) * 3.0
+	return int(round(damage * (1.0 + buff_value("power"))))
 
 func get_armor() -> int:
 	return _equipped_stat("armor") + int(buff_value("armor"))

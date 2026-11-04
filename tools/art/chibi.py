@@ -50,6 +50,13 @@ def load(rel: str) -> np.ndarray:
     return np.array(Image.open(SRC / rel).convert("RGBA"))
 
 
+def over(base: np.ndarray, layer: np.ndarray) -> np.ndarray:
+    """Alpha-composites an effect sheet (slash swoosh) over the body sheet."""
+    a = Image.fromarray(base)
+    a.alpha_composite(Image.fromarray(layer))
+    return np.array(a)
+
+
 def to_eight(sheet: np.ndarray, cell: int = CELL) -> np.ndarray:
     """5 pack rows -> 8 game rows (left-facing rows mirrored)."""
     rows = [sheet[r * cell:(r + 1) * cell] for r in range(5)]
@@ -229,6 +236,11 @@ def main() -> int:
         "roll": to_eight(load(red + "Roll.png")),
         "hit": to_eight(load(red + "Hit.png")),
         "faint": to_eight(load(red + "Faint.png")),
+        # Sword: two slashes with their swoosh, a held charge and the spin.
+        "slash1": to_eight(over(load(red + "Slash 1 Default.png"), load(red + "Slash 1 Default Vfx.png"))),
+        "slash2": to_eight(over(load(red + "Slash 2 Default.png"), load(red + "Slash 2 Default Vfx.png"))),
+        "charge": to_eight(load(red + "Sword Charge Loop.png")),
+        "spin": to_eight(load(red + "Sword Spin White.png")),
     }
     save("hero_f", hero, manifest=manifest)
 
