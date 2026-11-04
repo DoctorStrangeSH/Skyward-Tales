@@ -17,7 +17,25 @@
    16
   ]
  },
+ "icons/bluebell.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/crystal_lens.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/fish.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/fish_stew.png": {
   "size": [
    16,
    16
@@ -29,7 +47,25 @@
    16
   ]
  },
+ "icons/healroot.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/health_potion.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/hearty_stew.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/herb_tea.png": {
   "size": [
    16,
    16
@@ -71,7 +107,31 @@
    16
   ]
  },
+ "icons/power_elixir.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/pyromancer_core.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/recipe_hearty_stew.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/recipe_power_elixir.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/recipe_swift_tonic.png": {
   "size": [
    16,
    16
@@ -95,7 +155,19 @@
    16
   ]
  },
+ "icons/stone.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/storm_eye.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/swift_tonic.png": {
   "size": [
    16,
    16
@@ -108,6 +180,12 @@
   ]
  },
  "icons/wolfskin_mantle.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/wood.png": {
   "size": [
    16,
    16
@@ -855,6 +933,56 @@
    16
   ]
  },
+ "world/gather_bluebell.png": {
+  "size": [
+   16,
+   16
+  ],
+  "origin": [
+   8,
+   14
+  ]
+ },
+ "world/gather_fish.png": {
+  "size": [
+   24,
+   12
+  ],
+  "origin": [
+   12,
+   10
+  ]
+ },
+ "world/gather_healroot.png": {
+  "size": [
+   16,
+   16
+  ],
+  "origin": [
+   8,
+   14
+  ]
+ },
+ "world/gather_stone.png": {
+  "size": [
+   26,
+   20
+  ],
+  "origin": [
+   13,
+   17
+  ]
+ },
+ "world/gather_wood.png": {
+  "size": [
+   30,
+   18
+  ],
+  "origin": [
+   15,
+   15
+  ]
+ },
  "world/greenreach_canopy.png": {
   "size": [
    1920,
@@ -1193,6 +1321,16 @@
   "origin": [
    60,
    78
+  ]
+ },
+ "world/station_kitchen.png": {
+  "size": [
+   30,
+   30
+  ],
+  "origin": [
+   15,
+   27
   ]
  },
  "world/village_board.png": {

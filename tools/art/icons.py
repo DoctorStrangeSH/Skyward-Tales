@@ -199,4 +199,80 @@ def build() -> dict[str, Canvas]:
         "crystal_lens": lens(),
         "pattern_key": pattern_key(),
         "sky_seal": essence(),
+        "wood": log_icon(), "stone": stone_icon(), "fish": fish_icon(),
+        "healroot": flower_icon(ramp("#ffd0c0", "#e05a4a", "#a8302a")), "bluebell": flower_icon(ramp("#e0f0ff", "#5a8ae0", "#2a4aa0")),
+        "fish_stew": bowl_icon(ramp("#ffe0a0", "#e0a040", "#a06020")), "herb_tea": bowl_icon(ramp("#d8ffd0", "#7ac060", "#3a7a30")),
+        "hearty_stew": bowl_icon(ramp("#ffc090", "#c86030", "#803020")),
+        "power_elixir": potion(ramp("#ffe0a0", "#ff9a3c", "#c8352e")), "swift_tonic": potion(ramp("#e0fff0", "#60e0b0", "#2a9a7a")),
+        "recipe_hearty_stew": scroll_icon(), "recipe_power_elixir": scroll_icon(), "recipe_swift_tonic": scroll_icon(),
     }
+
+
+def log_icon() -> Canvas:
+    c = Canvas(16, 16)
+    bark = ramp("#b9875a", "#744d33", "#442d31")
+    for y in range(6, 12):
+        c.hline(2, 12, y, bark[1] if y not in (6, 11) else bark[2])
+    c.ellipse(13, 8.5, 2.2, 3, bark[0])
+    c.put(13, 8, bark[2])
+    c.outline(hex_color("#302423"))
+    return c
+
+
+def stone_icon() -> Canvas:
+    c = Canvas(16, 16)
+    st = ramp("#b8b49c", "#7b7765", "#544e45")
+    c.ellipse(8, 9, 5.5, 4.5, st[1])
+    c.ellipse(6.5, 7.5, 2.5, 2, st[0])
+    c.outline(hex_color("#302423"))
+    return c
+
+
+def fish_icon() -> Canvas:
+    c = Canvas(16, 16)
+    sc = ramp("#d8f0ff", "#7ab0d8", "#3a6a98")
+    c.ellipse(7, 8, 4.5, 2.6, sc[1])
+    c.hline(4, 9, 7, sc[0])
+    for k in range(3):
+        c.vline(12 + k, 8 - k - 1, 8 + k + 1, sc[2])
+    c.put(4, 7, hex_color("#1a1a2a"))
+    c.outline(hex_color("#302423"))
+    return c
+
+
+def flower_icon(colors) -> Canvas:
+    c = Canvas(16, 16)
+    c.vline(8, 7, 14, ramp("#6c9a50", "#4a7a42", "#335c38")[1])
+    c.put(6, 12, hex_color("#6c9a50"))
+    c.put(10, 11, hex_color("#6c9a50"))
+    c.ellipse(8, 5, 3, 2.6, colors[1])
+    c.put(8, 5, colors[0])
+    c.outline(hex_color("#302423"))
+    return c
+
+
+def bowl_icon(colors) -> Canvas:
+    c = Canvas(16, 16)
+    wood = ramp("#b9875a", "#744d33", "#442d31")
+    for y in range(8, 13):
+        half = 6 - (y - 8)
+        c.hline(8 - half, 7 + half, y, wood[1])
+    c.hline(2, 13, 8, colors[1])
+    c.hline(3, 12, 7, colors[0])
+    c.put(5, 4, hex_color("#ffffff"))
+    c.put(9, 3, hex_color("#ffffff"))
+    c.outline(hex_color("#302423"))
+    return c
+
+
+def scroll_icon() -> Canvas:
+    c = Canvas(16, 16)
+    paper = ramp("#fff6d8", "#e8d4a0", "#b89a60")
+    c.rect(3, 4, 10, 8, paper[0])
+    c.vline(3, 3, 12, paper[2])
+    c.vline(12, 3, 12, paper[2])
+    for y in (6, 8, 10):
+        c.hline(5, 10, y, paper[2])
+    c.put(10, 11, hex_color("#e05a4a"))
+    c.outline(hex_color("#302423"))
+    return c

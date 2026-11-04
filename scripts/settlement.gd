@@ -59,12 +59,30 @@ func homeless() -> Array[String]:
 	return result
 
 func house_cost(id: String) -> int:
-	var cost := float(settler(id).get("cost", 60))
+	return int(round(float(settler(id).get("cost", 60)) * _discount()))
+
+func _discount() -> float:
+	var factor := 1.0
 	for plot_id in homes:
 		var service: Dictionary = settler(str(homes[plot_id])).get("service", {})
 		if str(service.get("type", "")) == "discount":
-			cost *= 1.0 - float(service.get("value", 0.0))
-	return int(round(cost))
+			factor *= 1.0 - float(service.get("value", 0.0))
+	return factor
+
+## Wood and stone a house needs (after the woodcutter's discount).
+func house_materials(id: String) -> Dictionary:
+	var result := {}
+	var mats: Dictionary = settler(id).get("materials", {})
+	for item_id in mats:
+		result[item_id] = maxi(1, int(round(float(mats[item_id]) * _discount())))
+	return result
+
+func _materials_text(id: String) -> String:
+	var parts: Array[String] = []
+	var mats := house_materials(id)
+	for item_id in mats:
+		parts.append("%s %d/%d" % [game.player.get_item_name(item_id), int(game.player.inventory.get(item_id, 0)), int(mats[item_id])])
+	return ", ".join(parts)
 
 func _completed_quests() -> int:
 	var total := 0
@@ -195,7 +213,8 @@ func open_board() -> void:
 		if plots.is_empty():
 			break
 		var name := str(settler(id).get("name", id)).get_slice(",", 0)
-		choices.append({"id": "settle_build:" + id, "label": "Построить дом для: %s — %d золота" % [name, house_cost(id)]})
+		var mats := _materials_text(id)
+		choices.append({"id": "settle_build:" + id, "label": "Дом для: %s — %d золота%s" % [name, house_cost(id), (", " + mats) if not mats.is_empty() else ""]})
 	if choices.is_empty():
 		if waiting.is_empty():
 			lines += "\nВстречайте людей в других землях и зовите их сюда — для каждого найдётся участок."
@@ -214,6 +233,13 @@ func build(id: String) -> bool:
 	if game.player.gold < cost:
 		game.hud.show_message("Не хватает золота: нужно %d." % cost, 2.5)
 		return false
+	var mats := house_materials(id)
+	for item_id in mats:
+		if int(game.player.inventory.get(item_id, 0)) < int(mats[item_id]):
+			game.hud.show_message("Не хватает: %s (нужно %d). Рубите брёвна и дробите камень в округе." % [game.player.get_item_name(item_id), int(mats[item_id])], 3.0)
+			return false
+	for item_id in mats:
+		game.player.remove_item(item_id, int(mats[item_id]))
 	game.player.gold -= cost
 	game.player.stats_changed.emit()
 	homes[plots[0]] = id

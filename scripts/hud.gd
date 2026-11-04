@@ -12,6 +12,7 @@ var toasts: ToastStack
 var vitals: HudVitals
 var quest_label: Label
 var side_quest_label: Label
+var buff_label: Label
 var message_label: Label
 var prompt_label: Label
 var dialogue_panel: PanelContainer
@@ -105,6 +106,10 @@ func _ready() -> void:
 	side_quest_label.position = Vector2(8, 63)
 	side_quest_label.size = Vector2(300, 40)
 	root.add_child(side_quest_label)
+	buff_label = _make_label("", 9, Color(0.72, 1.0, 0.72))
+	buff_label.position = Vector2(504, 116)
+	buff_label.size = Vector2(132, 30)
+	root.add_child(buff_label)
 
 	minimap = preload("res://scripts/world_minimap.gd").new() as WorldMinimap
 	minimap.position = Vector2(502, 6)
@@ -384,6 +389,11 @@ func update_status(player: PlayerCharacter, quests: QuestManager) -> void:
 	if vitals != null:
 		vitals.set_values(player)
 	quest_label.text = "◆ " + quests.get_active_summary()
+	var effects: Array[String] = []
+	for type in player.buffs:
+		var buff: Dictionary = player.buffs[type]
+		effects.append("%s %d с" % [str(buff.get("label", type)), int(ceil(float(buff.get("time", 0.0))))])
+	buff_label.text = ("✦ " + " · ".join(effects)) if not effects.is_empty() else ""
 	var side := quests.get_side_summaries()
 	side_quest_label.text = "\n".join(side.slice(0, 3).map(func(line: String) -> String: return "◇ " + line))
 	inventory_label.text = "Q  Зелье HP ×%d     R  Зелье MP ×%d" % [int(player.inventory.get("health_potion", 0)), int(player.inventory.get("mana_potion", 0))]

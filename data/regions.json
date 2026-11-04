@@ -77,7 +77,7 @@
         "id": "greenreach_woodland",
         "position": [1700, 820],
         "gold": 30,
-        "item": "mana_potion",
+        "item": "recipe_hearty_stew",
         "amount": 1
       },
       {
@@ -899,7 +899,97 @@
       }
     ],
     "level": 1,
-    "waystone": [640, 560]
+    "waystone": [640, 560],
+    "gather": [
+      {
+        "kind": "wood",
+        "position": [1671, 1103]
+      },
+      {
+        "kind": "wood",
+        "position": [1800, 310]
+      },
+      {
+        "kind": "wood",
+        "position": [1455, 441]
+      },
+      {
+        "kind": "wood",
+        "position": [1090, 412]
+      },
+      {
+        "kind": "wood",
+        "position": [1717, 335]
+      },
+      {
+        "kind": "wood",
+        "position": [1247, 411]
+      },
+      {
+        "kind": "stone",
+        "position": [1031, 902]
+      },
+      {
+        "kind": "stone",
+        "position": [1171, 1085]
+      },
+      {
+        "kind": "stone",
+        "position": [903, 1110]
+      },
+      {
+        "kind": "stone",
+        "position": [1184, 1043]
+      },
+      {
+        "kind": "healroot",
+        "position": [1311, 762]
+      },
+      {
+        "kind": "healroot",
+        "position": [1007, 337]
+      },
+      {
+        "kind": "healroot",
+        "position": [1292, 583]
+      },
+      {
+        "kind": "healroot",
+        "position": [1091, 898]
+      },
+      {
+        "kind": "healroot",
+        "position": [1077, 572]
+      },
+      {
+        "kind": "healroot",
+        "position": [1288, 1039]
+      },
+      {
+        "kind": "bluebell",
+        "position": [1508, 418]
+      },
+      {
+        "kind": "bluebell",
+        "position": [1158, 304]
+      },
+      {
+        "kind": "bluebell",
+        "position": [1404, 366]
+      },
+      {
+        "kind": "bluebell",
+        "position": [1441, 495]
+      },
+      {
+        "kind": "fish",
+        "position": [1479, 872]
+      },
+      {
+        "kind": "fish",
+        "position": [321, 191]
+      }
+    ]
   },
   "moonlit_grove": {
     "name": "Зачарованный лес",
@@ -1112,7 +1202,53 @@
       ]
     },
     "level": 3,
-    "waystone": [580, 390]
+    "waystone": [580, 390],
+    "gather": [
+      {
+        "kind": "wood",
+        "position": [161, 774]
+      },
+      {
+        "kind": "wood",
+        "position": [1022, 539]
+      },
+      {
+        "kind": "wood",
+        "position": [904, 784]
+      },
+      {
+        "kind": "wood",
+        "position": [793, 736]
+      },
+      {
+        "kind": "healroot",
+        "position": [217, 460]
+      },
+      {
+        "kind": "healroot",
+        "position": [264, 706]
+      },
+      {
+        "kind": "healroot",
+        "position": [424, 471]
+      },
+      {
+        "kind": "bluebell",
+        "position": [1199, 711]
+      },
+      {
+        "kind": "bluebell",
+        "position": [1173, 472]
+      },
+      {
+        "kind": "bluebell",
+        "position": [636, 637]
+      },
+      {
+        "kind": "bluebell",
+        "position": [544, 287]
+      }
+    ]
   },
   "crystal_caves": {
     "name": "Хрустальные пещеры",
@@ -1314,7 +1450,29 @@
       }
     ],
     "level": 5,
-    "waystone": [640, 540]
+    "waystone": [640, 540],
+    "gather": [
+      {
+        "kind": "stone",
+        "position": [513, 587]
+      },
+      {
+        "kind": "stone",
+        "position": [430, 467]
+      },
+      {
+        "kind": "stone",
+        "position": [919, 579]
+      },
+      {
+        "kind": "stone",
+        "position": [443, 720]
+      },
+      {
+        "kind": "stone",
+        "position": [799, 519]
+      }
+    ]
   },
   "sky_island": {
     "name": "Небесный остров",
@@ -1467,7 +1625,21 @@
       "bushes": []
     },
     "level": 7,
-    "waystone": [700, 480]
+    "waystone": [700, 480],
+    "gather": [
+      {
+        "kind": "bluebell",
+        "position": [210, 473]
+      },
+      {
+        "kind": "bluebell",
+        "position": [420, 535]
+      },
+      {
+        "kind": "bluebell",
+        "position": [607, 608]
+      }
+    ]
   },
   "wind_spires": {
     "name": "Ветреные шпили",
@@ -1486,8 +1658,8 @@
         "id": "spires_nest",
         "position": [1120, 640],
         "gold": 110,
-        "item": "health_potion",
-        "amount": 3
+        "item": "recipe_swift_tonic",
+        "amount": 1
       }
     ],
     "herbs": [
@@ -1769,8 +1941,8 @@
         "id": "marsh_reeds",
         "position": [1150, 770],
         "gold": 90,
-        "item": "health_potion",
-        "amount": 2
+        "item": "recipe_power_elixir",
+        "amount": 1
       },
       {
         "id": "marsh_stump",
@@ -1928,6 +2100,52 @@
         [230, 560],
         [700, 200]
       ]
-    }
+    },
+    "gather": [
+      {
+        "kind": "healroot",
+        "position": [527, 792]
+      },
+      {
+        "kind": "healroot",
+        "position": [1109, 557]
+      },
+      {
+        "kind": "healroot",
+        "position": [649, 370]
+      },
+      {
+        "kind": "bluebell",
+        "position": [932, 713]
+      },
+      {
+        "kind": "bluebell",
+        "position": [511, 660]
+      },
+      {
+        "kind": "wood",
+        "position": [924, 601]
+      },
+      {
+        "kind": "wood",
+        "position": [814, 643]
+      },
+      {
+        "kind": "fish",
+        "position": [265, 659]
+      },
+      {
+        "kind": "fish",
+        "position": [726, 514]
+      },
+      {
+        "kind": "fish",
+        "position": [1005, 376]
+      },
+      {
+        "kind": "fish",
+        "position": [580, 341]
+      }
+    ]
   }
 }
