@@ -1,7 +1,79 @@
-[gd_resource type="Theme" load_steps=2 format=3]
+[gd_resource type="Theme" load_steps=12 format=3]
 
 [ext_resource type="FontFile" path="res://assets/fonts/skyward_pixel.ttf" id="1_font"]
+[ext_resource type="Texture2D" path="res://assets/ui/button_normal.png" id="2_bn"]
+[ext_resource type="Texture2D" path="res://assets/ui/button_hover.png" id="3_bh"]
+[ext_resource type="Texture2D" path="res://assets/ui/button_pressed.png" id="4_bp"]
+[ext_resource type="Texture2D" path="res://assets/ui/button_disabled.png" id="5_bd"]
+[ext_resource type="Texture2D" path="res://assets/ui/panel.png" id="6_panel"]
+
+[sub_resource type="StyleBoxTexture" id="bn"]
+texture = ExtResource("2_bn")
+texture_margin_left = 4.0
+texture_margin_top = 4.0
+texture_margin_right = 4.0
+texture_margin_bottom = 4.0
+content_margin_left = 6.0
+content_margin_top = 3.0
+content_margin_right = 6.0
+content_margin_bottom = 3.0
+
+[sub_resource type="StyleBoxTexture" id="bh"]
+texture = ExtResource("3_bh")
+texture_margin_left = 4.0
+texture_margin_top = 4.0
+texture_margin_right = 4.0
+texture_margin_bottom = 4.0
+content_margin_left = 6.0
+content_margin_top = 3.0
+content_margin_right = 6.0
+content_margin_bottom = 3.0
+
+[sub_resource type="StyleBoxTexture" id="bp"]
+texture = ExtResource("4_bp")
+texture_margin_left = 4.0
+texture_margin_top = 4.0
+texture_margin_right = 4.0
+texture_margin_bottom = 4.0
+content_margin_left = 6.0
+content_margin_top = 3.0
+content_margin_right = 6.0
+content_margin_bottom = 3.0
+
+[sub_resource type="StyleBoxTexture" id="bd"]
+texture = ExtResource("5_bd")
+texture_margin_left = 4.0
+texture_margin_top = 4.0
+texture_margin_right = 4.0
+texture_margin_bottom = 4.0
+content_margin_left = 6.0
+content_margin_top = 3.0
+content_margin_right = 6.0
+content_margin_bottom = 3.0
+
+[sub_resource type="StyleBoxEmpty" id="focus"]
+
+[sub_resource type="StyleBoxTexture" id="panel"]
+texture = ExtResource("6_panel")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+content_margin_left = 9.0
+content_margin_top = 9.0
+content_margin_right = 9.0
+content_margin_bottom = 9.0
 
 [resource]
 default_font = ExtResource("1_font")
 default_font_size = 9
+Button/colors/font_color = Color(0.96, 0.92, 0.82, 1)
+Button/colors/font_hover_color = Color(1, 0.95, 0.75, 1)
+Button/colors/font_pressed_color = Color(1, 0.9, 0.6, 1)
+Button/colors/font_disabled_color = Color(0.6, 0.54, 0.46, 1)
+Button/styles/normal = SubResource("bn")
+Button/styles/hover = SubResource("bh")
+Button/styles/pressed = SubResource("bp")
+Button/styles/disabled = SubResource("bd")
+Button/styles/focus = SubResource("focus")
+PanelContainer/styles/panel = SubResource("panel")

@@ -20,7 +20,7 @@ func _ready() -> void:
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(5)
 	style.set_content_margin_all(8)
-	add_theme_stylebox_override("panel", style)
+	add_theme_stylebox_override("panel", UiStyle.panel(false))
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 6)
 	add_child(box)
@@ -77,11 +77,13 @@ func _skill_button(player: PlayerCharacter, skill_id: String, definition: Dictio
 		style.border_color = color
 		style.set_border_width_all(1)
 	elif reason.is_empty():
-		style.bg_color = Color(0.2, 0.17, 0.1)
+		style.bg_color = Color(0.36, 0.24, 0.16)
 		style.border_color = Color(1.0, 0.85, 0.4)
 		style.set_border_width_all(1)
 	else:
-		style.bg_color = Color(0.12, 0.11, 0.16)
+		style.bg_color = Color(0.17, 0.12, 0.1)
+		style.border_color = Color(0.36, 0.26, 0.2)
+		style.set_border_width_all(1)
 	button.add_theme_stylebox_override("normal", style)
 	var hover := style.duplicate() as StyleBoxFlat
 	hover.bg_color = hover.bg_color.lightened(0.15)

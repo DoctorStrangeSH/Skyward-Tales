@@ -272,3 +272,57 @@ def build(root: pathlib.Path) -> None:
         art[rel] = {"size": [canvas.w, canvas.h], "origin": list(origin)}
     manifest_path.write_text(json.dumps(dict(sorted(art.items())), indent=1) + "\n")
     print("  village: " + ", ".join(items))
+
+
+# --- Interface frames in the pack's warm wood palette ------------------------
+
+UI_BG = hex_color("#211715")
+UI_BG2 = hex_color("#2e211d")
+
+
+def ui_panel(gold: bool = False) -> Canvas:
+    """24x24 nine-slice: dark wood inside, timber border, brass corner studs."""
+    c = Canvas(24, 24)
+    c.rect(0, 0, 24, 24, OUTLINE)
+    c.rect(1, 1, 22, 22, TIMBER[2])
+    c.rect(1, 1, 22, 1, TIMBER[4])
+    c.rect(1, 22, 22, 1, TIMBER[0])
+    c.rect(2, 2, 20, 20, TIMBER[1])
+    c.rect(3, 3, 18, 18, OUTLINE)
+    c.rect(4, 4, 16, 16, UI_BG)
+    c.rect(4, 4, 16, 1, UI_BG2)
+    stud = [hex_color("#f2dc8a"), GOLD, hex_color("#b8862a")] if gold else [TIMBER[4], TIMBER[3], TIMBER[1]]
+    for x, y in ((1, 1), (21, 1), (1, 21), (21, 21)):
+        c.put(x, y, stud[1])
+        c.put(x + 1, y, stud[2])
+        c.put(x, y + 1, stud[2])
+        c.put(x + 1, y + 1, stud[0] if gold else stud[1])
+    return c
+
+
+def ui_button(state: str) -> Canvas:
+    """12x12 nine-slice button: plank face; hover brighter, pressed sunk."""
+    face = {"normal": TIMBER[2], "hover": TIMBER[3], "pressed": TIMBER[1], "disabled": hex_color("#4a3a34")}[state]
+    light = {"normal": TIMBER[3], "hover": TIMBER[4], "pressed": TIMBER[2], "disabled": hex_color("#5a4a42")}[state]
+    c = Canvas(12, 12)
+    c.rect(0, 0, 12, 12, OUTLINE)
+    c.rect(1, 1, 10, 10, face)
+    if state == "pressed":
+        c.hline(1, 10, 1, TIMBER[0])
+    else:
+        c.hline(1, 10, 1, light)
+        c.hline(1, 10, 10, TIMBER[0])
+    if state == "hover":
+        for x, y in ((1, 1), (10, 1), (1, 10), (10, 10)):
+            c.put(x, y, GOLD)
+    return c
+
+
+def build_ui(root: pathlib.Path) -> None:
+    folder = root / "assets" / "ui"
+    folder.mkdir(parents=True, exist_ok=True)
+    ui_panel(False).save(folder / "panel.png")
+    ui_panel(True).save(folder / "panel_gold.png")
+    for state in ("normal", "hover", "pressed", "disabled"):
+        ui_button(state).save(folder / f"button_{state}.png")
+    print("  ui: panel, panel_gold, buttons")

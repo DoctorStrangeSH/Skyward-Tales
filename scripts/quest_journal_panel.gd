@@ -16,7 +16,7 @@ func _ready() -> void:
 	style.set_border_width_all(1)
 	style.set_corner_radius_all(6)
 	style.set_content_margin_all(8)
-	add_theme_stylebox_override("panel", style)
+	add_theme_stylebox_override("panel", UiStyle.panel(false))
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 8)
 	add_child(box)
