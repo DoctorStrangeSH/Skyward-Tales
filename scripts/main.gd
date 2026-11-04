@@ -280,7 +280,10 @@ func _process(delta: float) -> void:
 		if not player.buffs.is_empty():
 			_refresh_hud()
 	_discover_nearby_enemies()
-	_update_minimap()
+	_minimap_clock -= delta
+	if _minimap_clock <= 0.0:
+		_minimap_clock = 0.12
+		_update_minimap()
 	hud.update_dodge(player.dodge_cooldown_left, player.dodge_cooldown, player.dodge_time_left > 0.0)
 	nearby_interactable = _find_nearest_interactable()
 	var busy: bool = hud.dialogue_visible or hud.inventory_open or hud.overlay_visible() or hud.world_map_visible or fishing.active()
@@ -304,7 +307,8 @@ func _interaction_prompt(target: Node2D) -> String:
 	if target is WorldNpc:
 		return "E — поговорить"
 	if target is RegionGate:
-		return "E — перейти"
+		var verb: String = {"cave_mouth": "войти в пещеру", "cave_exit": "выйти", "stairs_down": "спуститься", "stairs_up": "подняться"}.get(target.kind, "по мосту")
+		return "E — %s: %s · ур. %d" % [verb, RegionCatalog.display_name(target.target_region), RegionCatalog.level(target.target_region)]
 	if target is WorldLoot:
 		return "E — подобрать"
 	if target is TreasureChest:
@@ -840,6 +844,7 @@ func _on_waystone_used(stone: Waystone) -> void:
 
 func open_map() -> void:
 	hud.open_world_map(current_region, player.global_position, discovered_landmarks.get(current_region, {}), quests.get_active_summary())
+	hud.world_map.set_live(minimap_markers(), player.facing)
 	hud.world_map_view.set_destinations(current_region, travel_destinations())
 	hud.world_map_view.set_world(current_region, visited_regions)
 
@@ -855,19 +860,71 @@ func fast_travel(region_id: String) -> bool:
 	_travel(region_id, _vec(RegionCatalog.waystone(region_id)) + Vector2(0, 26))
 	return true
 
+const MINIMAP_DISCOVER := 160.0
+var _minimap_clock: float = 0.0
+
 func _update_minimap() -> void:
 	var region_markers: Dictionary = discovered_landmarks.get(current_region, {})
 	for actor in get_children():
-		if not (actor is WorldNpc or actor is RegionGate):
+		var kind := _landmark_kind(actor)
+		if kind.is_empty():
 			continue
-		if player.global_position.distance_squared_to(actor.global_position) > 150.0 * 150.0:
+		if player.global_position.distance_squared_to(actor.global_position) > MINIMAP_DISCOVER * MINIMAP_DISCOVER:
 			continue
-		var kind: String = "gate" if actor is RegionGate else "npc"
 		var marker_id: String = "%s_%d_%d" % [kind, int(actor.global_position.x), int(actor.global_position.y)]
 		if not region_markers.has(marker_id):
 			region_markers[marker_id] = {"position": [actor.global_position.x, actor.global_position.y], "kind": kind}
 	discovered_landmarks[current_region] = region_markers
 	hud.minimap.update_map(current_region, player.global_position, region_markers)
+	var live := minimap_markers()
+	hud.minimap.set_live(live, player.facing)
+	if hud.world_map_visible:
+		hud.world_map.set_live(live, player.facing)
+
+## Kind of a saved landmark for a world object ("" if it is not one).
+func _landmark_kind(actor: Node) -> String:
+	if actor is WorldNpc:
+		return "npc"
+	if actor is RegionGate:
+		return "gate"
+	if actor is TreasureChest:
+		return "chest"
+	if actor is Waystone:
+		return "waystone"
+	if actor is CraftStation:
+		return "station"
+	if actor is GatherNode and actor.kind == "fish":
+		return "fish"
+	return ""
+
+## Icons that reflect the present: quest givers, unopened chests, exits,
+## quest items and enemies near the hero.
+func minimap_markers() -> Array:
+	var known: Dictionary = discovered_landmarks.get(current_region, {})
+	var result: Array = []
+	for actor in get_children():
+		if not actor is Node2D or actor.is_queued_for_deletion():
+			continue
+		var at: Vector2 = actor.global_position
+		var id := "%s_%d_%d" % [_landmark_kind(actor), int(at.x), int(at.y)]
+		if actor is RegionGate:
+			result.append({"kind": "gate", "position": at, "label": RegionCatalog.display_name(actor.target_region)})
+		elif actor is WorldNpc and known.has(id):
+			var marker := str(actor.marker)
+			result.append({"kind": marker if marker in ["quest", "ready", "service"] else "npc", "position": at})
+		elif actor is TreasureChest and known.has(id) and not actor.is_opened:
+			result.append({"kind": "chest", "position": at})
+		elif actor is WorldCollectible and not str(actor.quest_id).is_empty() and quests.is_active(str(actor.quest_id)):
+			if player.global_position.distance_squared_to(at) < 400.0 * 400.0:
+				result.append({"kind": "item", "position": at})
+		elif actor is SlimeEnemy and actor.health > 0 and player.global_position.distance_squared_to(at) < 260.0 * 260.0:
+			var kind := "enemy"
+			if enemy_kind(actor) in STORY_BOSSES:
+				kind = "boss"
+			elif not actor.elite_id.is_empty():
+				kind = "elite"
+			result.append({"kind": kind, "position": at})
+	return result
 
 func _discover_nearby_enemies() -> void:
 	for enemy in get_tree().get_nodes_in_group("enemies"):
@@ -1031,6 +1088,11 @@ func _spawn_gate(target_region: String, gate_position: Vector2, arrival: Vector2
 	gate.arrival_position = arrival
 	gate.display_name = label
 	gate.art_style = RegionCatalog.style(current_region)
+	var size: Vector2 = world.map_size() if world != null and world.has_method("map_size") else Vector2(1280, 864)
+	var look := RegionGate.pick_kind(gate.art_style, RegionCatalog.style(target_region), gate_position, size)
+	gate.kind = str(look["kind"])
+	gate.outward = look["outward"]
+	gate.edge_distance = float(look["edge_distance"])
 	add_child(gate)
 	gate.global_position = gate_position
 	gate.travel_requested.connect(_on_region_travel)

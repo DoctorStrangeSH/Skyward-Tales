@@ -11,8 +11,9 @@ func _run() -> void:
 		push_error("MINIMAP TEST: map missing")
 		quit(1)
 		return
-	if not game.hud.minimap._map_point(Vector2(960, 640)).distance_to(Vector2(66, 64)) < 0.01:
-		push_error("MINIMAP TEST: invalid world-to-map scaling")
+	game.hud.minimap.hero_position = Vector2(960, 640)
+	if not game.hud.minimap._map_point(Vector2(960, 640)).distance_to(WorldMinimap.AREA.get_center()) < 0.01 or not game.hud.minimap._map_point(Vector2(966, 640)).distance_to(WorldMinimap.AREA.get_center() + Vector2(1, 0)) < 0.01:
+		push_error("MINIMAP TEST: the minimap follows the hero at 1/6 scale")
 		quit(1)
 		return
 	game.player.global_position = Vector2(560, 520)
@@ -40,6 +41,21 @@ func _run() -> void:
 		return
 	if game.discovered_landmarks.get("moonlit_grove", {}).is_empty():
 		push_error("MINIMAP TEST: new region NPC was not discovered")
+		quit(1)
+		return
+	# Live icons: exits always, enemies nearby, quest givers once discovered.
+	game._set_region("greenreach", Vector2(560, 520), false)
+	game.player.global_position = Vector2(560, 520)
+	game._update_minimap()
+	var kinds := {}
+	for marker in game.minimap_markers():
+		kinds[marker["kind"]] = true
+	if not kinds.has("gate"):
+		push_error("MINIMAP TEST: exits are shown: %s" % str(kinds.keys()))
+		quit(1)
+		return
+	if not (kinds.has("npc") or kinds.has("quest") or kinds.has("service") or kinds.has("ready")):
+		push_error("MINIMAP TEST: discovered villagers are shown: %s" % str(kinds.keys()))
 		quit(1)
 		return
 	print("MINIMAP TEST OK: coordinates, discovery, persistence and region travel")

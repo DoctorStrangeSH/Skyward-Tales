@@ -44,10 +44,12 @@ func _ready() -> void:
 	box.add_child(overview)
 	box.move_child(overview, canvas.get_index() + 1)
 	map_view = preload("res://scripts/world_minimap.gd").new() as WorldMinimap
-	map_view.position = Vector2(42, 3)
-	map_view.position = Vector2(62, 2)
-	map_view.scale = Vector2(2.2, 2.2)
+	map_view.follow = false
+	map_view.position = Vector2(0, 0)
+	map_view.size = Vector2(428, 236)
+	map_view.custom_minimum_size = Vector2(428, 236)
 	canvas.add_child(map_view)
+	canvas.add_child(_legend())
 	quest_label = _label("Задание: исследуйте мир.", 10, Color(0.83, 0.89, 0.91))
 	quest_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(quest_label)
@@ -56,6 +58,18 @@ func _ready() -> void:
 	travel_row.add_theme_constant_override("v_separation", 3)
 	box.add_child(travel_row)
 	visible = false
+
+## Small key to the map icons in the corner.
+func _legend() -> Control:
+	var legend := Label.new()
+	legend.text = "! задание   ? сдать   ◆ камень неба   • враг   квадрат — выход"
+	legend.add_theme_font_size_override("font_size", UiFont.px(8))
+	legend.add_theme_color_override("font_color", Color(1, 1, 1, 0.9))
+	legend.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+	legend.add_theme_constant_override("outline_size", 3)
+	legend.position = Vector2(4, 222)
+	legend.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return legend
 
 ## One button per awakened sky stone: "Name · ур. N".
 func set_destinations(current: String, destinations: Array[String]) -> void:
