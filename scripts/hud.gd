@@ -4,7 +4,7 @@ class_name GameHud
 const INVENTORY_PREFERRED_ORDER := ["health_potion", "mana_potion", "apprentice_staff", "leather_armor", "mana_amulet", "pyromancer_core", "frost_heart", "storm_eye", "ancient_relic", "starlight_essence"]
 const INVENTORY_FALLBACK_NAMES := {"health_potion": "Зелье здоровья", "mana_potion": "Зелье маны", "ancient_relic": "Древний артефакт", "starlight_essence": "Звёздная эссенция"}
 const INVENTORY_FALLBACK_DESCRIPTIONS := {"health_potion": "+35 HP", "mana_potion": "+25 MP", "ancient_relic": "Трофей победы над хранителем", "starlight_essence": "Постоянно +5 к максимальной мане"}
-const INVENTORY_RARITY_NAMES := {"common": "ОБЫЧНЫЙ", "uncommon": "НЕОБЫЧНЫЙ", "rare": "РЕДКИЙ", "epic": "ЭПИЧЕСКИЙ"}
+const INVENTORY_RARITY_NAMES := {"common": "ОБЫЧНЫЙ", "uncommon": "НЕОБЫЧНЫЙ", "rare": "РЕДКИЙ", "epic": "ЭПИЧЕСКИЙ", "legendary": "ЛЕГЕНДАРНЫЙ"}
 const INVENTORY_CONSUMABLE_IDS := ["health_potion", "mana_potion", "starlight_essence"]
 
 var status_label: Label
@@ -76,6 +76,7 @@ var hero_view: HeroPanel
 var hotbar: HBoxContainer
 var hotbar_slots: Array = []
 signal hero_unequip_requested(slot: String)
+signal handcraft_requested
 signal hero_assign_requested(slot_index: int, skill_id: String)
 signal skill_learn_requested(skill_id: String)
 var journal_visible: bool = false
@@ -209,6 +210,7 @@ func _ready() -> void:
 	inventory_view.use_requested.connect(func(id: String) -> void: inventory_use_requested.emit(id))
 	inventory_view.compare_requested.connect(func(id: String) -> void: _show_equipment_comparison(inventory_player, id))
 	inventory_view.unequip_requested.connect(func(slot: String) -> void: inventory_unequip_requested.emit(slot))
+	inventory_view.craft_requested.connect(func() -> void: handcraft_requested.emit())
 
 	comparison_view = EquipmentComparisonPanel.new()
 	root.add_child(comparison_view)

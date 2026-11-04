@@ -14,6 +14,8 @@ static func display_name(player: PlayerCharacter, item_id: String, fallback_name
 
 static func rarity_rank(player: PlayerCharacter, item_id: String) -> int:
 	match str(player.get_item_definition(item_id).get("rarity", "")):
+		"legendary":
+			return 5
 		"epic":
 			return 4
 		"rare":

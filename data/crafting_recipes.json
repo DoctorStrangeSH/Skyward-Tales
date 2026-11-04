@@ -351,6 +351,190 @@
         "item_id": "skysteel_blade",
         "amount": 1
       }
+    },
+    "hand_gel_potion": {
+      "name": "Зелье из слизи",
+      "description": "Слизь и корень — зелье здоровья.",
+      "gold_cost": 0,
+      "station": "hand",
+      "ingredients": [
+        {
+          "item_id": "slime_gel",
+          "amount": 2
+        },
+        {
+          "item_id": "healroot",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "item_id": "health_potion",
+        "amount": 1
+      }
+    },
+    "hand_spirit_potion": {
+      "name": "Зелья из пыльцы",
+      "description": "Пыльца духов и синецвет — два зелья маны.",
+      "gold_cost": 0,
+      "station": "hand",
+      "ingredients": [
+        {
+          "item_id": "spirit_dust",
+          "amount": 2
+        },
+        {
+          "item_id": "bluebell",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "item_id": "mana_potion",
+        "amount": 2
+      }
+    },
+    "hand_whetstone": {
+      "name": "Точильные камни",
+      "description": "Камень и руда — два точильных камня.",
+      "gold_cost": 0,
+      "station": "hand",
+      "ingredients": [
+        {
+          "item_id": "stone",
+          "amount": 2
+        },
+        {
+          "item_id": "iron_ore",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "item_id": "whetstone",
+        "amount": 2
+      }
+    },
+    "hand_venom_oil": {
+      "name": "Ядовитое масло",
+      "description": "Жабий яд и слизь для клинка.",
+      "gold_cost": 0,
+      "station": "hand",
+      "ingredients": [
+        {
+          "item_id": "toad_venom",
+          "amount": 2
+        },
+        {
+          "item_id": "slime_gel",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "item_id": "venom_oil",
+        "amount": 1
+      }
+    },
+    "hand_wind_tonic": {
+      "name": "Тоник ветра",
+      "description": "Эссенция ветра и крыло мыши.",
+      "gold_cost": 0,
+      "station": "hand",
+      "ingredients": [
+        {
+          "item_id": "wind_essence",
+          "amount": 2
+        },
+        {
+          "item_id": "bat_wing",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "item_id": "swift_tonic",
+        "amount": 1
+      }
+    },
+    "hand_fang_charm": {
+      "name": "Амулет-клык",
+      "description": "Три клыка на ремешке из шкуры.",
+      "gold_cost": 0,
+      "station": "hand",
+      "ingredients": [
+        {
+          "item_id": "wolf_fang",
+          "amount": 3
+        },
+        {
+          "item_id": "wolf_pelt",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "item_id": "fang_charm",
+        "amount": 1
+      },
+      "unique_output": true
+    },
+    "hand_shell_mail": {
+      "name": "Ракушечная броня",
+      "description": "Панцири крабов на деревянной основе.",
+      "gold_cost": 0,
+      "station": "hand",
+      "ingredients": [
+        {
+          "item_id": "crab_shell",
+          "amount": 4
+        },
+        {
+          "item_id": "wood",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "item_id": "shell_mail",
+        "amount": 1
+      },
+      "unique_output": true
+    },
+    "hand_bone_amulet": {
+      "name": "Костяной оберег",
+      "description": "Кости и тень разлома.",
+      "gold_cost": 0,
+      "station": "hand",
+      "ingredients": [
+        {
+          "item_id": "bone",
+          "amount": 4
+        },
+        {
+          "item_id": "shadow_essence",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "item_id": "bone_amulet",
+        "amount": 1
+      },
+      "unique_output": true
+    },
+    "hand_cog_charm": {
+      "name": "Механический талисман",
+      "description": "Шестерни стражей и руда.",
+      "gold_cost": 0,
+      "station": "hand",
+      "ingredients": [
+        {
+          "item_id": "gear_cog",
+          "amount": 3
+        },
+        {
+          "item_id": "iron_ore",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "item_id": "cog_charm",
+        "amount": 1
+      },
+      "unique_output": true
     }
   }
 }

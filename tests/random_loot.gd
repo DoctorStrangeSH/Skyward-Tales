@@ -32,7 +32,7 @@ func _run() -> void:
 		if not _verify(not str(item["slot"]).is_empty() and str(item["name"]).contains(" ") and int(item["value"]) > 0, "item has slot, name and value"):
 			return
 	for i in range(30):
-		if not _verify(LootGenerator.roll_rarity(rng, "rare") in ["rare", "epic"], "boss drops are at least rare"):
+		if not _verify(LootGenerator.roll_rarity(rng, "rare") in ["rare", "epic", "legendary"], "boss drops are at least rare"):
 			return
 
 	# Same seed, same item.
@@ -85,7 +85,7 @@ func _run() -> void:
 
 	# Drops from enemies and bosses.
 	var drop_id := game.spawn_generated_loot(Vector2(300, 300), "rare")
-	if not _verify(drop_id.begins_with("gen_") and player.get_item_definition(drop_id)["rarity"] in ["rare", "epic"], "boss-style drop is registered"):
+	if not _verify(drop_id.begins_with("gen_") and player.get_item_definition(drop_id)["rarity"] in ["rare", "epic", "legendary"], "boss-style drop is registered"):
 		return
 	var on_ground := false
 	for node in game.get_children():

@@ -17,7 +17,25 @@
    16
   ]
  },
+ "icons/bat_wing.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/bluebell.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/bone.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/bone_amulet.png": {
   "size": [
    16,
    16
@@ -29,7 +47,25 @@
    16
   ]
  },
+ "icons/cog_charm.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/crab_shell.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/crystal_lens.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/fang_charm.png": {
   "size": [
    16,
    16
@@ -48,6 +84,12 @@
   ]
  },
  "icons/frost_heart.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/gear_cog.png": {
   "size": [
    16,
    16
@@ -167,6 +209,18 @@
    16
   ]
  },
+ "icons/shadow_essence.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/shell_mail.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/skill_blade_wave.png": {
   "size": [
    16,
@@ -281,6 +335,18 @@
    16
   ]
  },
+ "icons/slime_gel.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/spirit_dust.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/starlight_essence.png": {
   "size": [
    16,
@@ -323,7 +389,37 @@
    16
   ]
  },
+ "icons/toad_venom.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/traveler_sword.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/venom_oil.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/whetstone.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/wind_essence.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/wolf_fang.png": {
   "size": [
    16,
    16
@@ -367,6 +463,46 @@
    19
   ]
  },
+ "props/chest_gold_closed.png": {
+  "size": [
+   28,
+   28
+  ],
+  "origin": [
+   14,
+   24
+  ]
+ },
+ "props/chest_gold_open.png": {
+  "size": [
+   28,
+   28
+  ],
+  "origin": [
+   14,
+   24
+  ]
+ },
+ "props/chest_iron_closed.png": {
+  "size": [
+   28,
+   28
+  ],
+  "origin": [
+   14,
+   24
+  ]
+ },
+ "props/chest_iron_open.png": {
+  "size": [
+   28,
+   28
+  ],
+  "origin": [
+   14,
+   24
+  ]
+ },
  "props/chest_open.png": {
   "size": [
    24,
@@ -375,6 +511,26 @@
   "origin": [
    12,
    19
+  ]
+ },
+ "props/chest_wood_closed.png": {
+  "size": [
+   28,
+   28
+  ],
+  "origin": [
+   14,
+   24
+  ]
+ },
+ "props/chest_wood_open.png": {
+  "size": [
+   28,
+   28
+  ],
+  "origin": [
+   14,
+   24
   ]
  },
  "props/coal_sack.png": {
@@ -515,6 +671,16 @@
   "origin": [
    6,
    12
+  ]
+ },
+ "props/loot_coins.png": {
+  "size": [
+   14,
+   12
+  ],
+  "origin": [
+   7,
+   10
   ]
  },
  "props/mana_potion.png": {

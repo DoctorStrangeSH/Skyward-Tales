@@ -18,6 +18,7 @@ import characters  # noqa: E402
 import creatures  # noqa: E402
 import flora  # noqa: E402
 import icons  # noqa: E402
+import chests  # noqa: E402
 import props  # noqa: E402
 import terrain  # noqa: E402
 from palettes import ISLAND_STYLES, STYLES  # noqa: E402
@@ -142,6 +143,7 @@ def build_props() -> None:
         "marker_quest": props.marker("quest"), "marker_ready": props.marker("ready"),
         "marker_service": props.marker("service"), "key_e": props.key_badge(),
     }
+    items.update(chests.build())
     for name, (canvas, origin) in items.items():
         save(canvas, f"props/{name}.png", origin)
     save(props.app_icon(), "icon.png")

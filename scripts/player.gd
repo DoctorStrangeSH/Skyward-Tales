@@ -272,7 +272,7 @@ func has_passive(passive_id: String) -> bool:
 
 ## Chance (0..1) that a sword hit deals double damage.
 func get_crit_chance() -> float:
-	return (0.05 if has_passive("keen_eye") else 0.0) + 0.05 * float(talents.get("keen_edge", 0))
+	return (0.05 if has_passive("keen_eye") else 0.0) + 0.05 * float(talents.get("keen_edge", 0)) + 0.01 * float(_equipped_stat("crit"))
 
 ## Part of incoming damage that is ignored (Unbreakable).
 func get_damage_reduction() -> float:
@@ -280,7 +280,7 @@ func get_damage_reduction() -> float:
 
 ## Health restored by each sword hit.
 func get_melee_lifesteal() -> int:
-	return (1 if has_passive("lifeblood") else 0) + int(talents.get("bloodthirst", 0))
+	return (1 if has_passive("lifeblood") else 0) + int(talents.get("bloodthirst", 0)) + _equipped_stat("lifesteal")
 
 ## Gold multiplier from Treasure Sense.
 func get_gold_multiplier() -> float:
@@ -495,6 +495,9 @@ func equip_item(item_id: String) -> bool:
 	equipment[slot] = item_id
 	max_mana = maxi(1, max_mana + mana_delta)
 	mana = clampi(mana + maxi(0, mana_delta), 0, max_mana)
+	var health_delta: int = _equipment_stat(item_id, "max_health") - _equipment_stat(previous, "max_health")
+	max_health = maxi(1, max_health + health_delta)
+	health = clampi(health + maxi(0, health_delta), 1, max_health)
 	stats_changed.emit()
 	return true
 
@@ -508,6 +511,9 @@ func unequip_slot(slot: String) -> bool:
 	var mana_delta: int = _equipment_stat(item_id, "max_mana")
 	max_mana = maxi(1, max_mana - mana_delta)
 	mana = mini(mana, max_mana)
+	var health_delta: int = _equipment_stat(item_id, "max_health")
+	max_health = maxi(1, max_health - health_delta)
+	health = clampi(health, 1, max_health)
 	inventory[item_id] = int(inventory.get(item_id, 0)) + 1
 	stats_changed.emit()
 	return true
