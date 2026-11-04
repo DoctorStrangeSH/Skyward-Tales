@@ -9,6 +9,9 @@ var creation: HeroCreationPanel
 func _ready() -> void:
 	get_tree().paused = false
 	GameAudio.music("sky")
+	# CI smoke test of exported builds: `SkywardTales -- --smoke` opens the world.
+	if "--smoke" in OS.get_cmdline_user_args():
+		get_tree().change_scene_to_file.call_deferred("res://scenes/main.tscn")
 	_set_menu_background()
 	var center := CenterContainer.new()
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

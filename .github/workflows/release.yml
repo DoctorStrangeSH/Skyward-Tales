@@ -44,9 +44,10 @@ jobs:
         run: |
           chmod +x build/linux/SkywardTales.x86_64
           export HOME="$(mktemp -d)"
-          timeout 120 build/linux/SkywardTales.x86_64 --headless res://scenes/main.tscn --quit-after 300 2>&1 | tee smoke.log
+          timeout 120 build/linux/SkywardTales.x86_64 --headless --quit-after 300 -- --smoke 2>&1 | tee smoke.log
           # Missing data or textures in the export show up as these warnings.
-          if grep -E "Не найден файл|Нет текстуры|Parse Error|SCRIPT ERROR" smoke.log; then exit 1; fi
+          if grep -E "Не найден файл|Нет текстуры|Parse Error|SCRIPT ERROR|Aborting" smoke.log; then exit 1; fi
+          grep -q "Godot Engine" smoke.log
 
       - name: Package
         run: |
