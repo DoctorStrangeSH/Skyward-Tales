@@ -1,0 +1,256 @@
+"""Village buildings and props drawn to match the purchased pack's style:
+warm orange shingle roofs, cream plaster with dark timber, stone footings and
+dark-brown outlines (palette sampled from the pack's forge, stalls and wagon).
+
+Called from tools/art/chibi.py; writes assets/world/village_*.png and their
+bottom-centre origins into assets/art_manifest.json.
+"""
+from __future__ import annotations
+
+import json
+import pathlib
+import random
+
+from pixel import Canvas, hex_color
+
+OUTLINE = hex_color("#302423")
+ROOF = [hex_color(c) for c in ("#7a3a16", "#9b4916", "#b15820", "#ce6123", "#db7434", "#e89a5c")]
+SLATE = [hex_color(c) for c in ("#2a2c44", "#34354e", "#4d6285", "#5f7aa0", "#7a96bc", "#a4bcd8")]
+PLASTER = [hex_color(c) for c in ("#a8946a", "#cdb98f", "#e9dcb9", "#f6f5d8")]
+TIMBER = [hex_color(c) for c in ("#442d31", "#66442d", "#744d33", "#a27047", "#b9875a")]
+STONE = [hex_color(c) for c in ("#3e3a34", "#544e45", "#6e6659", "#7b7765", "#97927c", "#b8b49c")]
+GLASS = [hex_color(c) for c in ("#0c1a37", "#34354e", "#4d6285", "#9ab4d8")]
+GREEN = [hex_color(c) for c in ("#24432c", "#335c38", "#4a7a42", "#6c9a50", "#9cc062")]
+SOIL = [hex_color(c) for c in ("#3a2a22", "#4c342a", "#66442d", "#8c6344")]
+HAY = [hex_color(c) for c in ("#8a6a2a", "#b8923a", "#dcbc5a", "#f2dc8a")]
+GOLD = hex_color("#f4b41b")
+
+
+def _roof(c: Canvas, x0: int, y0: int, w: int, h: int, pal, seed: int) -> None:
+    rng = random.Random(seed)
+    for row, y in enumerate(range(y0, y0 + h, 5)):
+        offset = (row % 2) * 3
+        for x in range(x0, x0 + w):
+            for dy in range(5):
+                if y + dy >= y0 + h:
+                    continue
+                tile = (x - x0 + offset) % 6
+                shade = 3
+                if dy == 4:
+                    shade = 1
+                elif dy == 0:
+                    shade = 4
+                elif tile == 0:
+                    shade = 2
+                if rng.random() < 0.05:
+                    shade = max(1, shade - 1)
+                c.put(x, y + dy, pal[shade])
+    c.hline(x0, x0 + w - 1, y0, pal[5])
+    c.hline(x0, x0 + w - 1, y0 + h - 1, pal[0])
+    c.hline(x0 + 1, x0 + w - 2, y0 + h, pal[0])
+
+
+def _window(c: Canvas, x: int, y: int, w: int = 8, h: int = 8, flowers: bool = False) -> None:
+    c.rect(x - 1, y - 1, w + 2, h + 2, TIMBER[3])
+    c.rect(x, y, w, h, GLASS[1])
+    c.rect(x, y, w, 2, GLASS[2])
+    c.put(x + 1, y + 1, GLASS[3])
+    c.vline(x + w // 2, y, y + h - 1, TIMBER[2])
+    c.hline(x, x + w - 1, y + h // 2, TIMBER[2])
+    if flowers:
+        c.rect(x - 1, y + h + 1, w + 2, 3, TIMBER[1])
+        for k in range(0, w + 2, 2):
+            c.put(x - 1 + k, y + h, (hex_color("#e05a6a") if k % 4 == 0 else hex_color("#f6d65a")))
+            c.put(x + k, y + h, GREEN[3])
+
+
+def _door(c: Canvas, x: int, y: int, w: int = 10, h: int = 14) -> None:
+    c.rect(x - 1, y - 1, w + 2, h + 1, TIMBER[0])
+    c.rect(x, y, w, h, TIMBER[1])
+    for k in range(x + 2, x + w, 3):
+        c.vline(k, y, y + h - 1, TIMBER[2])
+    c.put(x + w - 3, y + h // 2, GOLD)
+
+
+def house(width: int = 72, roof_pal=ROOF, windows: int = 1, chimney: bool = True, seed: int = 1,
+          sign: bool = False) -> tuple[Canvas, tuple[int, int]]:
+    """Cottage seen from the front-top: roof above, timbered wall below."""
+    roof_h = int(width * 0.55)
+    wall_h = 28
+    h = roof_h + wall_h + 6
+    c = Canvas(width + 4, h + 4)
+    left, top = 2, 2
+    wall_x0, wall_x1 = left + 4, left + width - 5
+    wall_y0 = top + roof_h - 2
+    # Shadow on the ground.
+    for x in range(left, left + width):
+        c.blend(x, top + h, (20, 14, 10, 70))
+        c.blend(x, top + h + 1, (20, 14, 10, 40))
+    # Stone footing.
+    c.rect(wall_x0 - 1, wall_y0 + wall_h - 3, wall_x1 - wall_x0 + 3, 6, STONE[2])
+    for x in range(wall_x0 - 1, wall_x1 + 2, 5):
+        c.vline(x, wall_y0 + wall_h - 3, wall_y0 + wall_h + 2, STONE[1])
+    c.hline(wall_x0 - 1, wall_x1 + 1, wall_y0 + wall_h - 3, STONE[4])
+    # Plaster wall with timber frame.
+    c.rect(wall_x0, wall_y0, wall_x1 - wall_x0 + 1, wall_h - 3, PLASTER[2])
+    c.rect(wall_x0, wall_y0, 2, wall_h - 3, TIMBER[2])
+    c.rect(wall_x1 - 1, wall_y0, 2, wall_h - 3, TIMBER[2])
+    c.hline(wall_x0, wall_x1, wall_y0 + 1, TIMBER[1])
+    c.hline(wall_x0, wall_x1, wall_y0 + 2, TIMBER[2])
+    for y in range(wall_y0 + 3, wall_y0 + wall_h - 3):
+        c.put(wall_x0 + 2, y, PLASTER[1])
+    # Door and windows.
+    mid = (wall_x0 + wall_x1) // 2
+    _door(c, mid - 5, wall_y0 + wall_h - 17)
+    spots = [wall_x0 + 7, wall_x1 - 15] if windows >= 2 else [wall_x0 + 7 if width < 80 else wall_x1 - 15]
+    for k, x in enumerate(spots):
+        _window(c, x, wall_y0 + 7, flowers=(k == 0))
+    if sign:
+        c.rect(wall_x1 - 14, wall_y0 + 5, 12, 7, TIMBER[3])
+        c.rect(wall_x1 - 13, wall_y0 + 6, 10, 5, TIMBER[4])
+    # Roof with overhang.
+    _roof(c, left, top + 6, width, roof_h - 6, roof_pal, seed)
+    # Gable ridge and chimney.
+    c.hline(left + 3, left + width - 4, top + 5, roof_pal[4])
+    c.hline(left + 6, left + width - 7, top + 4, roof_pal[5])
+    if chimney:
+        cx = left + width - 18
+        c.rect(cx, top - 1, 8, 12, STONE[2])
+        c.rect(cx, top - 1, 8, 2, STONE[4])
+        c.vline(cx, top - 1, top + 10, STONE[1])
+    c.outline(OUTLINE)
+    return c, (c.w // 2, top + h - 1)
+
+
+def fence(horizontal: bool = True) -> tuple[Canvas, tuple[int, int]]:
+    if horizontal:
+        c = Canvas(34, 16)
+        for x in (2, 16, 30):
+            c.rect(x, 2, 3, 12, TIMBER[2])
+            c.put(x, 2, TIMBER[4])
+        for y in (5, 10):
+            c.rect(1, y, 33, 2, TIMBER[3])
+            c.hline(1, 33, y, TIMBER[4])
+        c.outline(OUTLINE)
+        return c, (17, 14)
+    c = Canvas(8, 36)
+    c.rect(2, 2, 3, 32, TIMBER[3])
+    for y in (3, 17, 31):
+        c.rect(1, y, 5, 3, TIMBER[2])
+    c.outline(OUTLINE)
+    return c, (4, 34)
+
+
+def well() -> tuple[Canvas, tuple[int, int]]:
+    c = Canvas(34, 40)
+    # Roof and posts.
+    c.rect(5, 6, 2, 22, TIMBER[1])
+    c.rect(27, 6, 2, 22, TIMBER[1])
+    _roof(c, 2, 2, 30, 8, ROOF, 7)
+    c.hline(16, 18, 14, TIMBER[0])
+    c.vline(17, 11, 20, hex_color("#9d9c97"))
+    # Stone ring.
+    for y in range(22, 36):
+        for x in range(4, 30):
+            d = ((x - 16.5) / 13) ** 2 + ((y - 28) / 7) ** 2
+            if d <= 1:
+                c.put(x, y, STONE[3] if (x // 4 + y // 3) % 2 else STONE[2])
+    for y in range(24, 30):
+        for x in range(8, 26):
+            if ((x - 16.5) / 9) ** 2 + ((y - 26.5) / 3) ** 2 <= 1:
+                c.put(x, y, GLASS[0] if y > 25 else GLASS[1])
+    c.outline(OUTLINE)
+    return c, (17, 36)
+
+
+def field() -> tuple[Canvas, tuple[int, int]]:
+    c = Canvas(66, 42)
+    c.rect(1, 1, 64, 40, SOIL[1])
+    rng = random.Random(3)
+    for row, y in enumerate(range(4, 40, 6)):
+        c.hline(2, 63, y, SOIL[3])
+        c.hline(2, 63, y + 1, SOIL[2])
+        for x in range(5, 62, 6):
+            if rng.random() < 0.85:
+                c.put(x, y - 1, GREEN[3])
+                c.put(x - 1, y - 2, GREEN[4])
+                c.put(x + 1, y - 2, GREEN[2])
+    c.outline(OUTLINE)
+    return c, (33, 41)
+
+
+def signpost() -> tuple[Canvas, tuple[int, int]]:
+    c = Canvas(20, 26)
+    c.rect(9, 6, 3, 19, TIMBER[2])
+    c.rect(2, 4, 16, 6, TIMBER[3])
+    c.hline(2, 17, 4, TIMBER[4])
+    c.rect(4, 11, 13, 5, TIMBER[3])
+    c.hline(5, 14, 6, TIMBER[1])
+    c.hline(6, 15, 13, TIMBER[1])
+    c.outline(OUTLINE)
+    return c, (10, 24)
+
+
+def haybale() -> tuple[Canvas, tuple[int, int]]:
+    c = Canvas(22, 18)
+    c.rect(2, 3, 18, 13, HAY[2])
+    c.rect(2, 3, 18, 3, HAY[3])
+    c.rect(2, 13, 18, 3, HAY[1])
+    c.vline(7, 3, 15, HAY[0])
+    c.vline(15, 3, 15, HAY[0])
+    c.outline(OUTLINE)
+    return c, (11, 16)
+
+
+def lamp() -> tuple[Canvas, tuple[int, int]]:
+    c = Canvas(12, 34)
+    c.rect(5, 8, 2, 24, TIMBER[1])
+    c.rect(3, 31, 6, 2, STONE[2])
+    c.rect(2, 2, 8, 7, TIMBER[0])
+    c.rect(3, 3, 6, 5, hex_color("#ffd87a"))
+    c.put(4, 4, hex_color("#fff6c8"))
+    c.outline(OUTLINE)
+    return c, (6, 32)
+
+
+def plot() -> tuple[Canvas, tuple[int, int]]:
+    """Empty building plot: stakes and string around flattened earth."""
+    c = Canvas(70, 44)
+    for y in range(4, 40):
+        for x in range(4, 66):
+            if (x + y) % 9 == 0:
+                c.put(x, y, SOIL[3])
+    for x, y in ((3, 3), (65, 3), (3, 39), (65, 39)):
+        c.rect(x - 1, y - 4, 2, 6, TIMBER[3])
+    for x in range(4, 65, 2):
+        c.put(x, 3, PLASTER[3])
+        c.put(x, 39, PLASTER[3])
+    for y in range(4, 39, 2):
+        c.put(3, y, PLASTER[3])
+        c.put(65, y, PLASTER[3])
+    return c, (35, 41)
+
+
+def build(root: pathlib.Path) -> None:
+    items = {
+        "village_house_small": house(64, seed=1),
+        "village_house_large": house(92, windows=2, seed=2),
+        "village_house_slate": house(72, roof_pal=SLATE, seed=3, sign=True),
+        "village_hall": house(110, windows=2, seed=4, chimney=False, sign=True),
+        "village_fence_h": fence(True),
+        "village_fence_v": fence(False),
+        "village_well": well(),
+        "village_field": field(),
+        "village_sign": signpost(),
+        "village_hay": haybale(),
+        "village_lamp": lamp(),
+        "village_plot": plot(),
+    }
+    manifest_path = root / "assets" / "art_manifest.json"
+    art = json.loads(manifest_path.read_text())
+    for name, (canvas, origin) in items.items():
+        rel = f"world/{name}.png"
+        canvas.save(root / "assets" / rel)
+        art[rel] = {"size": [canvas.w, canvas.h], "origin": list(origin)}
+    manifest_path.write_text(json.dumps(dict(sorted(art.items())), indent=1) + "\n")
+    print("  village: " + ", ".join(items))

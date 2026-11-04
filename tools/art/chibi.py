@@ -24,6 +24,9 @@ import pathlib
 import numpy as np
 from PIL import Image
 
+import sys
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 SRC = ROOT / "assets" / "incoming"
 OUT = ROOT / "assets" / "sprites" / "chibi"
@@ -266,6 +269,15 @@ def main() -> int:
                                   SKIN_SHADE: (170, 206, 230), INK: (50, 90, 140), MAUVE: (90, 130, 170)},
                           trim=True, ahoge=False, beard=((240, 250, 255), (190, 220, 240)), alpha=0.85,
                           fill=((90, 150, 200), (140, 196, 232))),
+        # Forest shaman: green hood of hair, bark robe, bone charms.
+        "shaman": dict(colors={HAIR_LIGHT: (88, 120, 66), HAIR_SHADE: (58, 84, 48), RED_DARK: (70, 52, 36),
+                               RED_MID: (104, 78, 50), RED_LIGHT: (214, 206, 170), MAUVE: (40, 34, 26),
+                               SKIN_LIGHT: (200, 220, 170), SKIN_SHADE: (150, 176, 120), GOLD: (236, 226, 190)}, ahoge=False),
+        # Vail's shade: a violet, half-transparent echo of him.
+        "shade": dict(colors={HAIR_LIGHT: (150, 120, 210), HAIR_SHADE: (104, 80, 168), RED_DARK: (44, 30, 80),
+                              RED_MID: (70, 50, 120), RED_LIGHT: (200, 170, 255), MAUVE: (30, 20, 50),
+                              SKIN_LIGHT: (96, 80, 140), SKIN_SHADE: (70, 56, 110), INK: (20, 10, 40), GOLD: (230, 210, 255)},
+                      ahoge=False, alpha=0.88),
         # Vail: long white hair, violet Keeper robes.
         "vail": dict(colors={RED_DARK: (58, 40, 98), RED_MID: (92, 66, 150), RED_LIGHT: (176, 132, 236), MAUVE: (40, 30, 60),
                              GOLD: (210, 180, 255)}, ahoge=False),
@@ -292,6 +304,8 @@ def main() -> int:
     save("alchemist", {"idle": single_row("Potion Maker/Idle Research.png", 19, 25)}, 25, 33, manifest)
 
     build_decor()
+    import village
+    village.build(ROOT)
     (OUT / "manifest.json").write_text(json.dumps(manifest, indent=1, sort_keys=True) + "\n")
     return 0
 

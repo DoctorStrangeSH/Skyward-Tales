@@ -37,15 +37,18 @@ func _run() -> void:
 	await process_frame
 	if not _verify(_count(game, load("res://scripts/cave_bat.gd")) == 5, "five crystal bats spawn"):
 		return
+	for node in game.get_children():
+		if not _verify(not (node is WorldCollectible and node.item_id == "echo_crystal"), "echo crystals wait for Dorn's quest"):
+			return
+
+	game._on_miner_interacted(null)
+	if not _verify(bool(game.quests.states["crystal_heart"]["started"]), "Dorn gives the crystal quest"):
+		return
 	var crystals: Array[WorldCollectible] = []
 	for node in game.get_children():
 		if node is WorldCollectible and node.item_id == "echo_crystal":
 			crystals.append(node)
-	if not _verify(crystals.size() == 4, "four echo crystals are placed"):
-		return
-
-	game._on_miner_interacted(null)
-	if not _verify(bool(game.quests.states["crystal_heart"]["started"]), "Dorn gives the crystal quest"):
+	if not _verify(crystals.size() == 4, "four echo crystals appear with the quest"):
 		return
 	game.hud.close_dialogue()
 	for crystal in crystals:
