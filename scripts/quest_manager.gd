@@ -6,6 +6,7 @@ var states: Dictionary = {}
 var active_quest_id: String = ""
 
 signal quest_completed(quest_id: String)
+signal quest_started(quest_id: String)
 
 func _init() -> void:
 	var file := FileAccess.open("res://data/quests.json", FileAccess.READ)
@@ -26,7 +27,10 @@ func _init() -> void:
 func start_quest(quest_id: String) -> bool:
 	if not definitions.has(quest_id) or states[quest_id]["completed"]:
 		return false
+	var was_started: bool = states[quest_id]["started"]
 	states[quest_id]["started"] = true
+	if not was_started:
+		quest_started.emit(quest_id)
 	# Side quests ("side": true) run alongside the story and never take the
 	# tracked slot, so any number of them can be open at once.
 	if not is_side(quest_id):

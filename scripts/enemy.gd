@@ -28,6 +28,10 @@ var elemental_multipliers: Dictionary = {}
 var visual: DirectionalSprite
 ## Subclasses pick their own atlas before calling super._ready().
 var sprite_sheet: String = SLIME_SHEET
+const CHIBI_ENEMIES := {
+	"res://assets/sprites/enemies/forest_shaman_8dir.png": "shaman",
+	"res://assets/sprites/enemies/rift_shade_8dir.png": "shade",
+}
 var sprite_scale: float = 1.0
 var sprite_offset: Vector2 = Vector2(0.0, -14.0)
 var sprite_fps: float = 5.5
@@ -54,6 +58,10 @@ func _ready() -> void:
 	visual.name = "DirectionalVisual"
 	visual.configure(sprite_sheet, 4, 8, sprite_scale, sprite_fps)
 	visual.offset = sprite_offset
+	# Humanoid enemies use the pack-style chibi sheets when they are built.
+	var chibi := str(CHIBI_ENEMIES.get(sprite_sheet, ""))
+	if not chibi.is_empty():
+		visual.configure_chibi(chibi, 8.0, sprite_scale)
 	visual.set_direction_vector(Vector2.DOWN)
 	visual.modulate = base_visual_tint
 	Vfx.enable_flash(visual)

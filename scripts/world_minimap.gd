@@ -4,7 +4,7 @@ class_name WorldMinimap
 const WORLD_SIZE := Vector2(1280.0, 864.0)
 const MAP_SIZE := Vector2(116.0, 78.0)
 var region_id: String = "greenreach"
-var hero_position: Vector2 = Vector2(130, 210)
+var hero_position: Vector2 = Vector2(270, 625)
 var known_landmarks: Dictionary = {}
 
 func _ready() -> void:
@@ -21,7 +21,12 @@ func update_map(new_region: String, position: Vector2, landmarks: Dictionary) ->
 	queue_redraw()
 
 func _map_point(point: Vector2) -> Vector2:
-	return Vector2(8.0, 25.0) + Vector2(clampf(point.x / WORLD_SIZE.x, 0.0, 1.0), clampf(point.y / WORLD_SIZE.y, 0.0, 1.0)) * MAP_SIZE
+	var size := _world_size()
+	return Vector2(8.0, 25.0) + Vector2(clampf(point.x / size.x, 0.0, 1.0), clampf(point.y / size.y, 0.0, 1.0)) * MAP_SIZE
+
+func _world_size() -> Vector2:
+	var size: Variant = RegionCatalog.terrain(region_id).get("size", [WORLD_SIZE.x, WORLD_SIZE.y])
+	return Vector2(float(size[0]), float(size[1]))
 
 func _draw() -> void:
 	draw_rect(Rect2(Vector2.ZERO, Vector2(132, 108)), Color(0.07, 0.06, 0.11, 0.84))

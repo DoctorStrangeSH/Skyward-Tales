@@ -4,7 +4,7 @@ class_name GameSaveState
 ## Converts the running game to a save snapshot and back.
 ## The snapshot format is unchanged, so old saves keep loading.
 
-const DEFAULT_PLAYER_POSITION := Vector2(130, 210)
+const DEFAULT_PLAYER_POSITION := Vector2(270, 625)
 const FALLBACK_ENEMY_POSITIONS := {
 	"guardian": Vector2(1020, 580),
 	"shaman": Vector2(730, 360),

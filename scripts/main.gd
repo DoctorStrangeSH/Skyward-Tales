@@ -92,6 +92,7 @@ func _ready() -> void:
 	# Actors and scenery share one y-sorted space: walk behind trees and ruins.
 	y_sort_enabled = true
 	quests = QuestManager.new()
+	quests.quest_started.connect(_on_quest_started)
 	quests.quest_completed.connect(func(quest_id: String) -> void:
 		GameAudio.play("quest", -2.0, 0.0)
 		request_autosave()
@@ -364,6 +365,9 @@ func _populate_region() -> void:
 	for chest_data in layout.get("chests", []):
 		_spawn_chest(str(chest_data.get("id", "")), _vec(chest_data.get("position")), int(chest_data.get("gold", 0)), str(chest_data.get("item", "")), int(chest_data.get("amount", 0)))
 	for herb_data in layout.get("herbs", []):
+		# Quest items only appear once their quest is taken.
+		if not quests.is_active(_herb_quest(herb_data)):
+			continue
 		_spawn_herb(_vec(herb_data.get("position")), str(herb_data.get("id", "moonleaf")), str(herb_data.get("name", "Лунный лист")), str(herb_data.get("quest", "")))
 	for enemy_data in layout.get("enemies", []):
 		# "quest": only while that quest is open (unique side bosses).
@@ -539,6 +543,38 @@ func _scale_to_region(enemy: SlimeEnemy) -> void:
 	enemy.xp_reward = int(round(enemy.xp_reward * power))
 	enemy.combat_feedback.set_health(enemy.health, enemy.max_health)
 
+## The camera shows the world at 2x (320x180 world pixels on screen): enemies
+## notice and shoot from about two-thirds of their old ranges, so nothing
+## attacks from off-screen.
+const VIEW_RANGE := 0.68
+
+func _fit_to_view(enemy: SlimeEnemy) -> void:
+	enemy.detection_radius *= VIEW_RANGE
+	enemy.give_up_radius *= VIEW_RANGE
+	if enemy is ForestShaman:
+		enemy.shooting_distance *= VIEW_RANGE
+		enemy.preferred_distance *= VIEW_RANGE
+		enemy.retreat_distance *= VIEW_RANGE
+
+func _collectible_at(spot: Vector2) -> bool:
+	for node in get_children():
+		if node is WorldCollectible and not node.is_queued_for_deletion() and node.global_position.distance_to(spot) < 1.0:
+			return true
+	return false
+
+func _herb_quest(herb_data: Dictionary) -> String:
+	var own := str(herb_data.get("quest", ""))
+	return own if not own.is_empty() else RegionCatalog.herb_quest(current_region)
+
+## A quest just started: its herbs and enemies in this region appear now.
+func _on_quest_started(quest_id: String) -> void:
+	if world == null:
+		return
+	for herb_data in _layout().get("herbs", []):
+		if _herb_quest(herb_data) == quest_id and not _collectible_at(_vec(herb_data.get("position"))):
+			_spawn_herb(_vec(herb_data.get("position")), str(herb_data.get("id", "moonleaf")), str(herb_data.get("name", "Лунный лист")), str(herb_data.get("quest", "")))
+	spawn_quest_enemies(quest_id)
+
 ## Enemies tied to a quest ("quest" in the region layout) appear when it opens.
 func spawn_quest_enemies(quest_id: String) -> void:
 	for enemy_data in _layout().get("enemies", []):
@@ -702,6 +738,7 @@ func spawn_enemy(kind: String, spawn_position: Vector2, elite: String = "") -> S
 	add_child(enemy)
 	EliteModifiers.finish(enemy)
 	_scale_to_region(enemy)
+	_fit_to_view(enemy)
 	_track_kill_quests(enemy, kind)
 	if enemy is GroveGuardian:
 		GameAudio.play("boss_roar", -2.0, 0.0)

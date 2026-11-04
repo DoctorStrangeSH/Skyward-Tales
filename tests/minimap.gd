@@ -11,11 +11,11 @@ func _run() -> void:
 		push_error("MINIMAP TEST: map missing")
 		quit(1)
 		return
-	if not game.hud.minimap._map_point(Vector2(640, 432)).distance_to(Vector2(66, 64)) < 0.01:
+	if not game.hud.minimap._map_point(Vector2(960, 640)).distance_to(Vector2(66, 64)) < 0.01:
 		push_error("MINIMAP TEST: invalid world-to-map scaling")
 		quit(1)
 		return
-	game.player.global_position = Vector2(250, 205)
+	game.player.global_position = Vector2(560, 520)
 	game._update_minimap()
 	var green: Dictionary = game.discovered_landmarks.get("greenreach", {})
 	if green.is_empty() or game.hud.minimap.known_landmarks.is_empty():

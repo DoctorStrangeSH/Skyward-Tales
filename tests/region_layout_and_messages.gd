@@ -55,7 +55,7 @@ func _run() -> void:
 	# Secrets are revealed from data positions.
 	game.reveal_secret("greenreach", "elder_hidden_storehouse")
 	var marker: Dictionary = game.discovered_landmarks["greenreach"]["elder_hidden_storehouse"]
-	if not _verify(marker["kind"] == "secret" and Vector2(marker["position"][0], marker["position"][1]) == Vector2(960, 175), "secret marker uses data position"):
+	if not _verify(marker["kind"] == "secret" and Vector2(marker["position"][0], marker["position"][1]) == Vector2(1380, 340), "secret marker uses data position"):
 		return
 
 	# Readable item names in messages.

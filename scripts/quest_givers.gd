@@ -90,6 +90,4 @@ func handle_choice(choice_id: String) -> bool:
 		game.hud.show_message("Новое задание: " + str(game.quests.definitions[quest_id].get("title", "")), 3.0)
 		game._refresh_hud()
 		game.update_npc_markers()
-		# Unique side bosses appear once their quest is open.
-		game.spawn_quest_enemies(quest_id)
 	return true

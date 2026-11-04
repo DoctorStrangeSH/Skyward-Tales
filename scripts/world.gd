@@ -52,7 +52,7 @@ func _build() -> void:
 	for prop in terrain.get("props", []):
 		var kind := str(prop.get("kind", ""))
 		# "decor_*" props come from the purchased pack (tools/art/chibi.py).
-		var file: String = PROP_TEXTURES.get(kind, kind + ".png" if kind.begins_with("decor_") else "")
+		var file: String = PROP_TEXTURES.get(kind, kind + ".png" if kind.begins_with("decor_") or kind.begins_with("village_") else "")
 		if not file.is_empty():
 			_add_sprite(file, _vec(prop.get("position")))
 	_add_decor_bushes(style)

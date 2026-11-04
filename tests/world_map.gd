@@ -7,7 +7,7 @@ func _run() -> void:
 	var game: Node2D = load("res://scenes/main.tscn").instantiate()
 	root.add_child(game)
 	await process_frame
-	game.player.global_position = Vector2(250, 205)
+	game.player.global_position = Vector2(560, 520)
 	game._update_minimap()
 	var markers: Dictionary = game.discovered_landmarks.get(game.current_region, {})
 	game.hud.open_world_map(game.current_region, game.player.global_position, markers, game.quests.get_active_summary())

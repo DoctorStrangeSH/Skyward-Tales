@@ -857,14 +857,14 @@
  },
  "world/greenreach_canopy.png": {
   "size": [
-   1280,
-   864
+   1920,
+   1280
   ]
  },
  "world/greenreach_ground.png": {
   "size": [
-   1280,
-   864
+   1920,
+   1280
   ]
  },
  "world/marsh_bush_0.png": {
@@ -1193,6 +1193,126 @@
   "origin": [
    60,
    78
+  ]
+ },
+ "world/village_fence_h.png": {
+  "size": [
+   34,
+   16
+  ],
+  "origin": [
+   17,
+   14
+  ]
+ },
+ "world/village_fence_v.png": {
+  "size": [
+   8,
+   36
+  ],
+  "origin": [
+   4,
+   34
+  ]
+ },
+ "world/village_field.png": {
+  "size": [
+   66,
+   42
+  ],
+  "origin": [
+   33,
+   41
+  ]
+ },
+ "world/village_hall.png": {
+  "size": [
+   114,
+   98
+  ],
+  "origin": [
+   57,
+   95
+  ]
+ },
+ "world/village_hay.png": {
+  "size": [
+   22,
+   18
+  ],
+  "origin": [
+   11,
+   16
+  ]
+ },
+ "world/village_house_large.png": {
+  "size": [
+   96,
+   88
+  ],
+  "origin": [
+   48,
+   85
+  ]
+ },
+ "world/village_house_slate.png": {
+  "size": [
+   76,
+   77
+  ],
+  "origin": [
+   38,
+   74
+  ]
+ },
+ "world/village_house_small.png": {
+  "size": [
+   68,
+   73
+  ],
+  "origin": [
+   34,
+   70
+  ]
+ },
+ "world/village_lamp.png": {
+  "size": [
+   12,
+   34
+  ],
+  "origin": [
+   6,
+   32
+  ]
+ },
+ "world/village_plot.png": {
+  "size": [
+   70,
+   44
+  ],
+  "origin": [
+   35,
+   41
+  ]
+ },
+ "world/village_sign.png": {
+  "size": [
+   20,
+   26
+  ],
+  "origin": [
+   10,
+   24
+  ]
+ },
+ "world/village_well.png": {
+  "size": [
+   34,
+   40
+  ],
+  "origin": [
+   17,
+   36
   ]
  },
  "world/wind_spires_canopy.png": {
