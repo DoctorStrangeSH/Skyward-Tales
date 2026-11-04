@@ -7,9 +7,10 @@ signal compare_requested(item_id: String)
 var item_id: String = ""
 const RARITY_COLORS := {
 	"common": Color(0.95, 0.93, 0.86),
-	"uncommon": Color(0.6, 0.95, 0.65),
-	"rare": Color(0.72, 0.62, 1.0),
-	"epic": Color(1.0, 0.7, 0.3)
+	"uncommon": Color(0.55, 0.95, 0.55),
+	"rare": Color(0.45, 0.72, 1.0),
+	"epic": Color(0.82, 0.52, 1.0),
+	"legendary": Color(1.0, 0.66, 0.22)
 }
 
 func configure(player: PlayerCharacter, id: String, fallback_names: Dictionary, fallback_descriptions: Dictionary, rarity_names: Dictionary, consumable_ids: Array) -> void:

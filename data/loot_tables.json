@@ -1,13 +1,15 @@
 {
-  "drop_chance": 0.18,
-  "rarity_weights": {"common": 55, "uncommon": 30, "rare": 12, "epic": 3},
+  "drop_chance": 0.07,
+  "rarity_weights": {"common": 55, "uncommon": 30, "rare": 11, "epic": 3.4, "legendary": 0.6},
   "rarities": {
     "common": {"affixes": 1, "mult": 1.0, "value": 12},
     "uncommon": {"affixes": 2, "mult": 1.2, "value": 25},
     "rare": {"affixes": 3, "mult": 1.5, "value": 50},
-    "epic": {"affixes": 4, "mult": 1.8, "value": 90}
+    "epic": {"affixes": 4, "mult": 1.8, "value": 90},
+    "legendary": {"affixes": 5, "mult": 2.3, "value": 180}
   },
   "bases": {
+    "blade": {"slot": "blade", "names": ["Меч", "Клинок", "Сабля"], "icon": "iron_sword", "base": {"melee": 3}, "weight": 2},
     "staff": {"slot": "weapon", "names": ["Посох", "Жезл"], "icon": "apprentice_staff", "base": {"spell_bonus": {"*": 3}}},
     "robe": {"slot": "armor", "names": ["Мантия", "Накидка"], "icon": "leather_armor", "base": {"armor": 2}},
     "amulet": {"slot": "amulet", "names": ["Амулет", "Кулон"], "icon": "mana_amulet", "base": {"max_mana": 8}},
@@ -22,6 +24,10 @@
     {"id": "storm", "stat": "spell_bonus.chain_lightning", "min": 2, "max": 4, "suffix": "грозы", "label": "+%d к урону цепной молнии"},
     {"id": "guard", "stat": "armor", "min": 1, "max": 3, "suffix": "стража", "label": "+%d к броне"},
     {"id": "spring", "stat": "max_mana", "min": 5, "max": 12, "suffix": "источника", "label": "+%d к максимуму маны"},
-    {"id": "ember", "stat": "burn_damage_bonus", "min": 1, "max": 1, "suffix": "углей", "label": "+%d к урону горения"}
+    {"id": "ember", "stat": "burn_damage_bonus", "min": 1, "max": 1, "suffix": "углей", "label": "+%d к урону горения"},
+    {"id": "edge", "stat": "melee", "min": 2, "max": 4, "suffix": "остроты", "label": "+%d к урону мечом"},
+    {"id": "luck", "stat": "crit", "min": 2, "max": 4, "suffix": "удачи", "label": "+%d%% к шансу крита"},
+    {"id": "blood", "stat": "lifesteal", "min": 1, "max": 1, "suffix": "крови", "label": "+%d HP за удар мечом"},
+    {"id": "life", "stat": "max_health", "min": 6, "max": 12, "suffix": "жизни", "label": "+%d к здоровью"}
   ]
 }

@@ -211,6 +211,7 @@ def build() -> dict[str, Canvas]:
         "recipe_steel_mail": scroll_icon(), "recipe_skysteel": scroll_icon(), "coal_sack": stone_icon(),
         "recipe_hearty_stew": scroll_icon(), "recipe_power_elixir": scroll_icon(), "recipe_swift_tonic": scroll_icon(),
         **build_combat(),
+        **build_materials(),
     }
 
 
@@ -441,3 +442,119 @@ def build_combat() -> dict[str, Canvas]:
     for kind in ["lunge", "shockwave", "war_cry", "blade_wave", "slash", "dodge", "fireball", "frostbolt", "chain_lightning", *PASSIVE_SYMBOLS]:
         result[f"skill_{kind}"] = skill_icon(kind)
     return result
+
+
+# --- Monster materials and handcrafted gear ------------------------------------
+
+def blob(colors) -> Canvas:
+    c = Canvas(16, 16)
+    c.ellipse(8, 10, 5, 3.6, colors[1])
+    c.ellipse(7, 8.5, 3, 2.4, colors[0])
+    c.put(6, 7, hex_color("#ffffff"))
+    c.put(12, 12, colors[2])
+    c.put(4, 12, colors[2])
+    return _finish(c)
+
+
+def fang() -> Canvas:
+    c = Canvas(16, 16)
+    bone = ramp("#fffaf0", "#e8dcc0", "#b8a888")
+    for y in range(3, 14):
+        half = max(0, (13 - y) // 3)
+        for x in range(8 - half - 1, 8 + half + 1):
+            c.put(x, y, bone[0] if x < 8 else bone[1])
+    c.put(8, 13, bone[2])
+    return _finish(c)
+
+
+def dust(colors) -> Canvas:
+    c = Canvas(16, 16)
+    for x, y in ((5, 5), (9, 4), (11, 8), (7, 9), (4, 11), (10, 12), (8, 6), (6, 13), (12, 5)):
+        c.put(x, y, colors[0])
+        c.put(x + 1, y, colors[1])
+        c.put(x, y + 1, colors[1])
+    return _finish(c)
+
+
+def wing() -> Canvas:
+    c = Canvas(16, 16)
+    skin = ramp("#b89ac8", "#7a5a8e", "#4a3460")
+    for x in range(2, 14):
+        top = 4 + abs(x - 8) // 2
+        bottom = 11 - (1 if x % 3 == 0 else 0)
+        for y in range(top, bottom):
+            c.put(x, y, skin[0] if y < top + 2 else skin[1])
+    for x in (4, 8, 12):
+        c.vline(x, 5, 10, skin[2])
+    return _finish(c)
+
+
+def wisp_icon(colors) -> Canvas:
+    c = Canvas(16, 16)
+    c.ellipse(8, 9, 4, 4, colors[1])
+    c.ellipse(7, 8, 2.2, 2.2, colors[0])
+    for i in range(4):
+        c.put(11 + i % 2, 4 + i, colors[1])
+    return _finish(c)
+
+
+def shell() -> Canvas:
+    c = Canvas(16, 16)
+    red = ramp("#ffc0a0", "#e0603a", "#a03a24")
+    for y in range(4, 13):
+        half = min(6, (y - 3) + 1)
+        for x in range(8 - half, 8 + half):
+            c.put(x, y, red[0] if y < 7 else red[1])
+    for x in (5, 8, 11):
+        c.vline(x, 6, 12, red[2])
+    return _finish(c)
+
+
+def bone_icon() -> Canvas:
+    c = Canvas(16, 16)
+    bone = ramp("#fffaf0", "#e0d4b8", "#a89878")
+    for i in range(9):
+        c.put(4 + i, 11 - i, bone[1])
+        c.put(4 + i, 12 - i, bone[2])
+    for cx, cy in ((3, 12), (4, 13), (12, 3), (13, 4)):
+        c.ellipse(cx, cy, 1.4, 1.4, bone[0])
+    return _finish(c)
+
+
+def cog() -> Canvas:
+    c = Canvas(16, 16)
+    c.ellipse(8, 8, 5, 5, IRON[1])
+    for x, y in ((8, 2), (8, 14), (2, 8), (14, 8), (4, 4), (12, 12), (4, 12), (12, 4)):
+        c.rect(x - 1, y - 1, 2, 2, IRON[2])
+    c.ellipse(8, 8, 2, 2, hex_color("#5fd6ff"))
+    return _finish(c)
+
+
+def whetstone() -> Canvas:
+    c = Canvas(16, 16)
+    stone = ramp("#c8d0d8", "#8a94a4", "#5a6274")
+    for i in range(8):
+        c.rect(3 + i, 10 - i, 3, 3, stone[1] if i % 2 else stone[0])
+    c.hline(4, 11, 12, stone[2])
+    return _finish(c)
+
+
+def build_materials() -> dict[str, Canvas]:
+    return {
+        "slime_gel": blob(ramp("#d8ffc8", "#6ad05a", "#2f8a3a")),
+        "toad_venom": potion(ramp("#e8ffa0", "#a0d040", "#5a8a20")),
+        "venom_oil": potion(ramp("#f0ffd0", "#7ac05a", "#3a7a30")),
+        "wolf_fang": fang(),
+        "spirit_dust": dust(ramp("#f0fff8", "#9cfff0", "#3fd6d0")),
+        "bat_wing": wing(),
+        "wind_essence": wisp_icon(ramp("#f0fffc", "#9ce8e0", "#3aa8a0")),
+        "shadow_essence": wisp_icon(ramp("#d8c8ff", "#6a4ac8", "#2a1e5a")),
+        "crab_shell": shell(),
+        "bone": bone_icon(),
+        "gear_cog": cog(),
+        "whetstone": whetstone(),
+        "fang_charm": amulet(),
+        "shell_mail": armor(ramp("#ffc0a0", "#e0603a", "#a03a24"), ramp("#fff0d8", "#e8d4b0", "#b89a70")),
+        "bone_amulet": relic(),
+        "cog_charm": cog(),
+    }

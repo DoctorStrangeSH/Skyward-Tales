@@ -95,6 +95,8 @@ func open(station_id: String) -> void:
 		choices.append({"id": "craft:" + recipe_id, "label": "%s%s — %s" % ["✓ " if ok else "", str(recipe.get("name", recipe_id)), _ingredients_text(recipe)]})
 	choices.append({"id": "craft_close", "label": "Закрыть"})
 	var hint := "Выберите, что приготовить." if station_id == "kitchen" else "Выберите, что изготовить."
+	if station_id == "hand":
+		hint = "Ремесло в пути: из добычи с монстров и собранного."
 	game._show_dialogue_choices(name, hint + " Новые рецепты находят в сундуках и получают в награду.", choices)
 
 func handle_choice(choice_id: String) -> bool:

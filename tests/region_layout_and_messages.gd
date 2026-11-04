@@ -28,7 +28,7 @@ func _run() -> void:
 	# Greenreach layout from data.
 	if not _verify(_count(game, func(n: Node) -> bool: return n is WorldNpc) == 6, "greenreach has six NPCs (with Lira the alchemist)"):
 		return
-	if not _verify(_count(game, func(n: Node) -> bool: return n is TreasureChest) == 3, "greenreach has three chests"):
+	if not _verify(_count(game, func(n: Node) -> bool: return n is TreasureChest) == 7, "greenreach has seven chests"):
 		return
 	if not _verify(_count(game, func(n: Node) -> bool: return n is SlimeEnemy) == 3, "greenreach has three slimes"):
 		return

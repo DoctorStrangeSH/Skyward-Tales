@@ -335,6 +335,150 @@
       "rarity": "epic",
       "melee": 22,
       "agility": 3
+    },
+    "slime_gel": {
+      "name": "Слизь",
+      "description": "Липкая слизь. Из неё и корня делают зелье здоровья.",
+      "slot": "",
+      "rarity": "common",
+      "material": true,
+      "value": 4
+    },
+    "wolf_fang": {
+      "name": "Волчий клык",
+      "description": "Острый клык. Три клыка и шкура — амулет-клык.",
+      "slot": "",
+      "rarity": "common",
+      "material": true,
+      "value": 4
+    },
+    "spirit_dust": {
+      "name": "Пыльца духов",
+      "description": "Светится в темноте. С синецветом даёт зелья маны.",
+      "slot": "",
+      "rarity": "common",
+      "material": true,
+      "value": 4
+    },
+    "bat_wing": {
+      "name": "Крыло мыши",
+      "description": "Лёгкое перепончатое крыло для тоника ветра.",
+      "slot": "",
+      "rarity": "common",
+      "material": true,
+      "value": 4
+    },
+    "wind_essence": {
+      "name": "Эссенция ветра",
+      "description": "Пойманный ветер шпилей.",
+      "slot": "",
+      "rarity": "common",
+      "material": true,
+      "value": 4
+    },
+    "shadow_essence": {
+      "name": "Эссенция тени",
+      "description": "Холодная тьма из разлома.",
+      "slot": "",
+      "rarity": "common",
+      "material": true,
+      "value": 4
+    },
+    "toad_venom": {
+      "name": "Жабий яд",
+      "description": "Яд для клинка.",
+      "slot": "",
+      "rarity": "common",
+      "material": true,
+      "value": 4
+    },
+    "crab_shell": {
+      "name": "Панцирь краба",
+      "description": "Крепкий панцирь — основа брони из ракушек.",
+      "slot": "",
+      "rarity": "common",
+      "material": true,
+      "value": 4
+    },
+    "bone": {
+      "name": "Кость",
+      "description": "Старая кость из склепа.",
+      "slot": "",
+      "rarity": "common",
+      "material": true,
+      "value": 4
+    },
+    "gear_cog": {
+      "name": "Шестерня стража",
+      "description": "Небесный металл автоматов.",
+      "slot": "",
+      "rarity": "common",
+      "material": true,
+      "value": 4
+    },
+    "whetstone": {
+      "name": "Точильный камень",
+      "description": "+25% урона на 60 с.",
+      "rarity": "common",
+      "value": 10,
+      "use": {
+        "buff": {
+          "type": "power",
+          "value": 0.25,
+          "duration": 60,
+          "label": "Заточка"
+        }
+      }
+    },
+    "venom_oil": {
+      "name": "Ядовитое масло",
+      "description": "+15% урона на 120 с.",
+      "rarity": "uncommon",
+      "value": 14,
+      "use": {
+        "buff": {
+          "type": "power",
+          "value": 0.15,
+          "duration": 120,
+          "label": "Яд"
+        }
+      }
+    },
+    "fang_charm": {
+      "name": "Амулет-клык",
+      "description": "+2 к урону мечом, +4% к шансу крита.",
+      "slot": "relic",
+      "rarity": "uncommon",
+      "melee": 2,
+      "crit": 4,
+      "value": 40
+    },
+    "shell_mail": {
+      "name": "Ракушечная броня",
+      "description": "Броня из панцирей: +6 к броне.",
+      "slot": "armor",
+      "rarity": "uncommon",
+      "armor": 6,
+      "value": 45
+    },
+    "bone_amulet": {
+      "name": "Костяной оберег",
+      "description": "+1 HP за удар мечом, +2 к силе, +6 маны.",
+      "slot": "amulet",
+      "rarity": "rare",
+      "lifesteal": 1,
+      "power": 2,
+      "max_mana": 6,
+      "value": 70
+    },
+    "cog_charm": {
+      "name": "Механический талисман",
+      "description": "+3 к ловкости, +2 к броне.",
+      "slot": "relic",
+      "rarity": "rare",
+      "agility": 3,
+      "armor": 2,
+      "value": 70
     }
   }
 }

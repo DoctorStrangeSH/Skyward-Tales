@@ -159,6 +159,7 @@ func _ready() -> void:
 	add_child(interact_prompt)
 	hud.inventory_use_requested.connect(_on_inventory_use)
 	hud.inventory_unequip_requested.connect(_on_inventory_unequip)
+	hud.handcraft_requested.connect(open_handcraft)
 	hud.hero_unequip_requested.connect(func(slot: String) -> void:
 		_on_inventory_unequip(slot)
 		hud.refresh_hero_panel(player, skills))
@@ -411,6 +412,9 @@ func _handle_key(keycode: Key) -> bool:
 		KEY_I when not world_blocked:
 			hud.toggle_inventory(player)
 			return true
+		KEY_B when not world_blocked:
+			open_handcraft()
+			return true
 	if hud.inventory_open:
 		return false
 	match keycode:
@@ -449,7 +453,7 @@ func _populate_region() -> void:
 	spawn_story_objects()
 	_spawn_pending_map_fragments(layout)
 	for chest_data in layout.get("chests", []):
-		_spawn_chest(str(chest_data.get("id", "")), _vec(chest_data.get("position")), int(chest_data.get("gold", 0)), str(chest_data.get("item", "")), int(chest_data.get("amount", 0)))
+		_spawn_chest(str(chest_data.get("id", "")), _vec(chest_data.get("position")), int(chest_data.get("gold", 0)), str(chest_data.get("item", "")), int(chest_data.get("amount", 0)), str(chest_data.get("tier", "wood")))
 	for herb_data in layout.get("herbs", []):
 		# Quest items only appear once their quest is taken.
 		if not quests.is_active(_herb_quest(herb_data)):
@@ -969,11 +973,11 @@ func spawn_enemy(kind: String, spawn_position: Vector2, elite: String = "") -> S
 			enemy.defeated.connect(func(xp: int) -> void: _on_story_boss_defeated(kind, xp, enemy.global_position))
 		"wolf":
 			enemy.defeated.connect(func(xp: int) -> void:
-				_on_wolf_defeated(xp, enemy.global_position)
+				_on_wolf_defeated(xp, enemy.global_position, not enemy.elite_id.is_empty())
 				_on_elite_defeated(enemy))
 		_:
 			enemy.defeated.connect(func(xp: int) -> void:
-				_on_enemy_defeated(xp, enemy.global_position)
+				_on_enemy_defeated(xp, enemy.global_position, kind, not enemy.elite_id.is_empty())
 				_on_elite_defeated(enemy))
 	return enemy
 
@@ -989,8 +993,9 @@ func _spawn_herb(spawn_position: Vector2, item_id: String = "moonleaf", label: S
 	herb.global_position = spawn_position
 	herb.interacted.connect(_on_herb_interacted)
 
-func _spawn_chest(id: String, at_position: Vector2, gold: int, item: String, amount: int) -> void:
+func _spawn_chest(id: String, at_position: Vector2, gold: int, item: String, amount: int, tier: String = "wood") -> void:
 	var chest := CHEST_SCRIPT.new() as TreasureChest
+	chest.tier = tier
 	chest.chest_id = id
 	chest.gold_reward = gold
 	chest.item_reward = item
@@ -1001,6 +1006,7 @@ func _spawn_chest(id: String, at_position: Vector2, gold: int, item: String, amo
 	if chest.is_opened:
 		chest.remove_from_group("interactables")
 	chest.opened.connect(_on_chest_opened)
+	chest.opened.connect(func(_id: String, _gold: int, _item: String, _amount: int) -> void: chest_tier_reward(chest.tier, chest.global_position))
 	chest.bonus_found.connect(_on_chest_bonus)
 
 func _spawn_gate(target_region: String, gate_position: Vector2, arrival: Vector2, label: String) -> void:
@@ -1175,7 +1181,7 @@ func _on_story_boss_defeated(kind: String, xp: int, death_position: Vector2) -> 
 	director.on_boss_defeated(kind)
 	request_autosave()
 
-func _on_wolf_defeated(xp_reward: int, death_position: Vector2) -> void:
+func _on_wolf_defeated(xp_reward: int, death_position: Vector2, elite: bool = false) -> void:
 	if quests.active_quest_id == "toren_wolf_hunt" and not quests.is_completed("toren_wolf_hunt"):
 		quests.add_progress("toren_wolf_hunt", 1)
 		var progress: int = int(quests.states["toren_wolf_hunt"].get("progress", 0))
@@ -1184,21 +1190,79 @@ func _on_wolf_defeated(xp_reward: int, death_position: Vector2) -> void:
 			hud.show_message("Стая отступила. Вернись к Торену за наградой.", 3.0)
 	_refresh_hud()
 	_spawn_loot(death_position, "wolf_pelt")
-	_on_enemy_defeated(xp_reward, death_position)
+	_on_enemy_defeated(xp_reward, death_position, "wolf", elite)
 
-func _on_enemy_defeated(xp_reward: int, death_position: Vector2) -> void:
+func _on_enemy_defeated(xp_reward: int, death_position: Vector2, kind: String = "", elite: bool = false) -> void:
 	player.add_experience(xp_reward)
 	defeated_enemies += 1
-	var drops: Array[String] = ["apprentice_staff", "leather_armor", "mana_amulet"]
-	var drop: String
-	if defeated_enemies <= drops.size():
-		drop = drops[defeated_enemies - 1]
-	else:
-		drop = "health_potion" if defeated_enemies % 2 == 1 else "mana_potion"
-	_spawn_loot(death_position, drop)
-	if loot_rng.randf() < LootGenerator.drop_chance():
-		spawn_generated_loot(death_position + Vector2(10, 4))
+	var starter: Array[String] = ["apprentice_staff", "leather_armor", "mana_amulet"]
+	if defeated_enemies <= starter.size():
+		_spawn_loot(death_position, starter[defeated_enemies - 1])
+	roll_drops(kind, death_position, elite)
 	hud.show_message("Противник побеждён! +%d опыта" % xp_reward, 1.5)
+
+## Field crafting from the bag (B): potions, whetstones and gear from
+## monster materials, no station needed.
+func open_handcraft() -> void:
+	if hud.inventory_open:
+		hud.toggle_inventory(player)
+	crafting.open("hand")
+
+## Iron chests hold uncommon+ equipment, golden ones rare+ and extra loot.
+func chest_tier_reward(tier: String, at: Vector2) -> String:
+	match tier:
+		"iron":
+			return spawn_generated_loot(at + Vector2(0, 14), "uncommon")
+		"gold":
+			_spawn_loot(at + Vector2(-12, 12), "gold").amount = 40 + 10 * player.level
+			return spawn_generated_loot(at + Vector2(10, 14), "rare")
+	return ""
+
+## Drop tables (data/drops.json): coins, monster materials, potions and a
+## chance of rolled equipment, each scattered around the body.
+func roll_drops(kind: String, at: Vector2, elite: bool = false) -> Array:
+	var tables := drop_tables()
+	var table: Dictionary = (tables.get("defaults", {}) as Dictionary).duplicate()
+	table.merge(tables.get("monsters", {}).get(kind, {}), true)
+	var dropped: Array = []
+	var gold_range: Array = table.get("gold", [0, 0])
+	if loot_rng.randf() < float(table.get("gold_chance", 0.7)) or elite:
+		var coins := loot_rng.randi_range(int(gold_range[0]), int(gold_range[1])) + maxi(0, enemy_power_bonus())
+		if elite:
+			coins *= int(tables.get("elite", {}).get("gold_mult", 3))
+		coins = roundi(float(coins) * player.get_gold_multiplier())
+		if coins > 0:
+			_spawn_loot(_scatter(at), "gold").amount = coins
+			dropped.append("gold")
+	for entry in table.get("items", []):
+		if loot_rng.randf() < float(entry.get("chance", 0.0)):
+			_spawn_loot(_scatter(at), str(entry.get("item", "")))
+			dropped.append(str(entry.get("item", "")))
+	if loot_rng.randf() < float(table.get("potion", 0.2)):
+		var potion := "health_potion" if loot_rng.randf() < 0.6 else "mana_potion"
+		_spawn_loot(_scatter(at), potion)
+		dropped.append(potion)
+	if not elite and loot_rng.randf() < float(table.get("gear", LootGenerator.drop_chance())):
+		dropped.append(spawn_generated_loot(_scatter(at)))
+	return dropped
+
+var _drop_tables: Dictionary = {}
+
+func drop_tables() -> Dictionary:
+	if _drop_tables.is_empty():
+		var file := FileAccess.open("res://data/drops.json", FileAccess.READ)
+		if file != null:
+			var parsed: Variant = JSON.parse_string(file.get_as_text())
+			if parsed is Dictionary:
+				_drop_tables = parsed
+	return _drop_tables
+
+## Stronger lands pay a little more per kill.
+func enemy_power_bonus() -> int:
+	return int(_layout().get("level", 1)) - 1
+
+func _scatter(at: Vector2) -> Vector2:
+	return at + Vector2(loot_rng.randf_range(-14.0, 14.0), loot_rng.randf_range(-8.0, 10.0))
 
 ## Elites always leave equipment (uncommon or better).
 func _on_elite_defeated(enemy: SlimeEnemy) -> void:
@@ -1218,6 +1282,11 @@ func spawn_generated_loot(at: Vector2, minimum_rarity: String = "common") -> Str
 	return item_id
 
 func _on_loot_collected(item_id: String, amount: int) -> void:
+	if item_id == "gold":
+		player.add_gold(amount)
+		GameAudio.play("pickup", -8.0, 0.15)
+		hud.show_message("+%d золота" % amount, 1.2)
+		return
 	player.add_item(item_id, amount)
 	GameAudio.play("pickup", -4.0, 0.02)
 	hud.show_message("Получено: %s ×%d" % [player.get_item_name(item_id), amount], 2.0)

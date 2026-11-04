@@ -71,7 +71,8 @@
         "position": [1380, 340],
         "gold": 45,
         "item": "health_potion",
-        "amount": 2
+        "amount": 2,
+        "tier": "iron"
       },
       {
         "id": "greenreach_woodland",
@@ -86,6 +87,36 @@
         "gold": 20,
         "item": "mana_potion",
         "amount": 2
+      },
+      {
+        "id": "greenreach_west_lake",
+        "position": [372, 300],
+        "gold": 25,
+        "item": "health_potion",
+        "amount": 1,
+        "tier": "iron"
+      },
+      {
+        "id": "greenreach_east_lake",
+        "position": [1792, 270],
+        "gold": 20,
+        "item": "whetstone",
+        "amount": 2
+      },
+      {
+        "id": "greenreach_great_lake",
+        "position": [1660, 1072],
+        "gold": 60,
+        "item": "mana_potion",
+        "amount": 2,
+        "tier": "gold"
+      },
+      {
+        "id": "greenreach_trail_end",
+        "position": [562, 858],
+        "gold": 15,
+        "item": "health_potion",
+        "amount": 1
       }
     ],
     "herbs": [
@@ -1012,7 +1043,8 @@
         "position": [975, 640],
         "gold": 60,
         "item": "health_potion",
-        "amount": 1
+        "amount": 1,
+        "tier": "iron"
       }
     ],
     "herbs": [
@@ -1284,7 +1316,8 @@
         "position": [1150, 720],
         "gold": 90,
         "item": "health_potion",
-        "amount": 2
+        "amount": 2,
+        "tier": "iron"
       }
     ],
     "herbs": [
@@ -1507,7 +1540,8 @@
         "position": [1080, 240],
         "gold": 120,
         "item": "health_potion",
-        "amount": 3
+        "amount": 3,
+        "tier": "gold"
       }
     ],
     "herbs": [
@@ -1662,7 +1696,8 @@
         "position": [300, 250],
         "gold": 140,
         "item": "mana_potion",
-        "amount": 2
+        "amount": 2,
+        "tier": "gold"
       },
       {
         "id": "spires_nest",
@@ -1819,7 +1854,8 @@
         "position": [1080, 700],
         "gold": 180,
         "item": "health_potion",
-        "amount": 3
+        "amount": 3,
+        "tier": "gold"
       },
       {
         "id": "rift_shrine",
@@ -1954,7 +1990,8 @@
         "position": [1150, 770],
         "gold": 90,
         "item": "recipe_power_elixir",
-        "amount": 1
+        "amount": 1,
+        "tier": "iron"
       },
       {
         "id": "marsh_stump",
@@ -2181,7 +2218,8 @@
         "position": [1300, 260],
         "gold": 80,
         "item": "mana_potion",
-        "amount": 2
+        "amount": 2,
+        "tier": "iron"
       },
       {
         "id": "coast_dunes",
@@ -2638,7 +2676,8 @@
         "position": [1460, 180],
         "gold": 140,
         "item": "starlight_essence",
-        "amount": 1
+        "amount": 1,
+        "tier": "gold"
       },
       {
         "id": "pass_hut",
@@ -3194,14 +3233,16 @@
         "position": [1110, 860],
         "gold": 220,
         "item": "starlight_essence",
-        "amount": 1
+        "amount": 1,
+        "tier": "gold"
       },
       {
         "id": "ruins_side",
         "position": [130, 400],
         "gold": 60,
         "item": "recipe_swift_tonic",
-        "amount": 1
+        "amount": 1,
+        "tier": "iron"
       }
     ],
     "herbs": [],

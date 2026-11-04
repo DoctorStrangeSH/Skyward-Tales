@@ -6,7 +6,8 @@ class_name LootGenerator
 ## value) so equipping, comparing and selling need no special cases.
 
 const PATH := "res://data/loot_tables.json"
-const RARITY_ORDER := ["common", "uncommon", "rare", "epic"]
+const RARITY_ORDER := ["common", "uncommon", "rare", "epic", "legendary"]
+const LEGENDARY_PREFIXES := ["Звёздный", "Небесный", "Вечный", "Древний"]
 
 static var _tables: Dictionary = {}
 
@@ -43,7 +44,7 @@ static func generate(rng: RandomNumberGenerator, level: int, rarity: String = ""
 	if rarity.is_empty():
 		rarity = roll_rarity(rng)
 	var rarity_data: Dictionary = data.get("rarities", {}).get(rarity, {"affixes": 1, "mult": 1.0, "value": 10})
-	var base_id: String = bases.keys()[rng.randi_range(0, bases.size() - 1)]
+	var base_id := _pick_base(rng, bases)
 	var base: Dictionary = bases[base_id]
 	var definition: Dictionary = base.get("base", {}).duplicate(true)
 	definition["slot"] = base.get("slot", "")
@@ -63,9 +64,22 @@ static func generate(rng: RandomNumberGenerator, level: int, rarity: String = ""
 			first_suffix = str(affix["suffix"])
 	var names: Array = base.get("names", ["Предмет"])
 	definition["name"] = "%s %s" % [names[rng.randi_range(0, names.size() - 1)], first_suffix]
+	if rarity == "legendary":
+		definition["name"] = "%s %s" % [LEGENDARY_PREFIXES[rng.randi_range(0, LEGENDARY_PREFIXES.size() - 1)], str(definition["name"]).to_lower()]
 	definition["description"] = ", ".join(lines)
 	definition["value"] = int(rarity_data.get("value", 10)) + level * 2
 	return definition
+
+static func _pick_base(rng: RandomNumberGenerator, bases: Dictionary) -> String:
+	var total := 0.0
+	for base_id in bases:
+		total += float(bases[base_id].get("weight", 1.0))
+	var pick := rng.randf() * total
+	for base_id in bases:
+		pick -= float(bases[base_id].get("weight", 1.0))
+		if pick <= 0.0:
+			return str(base_id)
+	return str(bases.keys().back())
 
 static func _add_stat(definition: Dictionary, stat: String, amount: int) -> void:
 	if stat.begins_with("spell_bonus."):

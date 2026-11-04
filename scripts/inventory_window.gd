@@ -6,6 +6,7 @@ signal sort_selected(index: int)
 signal use_requested(item_id: String)
 signal compare_requested(item_id: String)
 signal unequip_requested(slot: String)
+signal craft_requested
 
 var equipment_list: VBoxContainer
 var stats_label: Label
@@ -24,7 +25,18 @@ func _ready() -> void:
 	add_theme_stylebox_override("panel", UiStyle.panel(false))
 	var contents := VBoxContainer.new()
 	add_child(contents)
-	contents.add_child(_label("СУМКА  [I — закрыть]", 13, Color(1.0, 0.88, 0.56)))
+	var top := HBoxContainer.new()
+	contents.add_child(top)
+	var title := _label("СУМКА  [I — закрыть]", 13, Color(1.0, 0.88, 0.56))
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top.add_child(title)
+	var craft := Button.new()
+	craft.text = "Ремесло [B]"
+	craft.add_theme_font_size_override("font_size", UiFont.px(9))
+	craft.focus_mode = Control.FOCUS_NONE
+	UiStyle.small_toggle(craft)
+	craft.pressed.connect(func() -> void: craft_requested.emit())
+	top.add_child(craft)
 	stats_label = _label("", 9, Color(0.75, 0.92, 1.0))
 	contents.add_child(stats_label)
 	contents.add_child(_label("Экипировка (клик — снять)", 10, Color(0.91, 0.90, 0.75)))
