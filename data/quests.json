@@ -550,5 +550,51 @@
         }
       ]
     }
+  },
+  {
+    "id": "main_elder",
+    "title": "Тайна Элиана",
+    "description": "Вернитесь в Зелёные Пределы и расспросите старейшину Элиана о последней опоре.",
+    "target": 1,
+    "reward": {
+      "experience": 300,
+      "gold": 150
+    },
+    "main": true,
+    "talk_to": "elder",
+    "talk_scene": "elder_truth"
+  },
+  {
+    "id": "main_echoes",
+    "title": "Голоса Хранителей",
+    "description": "Найдите три отголоска Хранителей: в Туманной топи, на Солёном берегу и на Каменном Перевале.",
+    "target": 3,
+    "reward": {
+      "experience": 600,
+      "gold": 300
+    },
+    "main": true
+  },
+  {
+    "id": "main_ascent",
+    "title": "Подъём к Сердцу",
+    "description": "С Расколотого острова по мосту поднимитесь к Сердцу неба.",
+    "target": 1,
+    "reward": {
+      "experience": 200,
+      "gold": 100
+    },
+    "main": true
+  },
+  {
+    "id": "main_heart",
+    "title": "Сердце неба",
+    "description": "Дойдите до ядра Узора в Сердце неба и решите судьбу островов.",
+    "target": 1,
+    "reward": {
+      "experience": 1200,
+      "gold": 800
+    },
+    "main": true
   }
 ]

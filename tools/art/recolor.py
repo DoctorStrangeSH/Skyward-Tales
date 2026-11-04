@@ -31,10 +31,14 @@ def lava(src: Path, dst: Path, ramp: np.ndarray = EMBER, glow_share: float = 0.1
 GOLD = np.array([(40, 26, 14), (90, 58, 22), (150, 100, 34), (200, 150, 50), (240, 196, 80), (255, 230, 130), (255, 252, 220)], dtype=np.float32)
 
 
+LIGHT = np.array([(70, 60, 90), (120, 110, 150), (170, 170, 210), (210, 220, 245), (255, 236, 160), (255, 248, 210), (255, 255, 255)], dtype=np.float32)
+
+
 def build(root: Path) -> None:
     enemies = root / "assets" / "sprites" / "enemies"
     lava(enemies / "forest_wolf_8dir.png", enemies / "ember_hound_8dir.png", OBSIDIAN, 0.07)
     lava(enemies / "stone_golem_8dir.png", enemies / "magma_golem_8dir.png", OBSIDIAN, 0.12)
+    lava(enemies / "echo_warden_8dir.png", enemies / "pattern_voice_8dir.png", LIGHT, 0.3)
     lava(enemies / "cave_bat_8dir.png", enemies / "loot_imp_8dir.png", GOLD, 0.25)
     lava(enemies / "mountain_giant_8dir.png", enemies / "ash_lord_8dir.png", OBSIDIAN, 0.1)
 

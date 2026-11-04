@@ -322,6 +322,11 @@ def main() -> int:
                                     RED_MID: (140, 34, 28), RED_LIGHT: (255, 150, 60), MAUVE: (40, 14, 14),
                                     SKIN_LIGHT: (150, 120, 110), SKIN_SHADE: (110, 86, 80), INK: (255, 120, 40), GOLD: (255, 170, 70)},
                             ahoge=False),
+        # Aella, the first Keeper: a pale-gold ghost in a faded white robe.
+        "aella": dict(colors={HAIR_LIGHT: (255, 246, 214), HAIR_SHADE: (226, 206, 150), RED_DARK: (176, 160, 120),
+                              RED_MID: (220, 208, 170), RED_LIGHT: (255, 236, 160), SKIN_LIGHT: (250, 240, 226),
+                              SKIN_SHADE: (220, 200, 180), MAUVE: (150, 136, 110), GOLD: (255, 230, 140)},
+                      ahoge=False, alpha=0.85),
         # Vail: long white hair, violet Keeper robes.
         "vail": dict(colors={RED_DARK: (58, 40, 98), RED_MID: (92, 66, 150), RED_LIGHT: (176, 132, 236), MAUVE: (40, 30, 60),
                              GOLD: (210, 180, 255)}, ahoge=False),

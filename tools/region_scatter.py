@@ -32,6 +32,9 @@ def blocked(region: dict, p, margin: float) -> bool:
     t = region["terrain"]
     w, h = t["size"]
     x, y = p
+    margin_edge = t.get("edge_margin", 0)
+    if margin_edge and (x < margin_edge + 30 or y < margin_edge + 30 or x > w - margin_edge - 30 or y > h - margin_edge - 30):
+        return True  # floating island: keep off the sky rim
     if x < 30 or y < 40 or x > w - 30 or y > h - 30:
         return False  # the border band is fine for trees
     for trail in t.get("trails", []):

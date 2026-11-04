@@ -23,7 +23,7 @@ const MERCHANT_SHOP_SCRIPT := preload("res://scripts/merchant_shop.gd")
 const CRAFTING_SERVICE_SCRIPT := preload("res://scripts/crafting_service.gd")
 const GATE_SCRIPT := preload("res://scripts/region_gate.gd")
 ## Story bosses: defeated once (flag "<kind>_defeated"), never respawn.
-const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой колосс", "vail": "Вейл", "bog_king": "Болотный король", "crab_king": "Краб-король", "giant": "Горный великан", "crypt_lord": "Повелитель склепа", "ash_lord": "Владыка Пепла", "forge_titan": "Титан Горнила"}
+const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой колосс", "vail": "Вейл", "bog_king": "Болотный король", "crab_king": "Краб-король", "giant": "Горный великан", "crypt_lord": "Повелитель склепа", "ash_lord": "Владыка Пепла", "forge_titan": "Титан Горнила", "pattern_voice": "Голос Узора"}
 const ENEMY_SCRIPTS := {
 	"slime": preload("res://scripts/enemy.gd"),
 	"wolf": preload("res://scripts/forest_wolf.gd"),
@@ -48,7 +48,8 @@ const ENEMY_SCRIPTS := {
 	"magma_golem": preload("res://scripts/magma_golem.gd"),
 	"ash_cultist": preload("res://scripts/ash_cultist.gd"),
 	"ash_lord": preload("res://scripts/ash_lord.gd"),
-	"forge_titan": preload("res://scripts/forge_titan.gd")
+	"forge_titan": preload("res://scripts/forge_titan.gd"),
+	"pattern_voice": preload("res://scripts/pattern_voice.gd")
 }
 const MATERIAL_ITEMS := ["wolf_pelt", "iron_ore"]
 const RARITY_LABELS := {"common": "ОБЫЧНАЯ", "uncommon": "НЕОБЫЧНАЯ", "rare": "РЕДКАЯ"}
@@ -281,6 +282,10 @@ func _process(delta: float) -> void:
 	_update_spell_hud()
 	hud.update_hotbar(skills.hotbar_entries())
 	director.update()
+	# The finale choice comes back until the hero makes it.
+	if quests.is_completed("main_heart") and not director.has_flag("ending_restore") and not director.has_flag("ending_lower"):
+		if not hud.dialogue_visible and not story.active and not director.has_pending():
+			offer_finale()
 	if not get_tree().paused:
 		crafting.tick(delta)
 	_marker_clock -= delta
@@ -587,6 +592,25 @@ func spawn_story_objects() -> void:
 				present = true
 		if not present:
 			_spawn_herb(_vec(object_data.get("position")), object_id, str(object_data.get("name", "")))
+
+## Finale of Act III: after the Voice of the Pattern falls, the hero decides.
+func offer_finale() -> void:
+	if director.has_flag("ending_restore") or director.has_flag("ending_lower"):
+		return
+	_show_dialogue_choices("Небесная печать", "Печать горит в ладони. Узор ждёт решения.", [
+		{"id": "finale:restore", "label": "Зажечь Узор — острова останутся в небе"},
+		{"id": "finale:lower", "label": "Отпустить Узор — острова мягко опустятся на землю"},
+	])
+
+func choose_finale(ending: String) -> void:
+	if ending != "restore" and ending != "lower":
+		return
+	player.set_physics_process(true)
+	director.set_flag("ending_" + ending)
+	director.queue_scene("ending_" + ending, func() -> void:
+		hud.show_title_card("Конец · %s" % ("Живое небо" if ending == "restore" else "Звёзды над землёй"), 6.0)
+		hud.show_message("Спасибо за игру! Мир остаётся открытым: побочные задания, подземелья и события ждут.", 8.0)
+		request_autosave())
 
 ## Mira joins the party (Act II); safe to call more than once.
 func ensure_companion() -> void:
@@ -982,6 +1006,8 @@ func _discover_nearby_enemies() -> void:
 static func enemy_kind(enemy: SlimeEnemy) -> String:
 	if enemy is LootImp:
 		return "loot_imp"
+	if enemy is PatternVoice:
+		return "pattern_voice"
 	if enemy is ForgeTitan:
 		return "forge_titan"
 	if enemy is AshLord:
@@ -1095,7 +1121,7 @@ func spawn_enemy(kind: String, spawn_position: Vector2, elite: String = "") -> S
 	match kind:
 		"guardian":
 			enemy.defeated.connect(func(xp: int) -> void: _on_guardian_defeated(xp, enemy.global_position))
-		"echo", "tempest", "vail", "bog_king", "crab_king", "giant", "crypt_lord", "ash_lord", "forge_titan":
+		"echo", "tempest", "vail", "bog_king", "crab_king", "giant", "crypt_lord", "ash_lord", "forge_titan", "pattern_voice":
 			enemy.defeated.connect(func(xp: int) -> void: _on_story_boss_defeated(kind, xp, enemy.global_position))
 		"wolf":
 			enemy.defeated.connect(func(xp: int) -> void:

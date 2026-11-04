@@ -156,6 +156,8 @@ def build_props() -> None:
         "waystone_on": props.waystone(True), "waystone_off": props.waystone(False),
         "marsh_lantern": props.herb("marsh_lantern"),
         "ember_coal": props.herb("ember_coal"),
+        "keeper_echo": props.herb("keeper_echo"),
+        "pattern_core": props.herb("pattern_core"),
         "rift_throne": props.rune_circle(("#fbf6ff", "#e6d2ff", "#c9a2ff", "#6a3ac0")),
         "wind_rune": props.herb("wind_rune"), "storm_heart": props.rune_circle(("#ffffff", "#c8f4ff", "#7ad0f0", "#3a7ab0")),
         "memory_crystal": props.herb("memory_crystal"),
