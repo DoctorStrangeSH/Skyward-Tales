@@ -30,7 +30,7 @@
 
 Готовые сборки для Windows и Linux — на странице [Releases](https://github.com/DoctorStrangeSH/Skyward-Tales/releases): скачать zip, распаковать, запустить `SkywardTales.exe`. Подробнее — [docs/PLAYING.md](docs/PLAYING.md).
 
-Свежая сборка после каждого коммита в `main` лежит в Actions → «Build game» → Artifacts. Новый релиз: `git tag v0.X.Y && git push origin v0.X.Y`.
+Свежая сборка после каждого коммита в `main` лежит в Actions → «Build game» → Artifacts. Новый релиз: Actions → «Build game» → «Run workflow», в поле тега указать версию (например `v0.3.0`) — или запушить тег `v0.X.Y`.
 
 ## Запуск из исходников
 
