@@ -32,10 +32,10 @@ func map_size() -> Vector2:
 	return Vector2(float(size[0]), float(size[1]))
 
 func is_night() -> bool:
-	return str(terrain.get("style", "day")) in ["night", "cave"]
+	return str(terrain.get("style", "day")) in ["night", "cave", "crypt"]
 
 func is_cave() -> bool:
-	return str(terrain.get("style", "day")) == "cave"
+	return str(terrain.get("style", "day")) in ["cave", "crypt"]
 
 func _build() -> void:
 	terrain = RegionCatalog.terrain(region_id)

@@ -247,3 +247,69 @@ def _tuft(canvas: Canvas, x: int, y: int, grass, rng: random.Random) -> None:
             color = grass[6] if i == height - 1 else (grass[5] if i > 0 else grass[4])
             canvas.put(px, y - i, color)
     canvas.put(x, y + 1, grass[1])
+
+
+def render_crypt(terrain: dict, pal: dict, seed: int) -> Canvas:
+    """Dungeon floor plan: flagstone rooms and corridors ("rooms" rectangles)
+    inside dark brick walls, with a lit lip along the wall tops."""
+    w, h = terrain["size"]
+    rng = random.Random(seed)
+    floor = np.zeros((h, w), dtype=bool)
+    for x, y, rw, rh in terrain.get("rooms", []):
+        floor[y:y + rh, x:x + rw] = True
+    img = np.zeros((h, w, 4), dtype=np.uint8)
+    stone, dirt = pal["stone"], pal["dirt"]
+    # Walls: brick courses.
+    ys, xs = np.mgrid[0:h, 0:w]
+    course = (ys // 8) % 2
+    mortar = (ys % 8 == 0) | (((xs + course * 8) % 16) == 0)
+    img[:] = stone[1]
+    img[mortar] = stone[0]
+    # Floor: 16px flagstones with noise.
+    n = fbm(w, h, 18.0, seed, 2)
+    tile_edge = ((xs + (ys // 16) % 2 * 8) % 16 == 0) | (ys % 16 == 0)
+    shade = np.digitize(n, [0.42, 0.6]) + 2
+    lut = np.array(dirt)
+    img[floor] = lut[shade][floor]
+    img[floor & tile_edge] = lut[1]
+    # Wall faces just above the floor (front of the wall, 12 px tall).
+    face = np.zeros_like(floor)
+    for k in range(1, 13):
+        face |= np.roll(floor, -k, 0) & ~floor
+    img[face] = stone[3]
+    img[face & mortar] = stone[2]
+    top = face & ~np.roll(face, 1, 0)
+    img[top] = stone[4]
+    # Floor shadow under walls.
+    under = floor & np.roll(~floor, 1, 0)
+    img[under] = lut[1]
+    img[:, :, 3] = 255
+    canvas = Canvas(w, h)
+    canvas.px = img
+    # Scattered rubble and moss.
+    for _ in range(int(w * h / 3000)):
+        x, y = rng.randrange(w), rng.randrange(h)
+        if floor[y, x]:
+            canvas.put(x, y, pal["moss"][rng.randrange(4)] if rng.random() < 0.5 else stone[4])
+    return canvas
+
+
+def crypt_blockers(terrain: dict, cell: int = 16) -> list:
+    """Collision for everything that is not floor: row runs of wall cells."""
+    w, h = terrain["size"]
+    floor = np.zeros((h // cell, w // cell), dtype=bool)
+    for x, y, rw, rh in terrain.get("rooms", []):
+        floor[y // cell:(y + rh) // cell, x // cell:(x + rw) // cell] = True
+    result = []
+    for row in range(floor.shape[0]):
+        col = 0
+        while col < floor.shape[1]:
+            if floor[row, col]:
+                col += 1
+                continue
+            start = col
+            while col < floor.shape[1] and not floor[row, col]:
+                col += 1
+            x0, x1 = start * cell, col * cell
+            result.append({"center": [(x0 + x1) / 2, row * cell + cell / 2], "size": [x1 - x0, cell]})
+    return result

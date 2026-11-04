@@ -22,7 +22,9 @@ const FALLBACK_ENEMY_POSITIONS := {
 	"crab": Vector2(640, 760),
 	"crab_king": Vector2(700, 940),
 	"golem": Vector2(300, 780),
-	"giant": Vector2(1380, 300)
+	"giant": Vector2(1380, 300),
+	"skeleton": Vector2(780, 400),
+	"crypt_lord": Vector2(880, 860)
 }
 
 static func _position_array(pos: Vector2) -> Array[float]:
@@ -77,7 +79,8 @@ static func capture(game: SkywardGame) -> Dictionary:
 			"opened_chests": game.opened_chests.duplicate(true), "gathered_resource_nodes": game.gathered_resource_nodes.duplicate(true),
 			"settlement": game.settlement.make_snapshot(),
 			"crafting": game.crafting.make_snapshot(),
-			"visited": game.visited_regions.duplicate()
+			"visited": game.visited_regions.duplicate(),
+			"doors": game.opened_doors.duplicate()
 		},
 		"magic": game.selected_spell_id
 	}
@@ -106,6 +109,8 @@ static func apply(game: SkywardGame, data: Dictionary) -> bool:
 	game.crafting.restore_snapshot(world_data.get("crafting", {}))
 	var visited: Variant = world_data.get("visited", {})
 	game.visited_regions = visited.duplicate() if visited is Dictionary else {}
+	var doors: Variant = world_data.get("doors", {})
+	game.opened_doors = doors.duplicate() if doors is Dictionary else {}
 	var saved_position := read_position(character.get("position"), DEFAULT_PLAYER_POSITION)
 	game._set_region(str(world_data.get("region", "greenreach")), saved_position, false)
 	for quest_id in quest_data["states"]:

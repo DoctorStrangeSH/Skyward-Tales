@@ -43,6 +43,17 @@
   ],
   "feet": 40
  },
+ "crypt_lord": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
  "elder": {
   "anims": {
    "idle": 6,
@@ -194,6 +205,17 @@
   "feet": 40
  },
  "shaman": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
+ "skeleton": {
   "anims": {
    "idle": 6,
    "walk": 6

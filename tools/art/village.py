@@ -517,3 +517,62 @@ def build_coast(root: pathlib.Path) -> None:
         art[rel] = {"size": [canvas.w, canvas.h], "origin": list(origin)}
     manifest_path.write_text(json.dumps(dict(sorted(art.items())), indent=1) + "\n")
     print("  coast: " + ", ".join(items))
+
+
+
+# --- Dungeon furniture ------------------------------------------------------------
+
+def spikes(up: bool) -> Canvas:
+    c = Canvas(20, 14)
+    c.rect(1, 6, 18, 7, STONE[1])
+    c.rect(2, 7, 16, 5, STONE[0])
+    for x in range(3, 18, 4):
+        if up:
+            for k in range(6):
+                c.put(x + (1 if k < 3 else 0), 8 - k, STONE[5] if k < 2 else STONE[4])
+            c.put(x + 1, 2, hex_color("#ffffff"))
+        else:
+            c.put(x + 1, 9, STONE[3])
+    c.outline(OUTLINE)
+    return c
+
+
+def door(open_: bool) -> Canvas:
+    c = Canvas(64, 40)
+    c.rect(0, 0, 6, 40, STONE[2])
+    c.rect(58, 0, 6, 40, STONE[2])
+    c.rect(0, 0, 64, 6, STONE[3])
+    if not open_:
+        c.rect(6, 6, 52, 34, TIMBER[1])
+        for x in range(8, 56, 6):
+            c.vline(x, 6, 39, TIMBER[2])
+        for y in (12, 30):
+            c.rect(6, y, 52, 3, hex_color("#5a5a62"))
+        c.rect(29, 18, 6, 7, GOLD)
+        c.put(31, 21, OUTLINE)
+        c.put(32, 21, OUTLINE)
+    c.outline(OUTLINE)
+    return c
+
+
+def torch() -> Canvas:
+    c = Canvas(12, 22)
+    c.rect(5, 8, 2, 12, TIMBER[1])
+    c.rect(3, 7, 6, 2, hex_color("#5a5a62"))
+    for (x, y, col) in ((5, 5, "#ffd060"), (6, 4, "#ffb040"), (5, 3, "#ff8a30"), (6, 6, "#fff2b0"), (4, 6, "#ffb040"), (7, 6, "#ffd060")):
+        c.put(x, y, hex_color(col))
+    c.outline(OUTLINE)
+    return c
+
+
+def build_dungeon(root: pathlib.Path) -> None:
+    items = {"crypt_spikes_up": (spikes(True), (10, 12)), "crypt_spikes_down": (spikes(False), (10, 12)),
+             "crypt_door": (door(False), (32, 38)), "crypt_door_open": (door(True), (32, 38)), "crypt_torch": (torch(), (6, 20))}
+    manifest_path = root / "assets" / "art_manifest.json"
+    art = json.loads(manifest_path.read_text())
+    for name, (canvas, origin) in items.items():
+        rel = f"world/{name}.png"
+        canvas.save(root / "assets" / rel)
+        art[rel] = {"size": [canvas.w, canvas.h], "origin": list(origin)}
+    manifest_path.write_text(json.dumps(dict(sorted(art.items())), indent=1) + "\n")
+    print("  dungeon: " + ", ".join(items))

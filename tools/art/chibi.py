@@ -288,6 +288,15 @@ def main() -> int:
         # Gunhild, master smith of the Stone Pass: copper hair, leather apron.
         "smith_master": dict(colors={HAIR_LIGHT: (214, 120, 60), HAIR_SHADE: (160, 80, 40), RED_DARK: (70, 50, 36),
                                      RED_MID: (104, 76, 52), RED_LIGHT: (190, 190, 200), MAUVE: (50, 36, 28)}, ahoge=False),
+        # Skeletons of the ruins: bone-white, bald, in grey rags.
+        "skeleton": dict(colors={HAIR_LIGHT: (232, 228, 210), HAIR_SHADE: (190, 186, 170), RED_DARK: (52, 50, 54),
+                                 RED_MID: (80, 76, 80), RED_LIGHT: (120, 116, 110), SKIN_LIGHT: (236, 232, 214),
+                                 SKIN_SHADE: (196, 190, 170), MAUVE: (40, 38, 40), GOLD: (150, 146, 130), INK: (30, 20, 20)},
+                         trim=True, ahoge=False, fill=((52, 50, 54), (80, 76, 80))),
+        # The Crypt Lord: a hooded Keeper gone wrong, green-black and gold.
+        "crypt_lord": dict(colors={HAIR_LIGHT: (60, 90, 70), HAIR_SHADE: (36, 58, 46), RED_DARK: (24, 34, 30),
+                                   RED_MID: (40, 56, 46), RED_LIGHT: (150, 230, 160), MAUVE: (16, 22, 20),
+                                   SKIN_LIGHT: (170, 190, 170), SKIN_SHADE: (120, 140, 120), GOLD: (220, 190, 90)}, ahoge=False),
         # Moren the lighthouse keeper: grey beard, navy coat.
         "keeper": dict(colors={HAIR_LIGHT: (200, 200, 196), HAIR_SHADE: (150, 150, 150), RED_DARK: (30, 40, 70),
                                RED_MID: (46, 62, 104), RED_LIGHT: (220, 180, 80), MAUVE: (30, 34, 50)},
@@ -336,6 +345,7 @@ def main() -> int:
     village.build_ui(ROOT)
     village.build_gathering(ROOT)
     village.build_coast(ROOT)
+    village.build_dungeon(ROOT)
     (OUT / "manifest.json").write_text(json.dumps(manifest, indent=1, sort_keys=True) + "\n")
     return 0
 
