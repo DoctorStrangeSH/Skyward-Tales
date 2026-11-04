@@ -666,3 +666,30 @@ def sky_gate() -> tuple[Canvas, tuple[int, int]]:
         c.put(x, y, glow[0])
     _finish(c)
     return c, (18, 44)
+
+
+def app_icon() -> Canvas:
+    """128x128 game icon: a floating island with a glowing sky shard, at 4x."""
+    small = Canvas(32, 32)
+    sky = ramp("#2a3a7a", "#3a5aa8", "#5a86d0", "#86b2ec", "#b8d6f6")
+    for y in range(32):
+        for x in range(32):
+            if (x - 15.5) ** 2 + (y - 15.5) ** 2 <= 15.5 ** 2:
+                small.put(x, y, sky[min(4, y // 7)])
+    grass = ramp("#e6f6c6", "#92d08e", "#4f9a72", "#2a5a5a")
+    rock = ramp("#b8bdd2", "#9094b0", "#6a6c8a", "#4a4a66")
+    for y in range(17, 29):
+        half = 11 - (y - 17) * 0.95 if y > 19 else 11
+        for x in range(int(16 - half), int(16 + half) + 1):
+            small.put(x, y, (grass[0] if y == 17 else grass[1] if y < 19 else grass[2]) if y < 20 else rock[min(3, (y - 20) // 2)])
+    glow = ramp("#ffffff", "#fff6c0", "#ffd45c", "#e0962e")
+    for y in range(5, 17):
+        half = (y - 5) * 0.45 if y < 12 else (17 - y) * 0.9
+        for x in range(int(16 - half), int(16 + half) + 1):
+            small.put(x, y, glow[0] if x < 16 else glow[2])
+    for x, y in ((9, 8), (23, 6), (25, 12), (7, 13)):
+        small.put(x, y, glow[1])
+    small.outline(hex_color("#1a1a3a"))
+    big = Canvas(128, 128)
+    big.px = small.px.repeat(4, axis=0).repeat(4, axis=1)
+    return big

@@ -88,6 +88,8 @@ func _stream(path: String) -> AudioStream:
 	return _streams[path]
 
 func _play(sound: String, volume_db: float, pitch_jitter: float) -> void:
+	if not is_inside_tree():
+		return
 	var stream := _stream(SFX_DIR + sound + ".wav")
 	if stream == null:
 		return
@@ -106,12 +108,17 @@ func _music(track: String) -> void:
 	if track == current_track:
 		return
 	current_track = track
+	if not is_inside_tree():
+		# Created this frame (deferred add_child): start once in the tree.
+		current_track = ""
+		_music.call_deferred(track)
+		return
 	var outgoing := _music_a if _music_a.playing else _music_b
 	var incoming := _music_b if outgoing == _music_a else _music_a
-	var tween := create_tween().set_parallel(true)
 	if outgoing.playing:
-		tween.tween_property(outgoing, "volume_db", -80.0, FADE)
-		tween.chain().tween_callback(outgoing.stop)
+		var fade_out := create_tween()
+		fade_out.tween_property(outgoing, "volume_db", -80.0, FADE)
+		fade_out.tween_callback(outgoing.stop)
 	if track.is_empty():
 		return
 	var stream := _stream(MUSIC_DIR + track + ".ogg")
@@ -124,3 +131,13 @@ func _music(track: String) -> void:
 	incoming.play()
 	var fade_in := create_tween()
 	fade_in.tween_property(incoming, "volume_db", 0.0, FADE)
+
+func _exit_tree() -> void:
+	for player in [_music_a, _music_b]:
+		player.stop()
+		player.stream = null
+	for voice in _voices:
+		voice.stream = null
+	_streams.clear()
+	if _instance == self:
+		_instance = null

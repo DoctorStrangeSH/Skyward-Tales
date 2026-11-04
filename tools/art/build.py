@@ -116,6 +116,7 @@ def build_props() -> None:
     }
     for name, (canvas, origin) in items.items():
         save(canvas, f"props/{name}.png", origin)
+    save(props.app_icon(), "icon.png")
     for item_id, canvas in icons.build().items():
         save(canvas, f"icons/{item_id}.png")
 
