@@ -54,6 +54,17 @@
       "respawn": 200,
       "art": "gather_bluebell",
       "verb": "собрать"
+    },
+    "iron": {
+      "name": "Железная жила",
+      "item": "iron_ore",
+      "amount": [
+        1,
+        2
+      ],
+      "respawn": 300,
+      "art": "gather_iron",
+      "verb": "добыть"
     }
   },
   "stations": {
@@ -70,6 +81,12 @@
     "forge": {
       "name": "Горн",
       "art": ""
+    },
+    "forge_steel": {
+      "name": "Горн мастера",
+      "art": "",
+      "needs_quest": "pass_golems",
+      "locked": "Гунхильд не подпускает чужих к горну. Помогите ей сначала с големами."
     }
   },
   "placements": {
@@ -81,6 +98,12 @@
       "alchemy": [
         972,
         540
+      ]
+    },
+    "stone_pass": {
+      "forge_steel": [
+        890,
+        535
       ]
     }
   }

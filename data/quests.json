@@ -417,5 +417,60 @@
         }
       ]
     }
+  },
+  {
+    "id": "pass_golems",
+    "title": "Каменные стражи",
+    "description": "Разбейте четырёх каменных големов у дорог Перевала.",
+    "target": 4,
+    "side": true,
+    "kill_kind": "golem",
+    "reward": {
+      "experience": 160,
+      "gold": 90,
+      "items": [
+        {
+          "id": "iron_ore",
+          "amount": 4
+        }
+      ]
+    }
+  },
+  {
+    "id": "pass_coal",
+    "title": "Уголь для горна",
+    "description": "Принесите Гунхильд три мешка угля из брошенных стоянок.",
+    "target": 3,
+    "side": true,
+    "requires_quest": "pass_golems",
+    "reward": {
+      "experience": 180,
+      "gold": 100,
+      "items": [
+        {
+          "id": "recipe_steel_mail",
+          "amount": 1
+        }
+      ]
+    }
+  },
+  {
+    "id": "pass_giant",
+    "title": "Горный великан",
+    "description": "Одолейте Горного великана у северной скалы.",
+    "target": 1,
+    "side": true,
+    "kill_kind": "giant",
+    "requires_quest": "pass_coal",
+    "reward": {
+      "experience": 360,
+      "gold": 220,
+      "items": [
+        {
+          "id": "recipe_skysteel",
+          "amount": 1
+        }
+      ]
+    }
   }
 ]

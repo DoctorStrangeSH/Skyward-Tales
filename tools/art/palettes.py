@@ -123,5 +123,19 @@ COAST = {
     "flowers": [ramp("#fff6e8", "#e8d8c0"), ramp("#f8c0a0", "#d88a6a"), ramp("#a8d8f0", "#5a9ac8")],
 }
 
-STYLES = {"coast": COAST, "day": DAY, "night": NIGHT, "cave": CAVE, "sky": SKY, "spires": SPIRES, "rift": RIFT, "marsh": MARSH}
+MOUNTAIN = {
+    # Stone Pass: snow-dusted alpine turf, gravel roads, icy tarns, dark pines.
+    "grass": ramp("#4a5a5a", "#5e706a", "#74867a", "#8c9c8c", "#a8b6aa", "#cad4cc", "#eef2ee"),
+    "dirt": ramp("#3e3a3a", "#54504c", "#6c6762", "#86807a", "#a29c94", "#c0bab0"),
+    "water": ramp("#1a3a5a", "#24507a", "#326c9a", "#4a8cb8", "#86bcd8", "#e0f4ff"),
+    "stone": ramp("#262630", "#3a3a46", "#54545e", "#72727a", "#94949a", "#c4c4c8"),
+    "leaf": ramp("#0e2420", "#16342c", "#204636", "#2c5a42", "#3e7050", "#5a8a64", "#86a888"),
+    "bark": ramp("#2a1e1a", "#3e2c24", "#56402e", "#70543a", "#8a6a48"),
+    "moss": ramp("#4a5a4a", "#5e7060", "#748674", "#8c9c8c"),
+    "shadow": hex_color("#1a2230", 90),
+    "outline": hex_color("#202028"),
+    "flowers": [ramp("#ffffff", "#d8e0e8"), ramp("#c8d8ff", "#7a90c8"), ramp("#f0e0ff", "#a890c8")],
+}
+
+STYLES = {"mountain": MOUNTAIN, "coast": COAST, "day": DAY, "night": NIGHT, "cave": CAVE, "sky": SKY, "spires": SPIRES, "rift": RIFT, "marsh": MARSH}
 ISLAND_STYLES = ("sky", "spires", "rift")

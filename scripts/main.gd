@@ -21,7 +21,7 @@ const MERCHANT_SHOP_SCRIPT := preload("res://scripts/merchant_shop.gd")
 const CRAFTING_SERVICE_SCRIPT := preload("res://scripts/crafting_service.gd")
 const GATE_SCRIPT := preload("res://scripts/region_gate.gd")
 ## Story bosses: defeated once (flag "<kind>_defeated"), never respawn.
-const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой колосс", "vail": "Вейл", "bog_king": "Болотный король", "crab_king": "Краб-король"}
+const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой колосс", "vail": "Вейл", "bog_king": "Болотный король", "crab_king": "Краб-король", "giant": "Горный великан"}
 const ENEMY_SCRIPTS := {
 	"slime": preload("res://scripts/enemy.gd"),
 	"wolf": preload("res://scripts/forest_wolf.gd"),
@@ -37,6 +37,8 @@ const ENEMY_SCRIPTS := {
 	"bog_king": preload("res://scripts/bog_king.gd"),
 	"crab": preload("res://scripts/coast_crab.gd"),
 	"crab_king": preload("res://scripts/crab_king.gd"),
+	"golem": preload("res://scripts/stone_golem.gd"),
+	"giant": preload("res://scripts/mountain_giant.gd"),
 	"sentinel": preload("res://scripts/sky_sentinel.gd")
 }
 const MATERIAL_ITEMS := ["wolf_pelt", "iron_ore"]
@@ -203,7 +205,7 @@ func update_music() -> void:
 			GameAudio.music("boss")
 			return
 	var style := RegionCatalog.style(current_region)
-	GameAudio.music({"night": "night", "cave": "caves", "sky": "sky", "spires": "sky", "rift": "night", "marsh": "night", "coast": "sky"}.get(style, "meadow"))
+	GameAudio.music({"night": "night", "cave": "caves", "sky": "sky", "spires": "sky", "rift": "night", "marsh": "night", "coast": "sky", "mountain": "caves"}.get(style, "meadow"))
 
 func shake(strength: float, duration: float) -> void:
 	if not GameSettings.get_bool("screen_shake"):
@@ -781,6 +783,8 @@ static func enemy_kind(enemy: SlimeEnemy) -> String:
 		return "bog_king"
 	if enemy is CrabKing:
 		return "crab_king"
+	if enemy is MountainGiant:
+		return "giant"
 	if enemy is TempestColossus:
 		return "tempest"
 	if enemy is EchoWarden:
@@ -799,6 +803,8 @@ static func enemy_kind(enemy: SlimeEnemy) -> String:
 		return "toad"
 	if enemy is CoastCrab:
 		return "crab"
+	if enemy is StoneGolem:
+		return "golem"
 	if enemy is ForestWolf:
 		return "wolf"
 	if enemy is CaveBat:
@@ -870,7 +876,7 @@ func spawn_enemy(kind: String, spawn_position: Vector2, elite: String = "") -> S
 	match kind:
 		"guardian":
 			enemy.defeated.connect(func(xp: int) -> void: _on_guardian_defeated(xp, enemy.global_position))
-		"echo", "tempest", "vail", "bog_king", "crab_king":
+		"echo", "tempest", "vail", "bog_king", "crab_king", "giant":
 			enemy.defeated.connect(func(xp: int) -> void: _on_story_boss_defeated(kind, xp, enemy.global_position))
 		"wolf":
 			enemy.defeated.connect(func(xp: int) -> void:
