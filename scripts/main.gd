@@ -172,6 +172,7 @@ func _ready() -> void:
 	interact_prompt = InteractPrompt.new()
 	add_child(interact_prompt)
 	hud.inventory_use_requested.connect(_on_inventory_use)
+	hud.inventory_view.set_skills(skills)
 	hud.inventory_unequip_requested.connect(_on_inventory_unequip)
 	hud.handcraft_requested.connect(open_handcraft)
 	hud.hero_unequip_requested.connect(func(slot: String) -> void:
@@ -382,8 +383,6 @@ func _handle_key(keycode: Key) -> bool:
 			open_map()
 			return true
 		KEY_K when not world_blocked:
-			if hud.hero_visible:
-				hud.toggle_hero_panel(player, skills)
 			if hud.skills_visible:
 				hud.toggle_skill_tree(player)
 			if hud.inventory_open:
@@ -393,17 +392,11 @@ func _handle_key(keycode: Key) -> bool:
 			hud.toggle_bestiary(bestiary_entries, discovered_enemies)
 			return true
 		KEY_C when not world_blocked:
-			if hud.hero_visible:
-				hud.toggle_hero_panel(player, skills)
-				return true
-			if hud.inventory_open:
-				hud.toggle_inventory(player)
-			_close_books()
+			if not hud.inventory_open:
+				_close_books()
 			hud.toggle_hero_panel(player, skills)
 			return true
 		KEY_T when not world_blocked:
-			if hud.hero_visible:
-				hud.toggle_hero_panel(player, skills)
 			if hud.inventory_open:
 				hud.toggle_inventory(player)
 			if hud.bestiary_visible:
@@ -413,8 +406,6 @@ func _handle_key(keycode: Key) -> bool:
 			hud.toggle_skill_tree(player)
 			return true
 		KEY_J when not world_blocked:
-			if hud.hero_visible:
-				hud.toggle_hero_panel(player, skills)
 			if hud.skills_visible:
 				hud.toggle_skill_tree(player)
 			if hud.inventory_open:
@@ -1798,8 +1789,6 @@ func restore_save_snapshot(data: Dictionary) -> bool:
 	return true
 
 func _close_books() -> void:
-	if hud.hero_visible:
-		hud.toggle_hero_panel(player, skills)
 	if hud.skills_visible:
 		hud.toggle_skill_tree(player)
 	if hud.bestiary_visible:

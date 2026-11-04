@@ -68,7 +68,7 @@ func _run() -> void:
 	if not _verify(player.get_mana_regen() > regen_before and player.get_dodge_cooldown() < player.dodge_cooldown and player.get_move_speed() > player.move_speed, "will and agility take effect"):
 		return
 	game.hud.toggle_inventory(player)
-	if not _verify(game.hud.inventory_view.stats_label.text.contains("Сила магии 8"), "bag shows characteristics"):
+	if not _verify(game.hud.inventory_view.stats_label.tooltip_text.contains("Сила магии 8"), "bag shows characteristics"):
 		return
 	game.hud.toggle_inventory(player)
 

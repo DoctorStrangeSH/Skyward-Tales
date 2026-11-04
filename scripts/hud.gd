@@ -29,8 +29,8 @@ var dodge_cooldown_bar: ProgressBar
 var inventory_label: Label
 var inventory_panel: PanelContainer
 var inventory_view: InventoryWindow
-var inventory_list: VBoxContainer
-var equipment_list: VBoxContainer
+var inventory_list: Container
+var equipment_list: Control
 var inventory_filter: OptionButton
 var inventory_sort: OptionButton
 var inventory_player: PlayerCharacter
@@ -72,8 +72,9 @@ var bestiary_visible: bool = false
 var journal_view: QuestJournalPanel
 var skills_view: SkillTreePanel
 var skills_visible: bool = false
-var hero_visible: bool = false
-var hero_view: HeroPanel
+## The hero window is the bag window now (I and C open it).
+var hero_visible: bool:
+	get: return inventory_open
 var fishing_view: FishingPanel
 var hotbar: HBoxContainer
 var hotbar_slots: Array = []
@@ -218,6 +219,10 @@ func _ready() -> void:
 	inventory_view.compare_requested.connect(func(id: String) -> void: _show_equipment_comparison(inventory_player, id))
 	inventory_view.unequip_requested.connect(func(slot: String) -> void: inventory_unequip_requested.emit(slot))
 	inventory_view.craft_requested.connect(func() -> void: handcraft_requested.emit())
+	inventory_view.assign_requested.connect(func(index: int, skill_id: String) -> void: hero_assign_requested.emit(index, skill_id))
+	inventory_view.compare_cleared.connect(func() -> void:
+		if comparison_panel != null:
+			comparison_panel.visible = false)
 
 	comparison_view = EquipmentComparisonPanel.new()
 	root.add_child(comparison_view)
@@ -230,10 +235,6 @@ func _ready() -> void:
 	fishing_view = FishingPanel.new()
 	root.add_child(fishing_view)
 
-	hero_view = HeroPanel.new()
-	root.add_child(hero_view)
-	hero_view.unequip_requested.connect(func(slot: String) -> void: hero_unequip_requested.emit(slot))
-	hero_view.assign_requested.connect(func(index: int, skill_id: String) -> void: hero_assign_requested.emit(index, skill_id))
 
 	pause_view = PauseMenuPanel.new()
 	root.add_child(pause_view)
@@ -393,7 +394,7 @@ func _show_equipment_comparison(player: PlayerCharacter, item_id: String) -> voi
 
 
 func _on_inventory_filter_selected(index: int) -> void:
-	inventory_filter_index = clampi(index, 0, 2)
+	inventory_filter_index = clampi(index, 0, 3)
 	if inventory_open and inventory_player != null:
 		refresh_inventory(inventory_player)
 
@@ -468,7 +469,7 @@ func toggle_bestiary(entries: Dictionary, discovered: Dictionary) -> void:
 
 ## True while a full-screen book (bestiary or quest journal) is open.
 func overlay_visible() -> bool:
-	return bestiary_visible or journal_visible or skills_visible or hero_visible
+	return bestiary_visible or journal_visible or skills_visible
 
 func show_fishing(fishing: Fishing) -> void:
 	fishing_view.show_for(fishing)
@@ -484,14 +485,12 @@ func update_hotbar(entries: Array) -> void:
 		(hotbar_slots[index] as HotbarSlot).apply(entries[index])
 
 func toggle_hero_panel(player: PlayerCharacter, skills: CombatSkills) -> void:
-	hero_visible = not hero_visible
-	hero_view.visible = hero_visible
-	if hero_visible:
-		hero_view.populate(player, skills)
+	inventory_view.set_skills(skills)
+	toggle_inventory(player)
 
-func refresh_hero_panel(player: PlayerCharacter, skills: CombatSkills) -> void:
-	if hero_visible:
-		hero_view.populate(player, skills)
+func refresh_hero_panel(player: PlayerCharacter, _skills: CombatSkills) -> void:
+	if inventory_open:
+		refresh_inventory(player)
 
 func toggle_skill_tree(player: PlayerCharacter) -> void:
 	skills_visible = not skills_visible
@@ -532,8 +531,6 @@ func show_defeat(can_load: bool) -> void:
 	if skills_visible:
 		skills_view.visible = false
 		skills_visible = false
-	hero_visible = false
-	hero_view.visible = false
 	hide_talent_choices()
 	pause_panel.visible = false
 	inventory_panel.visible = false

@@ -1,35 +1,76 @@
 extends PanelContainer
 class_name InventoryWindow
 
+## The hero window (I or C). Tab "Снаряжение": the hero doll with five
+## equipment slots and her characteristics on the left, the bag as a grid of
+## item cells on the right — drag an item onto a slot to wear it, drag a worn
+## item back to the bag (or click it) to take it off. Tab "Навыки": active
+## skills for the 1–4 bar and passives.
+
 signal filter_selected(index: int)
 signal sort_selected(index: int)
 signal use_requested(item_id: String)
 signal compare_requested(item_id: String)
+signal compare_cleared
 signal unequip_requested(slot: String)
 signal craft_requested
+signal assign_requested(slot_index: int, skill_id: String)
 
-var equipment_list: VBoxContainer
+const SLOT_POSITIONS := {"blade": Vector2(2, 6), "weapon": Vector2(2, 58), "armor": Vector2(150, 6), "amulet": Vector2(150, 58), "relic": Vector2(150, 110)}
+const GRID_COLUMNS := 9
+const HINT := "Перетащите вещь из сумки на слот героя — надеть; из слота в сумку — снять. Клик по зелью — выпить."
+
+var tab: String = "gear"
+var tab_buttons: Dictionary = {}
+var gear_page: HBoxContainer
+var skills_view: SkillsPage
+## The five EquipSlot buttons live here (positioned around the hero).
+var equipment_list: Control
+var slot_buttons: Dictionary = {}
 var stats_label: Label
-var item_list: VBoxContainer
+var stats_grid: GridContainer
+var item_list: GridContainer
+var bag_area: BagDropArea
 var filter_button: OptionButton
 var sort_button: OptionButton
+var detail: Label
+var bag_caption: Label
+var _portrait: AtlasTexture
+var _portrait_rect: TextureRect
+var _frame := 0
+var _clock := 0.0
+var _player: PlayerCharacter
+var _skills: CombatSkills
 
 func _ready() -> void:
-	position = Vector2(8, 26)
-	custom_minimum_size = Vector2(286, 318)
+	position = Vector2(12, 12)
+	custom_minimum_size = Vector2(616, 334)
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.045, 0.06, 0.09, 0.97)
-	style.set_corner_radius_all(6)
-	style.set_content_margin_all(8)
 	add_theme_stylebox_override("panel", UiStyle.panel(false))
 	var contents := VBoxContainer.new()
+	contents.add_theme_constant_override("separation", 4)
 	add_child(contents)
 	var top := HBoxContainer.new()
+	top.add_theme_constant_override("separation", 4)
 	contents.add_child(top)
-	var title := _label("СУМКА  [I — закрыть]", 13, Color(1.0, 0.88, 0.56))
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var title := _label("ГЕРОЙ", 14, Color(1.0, 0.88, 0.56))
+	title.custom_minimum_size = Vector2(70, 0)
 	top.add_child(title)
+	for entry in [["gear", "Снаряжение"], ["skills", "Навыки"]]:
+		var button := Button.new()
+		button.text = entry[1]
+		button.toggle_mode = true
+		button.focus_mode = Control.FOCUS_NONE
+		button.custom_minimum_size = Vector2(92, 20)
+		button.add_theme_font_size_override("font_size", UiFont.px(10))
+		UiStyle.small_toggle(button)
+		var tab_id: String = entry[0]
+		button.pressed.connect(func() -> void: show_tab(tab_id))
+		top.add_child(button)
+		tab_buttons[tab_id] = button
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top.add_child(spacer)
 	var craft := Button.new()
 	craft.text = "Ремесло [B]"
 	craft.add_theme_font_size_override("font_size", UiFont.px(9))
@@ -37,42 +78,115 @@ func _ready() -> void:
 	UiStyle.small_toggle(craft)
 	craft.pressed.connect(func() -> void: craft_requested.emit())
 	top.add_child(craft)
-	stats_label = _label("", 9, Color(0.75, 0.92, 1.0))
-	contents.add_child(stats_label)
-	contents.add_child(_label("Экипировка (клик — снять)", 10, Color(0.91, 0.90, 0.75)))
-	equipment_list = VBoxContainer.new()
-	contents.add_child(equipment_list)
+	top.add_child(_label("  I / C — закрыть", 8, UiStyle.MUTED))
+	_build_gear_page(contents)
+	skills_view = SkillsPage.new()
+	skills_view.visible = false
+	skills_view.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	skills_view.assign_requested.connect(func(index: int, skill_id: String) -> void: assign_requested.emit(index, skill_id))
+	skills_view.detail_changed.connect(func(text: String) -> void: detail.text = text)
+	contents.add_child(skills_view)
+	detail = _label("", 9, Color(0.86, 0.9, 0.95))
+	detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	detail.custom_minimum_size = Vector2(596, 26)
+	detail.text = HINT
+	contents.add_child(detail)
+	visible = false
+
+func _build_gear_page(contents: VBoxContainer) -> void:
+	gear_page = HBoxContainer.new()
+	gear_page.add_theme_constant_override("separation", 10)
+	contents.add_child(gear_page)
+	# Left: the doll and characteristics.
+	var left := VBoxContainer.new()
+	left.custom_minimum_size = Vector2(188, 0)
+	left.add_theme_constant_override("separation", 4)
+	gear_page.add_child(left)
+	var doll := Control.new()
+	doll.custom_minimum_size = Vector2(188, 162)
+	left.add_child(doll)
+	var stage := Panel.new()
+	stage.position = Vector2(42, 4)
+	stage.size = Vector2(104, 150)
+	var frame := StyleBoxFlat.new()
+	frame.bg_color = Color(0.16, 0.22, 0.2, 0.9)
+	frame.border_color = Color(0.62, 0.45, 0.27)
+	frame.set_border_width_all(1)
+	frame.set_corner_radius_all(4)
+	stage.add_theme_stylebox_override("panel", frame)
+	stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	doll.add_child(stage)
+	_portrait_rect = TextureRect.new()
+	_portrait_rect.position = Vector2(46, 14)
+	_portrait_rect.size = Vector2(96, 96)
+	_portrait_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_portrait_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_portrait_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	_portrait_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	doll.add_child(_portrait_rect)
+	equipment_list = Control.new()
+	equipment_list.size = Vector2(188, 160)
+	equipment_list.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	doll.add_child(equipment_list)
+	stats_label = _label("", 9, UiStyle.TITLE)
+	stats_label.position = Vector2(46, 116)
+	stats_label.size = Vector2(96, 30)
+	stats_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	stats_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	doll.add_child(stats_label)
+	stats_grid = GridContainer.new()
+	stats_grid.columns = 2
+	stats_grid.add_theme_constant_override("h_separation", 8)
+	stats_grid.add_theme_constant_override("v_separation", 0)
+	left.add_child(stats_grid)
+	# Right: the bag.
+	var right := VBoxContainer.new()
+	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	right.add_theme_constant_override("separation", 3)
+	gear_page.add_child(right)
 	var controls := HBoxContainer.new()
 	controls.add_theme_constant_override("separation", 4)
-	contents.add_child(controls)
+	right.add_child(controls)
+	bag_caption = _label("СУМКА", 11, UiStyle.TITLE)
+	bag_caption.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	controls.add_child(bag_caption)
 	filter_button = OptionButton.new()
 	filter_button.add_theme_font_size_override("font_size", UiFont.px(9))
-	filter_button.custom_minimum_size = Vector2(118, 18)
-	filter_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	filter_button.custom_minimum_size = Vector2(104, 18)
+	filter_button.focus_mode = Control.FOCUS_NONE
 	filter_button.add_item("Все предметы", 0)
-	filter_button.add_item("Экипировка", 1)
+	filter_button.add_item("Снаряжение", 1)
 	filter_button.add_item("Расходники", 2)
+	filter_button.add_item("Материалы", 3)
 	filter_button.tooltip_text = "Фильтр содержимого сумки"
 	filter_button.item_selected.connect(func(index: int) -> void: filter_selected.emit(index))
 	controls.add_child(filter_button)
 	sort_button = OptionButton.new()
 	sort_button.add_theme_font_size_override("font_size", UiFont.px(9))
-	sort_button.custom_minimum_size = Vector2(118, 18)
-	sort_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sort_button.custom_minimum_size = Vector2(98, 18)
+	sort_button.focus_mode = Control.FOCUS_NONE
 	sort_button.add_item("Порядок", 0)
 	sort_button.add_item("По названию", 1)
 	sort_button.add_item("По редкости", 2)
 	sort_button.tooltip_text = "Порядок отображения предметов"
 	sort_button.item_selected.connect(func(index: int) -> void: sort_selected.emit(index))
 	controls.add_child(sort_button)
-	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(250, 170)
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	contents.add_child(scroll)
-	item_list = VBoxContainer.new()
-	item_list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(item_list)
-	visible = false
+	bag_area = BagDropArea.new()
+	bag_area.custom_minimum_size = Vector2(0, 238)
+	bag_area.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	bag_area.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	bag_area.unequip_requested.connect(func(slot: String) -> void: unequip_requested.emit(slot))
+	var bag_bg := StyleBoxFlat.new()
+	bag_bg.bg_color = Color(0.06, 0.045, 0.04, 0.7)
+	bag_bg.set_corner_radius_all(3)
+	bag_bg.set_content_margin_all(4)
+	bag_area.add_theme_stylebox_override("panel", bag_bg)
+	right.add_child(bag_area)
+	item_list = GridContainer.new()
+	item_list.columns = GRID_COLUMNS
+	item_list.add_theme_constant_override("h_separation", 3)
+	item_list.add_theme_constant_override("v_separation", 3)
+	bag_area.add_child(item_list)
 
 func _label(value: String, font_size: int, color: Color) -> Label:
 	var result := Label.new()
@@ -82,27 +196,38 @@ func _label(value: String, font_size: int, color: Color) -> Label:
 	result.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return result
 
+func show_tab(tab_id: String) -> void:
+	tab = tab_id
+	for id in tab_buttons:
+		(tab_buttons[id] as Button).button_pressed = id == tab
+	gear_page.visible = tab == "gear"
+	skills_view.visible = tab == "skills"
+	detail.text = HINT if tab == "gear" else ""
+	if tab == "skills" and _player != null:
+		skills_view.populate(_player, _skills)
+
+func set_skills(skills: CombatSkills) -> void:
+	_skills = skills
+
+func _process(delta: float) -> void:
+	if not visible or _portrait == null:
+		return
+	_clock += delta
+	if _clock >= 0.16:
+		_clock = 0.0
+		_frame = (_frame + 1) % 6
+		_portrait.region = Rect2(16 + 64 * _frame, 12, 32, 32)
+
 func populate(player: PlayerCharacter, filter_index: int, sort_index: int, preferred_order: Array, fallback_names: Dictionary, fallback_descriptions: Dictionary, rarity_names: Dictionary, consumable_ids: Array) -> void:
+	_player = player
+	for id in tab_buttons:
+		(tab_buttons[id] as Button).button_pressed = id == tab
+	if tab == "skills":
+		skills_view.populate(player, _skills)
+	_populate_doll(player)
 	for child in item_list.get_children():
 		item_list.remove_child(child)
 		child.queue_free()
-	for child in equipment_list.get_children():
-		equipment_list.remove_child(child)
-		child.queue_free()
-	stats_label.text = "Сила магии %d (+%d%% урона) · Воля %d · Ловкость %d · Броня %d" % [
-		player.get_stat("power"), roundi((player.get_spell_power_multiplier() - 1.0) * 100.0),
-		player.get_stat("will"), player.get_stat("agility"), player.get_armor()]
-	var slots: Dictionary = {"blade": "Клинок", "weapon": "Посох", "armor": "Броня", "amulet": "Амулет", "relic": "Реликвия"}
-	for slot in ["blade", "weapon", "armor", "amulet", "relic"]:
-		var equipped_item: String = str(player.equipment.get(slot, ""))
-		var slot_button := Button.new()
-		slot_button.text = "%s: %s" % [slots[slot], player.get_item_name(equipped_item) if not equipped_item.is_empty() else "Пусто"]
-		slot_button.disabled = equipped_item.is_empty()
-		slot_button.add_theme_font_size_override("font_size", UiFont.px(9))
-		slot_button.custom_minimum_size = Vector2(0, 16)
-		slot_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		slot_button.pressed.connect(func() -> void: unequip_requested.emit(slot))
-		equipment_list.add_child(slot_button)
 	var available_item_ids: Array[String] = []
 	for item_id in preferred_order:
 		if int(player.inventory.get(item_id, 0)) > 0:
@@ -121,8 +246,11 @@ func populate(player: PlayerCharacter, filter_index: int, sort_index: int, prefe
 			continue
 		if filter_index == 2 and category_name != "consumable":
 			continue
+		if filter_index == 3 and category_name != "other":
+			continue
 		item_ids.append(item_id)
 	InventoryItemOrder.sort_items(player, item_ids, sort_index, fallback_names)
+	bag_caption.text = "СУМКА · %d" % available_item_ids.size()
 	if item_ids.is_empty():
 		var empty_message: String = "Сумка пуста." if available_item_ids.is_empty() else "Нет предметов в этой категории."
 		item_list.add_child(_label(empty_message, 10, Color(0.78, 0.82, 0.85)))
@@ -131,4 +259,57 @@ func populate(player: PlayerCharacter, filter_index: int, sort_index: int, prefe
 		button.configure(player, item_id, fallback_names, fallback_descriptions, rarity_names, consumable_ids)
 		button.use_requested.connect(func(requested_id: String) -> void: use_requested.emit(requested_id))
 		button.compare_requested.connect(func(requested_id: String) -> void: compare_requested.emit(requested_id))
+		button.unequip_requested.connect(func(slot: String) -> void: unequip_requested.emit(slot))
+		var line := button.summary
+		var hints := button.tooltip_text.split("\n")
+		var hint: String = hints[mini(hints.size() - 1, 1)] if hints.size() > 1 else hints[0]
+		button.hovered.connect(func(_id: String) -> void: detail.text = line + "   ·   " + hint)
+		button.unhovered.connect(func() -> void: compare_cleared.emit())
 		item_list.add_child(button)
+
+func _populate_doll(player: PlayerCharacter) -> void:
+	for child in equipment_list.get_children():
+		equipment_list.remove_child(child)
+		child.queue_free()
+	slot_buttons.clear()
+	for slot in ["blade", "weapon", "armor", "amulet", "relic"]:
+		var button := EquipSlot.new()
+		button.setup(player, slot)
+		button.position = SLOT_POSITIONS[slot]
+		button.equip_requested.connect(func(item_id: String) -> void: use_requested.emit(item_id))
+		button.unequip_requested.connect(func(s: String) -> void: unequip_requested.emit(s))
+		button.hovered.connect(func(s: String) -> void:
+			var worn := str(player.equipment.get(s, ""))
+			detail.text = "%s: %s" % [EquipSlot.NAMES[s], (player.get_item_name(worn) + " — " + player.get_item_description(worn) + "   ·   клик или перетащите в сумку — снять") if not worn.is_empty() else "пусто — перетащите сюда подходящий предмет из сумки"])
+		equipment_list.add_child(button)
+		slot_buttons[slot] = button
+	var sheet := WorldArt.texture("sprites/chibi/%s/idle.png" % player._chibi_id())
+	if sheet != null:
+		if _portrait == null:
+			_portrait = AtlasTexture.new()
+			_portrait.region = Rect2(16, 12, 32, 32)
+		_portrait.atlas = sheet
+		_portrait_rect.texture = _portrait
+	stats_label.text = "%s\nур. %d" % [player.hero_name, player.level]
+	for child in stats_grid.get_children():
+		stats_grid.remove_child(child)
+		child.queue_free()
+	var lines := [
+		["Здоровье", "%d/%d" % [player.health, player.max_health]],
+		["Мана", "%d/%d" % [player.mana, player.max_mana]],
+		["Урон мечом", str(player.get_melee_damage())],
+		["Крит", "%d%%" % roundi(player.get_crit_chance() * 100.0)],
+		["Сила магии", "%d (+%d%% урона)" % [player.get_stat("power"), roundi((player.get_spell_power_multiplier() - 1.0) * 100.0)]],
+		["Броня", str(player.get_armor())],
+		["Ловкость", str(player.get_stat("agility"))],
+		["Воля", str(player.get_stat("will"))],
+		["Опыт", "%d/%d" % [player.experience, player.experience_to_next]],
+		["Золото", str(player.gold)],
+	]
+	for line in lines:
+		stats_grid.add_child(_label(line[0], 8, UiStyle.MUTED))
+		stats_grid.add_child(_label(line[1], 8, UiStyle.TEXT))
+	# Old callers read the compact line too.
+	stats_label.tooltip_text = "Сила магии %d (+%d%% урона) · Воля %d · Ловкость %d · Броня %d" % [
+		player.get_stat("power"), roundi((player.get_spell_power_multiplier() - 1.0) * 100.0),
+		player.get_stat("will"), player.get_stat("agility"), player.get_armor()]
