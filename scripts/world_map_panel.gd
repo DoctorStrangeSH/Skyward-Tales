@@ -7,6 +7,10 @@ var map_view: WorldMinimap
 var quest_label: Label
 var travel_row: HFlowContainer
 var title_label: Label
+var overview: WorldOverview
+var region_canvas: Control
+var tab_region: Button
+var tab_world: Button
 
 func _ready() -> void:
 	position = Vector2(94, 7)
@@ -20,11 +24,25 @@ func _ready() -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 7)
 	add_child(box)
+	var header := HBoxContainer.new()
+	header.add_theme_constant_override("separation", 6)
 	title_label = _label("КАРТА РЕГИОНА — [M закрыть]", 15, Color(0.99, 0.87, 0.58))
-	box.add_child(title_label)
+	title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	header.add_child(title_label)
+	tab_region = _tab("Регион", false)
+	tab_world = _tab("Мир", true)
+	header.add_child(tab_region)
+	header.add_child(tab_world)
+	box.add_child(header)
 	var canvas := Control.new()
 	canvas.custom_minimum_size = Vector2(428, 236)
 	box.add_child(canvas)
+	region_canvas = canvas
+	overview = WorldOverview.new()
+	overview.custom_minimum_size = Vector2(428, 236)
+	overview.visible = false
+	box.add_child(overview)
+	box.move_child(overview, canvas.get_index() + 1)
 	map_view = preload("res://scripts/world_minimap.gd").new() as WorldMinimap
 	map_view.position = Vector2(42, 3)
 	map_view.position = Vector2(62, 2)
@@ -58,6 +76,25 @@ func set_destinations(current: String, destinations: Array[String]) -> void:
 		UiStyle.style_button(button)
 		travel_row.add_child(button)
 
+func _tab(text: String, world: bool) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.focus_mode = Control.FOCUS_NONE
+	button.add_theme_font_size_override("font_size", UiFont.px(9))
+	UiStyle.style_button(button)
+	button.pressed.connect(func() -> void: show_world(world))
+	return button
+
+## Switches between this land's map and the whole world.
+func show_world(world: bool) -> void:
+	overview.visible = world
+	region_canvas.visible = not world
+	tab_world.disabled = world
+	tab_region.disabled = not world
+
+func set_world(current_region: String, visited_regions: Dictionary) -> void:
+	overview.set_world(current_region, visited_regions)
+
 func _label(value: String, font_size: int, color: Color) -> Label:
 	var label := Label.new()
 	label.text = value
@@ -68,6 +105,7 @@ func _label(value: String, font_size: int, color: Color) -> Label:
 
 func show_region(region: String, hero: Vector2, landmarks: Dictionary, quest: String) -> void:
 	map_view.update_map(region, hero, landmarks)
+	show_world(false)
 	title_label.text = "%s · ур. %d" % [RegionCatalog.display_name(region).to_upper(), RegionCatalog.level(region)]
 	quest_label.text = "ЗАДАНИЕ: " + quest
 	visible = true

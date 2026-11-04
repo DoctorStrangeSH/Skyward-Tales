@@ -503,7 +503,7 @@ func set_prompt(message: String) -> void:
 	prompt_label.text = message
 
 ## Maps a speaker's name to an NPC sprite sheet for the portrait.
-const PORTRAITS := {"Элиан": "elder", "Мира": "cartographer", "Бран": "merchant", "Торен": "hunter", "Борин": "blacksmith", "Илара": "grove_warden", "Дорн": "miner", "Ориэн": "archivist", "Вейл": "vail", "Ведана": "herbalist", "Лира": "alchemist", "Ярош": "settler_woodcutter", "Марта": "settler_cook", "Ульф": "settler_fisher"}
+const PORTRAITS := {"Элиан": "elder", "Мира": "cartographer", "Бран": "merchant", "Торен": "hunter", "Борин": "blacksmith", "Илара": "grove_warden", "Дорн": "miner", "Ориэн": "archivist", "Вейл": "vail", "Ведана": "herbalist", "Лира": "alchemist", "Ярош": "settler_woodcutter", "Марта": "settler_cook", "Ульф": "settler_fisher", "Морен": "keeper"}
 
 func _set_speaker(speaker: String) -> void:
 	dialogue_speaker_label.text = speaker

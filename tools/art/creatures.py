@@ -621,3 +621,54 @@ def soften(canvas: Canvas) -> Canvas:
     out[glint] = out[glint] * 0.9
     canvas.px[:, :, :3] = np.clip(out, 0, 255).astype(np.uint8)
     return canvas
+
+
+# --- Salt Coast: crabs ----------------------------------------------------------
+
+SHELL = r4("#f4a080", "#d8644a", "#a83e30", "#6e2420")
+CLAW = r4("#ffc0a0", "#e87a5a", "#b04a38", "#7a2a22")
+
+
+def _crab(b: Body, facing: str, frame: int, cx: float, cy: float, s: float, crown: bool) -> None:
+    back = facing in ("up", "up_right")
+    side = facing == "right"
+    step = [0, 1, 0, -1][frame]
+    for k in range(3):
+        for sign in (-1, 1):
+            x = cx + sign * (5 + k * 1.6) * s
+            y = cy + (1 + k) * s + (step if (k + (sign > 0)) % 2 else -step) * 0.5
+            b.part(b.rect(int(x), int(y), int(x + s), int(y + 2 * s)), CLAW, separate=False)
+    w = 7.5 * s if not side else 6 * s
+    b.part(b.ellipse(cx, cy, w, 4.6 * s), SHELL, sphere=(cx - 2 * s, cy - 3 * s, w + 2))
+    for sign in (-1, 1):
+        if side and sign < 0:
+            continue
+        lift = [0, -1, 0, 1][frame] * s * 0.5
+        b.part(b.ellipse(cx + sign * (w + 2.4 * s), cy - 2 * s + lift, 3 * s, 2.4 * s), CLAW)
+        b.dot(cx + sign * (w + 3.4 * s), cy - 3 * s + lift, CLAW[3])
+    if not back:
+        for ex in ([-2.2, 2.2] if not side else [2.5]):
+            x = cx + ex * s
+            b.part(b.rect(int(x), int(cy - 6 * s), int(x), int(cy - 4 * s)), SHELL, separate=False)
+            b.dot(x, cy - 6.5 * s, hex_color("#1a1a1a"))
+    if crown:
+        top = cy - 5 * s
+        for k in range(5):
+            x = cx - 4 * s + k * 2 * s
+            b.part(b.rect(int(x - 1), int(top - (2 if k % 2 == 0 else 0)), int(x + 1), int(top + 2)), CROWN)
+
+
+def crab(facing: str, frame: int) -> Canvas:
+    b = Body(32)
+    b.shadow(16, 26, 9, 2, 70)
+    _crab(b, facing, frame, 16, 19, 1.0, False)
+    b.outline(hex_color("#3a1a14"))
+    return b.canvas()
+
+
+def crab_king(facing: str, frame: int) -> Canvas:
+    b = Body(48)
+    b.shadow(24, 42, 16, 3, 90)
+    _crab(b, facing, frame, 24, 30, 1.7, True)
+    b.outline(hex_color("#3a1a14"))
+    return b.canvas()

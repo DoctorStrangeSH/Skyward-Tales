@@ -21,7 +21,7 @@ const MERCHANT_SHOP_SCRIPT := preload("res://scripts/merchant_shop.gd")
 const CRAFTING_SERVICE_SCRIPT := preload("res://scripts/crafting_service.gd")
 const GATE_SCRIPT := preload("res://scripts/region_gate.gd")
 ## Story bosses: defeated once (flag "<kind>_defeated"), never respawn.
-const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой колосс", "vail": "Вейл", "bog_king": "Болотный король"}
+const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой колосс", "vail": "Вейл", "bog_king": "Болотный король", "crab_king": "Краб-король"}
 const ENEMY_SCRIPTS := {
 	"slime": preload("res://scripts/enemy.gd"),
 	"wolf": preload("res://scripts/forest_wolf.gd"),
@@ -35,6 +35,8 @@ const ENEMY_SCRIPTS := {
 	"vail": preload("res://scripts/vail_boss.gd"),
 	"toad": preload("res://scripts/marsh_toad.gd"),
 	"bog_king": preload("res://scripts/bog_king.gd"),
+	"crab": preload("res://scripts/coast_crab.gd"),
+	"crab_king": preload("res://scripts/crab_king.gd"),
 	"sentinel": preload("res://scripts/sky_sentinel.gd")
 }
 const MATERIAL_ITEMS := ["wolf_pelt", "iron_ore"]
@@ -77,6 +79,8 @@ var discovered_enemies: Dictionary = {}
 var discovered_landmarks: Dictionary = {}
 var opened_chests: Dictionary = {}
 var gathered_resource_nodes: Dictionary = {}
+## Regions the hero has set foot in (world map shows the rest as unknown).
+var visited_regions: Dictionary = {}
 var latest_cache_narrative: bool = false
 var autosave_enabled: bool = true
 var _autosave_pending: bool = false
@@ -100,6 +104,7 @@ func _ready() -> void:
 	quests.quest_started.connect(_on_quest_started)
 	quests.quest_completed.connect(func(quest_id: String) -> void:
 		GameAudio.play("quest", -2.0, 0.0)
+		_refresh_dynamic_props.call_deferred()
 		request_autosave()
 		if director != null:
 			director.on_quest_completed(quest_id))
@@ -198,7 +203,7 @@ func update_music() -> void:
 			GameAudio.music("boss")
 			return
 	var style := RegionCatalog.style(current_region)
-	GameAudio.music({"night": "night", "cave": "caves", "sky": "sky", "spires": "sky", "rift": "night", "marsh": "night"}.get(style, "meadow"))
+	GameAudio.music({"night": "night", "cave": "caves", "sky": "sky", "spires": "sky", "rift": "night", "marsh": "night", "coast": "sky"}.get(style, "meadow"))
 
 func shake(strength: float, duration: float) -> void:
 	if not GameSettings.get_bool("screen_shake"):
@@ -401,6 +406,7 @@ func _populate_region() -> void:
 		spawn_enemy(str(enemy_data.get("kind", "slime")), _vec(enemy_data.get("position")), str(enemy_data.get("elite", "?")))
 	_spawn_waystone(layout)
 	_spawn_gathering(layout)
+	_spawn_dynamic_props(layout)
 	var boss: Dictionary = layout.get("boss", {})
 	if not boss.is_empty() and quests.is_completed(str(boss.get("after_quest", ""))):
 		spawn_region_boss()
@@ -463,6 +469,7 @@ func _clear_region_actors() -> void:
 
 func _set_region(region_id: String, arrival: Vector2, notify: bool = true) -> void:
 	current_region = RegionCatalog.resolve(region_id)
+	visited_regions[current_region] = true
 	_clear_region_actors()
 	if world != null and world.has_method("configure_region"):
 		world.configure_region(current_region)
@@ -617,6 +624,24 @@ func _spawn_waystone(layout: Dictionary) -> void:
 	stone.set_awake(waystone_awake(current_region))
 	stone.used.connect(_on_waystone_used)
 
+## Landmarks that change with quests (the lighthouse lights up).
+func _spawn_dynamic_props(layout: Dictionary) -> void:
+	for entry in layout.get("dynamic_props", []):
+		var lit := quests.is_completed(str(entry.get("lit_quest", "")))
+		var object := SETTLEMENT_OBJECT_SCRIPT.new() as SettlementObject
+		object.kind = "house"
+		object.art = str(entry.get("lit_art", "")) if lit else str(entry.get("art", ""))
+		object.set_meta("dynamic", true)
+		add_child(object)
+		object.global_position = _vec(entry.get("position"))
+
+func _refresh_dynamic_props() -> void:
+	for node in get_children():
+		if node is SettlementObject and node.has_meta("dynamic"):
+			remove_child(node)
+			node.queue_free()
+	_spawn_dynamic_props(_layout())
+
 # --- Gathering and crafting stations -----------------------------------------
 
 func _spawn_gathering(layout: Dictionary) -> void:
@@ -709,6 +734,7 @@ func _on_waystone_used(stone: Waystone) -> void:
 func open_map() -> void:
 	hud.open_world_map(current_region, player.global_position, discovered_landmarks.get(current_region, {}), quests.get_active_summary())
 	hud.world_map_view.set_destinations(current_region, travel_destinations())
+	hud.world_map_view.set_world(current_region, visited_regions)
 
 ## Fast travel to an awakened stone. Refused during a boss fight.
 func fast_travel(region_id: String) -> bool:
@@ -753,6 +779,8 @@ static func enemy_kind(enemy: SlimeEnemy) -> String:
 		return "vail"
 	if enemy is BogKing:
 		return "bog_king"
+	if enemy is CrabKing:
+		return "crab_king"
 	if enemy is TempestColossus:
 		return "tempest"
 	if enemy is EchoWarden:
@@ -769,6 +797,8 @@ static func enemy_kind(enemy: SlimeEnemy) -> String:
 		return "wisp"
 	if enemy is MarshToad:
 		return "toad"
+	if enemy is CoastCrab:
+		return "crab"
 	if enemy is ForestWolf:
 		return "wolf"
 	if enemy is CaveBat:
@@ -840,7 +870,7 @@ func spawn_enemy(kind: String, spawn_position: Vector2, elite: String = "") -> S
 	match kind:
 		"guardian":
 			enemy.defeated.connect(func(xp: int) -> void: _on_guardian_defeated(xp, enemy.global_position))
-		"echo", "tempest", "vail", "bog_king":
+		"echo", "tempest", "vail", "bog_king", "crab_king":
 			enemy.defeated.connect(func(xp: int) -> void: _on_story_boss_defeated(kind, xp, enemy.global_position))
 		"wolf":
 			enemy.defeated.connect(func(xp: int) -> void:

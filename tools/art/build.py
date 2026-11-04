@@ -55,6 +55,8 @@ def build_world() -> None:
             size = "large" if variant != 2 else "small"
             if style in ("cave", "rift"):
                 canvas, origin = flora.crystal_cluster(300 + index * 10 + variant, pal, size)
+            elif style == "coast":
+                canvas, origin = flora.palm(300 + index * 10 + variant, pal, size)
             elif style == "spires":
                 canvas, origin = flora.stone_spire(300 + index * 10 + variant, pal, size)
             else:
@@ -96,6 +98,8 @@ def build_characters() -> None:
     save(creatures.soften(creatures.build_sheet(creatures.sentinel, 32)), "sprites/enemies/sky_sentinel_8dir.png")
     save(creatures.soften(creatures.build_sheet(creatures.wisp, 32)), "sprites/enemies/wind_wisp_8dir.png")
     save(creatures.soften(creatures.build_sheet(creatures.toad, 32)), "sprites/enemies/marsh_toad_8dir.png")
+    save(creatures.soften(creatures.build_sheet(creatures.crab, 32)), "sprites/enemies/coast_crab_8dir.png")
+    save(creatures.soften(creatures.build_sheet(creatures.crab_king, 48)), "sprites/enemies/crab_king_8dir.png")
     save(creatures.soften(creatures.build_sheet(creatures.bog_king, 48)), "sprites/enemies/bog_king_8dir.png")
     save(creatures.soften(creatures.build_sheet(creatures.tempest, 48)), "sprites/enemies/tempest_colossus_8dir.png")
     save(creatures.build_sheet(creatures.projectile("fire"), 32), "sprites/magic/fireball_8dir.png")

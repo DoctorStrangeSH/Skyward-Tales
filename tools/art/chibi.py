@@ -285,6 +285,10 @@ def main() -> int:
         "settler_fisher": dict(colors={HAIR_LIGHT: (220, 220, 214), HAIR_SHADE: (170, 172, 170), RED_DARK: (40, 70, 96),
                                        RED_MID: (60, 104, 136), RED_LIGHT: (220, 190, 90), MAUVE: (40, 50, 60)},
                                trim=True, ahoge=False, beard=((230, 230, 224), (180, 180, 176)), fill=((40, 70, 96), (60, 104, 136))),
+        # Moren the lighthouse keeper: grey beard, navy coat.
+        "keeper": dict(colors={HAIR_LIGHT: (200, 200, 196), HAIR_SHADE: (150, 150, 150), RED_DARK: (30, 40, 70),
+                               RED_MID: (46, 62, 104), RED_LIGHT: (220, 180, 80), MAUVE: (30, 34, 50)},
+                       trim=True, ahoge=False, beard=((210, 210, 206), (160, 160, 160)), fill=((30, 40, 70), (46, 62, 104))),
         # Vail: long white hair, violet Keeper robes.
         "vail": dict(colors={RED_DARK: (58, 40, 98), RED_MID: (92, 66, 150), RED_LIGHT: (176, 132, 236), MAUVE: (40, 30, 60),
                              GOLD: (210, 180, 255)}, ahoge=False),
@@ -328,6 +332,7 @@ def main() -> int:
     village.build(ROOT)
     village.build_ui(ROOT)
     village.build_gathering(ROOT)
+    village.build_coast(ROOT)
     (OUT / "manifest.json").write_text(json.dumps(manifest, indent=1, sort_keys=True) + "\n")
     return 0
 

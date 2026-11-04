@@ -8,8 +8,8 @@ func _run() -> void:
 	root.add_child(game)
 	await process_frame
 	var total: int = game.bestiary_entries.size()
-	if total != 13:
-		push_error("BESTIARY TEST: catalog must list thirteen enemies")
+	if total != 15:
+		push_error("BESTIARY TEST: catalog must list fifteen enemies")
 		quit(1)
 		return
 	game.hud.toggle_bestiary(game.bestiary_entries, game.discovered_enemies)
