@@ -22,6 +22,8 @@ SHEETS = {
     "shade": (ROOT / "assets/sprites/enemies/rift_shade_8dir.png", 32),
     "vail": (ROOT / "assets/sprites/enemies/vail_8dir.png", 32),
     "toad": (ROOT / "assets/sprites/enemies/marsh_toad_8dir.png", 32),
+    "crab": (ROOT / "assets/sprites/enemies/coast_crab_8dir.png", 32),
+    "crab_king": (ROOT / "assets/sprites/enemies/crab_king_8dir.png", 48),
     "bog_king": (ROOT / "assets/sprites/enemies/bog_king_8dir.png", 48),
     "fireball": (ROOT / "assets/sprites/magic/fireball_8dir.png", 32),
     "frostbolt": (ROOT / "assets/sprites/magic/frostbolt_8dir.png", 32),

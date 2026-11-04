@@ -11,7 +11,8 @@
     "guardian_spirit": "Дух стража",
     "archivist": "Ориэн, архивариус",
     "alchemist": "Лира, алхимик",
-    "herbalist": "Ведана, травница"
+    "herbalist": "Ведана, травница",
+    "keeper": "Морен, смотритель маяка"
   },
   "scenes": {
     "prologue": {

@@ -424,3 +424,88 @@ def build_gathering(root: pathlib.Path) -> None:
         art[rel] = {"size": [canvas.w, canvas.h], "origin": list(origin)}
     manifest_path.write_text(json.dumps(dict(sorted(art.items())), indent=1) + "\n")
     print("  gathering: " + ", ".join(items))
+
+
+
+# --- Salt Coast ------------------------------------------------------------------
+
+def lighthouse(lit: bool) -> tuple[Canvas, tuple[int, int]]:
+    c = Canvas(44, 112)
+    white, red = PLASTER, [hex_color(x) for x in ("#7a1e1e", "#a8302a", "#d04a3a", "#e8705a")]
+    base_y = 108
+    for y in range(102, 111):
+        for x in range(2, 42):
+            if ((x - 22) / 20) ** 2 + ((y - 106) / 4.5) ** 2 <= 1:
+                c.put(x, y, STONE[2] if y > 104 else STONE[3])
+    for y in range(30, 104):
+        t = (y - 30) / 74
+        half = 8 + t * 7
+        band = ((y - 30) // 12) % 2 == 1
+        for x in range(int(22 - half), int(22 + half) + 1):
+            side = (x - (22 - half)) / (2 * half)
+            pal = red if band else white
+            c.put(x, y, pal[3] if side < 0.25 else (pal[2] if side < 0.7 else pal[1]))
+    c.rect(16, 86, 12, 18, TIMBER[1])
+    c.rect(17, 87, 10, 16, TIMBER[2])
+    _window(c, 19, 60, 6, 7)
+    c.rect(11, 26, 22, 4, STONE[1])
+    c.rect(13, 12, 18, 14, GLASS[1] if not lit else hex_color("#ffe08a"))
+    if lit:
+        c.rect(15, 14, 14, 10, hex_color("#fff6c8"))
+    for x in (13, 21, 30):
+        c.vline(x, 12, 25, STONE[1])
+    _roof(c, 11, 4, 22, 8, red + [red[3], red[3]], 21)
+    c.outline(OUTLINE)
+    return c, (22, base_y)
+
+
+def pier() -> tuple[Canvas, tuple[int, int]]:
+    c = Canvas(110, 26)
+    for x in range(2, 108):
+        for y in range(6, 18):
+            c.put(x, y, TIMBER[3] if (x // 7) % 2 else TIMBER[2])
+        if x % 7 == 0:
+            c.vline(x, 6, 17, TIMBER[1])
+    c.hline(2, 107, 6, TIMBER[4])
+    for x in range(6, 106, 20):
+        c.rect(x, 17, 3, 7, TIMBER[1])
+    c.outline(OUTLINE)
+    return c, (55, 18)
+
+
+def boat() -> tuple[Canvas, tuple[int, int]]:
+    c = Canvas(40, 18)
+    for y in range(6, 16):
+        half = 18 - (y - 6) * 0.9
+        for x in range(int(20 - half), int(20 + half)):
+            c.put(x, y, TIMBER[3] if y < 9 else TIMBER[2])
+    c.hline(4, 35, 6, TIMBER[4])
+    c.rect(18, 2, 2, 6, TIMBER[1])
+    c.outline(OUTLINE)
+    return c, (20, 15)
+
+
+def nets() -> tuple[Canvas, tuple[int, int]]:
+    c = Canvas(30, 26)
+    c.rect(2, 4, 2, 20, TIMBER[1])
+    c.rect(26, 4, 2, 20, TIMBER[1])
+    c.hline(2, 27, 4, TIMBER[3])
+    for y in range(6, 20, 3):
+        for x in range(4, 26, 3):
+            c.put(x, y, PLASTER[1])
+            c.put(x + 1, y + 1, PLASTER[0])
+    c.outline(OUTLINE)
+    return c, (15, 24)
+
+
+def build_coast(root: pathlib.Path) -> None:
+    items = {"coast_lighthouse": lighthouse(False), "coast_lighthouse_lit": lighthouse(True),
+             "coast_pier": pier(), "coast_boat": boat(), "coast_nets": nets()}
+    manifest_path = root / "assets" / "art_manifest.json"
+    art = json.loads(manifest_path.read_text())
+    for name, (canvas, origin) in items.items():
+        rel = f"world/{name}.png"
+        canvas.save(root / "assets" / rel)
+        art[rel] = {"size": [canvas.w, canvas.h], "origin": list(origin)}
+    manifest_path.write_text(json.dumps(dict(sorted(art.items())), indent=1) + "\n")
+    print("  coast: " + ", ".join(items))

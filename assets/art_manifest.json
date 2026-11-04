@@ -557,6 +557,18 @@
    256
   ]
  },
+ "sprites/enemies/coast_crab_8dir.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "sprites/enemies/crab_king_8dir.png": {
+  "size": [
+   192,
+   384
+  ]
+ },
  "sprites/enemies/echo_warden_8dir.png": {
   "size": [
    192,
@@ -749,6 +761,106 @@
   "origin": [
    18,
    40
+  ]
+ },
+ "world/coast_boat.png": {
+  "size": [
+   40,
+   18
+  ],
+  "origin": [
+   20,
+   15
+  ]
+ },
+ "world/coast_bush_0.png": {
+  "size": [
+   28,
+   22
+  ],
+  "origin": [
+   14,
+   18
+  ]
+ },
+ "world/coast_bush_1.png": {
+  "size": [
+   28,
+   22
+  ],
+  "origin": [
+   14,
+   18
+  ]
+ },
+ "world/coast_lighthouse.png": {
+  "size": [
+   44,
+   112
+  ],
+  "origin": [
+   22,
+   108
+  ]
+ },
+ "world/coast_lighthouse_lit.png": {
+  "size": [
+   44,
+   112
+  ],
+  "origin": [
+   22,
+   108
+  ]
+ },
+ "world/coast_nets.png": {
+  "size": [
+   30,
+   26
+  ],
+  "origin": [
+   15,
+   24
+  ]
+ },
+ "world/coast_pier.png": {
+  "size": [
+   110,
+   26
+  ],
+  "origin": [
+   55,
+   18
+  ]
+ },
+ "world/coast_tree_0.png": {
+  "size": [
+   60,
+   78
+  ],
+  "origin": [
+   30,
+   72
+  ]
+ },
+ "world/coast_tree_1.png": {
+  "size": [
+   60,
+   78
+  ],
+  "origin": [
+   30,
+   72
+  ]
+ },
+ "world/coast_tree_2.png": {
+  "size": [
+   48,
+   60
+  ],
+  "origin": [
+   24,
+   54
   ]
  },
  "world/crystal_altar.png": {
@@ -1177,6 +1289,18 @@
   "origin": [
    54,
    104
+  ]
+ },
+ "world/salt_coast_canopy.png": {
+  "size": [
+   1600,
+   1080
+  ]
+ },
+ "world/salt_coast_ground.png": {
+  "size": [
+   1600,
+   1080
   ]
  },
  "world/sky_archive.png": {

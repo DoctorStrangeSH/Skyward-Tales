@@ -362,5 +362,60 @@
         }
       ]
     }
+  },
+  {
+    "id": "coast_crabs",
+    "title": "Крабья осада",
+    "description": "Прогоните пятерых береговых крабов от сетей Морена.",
+    "target": 5,
+    "side": true,
+    "kill_kind": "crab",
+    "reward": {
+      "experience": 90,
+      "gold": 45,
+      "items": [
+        {
+          "id": "health_potion",
+          "amount": 2
+        }
+      ]
+    }
+  },
+  {
+    "id": "coast_light",
+    "title": "Свет маяка",
+    "description": "Найдите три бочонка маячного масла, разбросанных штормом по берегу.",
+    "target": 3,
+    "side": true,
+    "requires_quest": "coast_crabs",
+    "reward": {
+      "experience": 130,
+      "gold": 70,
+      "items": [
+        {
+          "id": "fish",
+          "amount": 4
+        }
+      ]
+    }
+  },
+  {
+    "id": "coast_king",
+    "title": "Краб-король",
+    "description": "Одолейте Краба-короля на южной отмели.",
+    "target": 1,
+    "side": true,
+    "kill_kind": "crab_king",
+    "requires_quest": "coast_light",
+    "reward": {
+      "experience": 280,
+      "gold": 160,
+      "items": [
+        {
+          "id": "storm_eye",
+          "amount": 1
+        }
+      ]
+    }
   }
 ]

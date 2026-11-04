@@ -269,3 +269,42 @@ def stone_spire(seed: int, pal, size: str = "large") -> tuple[Canvas, tuple[int,
         canvas.put(x, top + 1, grass[5])
     canvas.outline(pal["outline"])
     return canvas, (base_x, base_y)
+
+
+def palm(seed: int, pal, size: str = "large") -> tuple[Canvas, tuple[int, int]]:
+    """Leaning palm: ringed trunk and a crown of drooping fronds."""
+    rng = random.Random(seed)
+    width, height = (60, 78) if size == "large" else (48, 60)
+    c = Canvas(width, height)
+    base_x, base_y = width // 2, height - 6
+    for y in range(base_y - 2, base_y + 3):
+        for x in range(4, width - 4):
+            if ((x + 0.5 - base_x) / 9) ** 2 + ((y + 0.5 - base_y) / 2.4) ** 2 <= 1:
+                c.blend(x, y, pal["shadow"])
+    lean = rng.choice([-1, 1]) * rng.uniform(6, 10)
+    top_y = 18 if size == "large" else 14
+    bark = pal["bark"]
+    steps = base_y - top_y
+    for i in range(steps):
+        t = i / steps
+        x = base_x + lean * (t ** 1.6)
+        y = base_y - i
+        half = 2.6 - t * 0.8
+        for xx in range(int(x - half), int(x + half) + 1):
+            ring = (i % 4 == 0)
+            c.put(xx, y, bark[1] if ring else (bark[3] if xx < x else bark[2]))
+    cx, cy = base_x + lean, top_y
+    leaf = pal["leaf"]
+    for k in range(7):
+        ang = -math.pi / 2 + (k - 3) * 0.55 + rng.uniform(-0.1, 0.1)
+        length = rng.uniform(16, 22) if size == "large" else rng.uniform(12, 16)
+        for j in range(int(length)):
+            t = j / length
+            x = cx + math.cos(ang) * j * 1.1
+            y = cy + math.sin(ang) * j * 0.6 + (t ** 2) * 10
+            for w in range(-1, 2):
+                c.put(round(x), round(y + w * (1 - t)), leaf[4] if w < 0 else (leaf[3] if w == 0 else leaf[2]))
+    for dx, dy in ((-2, 2), (2, 3), (0, 4)):
+        c.ellipse(cx + dx, cy + dy, 1.6, 1.6, bark[1])
+    c.outline(pal["outline"])
+    return c, (base_x, base_y)

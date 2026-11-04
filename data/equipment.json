@@ -241,6 +241,13 @@
       "name": "Рецепт: тоник ветра",
       "description": "Научит варить тоник ветра.",
       "rarity": "uncommon"
+    },
+    "lamp_oil": {
+      "name": "Маячное масло",
+      "description": "Бочонок масла для маяка Морена.",
+      "slot": "",
+      "rarity": "common",
+      "material": true
     }
   }
 }
