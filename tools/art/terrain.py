@@ -283,6 +283,26 @@ def render_crypt(terrain: dict, pal: dict, seed: int) -> Canvas:
     # Floor shadow under walls.
     under = floor & np.roll(~floor, 1, 0)
     img[under] = lut[1]
+    # Lava pools (magma dungeon): bright molten centre, crust, glowing rim.
+    lava = np.zeros_like(floor)
+    for pond in terrain.get("ponds", []):
+        if "circle" in pond:
+            cx, cy, r = pond["circle"]
+            lava |= (xs - cx) ** 2 + ((ys - cy) * 1.0) ** 2 <= r * r
+        elif "rect" in pond:
+            rx, ry, rw, rh = pond["rect"]
+            lava |= (xs >= rx) & (xs < rx + rw) & (ys >= ry) & (ys < ry + rh)
+    if lava.any():
+        from scipy import ndimage as _nd
+        water = np.array(pal["water"])
+        heat = fbm(w, h, 10.0, seed + 5, 3)
+        depth = _nd.distance_transform_edt(lava)
+        level = np.clip((heat * 3 + np.minimum(depth, 12) / 6).astype(int), 0, len(water) - 1)
+        img[lava] = water[level][lava]
+        crust = lava & (heat < 0.35) & (depth > 4)
+        img[crust] = water[0]
+        rim = _nd.binary_dilation(lava, iterations=2) & ~lava
+        img[rim & floor] = pal["glow"][0]
     img[:, :, 3] = 255
     canvas = Canvas(w, h)
     canvas.px = img

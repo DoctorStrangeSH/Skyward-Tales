@@ -857,6 +857,26 @@
    12
   ]
  },
+ "props/lever_off.png": {
+  "size": [
+   22,
+   28
+  ],
+  "origin": [
+   11,
+   25
+  ]
+ },
+ "props/lever_on.png": {
+  "size": [
+   22,
+   28
+  ],
+  "origin": [
+   11,
+   25
+  ]
+ },
  "props/loot_coins.png": {
   "size": [
    14,
@@ -1025,6 +1045,26 @@
   "origin": [
    11,
    18
+  ]
+ },
+ "props/vent_active.png": {
+  "size": [
+   20,
+   14
+  ],
+  "origin": [
+   10,
+   7
+  ]
+ },
+ "props/vent_idle.png": {
+  "size": [
+   20,
+   14
+  ],
+  "origin": [
+   10,
+   7
   ]
  },
  "props/waystone_off.png": {
@@ -1867,6 +1907,18 @@
    16
   ]
  },
+ "world/forge_depths_canopy.png": {
+  "size": [
+   1280,
+   960
+  ]
+ },
+ "world/forge_depths_ground.png": {
+  "size": [
+   1280,
+   960
+  ]
+ },
  "world/gather_bluebell.png": {
   "size": [
    16,
@@ -1961,6 +2013,56 @@
   "size": [
    1920,
    1280
+  ]
+ },
+ "world/magma_bush_0.png": {
+  "size": [
+   26,
+   20
+  ],
+  "origin": [
+   13,
+   16
+  ]
+ },
+ "world/magma_bush_1.png": {
+  "size": [
+   26,
+   20
+  ],
+  "origin": [
+   13,
+   16
+  ]
+ },
+ "world/magma_tree_0.png": {
+  "size": [
+   48,
+   64
+  ],
+  "origin": [
+   24,
+   58
+  ]
+ },
+ "world/magma_tree_1.png": {
+  "size": [
+   48,
+   64
+  ],
+  "origin": [
+   24,
+   58
+  ]
+ },
+ "world/magma_tree_2.png": {
+  "size": [
+   36,
+   46
+  ],
+  "origin": [
+   18,
+   40
   ]
  },
  "world/marsh_bush_0.png": {

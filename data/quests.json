@@ -531,5 +531,24 @@
         }
       ]
     }
+  },
+  {
+    "id": "forge_titan",
+    "title": "Сердце горнила",
+    "description": "Спуститесь в Огненные недра (юго-восток пустоши), откройте печать тремя рычагами и одолейте Титана Горнила.",
+    "target": 1,
+    "side": true,
+    "kill_kind": "forge_titan",
+    "requires_quest": "ash_lord",
+    "reward": {
+      "experience": 900,
+      "gold": 500,
+      "items": [
+        {
+          "id": "skyfire_blade",
+          "amount": 1
+        }
+      ]
+    }
   }
 ]

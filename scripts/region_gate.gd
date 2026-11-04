@@ -42,11 +42,11 @@ static func pick_kind(from_style: String, to_style: String, at: Vector2, map_siz
 		if float(distances[key]) < float(distances[side]):
 			side = key
 	var outward: Vector2 = {"left": Vector2.LEFT, "right": Vector2.RIGHT, "top": Vector2.UP, "bottom": Vector2.DOWN}[side]
-	var underground := ["cave", "crypt"]
+	var underground := RegionCatalog.UNDERGROUND
 	var result := {"outward": outward, "edge_distance": float(distances[side])}
-	if from_style == "crypt":
+	if from_style == "crypt" or (from_style == "magma" and not to_style in underground):
 		result["kind"] = "stairs_up"
-	elif to_style == "crypt":
+	elif to_style == "crypt" or to_style == "magma":
 		result["kind"] = "stairs_down"
 	elif from_style in underground:
 		result["kind"] = "cave_exit" if not to_style in underground else "cave_mouth"

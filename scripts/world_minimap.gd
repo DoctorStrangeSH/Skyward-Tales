@@ -79,7 +79,7 @@ func _texture() -> Texture2D:
 func _draw() -> void:
 	var area := _area()
 	var style := RegionCatalog.style(region_id)
-	var cave := style in ["cave", "crypt"]
+	var cave := RegionCatalog.is_underground(style)
 	if follow:
 		# Frame: dark wood, a gold line, the region banner.
 		draw_rect(Rect2(Vector2.ZERO, HUD_SIZE), Color(0.17, 0.11, 0.08, 0.95))

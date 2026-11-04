@@ -204,4 +204,43 @@ def build() -> dict[str, tuple[Canvas, tuple[int, int]]]:
         "gate_cave_exit": cave(True),
         "gate_stairs_down": stairs(True),
         "gate_stairs_up": stairs(False),
+        "lever_off": lever(False),
+        "lever_on": lever(True),
+        "vent_idle": vent(False),
+        "vent_active": vent(True),
     }
+
+
+def lever(on: bool) -> tuple[Canvas, tuple[int, int]]:
+    """Dungeon lever: stone socket, iron handle, a gem that turns green."""
+    c = Canvas(22, 28)
+    _shadow(c, 11, 25, 9, 2.5)
+    c.rect(4, 16, 14, 9, STONE[2])
+    c.hline(4, 17, 16, STONE[1])
+    c.hline(4, 17, 24, STONE[3])
+    c.rect(8, 18, 6, 3, STONE[4])
+    iron = ramp("#d8dee6", "#9aa4b2", "#5c6676")
+    for i in range(12):
+        x = 11 + (i // 2 if on else -i // 2)
+        c.put(x, 18 - i, iron[1])
+        c.put(x + 1, 18 - i, iron[2])
+    knob_x = 11 + (6 if on else -6)
+    c.ellipse(knob_x + 0.5, 6.5, 2.6, 2.6, WOOD[1])
+    c.put(knob_x, 5, WOOD[0])
+    gem = hex_color("#5aff7a") if on else hex_color("#ff5a3a")
+    c.rect(10, 21, 2, 2, gem)
+    _outline(c)
+    return c, (11, 25)
+
+
+def vent(active: bool) -> tuple[Canvas, tuple[int, int]]:
+    """Floor vent: iron grate over embers (the flame itself is drawn live)."""
+    c = Canvas(20, 14)
+    iron = ramp("#5c5056", "#3a3036", "#221a1e")
+    c.ellipse(10, 7, 9, 5, iron[1])
+    c.ellipse(10, 7, 6.5, 3.4, hex_color("#ff8a2a") if active else hex_color("#6a1e0c"))
+    for x in (6, 9, 12, 15):
+        c.vline(x, 4, 10, iron[0])
+    c.hline(3, 17, 7, iron[2])
+    _outline(c)
+    return c, (10, 7)

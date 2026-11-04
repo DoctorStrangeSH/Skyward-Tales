@@ -169,5 +169,21 @@ ASH = {
     "flowers": [ramp("#ffb040", "#e0601e"), ramp("#ff7a2a", "#a83a14"), ramp("#d0c0b0", "#8a7a70")],
 }
 
-STYLES = {"ash": ASH, "crypt": CRYPT, "mountain": MOUNTAIN, "coast": COAST, "day": DAY, "night": NIGHT, "cave": CAVE, "sky": SKY, "spires": SPIRES, "rift": RIFT, "marsh": MARSH}
+MAGMA = {
+    # Forge Depths: basalt brick, obsidian flagstones, lava channels, ember glow.
+    "grass": ramp("#140c0c", "#1e1212", "#2a1a18", "#3a2420", "#4c302a", "#603c32", "#7a4c3c"),
+    "dirt": ramp("#1c1214", "#2a1a1a", "#3a2422", "#4c302c", "#5e3c34", "#764a3c"),
+    "water": ramp("#5a1206", "#8c260a", "#c44416", "#ee7424", "#ffac46", "#ffe48c"),
+    "stone": ramp("#120c0e", "#22161a", "#34222a", "#4a323a", "#66464c", "#8a6460"),
+    "leaf": ramp("#141012", "#1e1818", "#2a2220", "#3a2e2a", "#4c3c34", "#604c40", "#7a6250"),
+    "bark": ramp("#22161a", "#34222a", "#4a323a", "#66464c", "#8a6460"),
+    "moss": ramp("#c4461a", "#ee7424", "#8c260a", "#5a1206"),
+    "shadow": hex_color("#000000", 110),
+    "outline": hex_color("#0a0606"),
+    "glow": ramp("#ff8a2a", "#ffc060", "#fff0b0"),
+    "crystal": ramp("#fff0b0", "#ffc060", "#ff8a2a", "#c4461a", "#6a1e0c"),
+    "flowers": [ramp("#ffb040", "#e0601e"), ramp("#ff7a2a", "#a83a14"), ramp("#d0c0b0", "#8a7a70")],
+}
+
+STYLES = {"magma": MAGMA, "ash": ASH, "crypt": CRYPT, "mountain": MOUNTAIN, "coast": COAST, "day": DAY, "night": NIGHT, "cave": CAVE, "sky": SKY, "spires": SPIRES, "rift": RIFT, "marsh": MARSH}
 ISLAND_STYLES = ("sky", "spires", "rift")
