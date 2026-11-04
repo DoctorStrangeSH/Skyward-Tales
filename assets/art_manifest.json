@@ -601,6 +601,26 @@
    18
   ]
  },
+ "props/gate_bridge_h.png": {
+  "size": [
+   48,
+   60
+  ],
+  "origin": [
+   24,
+   55
+  ]
+ },
+ "props/gate_bridge_v.png": {
+  "size": [
+   56,
+   64
+  ],
+  "origin": [
+   28,
+   60
+  ]
+ },
  "props/gate_cave.png": {
   "size": [
    36,
@@ -609,6 +629,26 @@
   "origin": [
    18,
    41
+  ]
+ },
+ "props/gate_cave_exit.png": {
+  "size": [
+   72,
+   58
+  ],
+  "origin": [
+   36,
+   55
+  ]
+ },
+ "props/gate_cave_mouth.png": {
+  "size": [
+   72,
+   58
+  ],
+  "origin": [
+   36,
+   55
   ]
  },
  "props/gate_coast.png": {
@@ -699,6 +739,26 @@
   "origin": [
    18,
    44
+  ]
+ },
+ "props/gate_stairs_down.png": {
+  "size": [
+   60,
+   56
+  ],
+  "origin": [
+   30,
+   52
+  ]
+ },
+ "props/gate_stairs_up.png": {
+  "size": [
+   60,
+   56
+  ],
+  "origin": [
+   30,
+   52
   ]
  },
  "props/health_potion.png": {

@@ -121,12 +121,12 @@ func _ready() -> void:
 	quest_tracker = QuestTracker.new()
 	root.add_child(quest_tracker)
 	buff_label = _make_label("", 9, Color(0.72, 1.0, 0.72))
-	buff_label.position = Vector2(504, 116)
+	buff_label.position = Vector2(486, 126)
 	buff_label.size = Vector2(132, 30)
 	root.add_child(buff_label)
 
 	minimap = preload("res://scripts/world_minimap.gd").new() as WorldMinimap
-	minimap.position = Vector2(502, 6)
+	minimap.position = Vector2(484, 6)
 	root.add_child(minimap)
 
 	world_map_view = WorldMapPanel.new()

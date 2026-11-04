@@ -1,53 +1,194 @@
 extends Control
 class_name WorldMinimap
 
+## Minimap. `follow` (HUD): a window over the region's real thumbnail
+## (assets/world/<region>_mini.png, 1/6 scale) centred on the hero, sky
+## beyond the island's rim. Otherwise (M map) the whole region fitted in.
+## Icons: quest givers (! / ?), exits, chests, sky stones, fishing spots,
+## workshops, quest items, enemies (elites, bosses) and the hero's heading.
+
 const WORLD_SIZE := Vector2(1280.0, 864.0)
-const MAP_SIZE := Vector2(116.0, 78.0)
+const THUMB_SCALE := 6.0
+const HUD_SIZE := Vector2(150, 116)
+const AREA := Rect2(4, 18, 142, 94)
+
 var region_id: String = "greenreach"
 var hero_position: Vector2 = Vector2(270, 625)
+var facing := Vector2.DOWN
 var known_landmarks: Dictionary = {}
+## Live icons this frame: {"kind", "position": Vector2, "label"?}.
+var live: Array = []
+var follow: bool = true
+var _thumb: Texture2D
+var _thumb_region: String = ""
+var _clock: float = 0.0
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	custom_minimum_size = Vector2(132, 108)
+	if follow:
+		custom_minimum_size = HUD_SIZE
+		size = HUD_SIZE
 	queue_redraw()
 
 func update_map(new_region: String, position: Vector2, landmarks: Dictionary) -> void:
-	if region_id == new_region and hero_position.distance_squared_to(position) < 1.0 and known_landmarks == landmarks:
-		return
 	region_id = new_region
 	hero_position = position
 	known_landmarks = landmarks.duplicate(true)
 	queue_redraw()
 
-func _map_point(point: Vector2) -> Vector2:
-	var size := _world_size()
-	return Vector2(8.0, 25.0) + Vector2(clampf(point.x / size.x, 0.0, 1.0), clampf(point.y / size.y, 0.0, 1.0)) * MAP_SIZE
+func set_live(markers: Array, heading: Vector2) -> void:
+	live = markers
+	if heading.length() > 0.1:
+		facing = heading.normalized()
+	queue_redraw()
+
+func _process(delta: float) -> void:
+	_clock += delta
 
 func _world_size() -> Vector2:
-	var size: Variant = RegionCatalog.terrain(region_id).get("size", [WORLD_SIZE.x, WORLD_SIZE.y])
-	return Vector2(float(size[0]), float(size[1]))
+	var value: Variant = RegionCatalog.terrain(region_id).get("size", [WORLD_SIZE.x, WORLD_SIZE.y])
+	return Vector2(float(value[0]), float(value[1]))
+
+func _area() -> Rect2:
+	return AREA if follow else Rect2(Vector2.ZERO, size)
+
+## Pixels per world unit in the current mode.
+func _scale() -> float:
+	if follow:
+		return 1.0 / THUMB_SCALE
+	var world := _world_size()
+	return minf(size.x / world.x, size.y / world.y)
+
+func _origin() -> Vector2:
+	var area := _area()
+	if follow:
+		return area.get_center() - hero_position * _scale()
+	var world := _world_size() * _scale()
+	return area.position + (area.size - world) * 0.5
+
+func _map_point(point: Vector2) -> Vector2:
+	return _origin() + point * _scale()
+
+func _texture() -> Texture2D:
+	if _thumb_region != region_id:
+		_thumb_region = region_id
+		var path := "world/%s_mini.png" % region_id
+		_thumb = WorldArt.texture(path) if ResourceLoader.exists("res://assets/" + path) else null
+	return _thumb
 
 func _draw() -> void:
-	draw_rect(Rect2(Vector2.ZERO, Vector2(132, 108)), Color(0.07, 0.06, 0.11, 0.84))
-	draw_rect(Rect2(Vector2(0, 0), Vector2(132, 108)), Color(0.93, 0.78, 0.47, 0.85), false, 1.0)
-	var name: String = RegionCatalog.display_name(region_id).to_upper()
-	draw_string(UiFont.font(), Vector2(7, 16), name, HORIZONTAL_ALIGNMENT_LEFT, 126, UiFont.px(10), Color(0.92, 0.88, 0.64))
-	draw_rect(Rect2(Vector2(8, 25), MAP_SIZE), RegionCatalog.map_color(region_id))
-	# Trails come straight from the region's terrain data.
-	for trail in RegionCatalog.terrain(region_id).get("trails", []):
-		for i in range(trail.size() - 1):
-			var a := Vector2(float(trail[i][0]), float(trail[i][1]))
-			var b := Vector2(float(trail[i + 1][0]), float(trail[i + 1][1]))
-			draw_line(_map_point(a), _map_point(b), Color(0.57, 0.45, 0.29), 2.0)
+	var area := _area()
+	var cave := RegionCatalog.style(region_id) in ["cave", "crypt"]
+	if follow:
+		# Frame: dark wood, a gold line, the region banner.
+		draw_rect(Rect2(Vector2.ZERO, HUD_SIZE), Color(0.17, 0.11, 0.08, 0.95))
+		draw_rect(Rect2(Vector2(1, 1), HUD_SIZE - Vector2(2, 2)), Color(0.85, 0.66, 0.38), false, 1.0)
+		var font := UiFont.font()
+		draw_string(font, Vector2(6, 13), RegionCatalog.display_name(region_id).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 110, UiFont.px(9), Color(1.0, 0.9, 0.62))
+		draw_string(font, Vector2(6, 13), "ур. %d" % RegionCatalog.level(region_id), HORIZONTAL_ALIGNMENT_RIGHT, HUD_SIZE.x - 12, UiFont.px(8), Color(0.75, 0.85, 1.0))
+	# Beyond the island: sky (or rock underground).
+	draw_rect(area, Color(0.12, 0.1, 0.16) if cave else Color(0.62, 0.78, 0.94))
+	var texture := _texture()
+	var world_rect := Rect2(_origin(), _world_size() * _scale())
+	var visible := world_rect.intersection(area)
+	if texture != null and visible.has_area():
+		var source := Rect2((visible.position - world_rect.position) / world_rect.size * texture.get_size(), visible.size / world_rect.size * texture.get_size())
+		draw_texture_rect_region(texture, visible, source)
+	elif visible.has_area():
+		draw_rect(visible, RegionCatalog.map_color(region_id))
+	if visible.has_area() and not cave:
+		# The island rim.
+		draw_rect(world_rect.intersection(area.grow(1)), Color(0.3, 0.24, 0.2, 0.9), false, 1.0)
+	for marker in _all_markers():
+		var at := _map_point(marker["position"])
+		var kind: String = marker["kind"]
+		if not area.grow(-2).has_point(at):
+			if kind in ["gate", "quest"] and follow:
+				_draw_edge_arrow(area, at, Color(1.0, 0.85, 0.4) if kind == "quest" else Color(0.95, 0.95, 0.8))
+			continue
+		_draw_marker(kind, at, str(marker.get("label", "")))
+	_draw_hero(_map_point(hero_position))
+	if follow:
+		draw_rect(area, Color(0.1, 0.07, 0.06), false, 1.0)
+
+## Discovered landmarks (saved) and live icons together.
+func _all_markers() -> Array:
+	var result: Array = []
 	for id in known_landmarks:
 		var data: Dictionary = known_landmarks[id]
 		var coordinates: Array = data.get("position", [])
 		if coordinates.size() != 2:
 			continue
-		var marker_kind: String = str(data.get("kind", ""))
-		var color: Color = Color(0.95, 0.81, 0.38) if marker_kind == "npc" else (Color(0.82, 0.55, 1.0) if marker_kind == "secret" else Color(0.38, 0.83, 0.98))
-		draw_rect(Rect2(_map_point(Vector2(float(coordinates[0]), float(coordinates[1]))) - Vector2(2, 2), Vector2(4, 4)), color)
-	var hero: Vector2 = _map_point(hero_position)
-	draw_circle(hero, 3.0, Color(1.0, 0.95, 0.9))
-	draw_arc(hero, 4.5, 0, TAU, 12, Color(0.07, 0.10, 0.13), 1.0)
+		var kind := str(data.get("kind", ""))
+		if kind in ["npc", "gate", "chest"]:
+			continue  # live icons carry the current state
+		result.append({"kind": kind, "position": Vector2(float(coordinates[0]), float(coordinates[1]))})
+	result.append_array(live)
+	return result
+
+func _draw_marker(kind: String, at: Vector2, label: String) -> void:
+	var font := UiFont.font()
+	var pulse := 0.5 + 0.5 * sin(_clock * 5.0)
+	match kind:
+		"npc":
+			draw_rect(Rect2(at - Vector2(1.5, 1.5), Vector2(3, 3)), Color(0.95, 0.92, 0.85))
+		"quest", "ready":
+			var color := Color(1.0, 0.82, 0.25) if kind == "quest" else Color(0.45, 1.0, 0.45)
+			draw_circle(at, 4.0 + pulse, Color(color, 0.25))
+			draw_circle(at, 3.0, Color(0.1, 0.07, 0.05))
+			draw_string(font, at + Vector2(-2, 3), "!" if kind == "quest" else "?", HORIZONTAL_ALIGNMENT_LEFT, -1, UiFont.px(8), color)
+		"service":
+			draw_circle(at, 2.5, Color(0.5, 0.8, 1.0))
+		"gate":
+			draw_rect(Rect2(at - Vector2(3, 3), Vector2(6, 6)), Color(0.1, 0.07, 0.05))
+			draw_rect(Rect2(at - Vector2(2, 2), Vector2(4, 4)), Color(1.0, 0.92, 0.7))
+			if not follow and not label.is_empty():
+				var width := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, UiFont.px(8)).x
+				var spot := Vector2(clampf(at.x - width * 0.5, 2, size.x - width - 2), clampf(at.y - 6, 9, size.y - 2))
+				draw_string_outline(font, spot, label, HORIZONTAL_ALIGNMENT_LEFT, -1, UiFont.px(8), 3, Color(0, 0, 0, 0.9))
+				draw_string(font, spot, label, HORIZONTAL_ALIGNMENT_LEFT, -1, UiFont.px(8), Color(1.0, 0.92, 0.7))
+		"chest":
+			draw_rect(Rect2(at - Vector2(2.5, 2), Vector2(5, 4)), Color(0.55, 0.33, 0.16))
+			draw_line(at + Vector2(-2.5, -0.5), at + Vector2(2.5, -0.5), Color(1.0, 0.82, 0.3), 1.0)
+		"waystone":
+			draw_colored_polygon(PackedVector2Array([at + Vector2(0, -4), at + Vector2(3, 0), at + Vector2(0, 4), at + Vector2(-3, 0)]), Color(0.45, 0.95, 1.0))
+		"station":
+			draw_rect(Rect2(at - Vector2(2, 1.5), Vector2(4, 3)), Color(0.8, 0.8, 0.85))
+		"fish":
+			draw_line(at + Vector2(-2, 0), at + Vector2(2, 0), Color(0.75, 0.95, 1.0), 1.0)
+			draw_line(at + Vector2(-1, -1.5), at + Vector2(1, -1.5), Color(0.75, 0.95, 1.0), 1.0)
+		"item":
+			draw_circle(at, 1.5 + pulse, Color(1.0, 0.95, 0.5, 0.9))
+		"enemy":
+			draw_rect(Rect2(at - Vector2(1, 1), Vector2(2, 2)), Color(1.0, 0.3, 0.25))
+		"elite":
+			draw_circle(at, 2.5, Color(1.0, 0.55, 0.15))
+		"boss":
+			draw_circle(at, 4.0 + pulse, Color(0.8, 0.2, 0.9, 0.35))
+			draw_circle(at, 3.0, Color(0.6, 0.15, 0.7))
+			draw_rect(Rect2(at - Vector2(1.5, 1), Vector2(1, 1)), Color.WHITE)
+			draw_rect(Rect2(at + Vector2(0.5, -1), Vector2(1, 1)), Color.WHITE)
+		"secret":
+			draw_rect(Rect2(at - Vector2(2, 2), Vector2(4, 4)), Color(0.82, 0.55, 1.0))
+		_:
+			draw_rect(Rect2(at - Vector2(2, 2), Vector2(4, 4)), Color(0.38, 0.83, 0.98))
+
+func _draw_edge_arrow(area: Rect2, at: Vector2, color: Color) -> void:
+	var center := area.get_center()
+	var direction := (at - center).normalized()
+	var inner := area.grow(-5)
+	var t := INF
+	if absf(direction.x) > 0.001:
+		t = minf(t, ((inner.end.x if direction.x > 0 else inner.position.x) - center.x) / direction.x)
+	if absf(direction.y) > 0.001:
+		t = minf(t, ((inner.end.y if direction.y > 0 else inner.position.y) - center.y) / direction.y)
+	var tip := center + direction * t
+	var side := Vector2(-direction.y, direction.x)
+	draw_colored_polygon(PackedVector2Array([tip + direction * 3.0, tip - direction * 2.0 + side * 2.5, tip - direction * 2.0 - side * 2.5]), color)
+
+func _draw_hero(at: Vector2) -> void:
+	var side := Vector2(-facing.y, facing.x)
+	var points := PackedVector2Array([at + facing * 5.0, at - facing * 3.0 + side * 3.5, at - facing * 1.5, at - facing * 3.0 - side * 3.5])
+	var outline := PackedVector2Array([at + facing * 6.5, at - facing * 4.2 + side * 4.8, at - facing * 2.0, at - facing * 4.2 - side * 4.8])
+	draw_colored_polygon(outline, Color(0.08, 0.06, 0.1))
+	draw_colored_polygon(points, Color(1.0, 0.97, 0.9))

@@ -21,6 +21,8 @@ import icons  # noqa: E402
 import chests  # noqa: E402
 import apron  # noqa: E402
 import title_art  # noqa: E402
+import gates  # noqa: E402
+import minimap  # noqa: E402
 import props  # noqa: E402
 import terrain  # noqa: E402
 from palettes import ISLAND_STYLES, STYLES  # noqa: E402
@@ -154,6 +156,7 @@ def build_props() -> None:
         "marker_service": props.marker("service"), "key_e": props.key_badge(),
     }
     items.update(chests.build())
+    items.update(gates.build())
     for rel, canvas in title_art.build().items():
         save(canvas, rel)
     for name, (canvas, origin) in items.items():
@@ -165,9 +168,15 @@ def build_props() -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--only", choices=["world", "characters", "props"], default=None)
+    parser.add_argument("--only", choices=["world", "characters", "props", "minimap"], default=None)
     args = parser.parse_args()
-    if args.only in (None, "world"):
+    if args.only in (None, "world", "minimap"):
+        if args.only != "minimap":
+            build_world()
+        for region_id, region in json.loads((ROOT / "data" / "regions.json").read_text()).items():
+            if region.get("terrain"):
+                minimap.build(ROOT, region_id, region["terrain"])
+    if False:
         build_world()
     if args.only in (None, "characters"):
         build_characters()
