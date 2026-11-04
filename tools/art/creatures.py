@@ -672,3 +672,46 @@ def crab_king(facing: str, frame: int) -> Canvas:
     _crab(b, facing, frame, 24, 30, 1.7, True)
     b.outline(hex_color("#3a1a14"))
     return b.canvas()
+
+
+# --- Stone Pass: golem and the Mountain Giant ------------------------------------
+
+ROCK = r4("#c4c4c8", "#94949a", "#6a6a72", "#44444c")
+ROCK_MOSS = r4("#a8c49a", "#7a9a6e", "#5a7a52", "#3a5236")
+CORE = r4("#fff2c0", "#ffc860", "#e08a30", "#a04a20")
+
+
+def _golem(b: Body, facing: str, frame: int, cx: float, cy: float, s: float) -> None:
+    back = facing in ("up", "up_right")
+    side = facing == "right"
+    stomp = [0, 1, 0, -1][frame]
+    for sign in ((-1, 1) if not side else (-1, 1)):
+        lx = cx + sign * 3.6 * s + (1 if side else 0)
+        ly = cy + 6 * s + (stomp if sign > 0 else -stomp) * 0.6
+        b.part(b.ellipse(lx, ly, 2.4 * s, 2.2 * s), ROCK)
+    w = 6.8 * s if not side else 5.6 * s
+    b.part(b.ellipse(cx, cy, w, 6 * s), ROCK, sphere=(cx - 2 * s, cy - 3 * s, w + 2))
+    b.part(b.ellipse(cx - 1.5 * s, cy - 4.5 * s, w * 0.55, 1.6 * s), ROCK_MOSS, separate=False)
+    for sign in ((-1, 1) if not side else (1,)):
+        b.part(b.ellipse(cx + sign * (w + 1.6 * s), cy + 1 * s - stomp * 0.4, 2.6 * s, 3.4 * s), ROCK)
+    if not back:
+        ex = cx + (2 * s if side else 0)
+        for dx in ((-2.2, 2.2) if not side else (1.2,)):
+            b.dot(ex + dx * s, cy - 1.5 * s, CORE[1])
+        b.part(b.ellipse(ex, cy + 2.5 * s, 1.6 * s, 1.2 * s), CORE, separate=False)
+
+
+def golem(facing: str, frame: int) -> Canvas:
+    b = Body(32)
+    b.shadow(16, 28, 9, 2.2, 80)
+    _golem(b, facing, frame, 16, 18, 1.0)
+    b.outline(hex_color("#202028"))
+    return b.canvas()
+
+
+def giant(facing: str, frame: int) -> Canvas:
+    b = Body(48)
+    b.shadow(24, 44, 16, 3.2, 90)
+    _golem(b, facing, frame, 24, 26, 1.8)
+    b.outline(hex_color("#202028"))
+    return b.canvas()

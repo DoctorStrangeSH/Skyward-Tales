@@ -180,6 +180,105 @@
         "item_id": "swift_tonic",
         "amount": 1
       }
+    },
+    "forge_steel_staff": {
+      "name": "Стальной посох",
+      "description": "Железный посох, руда и брёвна для древка.",
+      "gold_cost": 0,
+      "station": "forge_steel",
+      "unique_output": true,
+      "ingredients": [
+        {
+          "item_id": "ironbound_staff",
+          "amount": 1
+        },
+        {
+          "item_id": "iron_ore",
+          "amount": 4
+        },
+        {
+          "item_id": "wood",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "item_id": "steel_staff",
+        "amount": 1
+      }
+    },
+    "forge_steel_mail": {
+      "name": "Стальная кольчуга",
+      "description": "Руда и камень для заклёпок.",
+      "gold_cost": 0,
+      "station": "forge_steel",
+      "unique_output": true,
+      "requires_recipe": "recipe_steel_mail",
+      "ingredients": [
+        {
+          "item_id": "iron_ore",
+          "amount": 6
+        },
+        {
+          "item_id": "stone",
+          "amount": 3
+        }
+      ],
+      "output": {
+        "item_id": "steel_mail",
+        "amount": 1
+      }
+    },
+    "forge_skysteel_staff": {
+      "name": "Посох небесной стали",
+      "description": "Стальной посох, руда и эхо-кристаллы.",
+      "gold_cost": 0,
+      "station": "forge_steel",
+      "unique_output": true,
+      "requires_recipe": "recipe_skysteel",
+      "ingredients": [
+        {
+          "item_id": "steel_staff",
+          "amount": 1
+        },
+        {
+          "item_id": "iron_ore",
+          "amount": 6
+        },
+        {
+          "item_id": "echo_crystal",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "item_id": "skysteel_staff",
+        "amount": 1
+      }
+    },
+    "forge_skysteel_mail": {
+      "name": "Доспех небесной стали",
+      "description": "Стальная кольчуга, руда и кристаллы памяти.",
+      "gold_cost": 0,
+      "station": "forge_steel",
+      "unique_output": true,
+      "requires_recipe": "recipe_skysteel",
+      "ingredients": [
+        {
+          "item_id": "steel_mail",
+          "amount": 1
+        },
+        {
+          "item_id": "iron_ore",
+          "amount": 8
+        },
+        {
+          "item_id": "memory_crystal",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "item_id": "skysteel_mail",
+        "amount": 1
+      }
     }
   }
 }

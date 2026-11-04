@@ -248,6 +248,57 @@
       "slot": "",
       "rarity": "common",
       "material": true
+    },
+    "coal_sack": {
+      "name": "Мешок угля",
+      "description": "Уголь для горна Гунхильд.",
+      "slot": "",
+      "rarity": "common",
+      "material": true
+    },
+    "steel_staff": {
+      "name": "Стальной посох",
+      "description": "Каменный Перевал. +14 урона всем заклинаниям.",
+      "slot": "weapon",
+      "rarity": "rare",
+      "spell_bonus": {
+        "*": 14
+      }
+    },
+    "steel_mail": {
+      "name": "Стальная кольчуга",
+      "description": "Снижает входящий урон на 12.",
+      "slot": "armor",
+      "rarity": "rare",
+      "armor": 12
+    },
+    "skysteel_staff": {
+      "name": "Посох небесной стали",
+      "description": "+22 урона всем заклинаниям и +4 силы.",
+      "slot": "weapon",
+      "rarity": "epic",
+      "spell_bonus": {
+        "*": 22
+      },
+      "power": 4
+    },
+    "skysteel_mail": {
+      "name": "Доспех небесной стали",
+      "description": "Снижает входящий урон на 16, +3 ловкости.",
+      "slot": "armor",
+      "rarity": "epic",
+      "armor": 16,
+      "agility": 3
+    },
+    "recipe_steel_mail": {
+      "name": "Рецепт: стальная кольчуга",
+      "description": "Научит ковать стальную кольчугу.",
+      "rarity": "uncommon"
+    },
+    "recipe_skysteel": {
+      "name": "Рецепт: небесная сталь",
+      "description": "Научит ковать посох и доспех небесной стали.",
+      "rarity": "epic"
     }
   }
 }

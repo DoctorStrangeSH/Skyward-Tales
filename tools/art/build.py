@@ -55,6 +55,8 @@ def build_world() -> None:
             size = "large" if variant != 2 else "small"
             if style in ("cave", "rift"):
                 canvas, origin = flora.crystal_cluster(300 + index * 10 + variant, pal, size)
+            elif style == "mountain":
+                canvas, origin = flora.pine(300 + index * 10 + variant, pal, size)
             elif style == "coast":
                 canvas, origin = flora.palm(300 + index * 10 + variant, pal, size)
             elif style == "spires":
@@ -99,6 +101,8 @@ def build_characters() -> None:
     save(creatures.soften(creatures.build_sheet(creatures.wisp, 32)), "sprites/enemies/wind_wisp_8dir.png")
     save(creatures.soften(creatures.build_sheet(creatures.toad, 32)), "sprites/enemies/marsh_toad_8dir.png")
     save(creatures.soften(creatures.build_sheet(creatures.crab, 32)), "sprites/enemies/coast_crab_8dir.png")
+    save(creatures.soften(creatures.build_sheet(creatures.golem, 32)), "sprites/enemies/stone_golem_8dir.png")
+    save(creatures.soften(creatures.build_sheet(creatures.giant, 48)), "sprites/enemies/mountain_giant_8dir.png")
     save(creatures.soften(creatures.build_sheet(creatures.crab_king, 48)), "sprites/enemies/crab_king_8dir.png")
     save(creatures.soften(creatures.build_sheet(creatures.bog_king, 48)), "sprites/enemies/bog_king_8dir.png")
     save(creatures.soften(creatures.build_sheet(creatures.tempest, 48)), "sprites/enemies/tempest_colossus_8dir.png")
@@ -116,6 +120,7 @@ def build_props() -> None:
         "health_potion": props.potion("red"), "mana_potion": props.potion("blue"),
         "wolf_pelt": props.pelt(), "relic": props.treasure("relic"), "pouch": props.treasure("pouch"),
         "gate_day": props.gate(False), "gate_night": props.gate(True), "gate_cave": props.cave_gate(), "gate_sky": props.sky_gate(), "gate_spires": props.sky_gate(), "gate_rift": props.sky_gate(), "gate_marsh": props.gate(False),
+        "gate_coast": props.gate(False), "gate_mountain": props.gate(False), "coal_sack": props.crate(),
         "waystone_on": props.waystone(True), "waystone_off": props.waystone(False),
         "marsh_lantern": props.herb("marsh_lantern"),
         "rift_throne": props.rune_circle(("#fbf6ff", "#e6d2ff", "#c9a2ff", "#6a3ac0")),

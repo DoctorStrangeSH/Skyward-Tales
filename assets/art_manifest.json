@@ -23,6 +23,12 @@
    16
   ]
  },
+ "icons/coal_sack.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/crystal_lens.png": {
   "size": [
    16,
@@ -131,6 +137,18 @@
    16
   ]
  },
+ "icons/recipe_skysteel.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/recipe_steel_mail.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/recipe_swift_tonic.png": {
   "size": [
    16,
@@ -149,7 +167,31 @@
    16
   ]
  },
+ "icons/skysteel_mail.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skysteel_staff.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/starlight_essence.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/steel_mail.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/steel_staff.png": {
   "size": [
    16,
    16
@@ -221,6 +263,16 @@
    19
   ]
  },
+ "props/coal_sack.png": {
+  "size": [
+   22,
+   22
+  ],
+  "origin": [
+   11,
+   18
+  ]
+ },
  "props/echo_crystal.png": {
   "size": [
    20,
@@ -241,6 +293,16 @@
    41
   ]
  },
+ "props/gate_coast.png": {
+  "size": [
+   34,
+   44
+  ],
+  "origin": [
+   17,
+   39
+  ]
+ },
  "props/gate_day.png": {
   "size": [
    34,
@@ -252,6 +314,16 @@
   ]
  },
  "props/gate_marsh.png": {
+  "size": [
+   34,
+   44
+  ],
+  "origin": [
+   17,
+   39
+  ]
+ },
+ "props/gate_mountain.png": {
   "size": [
    34,
    44
@@ -605,6 +677,12 @@
    256
   ]
  },
+ "sprites/enemies/mountain_giant_8dir.png": {
+  "size": [
+   192,
+   384
+  ]
+ },
  "sprites/enemies/rift_shade_8dir.png": {
   "size": [
    128,
@@ -612,6 +690,12 @@
   ]
  },
  "sprites/enemies/sky_sentinel_8dir.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "sprites/enemies/stone_golem_8dir.png": {
   "size": [
    128,
    256
@@ -1075,6 +1159,16 @@
    14
   ]
  },
+ "world/gather_iron.png": {
+  "size": [
+   26,
+   20
+  ],
+  "origin": [
+   13,
+   17
+  ]
+ },
  "world/gather_stone.png": {
   "size": [
    26,
@@ -1179,6 +1273,56 @@
   "size": [
    1280,
    864
+  ]
+ },
+ "world/mountain_bush_0.png": {
+  "size": [
+   28,
+   22
+  ],
+  "origin": [
+   14,
+   18
+  ]
+ },
+ "world/mountain_bush_1.png": {
+  "size": [
+   28,
+   22
+  ],
+  "origin": [
+   14,
+   18
+  ]
+ },
+ "world/mountain_tree_0.png": {
+  "size": [
+   48,
+   84
+  ],
+  "origin": [
+   24,
+   78
+  ]
+ },
+ "world/mountain_tree_1.png": {
+  "size": [
+   48,
+   84
+  ],
+  "origin": [
+   24,
+   78
+  ]
+ },
+ "world/mountain_tree_2.png": {
+  "size": [
+   38,
+   64
+  ],
+  "origin": [
+   19,
+   58
   ]
  },
  "world/night_bush_0.png": {
@@ -1455,6 +1599,18 @@
   "origin": [
    15,
    27
+  ]
+ },
+ "world/stone_pass_canopy.png": {
+  "size": [
+   1600,
+   1080
+  ]
+ },
+ "world/stone_pass_ground.png": {
+  "size": [
+   1600,
+   1080
   ]
  },
  "world/village_board.png": {

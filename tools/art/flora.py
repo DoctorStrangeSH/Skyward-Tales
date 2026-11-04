@@ -308,3 +308,42 @@ def palm(seed: int, pal, size: str = "large") -> tuple[Canvas, tuple[int, int]]:
         c.ellipse(cx + dx, cy + dy, 1.6, 1.6, bark[1])
     c.outline(pal["outline"])
     return c, (base_x, base_y)
+
+
+def pine(seed: int, pal, size: str = "large") -> tuple[Canvas, tuple[int, int]]:
+    """Snow-tipped fir: stacked tiers over a short trunk."""
+    rng = random.Random(seed)
+    width, height = (48, 84) if size == "large" else (38, 64)
+    c = Canvas(width, height)
+    base_x, base_y = width // 2, height - 6
+    for y in range(base_y - 2, base_y + 3):
+        for x in range(4, width - 4):
+            if ((x + 0.5 - base_x) / 12) ** 2 + ((y + 0.5 - base_y) / 2.6) ** 2 <= 1:
+                c.blend(x, y, pal["shadow"])
+    bark, leaf = pal["bark"], pal["leaf"]
+    c.rect(base_x - 2, base_y - 10, 4, 10, bark[2])
+    c.vline(base_x - 2, base_y - 10, base_y - 1, bark[3])
+    tiers = 4 if size == "large" else 3
+    top = 4
+    span = base_y - 8 - top
+    for t in range(tiers):
+        y0 = top + int(span * t / tiers * 0.9)
+        y1 = top + int(span * (t + 1) / tiers) + 4
+        for y in range(y0, y1):
+            p = (y - y0) / max(1, y1 - y0)
+            half = (3 + (t + 1) * (width / 2 - 5) / tiers) * (0.25 + 0.75 * p)
+            for x in range(int(base_x - half), int(base_x + half) + 1):
+                rel = (x - (base_x - half)) / (2 * half + 0.01)
+                shade = 5 if rel < 0.25 else (4 if rel < 0.5 else (3 if rel < 0.8 else 2))
+                if y == y1 - 1:
+                    shade = 1
+                c.put(x, y, leaf[shade])
+            # Snow rests on the upper edge of each tier, thicker on the lit side.
+            if y - y0 < 2:
+                for x in range(int(base_x - half), int(base_x + half * 0.4) + 1):
+                    c.put(x, y, pal["grass"][6] if y == y0 or x < base_x else pal["grass"][5])
+            elif y - y0 == 2 and rng.random() < 0.7:
+                for x in range(int(base_x - half * 0.9), int(base_x - half * 0.2)):
+                    c.put(x, y, pal["grass"][5])
+    c.outline(pal["outline"])
+    return c, (base_x, base_y)

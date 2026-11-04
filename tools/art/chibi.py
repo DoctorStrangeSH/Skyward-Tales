@@ -285,6 +285,9 @@ def main() -> int:
         "settler_fisher": dict(colors={HAIR_LIGHT: (220, 220, 214), HAIR_SHADE: (170, 172, 170), RED_DARK: (40, 70, 96),
                                        RED_MID: (60, 104, 136), RED_LIGHT: (220, 190, 90), MAUVE: (40, 50, 60)},
                                trim=True, ahoge=False, beard=((230, 230, 224), (180, 180, 176)), fill=((40, 70, 96), (60, 104, 136))),
+        # Gunhild, master smith of the Stone Pass: copper hair, leather apron.
+        "smith_master": dict(colors={HAIR_LIGHT: (214, 120, 60), HAIR_SHADE: (160, 80, 40), RED_DARK: (70, 50, 36),
+                                     RED_MID: (104, 76, 52), RED_LIGHT: (190, 190, 200), MAUVE: (50, 36, 28)}, ahoge=False),
         # Moren the lighthouse keeper: grey beard, navy coat.
         "keeper": dict(colors={HAIR_LIGHT: (200, 200, 196), HAIR_SHADE: (150, 150, 150), RED_DARK: (30, 40, 70),
                                RED_MID: (46, 62, 104), RED_LIGHT: (220, 180, 80), MAUVE: (30, 34, 50)},

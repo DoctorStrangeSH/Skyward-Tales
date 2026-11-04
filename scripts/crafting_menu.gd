@@ -82,7 +82,8 @@ func open(station_id: String) -> void:
 	var info := station(station_id)
 	var name := str(info.get("name", station_id))
 	var settler_needed := str(info.get("needs_settler", ""))
-	if not settler_needed.is_empty() and game.settlement.home_of(settler_needed).is_empty():
+	var quest_needed := str(info.get("needs_quest", ""))
+	if (not settler_needed.is_empty() and game.settlement.home_of(settler_needed).is_empty()) or (not quest_needed.is_empty() and not game.quests.is_completed(quest_needed)):
 		_open_station = ""
 		game._show_dialogue(name, str(info.get("locked", "Пока здесь некому работать.")))
 		return

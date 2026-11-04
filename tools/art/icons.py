@@ -204,6 +204,11 @@ def build() -> dict[str, Canvas]:
         "fish_stew": bowl_icon(ramp("#ffe0a0", "#e0a040", "#a06020")), "herb_tea": bowl_icon(ramp("#d8ffd0", "#7ac060", "#3a7a30")),
         "hearty_stew": bowl_icon(ramp("#ffc090", "#c86030", "#803020")),
         "power_elixir": potion(ramp("#ffe0a0", "#ff9a3c", "#c8352e")), "swift_tonic": potion(ramp("#e0fff0", "#60e0b0", "#2a9a7a")),
+        "steel_staff": staff(ramp("#e8eef4", "#a8b4c4", "#6a7a90")),
+        "skysteel_staff": staff(ramp("#fff6c8", "#9cf0ff", "#3a8fe0")),
+        "steel_mail": armor(ramp("#d8dce4", "#9aa2b0", "#5e6676"), ramp("#f4f4f8", "#c8ccd4", "#8a909c")),
+        "skysteel_mail": armor(ramp("#e8f8ff", "#8ad0f0", "#3a7ab0"), GOLD),
+        "recipe_steel_mail": scroll_icon(), "recipe_skysteel": scroll_icon(), "coal_sack": stone_icon(),
         "recipe_hearty_stew": scroll_icon(), "recipe_power_elixir": scroll_icon(), "recipe_swift_tonic": scroll_icon(),
     }
 

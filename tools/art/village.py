@@ -388,6 +388,14 @@ def _plant(flower, leaves=GREEN) -> tuple[Canvas, tuple[int, int]]:
     return c, (8, 14)
 
 
+def gather_iron() -> tuple[Canvas, tuple[int, int]]:
+    c, origin = gather_stone()
+    for x, y in ((8, 9), (14, 7), (17, 12), (10, 13), (12, 10)):
+        c.put(x, y, hex_color("#e08a40"))
+        c.put(x + 1, y, hex_color("#ffc070"))
+    return c, origin
+
+
 def kitchen() -> tuple[Canvas, tuple[int, int]]:
     c = Canvas(30, 30)
     for x, y in ((6, 24), (24, 24)):
@@ -414,7 +422,7 @@ def build_gathering(root: pathlib.Path) -> None:
         "gather_wood": gather_wood(), "gather_stone": gather_stone(), "gather_fish": gather_fish(),
         "gather_healroot": _plant([hex_color("#ffd0c0"), hex_color("#e05a4a")]),
         "gather_bluebell": _plant([hex_color("#e0f0ff"), hex_color("#5a8ae0")]),
-        "station_kitchen": kitchen(),
+        "station_kitchen": kitchen(), "gather_iron": gather_iron(),
     }
     manifest_path = root / "assets" / "art_manifest.json"
     art = json.loads(manifest_path.read_text())
