@@ -233,3 +233,39 @@ def rock_pile(seed: int, pal) -> tuple[Canvas, tuple[int, int]]:
         canvas.put(sx + 1, 8 - i, crystal[2])
     canvas.outline(pal["outline"])
     return canvas, (base_x, base_y)
+
+
+def stone_spire(seed: int, pal, size: str = "large") -> tuple[Canvas, tuple[int, int]]:
+    """Tall wind-carved stone needle with grass ledges (Wind Spires 'trees')."""
+    rng = random.Random(seed)
+    width, height = (34, 86) if size == "large" else (28, 60)
+    canvas = Canvas(width, height)
+    base_x, base_y = width // 2, height - 5
+    for y in range(base_y - 3, base_y + 4):
+        for x in range(width):
+            d = ((x + 0.5 - base_x) / (width / 2 - 1)) ** 2 + ((y + 0.5 - base_y) / 3.2) ** 2
+            if d <= 1:
+                canvas.blend(x, y, pal["shadow"])
+    stone, grass = pal["stone"], pal["grass"]
+    top = 3
+    lean = rng.uniform(-3, 3)
+    bands = [rng.uniform(0.25, 0.4), rng.uniform(0.55, 0.7)]
+    for y in range(top, base_y + 1):
+        p = (y - top) / (base_y - top)
+        cx = base_x + lean * (1 - p)
+        half = (width / 2 - 3) * (0.35 + 0.65 * p ** 0.7)
+        half += math.sin(y * 0.5 + seed) * 0.8
+        for x in range(int(cx - half), int(cx + half) + 1):
+            rel = (x + 0.5 - (cx - half)) / (2 * half + 0.01)
+            level = 4 if rel < 0.2 else (3 if rel < 0.45 else (2 if rel < 0.75 else 1))
+            if (y + int(x * 0.5)) % 7 == 0:
+                level = max(0, level - 1)
+            canvas.put(x, y, stone[level])
+        if any(abs(p - b) < 0.025 for b in bands):
+            for x in range(int(cx - half) - 1, int(cx + half) + 2):
+                canvas.put(x, y, grass[5] if x < cx else grass[4])
+    for x in range(int(base_x + lean - 3), int(base_x + lean + 4)):
+        canvas.put(x, top, grass[6])
+        canvas.put(x, top + 1, grass[5])
+    canvas.outline(pal["outline"])
+    return canvas, (base_x, base_y)

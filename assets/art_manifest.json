@@ -187,6 +187,16 @@
    44
   ]
  },
+ "props/gate_spires.png": {
+  "size": [
+   36,
+   48
+  ],
+  "origin": [
+   18,
+   44
+  ]
+ },
  "props/health_potion.png": {
   "size": [
    14,
@@ -327,6 +337,16 @@
    18
   ]
  },
+ "props/storm_heart.png": {
+  "size": [
+   40,
+   18
+  ],
+  "origin": [
+   20,
+   9
+  ]
+ },
  "props/supply_crate.png": {
   "size": [
    22,
@@ -334,6 +354,16 @@
   ],
   "origin": [
    11,
+   18
+  ]
+ },
+ "props/wind_rune.png": {
+  "size": [
+   20,
+   22
+  ],
+  "origin": [
+   10,
    18
   ]
  },
@@ -408,6 +438,18 @@
   ]
  },
  "sprites/enemies/sky_sentinel_8dir.png": {
+  "size": [
+   128,
+   256
+  ]
+ },
+ "sprites/enemies/tempest_colossus_8dir.png": {
+  "size": [
+   192,
+   384
+  ]
+ },
+ "sprites/enemies/wind_wisp_8dir.png": {
   "size": [
    128,
    256
@@ -763,6 +805,56 @@
    58
   ]
  },
+ "world/spires_bush_0.png": {
+  "size": [
+   28,
+   22
+  ],
+  "origin": [
+   14,
+   18
+  ]
+ },
+ "world/spires_bush_1.png": {
+  "size": [
+   28,
+   22
+  ],
+  "origin": [
+   14,
+   18
+  ]
+ },
+ "world/spires_tree_0.png": {
+  "size": [
+   34,
+   86
+  ],
+  "origin": [
+   17,
+   81
+  ]
+ },
+ "world/spires_tree_1.png": {
+  "size": [
+   34,
+   86
+  ],
+  "origin": [
+   17,
+   81
+  ]
+ },
+ "world/spires_tree_2.png": {
+  "size": [
+   28,
+   60
+  ],
+  "origin": [
+   14,
+   55
+  ]
+ },
  "world/standing_stones.png": {
   "size": [
    120,
@@ -771,6 +863,18 @@
   "origin": [
    60,
    78
+  ]
+ },
+ "world/wind_spires_canopy.png": {
+  "size": [
+   1280,
+   864
+  ]
+ },
+ "world/wind_spires_ground.png": {
+  "size": [
+   1280,
+   864
   ]
  }
 }

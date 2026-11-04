@@ -16,6 +16,8 @@ const RELATIONSHIP_SCRIPT := preload("res://scripts/npc_relationships.gd")
 const MERCHANT_SHOP_SCRIPT := preload("res://scripts/merchant_shop.gd")
 const CRAFTING_SERVICE_SCRIPT := preload("res://scripts/crafting_service.gd")
 const GATE_SCRIPT := preload("res://scripts/region_gate.gd")
+## Story bosses: defeated once (flag "<kind>_defeated"), never respawn.
+const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой колосс"}
 const ENEMY_SCRIPTS := {
 	"slime": preload("res://scripts/enemy.gd"),
 	"wolf": preload("res://scripts/forest_wolf.gd"),
@@ -23,6 +25,8 @@ const ENEMY_SCRIPTS := {
 	"guardian": preload("res://scripts/grove_guardian.gd"),
 	"bat": preload("res://scripts/cave_bat.gd"),
 	"echo": preload("res://scripts/echo_warden.gd"),
+	"wisp": preload("res://scripts/wind_wisp.gd"),
+	"tempest": preload("res://scripts/tempest_colossus.gd"),
 	"sentinel": preload("res://scripts/sky_sentinel.gd")
 }
 const MATERIAL_ITEMS := ["wolf_pelt", "iron_ore"]
@@ -481,6 +485,8 @@ func _discover_nearby_enemies() -> void:
 			hud.show_tip("bestiary", "Совет: K — бестиарий со слабостями врагов.")
 
 static func enemy_kind(enemy: SlimeEnemy) -> String:
+	if enemy is TempestColossus:
+		return "tempest"
 	if enemy is EchoWarden:
 		return "echo"
 	if enemy is GroveGuardian:
@@ -489,6 +495,8 @@ static func enemy_kind(enemy: SlimeEnemy) -> String:
 		return "sentinel"
 	if enemy is ForestShaman:
 		return "shaman"
+	if enemy is WindWisp:
+		return "wisp"
 	if enemy is ForestWolf:
 		return "wolf"
 	if enemy is CaveBat:
@@ -533,11 +541,11 @@ func spawn_enemy(kind: String, spawn_position: Vector2, elite: String = "") -> S
 		for actor in get_children():
 			if actor is GroveGuardian and not actor is EchoWarden and not actor.is_queued_for_deletion():
 				return null
-	if kind == "echo":
-		if director.has_flag("echo_defeated"):
+	if kind in STORY_BOSSES:
+		if director.has_flag(kind + "_defeated"):
 			return null
 		for actor in get_children():
-			if actor is EchoWarden and not actor.is_queued_for_deletion():
+			if actor is SlimeEnemy and enemy_kind(actor) == kind and not actor.is_queued_for_deletion():
 				return null
 	var enemy := (ENEMY_SCRIPTS[kind] as GDScript).new() as SlimeEnemy
 	enemy.position = spawn_position
@@ -550,8 +558,8 @@ func spawn_enemy(kind: String, spawn_position: Vector2, elite: String = "") -> S
 	match kind:
 		"guardian":
 			enemy.defeated.connect(func(xp: int) -> void: _on_guardian_defeated(xp, enemy.global_position))
-		"echo":
-			enemy.defeated.connect(func(xp: int) -> void: _on_echo_defeated(xp, enemy.global_position))
+		"echo", "tempest":
+			enemy.defeated.connect(func(xp: int) -> void: _on_story_boss_defeated(kind, xp, enemy.global_position))
 		"wolf":
 			enemy.defeated.connect(func(xp: int) -> void:
 				_on_wolf_defeated(xp, enemy.global_position)
@@ -741,17 +749,17 @@ func _on_guardian_defeated(xp: int, death_position: Vector2) -> void:
 	director.on_boss_defeated("guardian")
 	request_autosave()
 
-func _on_echo_defeated(xp: int, death_position: Vector2) -> void:
-	if director.has_flag("echo_defeated"):
+func _on_story_boss_defeated(kind: String, xp: int, death_position: Vector2) -> void:
+	if director.has_flag(kind + "_defeated"):
 		return
-	director.set_flag("echo_defeated")
+	director.set_flag(kind + "_defeated")
 	player.add_experience(xp)
 	_spawn_loot(death_position, "ancient_relic")
 	spawn_generated_loot(death_position + Vector2(14, 6), "rare")
 	shake(6.0, 0.6)
-	hud.show_message("Отголосок повержен!", 3.0)
+	hud.show_message("%s повержен!" % STORY_BOSSES[kind], 3.0)
 	_grant_sky_seal()
-	director.on_boss_defeated("echo")
+	director.on_boss_defeated(kind)
 	request_autosave()
 
 func _on_wolf_defeated(xp_reward: int, death_position: Vector2) -> void:

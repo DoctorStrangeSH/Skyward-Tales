@@ -237,5 +237,30 @@
     "talk_to": "archivist",
     "talk_scene": "archive_truth",
     "talk_requires_progress": true
+  },
+  {
+    "id": "main_spires",
+    "title": "Ветреные шпили",
+    "description": "Успокойте три руны ветра среди каменных шпилей и поговорите с Мирой.",
+    "target": 3,
+    "reward": {
+      "experience": 260,
+      "gold": 140
+    },
+    "main": true,
+    "talk_to": "cartographer",
+    "talk_scene": "mira_runes",
+    "talk_requires_progress": true
+  },
+  {
+    "id": "main_tempest",
+    "title": "Сердце бури",
+    "description": "Поднимитесь к сердцу бури на вершине шпилей и восстановите вторую опору неба.",
+    "target": 1,
+    "reward": {
+      "experience": 320,
+      "gold": 200
+    },
+    "main": true
   }
 ]
