@@ -1,0 +1,152 @@
+{
+ "alchemist": {
+  "anims": {
+   "idle": 19
+  },
+  "cell": [
+   25,
+   33
+  ],
+  "feet": 32
+ },
+ "archivist": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
+ "blacksmith": {
+  "anims": {
+   "idle": 8
+  },
+  "cell": [
+   32,
+   32
+  ],
+  "feet": 30
+ },
+ "cartographer": {
+  "anims": {
+   "hit": 4,
+   "idle": 6,
+   "throw": 12,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
+ "elder": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
+ "grove_warden": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
+ "herbalist": {
+  "anims": {
+   "idle": 8
+  },
+  "cell": [
+   25,
+   30
+  ],
+  "feet": 29
+ },
+ "hero_f": {
+  "anims": {
+   "cast": 5,
+   "faint": 27,
+   "hit": 4,
+   "idle": 6,
+   "roll": 10,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
+ "hero_m": {
+  "anims": {
+   "cast": 5,
+   "faint": 27,
+   "hit": 4,
+   "idle": 6,
+   "roll": 10,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
+ "hunter": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
+ "merchant": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
+ "miner": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
+ "vail": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ }
+}

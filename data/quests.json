@@ -340,5 +340,27 @@
         }
       ]
     }
+  },
+  {
+    "id": "lira_slime",
+    "title": "Слизь для опытов",
+    "description": "Лире нужна свежая слизь: одолейте трёх слизней в Зелёных Пределах.",
+    "target": 3,
+    "side": true,
+    "kill_kind": "slime",
+    "reward": {
+      "experience": 60,
+      "gold": 30,
+      "items": [
+        {
+          "id": "mana_potion",
+          "amount": 2
+        },
+        {
+          "id": "health_potion",
+          "amount": 1
+        }
+      ]
+    }
   }
 ]

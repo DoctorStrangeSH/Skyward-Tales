@@ -493,15 +493,18 @@ func set_prompt(message: String) -> void:
 	prompt_label.text = message
 
 ## Maps a speaker's name to an NPC sprite sheet for the portrait.
-const PORTRAITS := {"Элиан": "elder", "Мира": "cartographer", "Бран": "merchant", "Торен": "hunter", "Борин": "blacksmith", "Илара": "grove_warden", "Дорн": "miner", "Ориэн": "archivist", "Вейл": "vail", "Ведана": "herbalist"}
+const PORTRAITS := {"Элиан": "elder", "Мира": "cartographer", "Бран": "merchant", "Торен": "hunter", "Борин": "blacksmith", "Илара": "grove_warden", "Дорн": "miner", "Ориэн": "archivist", "Вейл": "vail", "Ведана": "herbalist", "Лира": "alchemist"}
 
 func _set_speaker(speaker: String) -> void:
 	dialogue_speaker_label.text = speaker
 	var portrait: Texture2D = null
 	for key in PORTRAITS:
 		if speaker.contains(key):
+			var face: Texture2D = WorldArt.texture("sprites/portraits/%s.png" % PORTRAITS[key]) if ResourceLoader.exists("res://assets/sprites/portraits/%s.png" % PORTRAITS[key]) else null
 			var sheet := WorldArt.texture("sprites/npcs/%s.png" % PORTRAITS[key])
-			if sheet != null:
+			if face != null:
+				portrait = face
+			elif sheet != null:
 				var atlas := AtlasTexture.new()
 				atlas.atlas = sheet
 				atlas.region = Rect2(4, 0, 24, 24)  # head and shoulders of the idle frame
@@ -514,7 +517,9 @@ func _set_portrait(rel_path: String) -> void:
 	var portrait: Texture2D = null
 	if not rel_path.is_empty():
 		var sheet := WorldArt.texture(rel_path)
-		if sheet != null:
+		if sheet != null and rel_path.begins_with("sprites/portraits/"):
+			portrait = sheet
+		elif sheet != null:
 			var atlas := AtlasTexture.new()
 			atlas.atlas = sheet
 			atlas.region = Rect2(4, 0, 24, 24)

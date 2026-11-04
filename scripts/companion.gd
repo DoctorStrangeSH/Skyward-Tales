@@ -37,9 +37,10 @@ func _process(delta: float) -> void:
 	var moved := global_position - _last_position
 	_last_position = global_position
 	if visual != null:
-		if moved.length_squared() > 0.01:
+		var walking := moved.length_squared() > 0.01
+		if walking:
 			visual.set_direction_vector(moved)
-		visual.set_moving(true)
+		visual.set_moving(walking or visual.chibi_id.is_empty())
 	attack_ready_in = maxf(0.0, attack_ready_in - delta)
 	heal_ready_in = maxf(0.0, heal_ready_in - delta)
 	if get_tree().paused:
@@ -66,6 +67,9 @@ func _nearest_enemy() -> Node2D:
 
 func throw_vial(enemy: Node2D) -> void:
 	attack_ready_in = ATTACK_COOLDOWN
+	if visual != null:
+		visual.set_direction_vector(enemy.global_position - global_position)
+		visual.play_named("throw", 0.5)
 	var bolt := BOLT_SCENE.instantiate() as MagicBolt
 	bolt.speed = 210.0
 	bolt.setup(enemy.global_position - global_position, 6)
