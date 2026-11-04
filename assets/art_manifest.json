@@ -1185,6 +1185,66 @@
    40
   ]
  },
+ "world/cloud_puff_day_0.png": {
+  "size": [
+   109,
+   29
+  ],
+  "origin": [
+   54,
+   14
+  ]
+ },
+ "world/cloud_puff_day_1.png": {
+  "size": [
+   97,
+   36
+  ],
+  "origin": [
+   48,
+   18
+  ]
+ },
+ "world/cloud_puff_day_2.png": {
+  "size": [
+   87,
+   36
+  ],
+  "origin": [
+   43,
+   18
+  ]
+ },
+ "world/cloud_puff_night_0.png": {
+  "size": [
+   109,
+   29
+  ],
+  "origin": [
+   54,
+   14
+  ]
+ },
+ "world/cloud_puff_night_1.png": {
+  "size": [
+   97,
+   36
+  ],
+  "origin": [
+   48,
+   18
+  ]
+ },
+ "world/cloud_puff_night_2.png": {
+  "size": [
+   87,
+   36
+  ],
+  "origin": [
+   43,
+   18
+  ]
+ },
  "world/coast_boat.png": {
   "size": [
    40,
@@ -1627,6 +1687,30 @@
    15
   ]
  },
+ "world/greenreach_apron_bottom.png": {
+  "size": [
+   2240,
+   160
+  ]
+ },
+ "world/greenreach_apron_left.png": {
+  "size": [
+   160,
+   1280
+  ]
+ },
+ "world/greenreach_apron_right.png": {
+  "size": [
+   160,
+   1280
+  ]
+ },
+ "world/greenreach_apron_top.png": {
+  "size": [
+   2240,
+   160
+  ]
+ },
  "world/greenreach_canopy.png": {
   "size": [
    1920,
@@ -1689,6 +1773,30 @@
    46
   ]
  },
+ "world/misty_marsh_apron_bottom.png": {
+  "size": [
+   1600,
+   160
+  ]
+ },
+ "world/misty_marsh_apron_left.png": {
+  "size": [
+   160,
+   864
+  ]
+ },
+ "world/misty_marsh_apron_right.png": {
+  "size": [
+   160,
+   864
+  ]
+ },
+ "world/misty_marsh_apron_top.png": {
+  "size": [
+   1600,
+   160
+  ]
+ },
  "world/misty_marsh_canopy.png": {
   "size": [
    1280,
@@ -1699,6 +1807,30 @@
   "size": [
    1280,
    864
+  ]
+ },
+ "world/moonlit_grove_apron_bottom.png": {
+  "size": [
+   1600,
+   160
+  ]
+ },
+ "world/moonlit_grove_apron_left.png": {
+  "size": [
+   160,
+   864
+  ]
+ },
+ "world/moonlit_grove_apron_right.png": {
+  "size": [
+   160,
+   864
+  ]
+ },
+ "world/moonlit_grove_apron_top.png": {
+  "size": [
+   1600,
+   160
   ]
  },
  "world/moonlit_grove_canopy.png": {
@@ -1885,6 +2017,30 @@
    960
   ]
  },
+ "world/salt_coast_apron_bottom.png": {
+  "size": [
+   1920,
+   160
+  ]
+ },
+ "world/salt_coast_apron_left.png": {
+  "size": [
+   160,
+   1080
+  ]
+ },
+ "world/salt_coast_apron_right.png": {
+  "size": [
+   160,
+   1080
+  ]
+ },
+ "world/salt_coast_apron_top.png": {
+  "size": [
+   1920,
+   160
+  ]
+ },
  "world/salt_coast_canopy.png": {
   "size": [
    1600,
@@ -1927,6 +2083,30 @@
    18
   ]
  },
+ "world/sky_island_apron_bottom.png": {
+  "size": [
+   1600,
+   160
+  ]
+ },
+ "world/sky_island_apron_left.png": {
+  "size": [
+   160,
+   864
+  ]
+ },
+ "world/sky_island_apron_right.png": {
+  "size": [
+   160,
+   864
+  ]
+ },
+ "world/sky_island_apron_top.png": {
+  "size": [
+   1600,
+   160
+  ]
+ },
  "world/sky_island_canopy.png": {
   "size": [
    1280,
@@ -1937,6 +2117,30 @@
   "size": [
    1280,
    864
+  ]
+ },
+ "world/sky_rift_apron_bottom.png": {
+  "size": [
+   1600,
+   160
+  ]
+ },
+ "world/sky_rift_apron_left.png": {
+  "size": [
+   160,
+   864
+  ]
+ },
+ "world/sky_rift_apron_right.png": {
+  "size": [
+   160,
+   864
+  ]
+ },
+ "world/sky_rift_apron_top.png": {
+  "size": [
+   1600,
+   160
   ]
  },
  "world/sky_rift_canopy.png": {
@@ -2049,6 +2253,30 @@
   "origin": [
    15,
    27
+  ]
+ },
+ "world/stone_pass_apron_bottom.png": {
+  "size": [
+   1920,
+   160
+  ]
+ },
+ "world/stone_pass_apron_left.png": {
+  "size": [
+   160,
+   1080
+  ]
+ },
+ "world/stone_pass_apron_right.png": {
+  "size": [
+   160,
+   1080
+  ]
+ },
+ "world/stone_pass_apron_top.png": {
+  "size": [
+   1920,
+   160
   ]
  },
  "world/stone_pass_canopy.png": {
@@ -2191,6 +2419,30 @@
   "origin": [
    17,
    36
+  ]
+ },
+ "world/wind_spires_apron_bottom.png": {
+  "size": [
+   1600,
+   160
+  ]
+ },
+ "world/wind_spires_apron_left.png": {
+  "size": [
+   160,
+   864
+  ]
+ },
+ "world/wind_spires_apron_right.png": {
+  "size": [
+   160,
+   864
+  ]
+ },
+ "world/wind_spires_apron_top.png": {
+  "size": [
+   1600,
+   160
   ]
  },
  "world/wind_spires_canopy.png": {

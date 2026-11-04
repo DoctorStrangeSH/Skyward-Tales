@@ -614,10 +614,12 @@ func _apply_camera_limits() -> void:
 	if camera == null or world == null or not world.has_method("map_size"):
 		return
 	var size: Vector2 = world.map_size()
-	camera.limit_left = 0
-	camera.limit_top = 0
-	camera.limit_right = int(size.x)
-	camera.limit_bottom = int(size.y)
+	# On floating islands the camera may look past the rim into the sky.
+	var view := 110 if world.has_method("has_apron") and world.has_apron() else 0
+	camera.limit_left = -view
+	camera.limit_top = -view
+	camera.limit_right = int(size.x) + view
+	camera.limit_bottom = int(size.y) + view
 
 func _on_region_travel(target_region: String, arrival: Vector2) -> void:
 	var gate_data := RegionCatalog.gate(current_region, target_region)
