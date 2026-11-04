@@ -1,0 +1,165 @@
+{
+  "achievements": {
+    "first_blood": {
+      "title": "Первая кровь",
+      "description": "Победите первого врага.",
+      "stat": "kills",
+      "goal": 1,
+      "gold": 10
+    },
+    "hunter": {
+      "title": "Охотник",
+      "description": "Победите 100 врагов.",
+      "stat": "kills",
+      "goal": 100,
+      "gold": 100
+    },
+    "slayer": {
+      "title": "Гроза островов",
+      "description": "Победите 500 врагов.",
+      "stat": "kills",
+      "goal": 500,
+      "gold": 400
+    },
+    "elite_5": {
+      "title": "Укротитель",
+      "description": "Одолейте 5 элитных врагов.",
+      "stat": "elites",
+      "goal": 5,
+      "gold": 150
+    },
+    "boss_3": {
+      "title": "Победитель стражей",
+      "description": "Одолейте 3 боссов.",
+      "stat": "bosses",
+      "goal": 3,
+      "gold": 200
+    },
+    "boss_10": {
+      "title": "Легенда неба",
+      "description": "Одолейте 10 боссов.",
+      "stat": "bosses",
+      "goal": 10,
+      "gold": 800
+    },
+    "legend_1": {
+      "title": "Ночная охота",
+      "description": "Одолейте легендарного зверя.",
+      "stat": "legends",
+      "goal": 1,
+      "gold": 150
+    },
+    "legend_6": {
+      "title": "Все легенды",
+      "description": "Одолейте всех шесть легендарных зверей.",
+      "stat": "legends",
+      "goal": 6,
+      "gold": 1000
+    },
+    "angler": {
+      "title": "Рыбак",
+      "description": "Поймайте 10 рыб.",
+      "stat": "fish",
+      "goal": 10,
+      "gold": 80
+    },
+    "master_angler": {
+      "title": "Мастер-рыбак",
+      "description": "Поймайте 50 рыб.",
+      "stat": "fish",
+      "goal": 50,
+      "gold": 300
+    },
+    "treasure_1": {
+      "title": "Кладоискатель",
+      "description": "Выкопайте первый клад.",
+      "stat": "treasures",
+      "goal": 1,
+      "gold": 60
+    },
+    "treasure_10": {
+      "title": "Пиратская удача",
+      "description": "Выкопайте 10 кладов.",
+      "stat": "treasures",
+      "goal": 10,
+      "gold": 400
+    },
+    "contracts_5": {
+      "title": "Наёмник",
+      "description": "Выполните 5 заказов.",
+      "stat": "contracts",
+      "goal": 5,
+      "gold": 120
+    },
+    "contracts_25": {
+      "title": "Мастер заказов",
+      "description": "Выполните 25 заказов.",
+      "stat": "contracts",
+      "goal": 25,
+      "gold": 500
+    },
+    "chests_10": {
+      "title": "Охотник за сундуками",
+      "description": "Откройте 10 сундуков.",
+      "stat": "chests",
+      "goal": 10,
+      "gold": 100
+    },
+    "chests_30": {
+      "title": "Все замки мои",
+      "description": "Откройте 30 сундуков.",
+      "stat": "chests",
+      "goal": 30,
+      "gold": 300
+    },
+    "crafter": {
+      "title": "Мастер на все руки",
+      "description": "Изготовьте 10 предметов.",
+      "stat": "crafts",
+      "goal": 10,
+      "gold": 80
+    },
+    "explorer": {
+      "title": "Путешественник",
+      "description": "Побывайте в 8 землях.",
+      "stat": "regions",
+      "goal": 8,
+      "gold": 200
+    },
+    "cartographer": {
+      "title": "Картограф неба",
+      "description": "Побывайте во всех землях.",
+      "stat": "regions",
+      "goal": 13,
+      "gold": 500
+    },
+    "level_10": {
+      "title": "Закалённый",
+      "description": "Достигните 10 уровня.",
+      "stat": "level",
+      "goal": 10,
+      "gold": 150
+    },
+    "level_20": {
+      "title": "Герой островов",
+      "description": "Достигните 20 уровня.",
+      "stat": "level",
+      "goal": 20,
+      "gold": 500
+    },
+    "rich": {
+      "title": "Богач",
+      "description": "Накопите 2000 золота.",
+      "stat": "gold",
+      "goal": 2000,
+      "gold": 0
+    },
+    "finale": {
+      "title": "Последняя опора",
+      "description": "Сделайте выбор в финале.",
+      "stat": "ending",
+      "goal": 1,
+      "gold": 500
+    }
+  }
+}

@@ -11,7 +11,9 @@ var tab_buttons: Dictionary = {}
 var selected_id: String = ""
 var _quests: QuestManager
 var _player: PlayerCharacter
-const TABS := [["main", "Сюжет"], ["side", "Побочные"], ["done", "Выполненные"], ["fish", "Рыбалка"]]
+const TABS := [["main", "Сюжет"], ["side", "Побочные"], ["done", "Выполненные"], ["fish", "Рыбалка"], ["ach", "Достижения"]]
+## The game's Achievements node (duck-typed to keep class references simple).
+var achievements: Object
 
 func _ready() -> void:
 	position = Vector2(30, 18)
@@ -32,7 +34,7 @@ func _ready() -> void:
 		button.text = entry[1]
 		button.toggle_mode = true
 		button.focus_mode = Control.FOCUS_NONE
-		button.custom_minimum_size = Vector2(78, 20)
+		button.custom_minimum_size = Vector2(70, 20)
 		button.add_theme_font_size_override("font_size", UiFont.px(10))
 		UiStyle.small_toggle(button)
 		var tab_id: String = entry[0]
@@ -108,6 +110,9 @@ func populate(quests: QuestManager, player: PlayerCharacter = null) -> void:
 	for child in entry_list.get_children() + detail_box.get_children():
 		child.get_parent().remove_child(child)
 		child.queue_free()
+	if tab == "ach":
+		_populate_achievements()
+		return
 	if tab == "fish":
 		_populate_fishing()
 		return
@@ -185,6 +190,31 @@ static func giver_name(quest_id: String) -> String:
 					for id in giver.get("quests", []):
 						_givers[str(id)] = str(giver.get("speaker", ""))
 	return str(_givers.get(quest_id, ""))
+
+func _populate_achievements() -> void:
+	var rows: Array = achievements.call("entries") if achievements != null else []
+	var done := rows.filter(func(r: Dictionary) -> bool: return r["done"]).size()
+	entry_list.add_child(_wrapped("Достижения: %d из %d." % [done, rows.size()], UiStyle.TITLE))
+	entry_list.add_child(_wrapped("За каждое — золото. Охотьтесь на легенд ночью, ищите клады, выполняйте заказы.", Color(0.7, 0.75, 0.8)))
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(330, 248)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	detail_box.add_child(scroll)
+	var list := VBoxContainer.new()
+	list.add_theme_constant_override("separation", 2)
+	scroll.add_child(list)
+	for row in rows:
+		var line := HBoxContainer.new()
+		line.add_theme_constant_override("separation", 6)
+		var mark := _label("✓" if row["done"] else "•", 10, Color(0.6, 1.0, 0.6) if row["done"] else UiStyle.MUTED)
+		mark.custom_minimum_size = Vector2(10, 0)
+		line.add_child(mark)
+		var text := VBoxContainer.new()
+		text.add_theme_constant_override("separation", 0)
+		text.add_child(_label("%s  %d/%d%s" % [row["title"], row["progress"], row["goal"], ("  · %d зол." % row["gold"]) if row["gold"] > 0 else ""], 9, Color(1.0, 0.9, 0.6) if row["done"] else UiStyle.TEXT))
+		text.add_child(_label(str(row["description"]), 8, Color(0.72, 0.76, 0.82)))
+		line.add_child(text)
+		list.add_child(line)
 
 func _populate_fishing() -> void:
 	var species: Dictionary = {}

@@ -9,14 +9,14 @@ class_name DayNight
 
 const CYCLE := 720.0
 const KEYS := [
-	[0.0, Color(0.42, 0.48, 0.78)],
-	[0.18, Color(0.46, 0.52, 0.8)],
+	[0.0, Color(0.3, 0.36, 0.64)],
+	[0.18, Color(0.34, 0.4, 0.68)],
 	[0.25, Color(1.0, 0.8, 0.7)],
 	[0.32, Color(1, 1, 1)],
 	[0.68, Color(1, 1, 1)],
 	[0.75, Color(1.0, 0.76, 0.6)],
-	[0.82, Color(0.5, 0.52, 0.8)],
-	[1.0, Color(0.42, 0.48, 0.78)],
+	[0.82, Color(0.38, 0.42, 0.7)],
+	[1.0, Color(0.3, 0.36, 0.64)],
 ]
 const CYCLING_STYLES := ["day", "coast", "mountain", "sky", "spires", "marsh", "ash"]
 

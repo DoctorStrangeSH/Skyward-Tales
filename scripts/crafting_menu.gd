@@ -121,6 +121,8 @@ func handle_choice(choice_id: String) -> bool:
 	game.hud.show_message(str(result.get("message", "")), 2.2)
 	if bool(result.get("success", false)):
 		GameAudio.play("chest", -6.0, 0.05)
+		if game.achievements != null:
+			game.achievements.add("crafts")
 	# Stay at the station so several things can be made in a row.
 	var station_id := _open_station
 	game.dialogues._close()

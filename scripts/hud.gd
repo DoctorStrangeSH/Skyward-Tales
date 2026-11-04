@@ -325,6 +325,9 @@ func _process(delta: float) -> void:
 		message_time -= delta
 		if message_time <= 0.0:
 			message_label.text = ""
+	# Big title cards hide while a window (journal, bag...) covers the screen.
+	if title_card != null and is_instance_valid(title_card):
+		title_card.visible = not (journal_view.visible or inventory_open)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if world_map_visible:
@@ -614,6 +617,9 @@ func show_scene_line(speaker: String, message: String, portrait_path: String) ->
 
 ## Big chapter title in the middle of the screen that fades in and out.
 func show_title_card(text: String, duration: float = 3.0) -> void:
+	# A newer card replaces the old one instead of piling on top of it.
+	if title_card != null and is_instance_valid(title_card):
+		title_card.queue_free()
 	var card := Label.new()
 	card.text = text
 	card.add_theme_font_size_override("font_size", UiFont.px(20))

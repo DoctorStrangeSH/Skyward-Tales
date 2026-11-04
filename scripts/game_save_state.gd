@@ -43,7 +43,7 @@ static func capture(game: SkywardGame) -> Dictionary:
 	for node in game.get_children():
 		if node.is_queued_for_deletion():
 			continue
-		if node is SlimeEnemy:
+		if node is SlimeEnemy and not node.has_meta("legend") and not node is LootImp:
 			alive_enemies.append({
 				"position": _position_array(node.global_position), "hp": node.health,
 				"home": _position_array(node.home_position), "kind": SkywardGame.enemy_kind(node), "elite": node.elite_id,
@@ -81,7 +81,8 @@ static func capture(game: SkywardGame) -> Dictionary:
 			"crafting": game.crafting.make_snapshot(),
 			"visited": game.visited_regions.duplicate(),
 			"doors": game.opened_doors.duplicate(),
-			"day": game.day_night.make_snapshot(), "treasure": game.treasure.make_snapshot(), "contracts": game.contracts.make_snapshot()
+			"day": game.day_night.make_snapshot(), "treasure": game.treasure.make_snapshot(), "contracts": game.contracts.make_snapshot(),
+			"legends": game.legends.make_snapshot(), "achievements": game.achievements.make_snapshot()
 		},
 		"magic": game.selected_spell_id
 	}
@@ -111,6 +112,8 @@ static func apply(game: SkywardGame, data: Dictionary) -> bool:
 	game.day_night.restore_snapshot(world_data.get("day", {}))
 	game.treasure.restore_snapshot(world_data.get("treasure", {}))
 	game.contracts.restore_snapshot(world_data.get("contracts", {}))
+	game.legends.restore_snapshot(world_data.get("legends", {}))
+	game.achievements.restore_snapshot(world_data.get("achievements", {}))
 	var visited: Variant = world_data.get("visited", {})
 	game.visited_regions = visited.duplicate() if visited is Dictionary else {}
 	var doors: Variant = world_data.get("doors", {})

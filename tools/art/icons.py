@@ -626,6 +626,12 @@ def build_ash() -> dict[str, Canvas]:
         "recipe_obsidian": scroll_icon(),
         "star_fragment": _star_icon(),
         "treasure_map": _map_icon(),
+        "jelly_staff": staff(ramp("#e0ffd0", "#7ad05a", "#2f8a3a")),
+        "dusk_fang": fang(),
+        "toad_crown": gem(ramp("#f0ffc0", "#a0d040", "#5a8a20")),
+        "crab_aegis": armor(ramp("#e0e8f4", "#9aa8c0", "#5c6a84"), ramp("#fff0d8", "#e8d4b0", "#b89a70")),
+        "golem_heart": gem(ramp("#fff0c0", "#e0a040", "#8a5a20")),
+        "spark_collar": gem(ramp("#fff0b0", "#ff8a2a", "#a8341a")),
     }
 
 

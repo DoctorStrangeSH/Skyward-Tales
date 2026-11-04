@@ -65,6 +65,12 @@
    16
   ]
  },
+ "icons/crab_aegis.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/crab_shell.png": {
   "size": [
    16,
@@ -72,6 +78,12 @@
   ]
  },
  "icons/crystal_lens.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/dusk_fang.png": {
   "size": [
    16,
    16
@@ -143,6 +155,12 @@
    16
   ]
  },
+ "icons/golem_heart.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/healroot.png": {
   "size": [
    16,
@@ -180,6 +198,12 @@
   ]
  },
  "icons/ironbound_staff.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/jelly_staff.png": {
   "size": [
    16,
    16
@@ -443,6 +467,12 @@
    16
   ]
  },
+ "icons/spark_collar.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/spirit_dust.png": {
   "size": [
    16,
@@ -498,6 +528,12 @@
   ]
  },
  "icons/swift_tonic.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/toad_crown.png": {
   "size": [
    16,
    16
