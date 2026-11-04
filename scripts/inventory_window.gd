@@ -80,7 +80,7 @@ func populate(player: PlayerCharacter, filter_index: int, sort_index: int, prefe
 	stats_label.text = "Сила магии %d (+%d%% урона) · Воля %d · Ловкость %d · Броня %d" % [
 		player.get_stat("power"), roundi((player.get_spell_power_multiplier() - 1.0) * 100.0),
 		player.get_stat("will"), player.get_stat("agility"), player.get_armor()]
-	var slots: Dictionary = {"weapon": "Оружие", "armor": "Броня", "amulet": "Амулет", "relic": "Реликвия"}
+	var slots: Dictionary = {"blade": "Клинок", "weapon": "Посох", "armor": "Броня", "amulet": "Амулет", "relic": "Реликвия"}
 	for slot in ["weapon", "armor", "amulet", "relic"]:
 		var equipped_item: String = str(player.equipment.get(slot, ""))
 		var slot_button := Button.new()

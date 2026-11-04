@@ -113,6 +113,10 @@ func _ready() -> void:
 	quests.quest_completed.connect(func(quest_id: String) -> void:
 		GameAudio.play("quest", -2.0, 0.0)
 		_refresh_dynamic_props.call_deferred()
+		if quest_id == "main_guardian" and director != null and director.story_mode() and not director.has_flag("magic_unlocked"):
+			director.set_flag("magic_unlocked")
+			hud.show_message("Илара пробудила в вас магию неба! ПКМ — заклинание, 1/2/3 — выбор.", 5.0)
+			_update_spell_hud()
 		request_autosave()
 		if director != null:
 			director.on_quest_completed(quest_id))
@@ -168,6 +172,9 @@ func _ready() -> void:
 		var hero: Dictionary = get_tree().get_meta("skyward_new_hero")
 		get_tree().remove_meta("skyward_new_hero")
 		start_new_story(str(hero.get("name", "")), str(hero.get("gender", "m")))
+		# A new adventure starts with a sword in hand; magic comes later.
+		player.add_item("traveler_sword")
+		player.equip_item("traveler_sword")
 	else:
 		hud.show_message("Добро пожаловать в Skyward Tales! Найдите старейшину.", 5.0)
 		hud.show_tip("controls", "Совет: Esc — пауза, там же управление и настройки.", 6.0)
@@ -236,6 +243,8 @@ func _process(delta: float) -> void:
 	_session_time += delta
 	_update_shake(delta)
 	cast_cooldown_remaining = maxf(0.0, cast_cooldown_remaining - delta)
+	if player != null:
+		_update_sword(delta)
 	if player == null or hud == null or game_over:
 		return
 	_update_spell_hud()
@@ -300,6 +309,15 @@ func _input(event: InputEvent) -> void:
 		else:
 			_try_interact()
 		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("attack") or event.is_action_released("attack"):
+		if get_viewport().gui_get_hovered_control() != null:
+			return
+		if not get_tree().paused and not hud.dialogue_visible and not hud.inventory_open and not hud.overlay_visible():
+			if event.is_pressed():
+				_attack_pressed()
+			else:
+				_attack_released()
+			get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("cast_spell"):
 		# Clicks on buttons (dialogue choices, menus) must reach the GUI, so the
 		# click is consumed only when it really casts a spell.
@@ -1236,6 +1254,12 @@ func _grant_sky_seal() -> void:
 # --- Magic ---------------------------------------------------------------
 
 func _update_spell_hud() -> void:
+	if not magic_unlocked():
+		if hud.spell_label != null:
+			hud.spell_label.text = "Меч · ЛКМ · удерживать — вихрь"
+			hud.spell_label.modulate = Color.WHITE
+			hud.spell_cooldown_bar.value = 1.0 - attack_cooldown / (SLASH_COOLDOWN * 2.0)
+		return
 	var spell: Dictionary = spell_definitions.get(selected_spell_id, {})
 	hud.update_spell(str(spell.get("name", selected_spell_id)), int(spell.get("mana_cost", 0)), player.mana, cast_cooldown_remaining, cast_cooldown_total)
 
@@ -1246,7 +1270,109 @@ func select_spell(spell_id: String) -> void:
 	hud.show_message("Магия: " + str(spell_definitions[spell_id].get("name", spell_id)), 1.5)
 	_update_spell_hud()
 
+# --- Sword -------------------------------------------------------------------
+
+const SLASH_COOLDOWN := 0.3
+const COMBO_WINDOW := 0.65
+const CHARGE_TIME := 0.5
+const SLASH_REACH := 30.0
+const SPIN_REACH := 40.0
+
+var attack_cooldown: float = 0.0
+var _combo_step: int = 0
+var _combo_timer: float = 0.0
+var _attack_holding: bool = false
+var _attack_held: float = 0.0
+var _charging: bool = false
+
+func _aim_direction() -> Vector2:
+	# Headless runs (tests) have no mouse: strike where the hero faces.
+	if DisplayServer.get_name() == "headless":
+		return player.facing.normalized()
+	var direction := (get_global_mouse_position() - player.global_position)
+	return direction.normalized() if direction.length_squared() > 1.0 else player.facing
+
+func _attack_pressed() -> void:
+	_attack_holding = true
+	_attack_held = 0.0
+	sword_slash()
+
+func _attack_released() -> void:
+	_attack_holding = false
+	if _charging:
+		_charging = false
+		sword_spin()
+
+func _update_sword(delta: float) -> void:
+	attack_cooldown = maxf(0.0, attack_cooldown - delta)
+	_combo_timer = maxf(0.0, _combo_timer - delta)
+	if _combo_timer <= 0.0:
+		_combo_step = 0
+	if _attack_holding and not _charging:
+		_attack_held += delta
+		if _attack_held >= CHARGE_TIME and player.health > 0:
+			_charging = true
+			player.visual.play_named("charge", 30.0)
+			Vfx.sparkle(self, player.global_position + Vector2(0, -8))
+
+## Two-hit combo in front of the hero (towards the mouse).
+func sword_slash() -> bool:
+	if attack_cooldown > 0.0 or player.health <= 0 or player.dodge_time_left > 0.0:
+		return false
+	var direction := _aim_direction()
+	player.facing = direction
+	player.visual.set_direction_vector(direction)
+	var anim := "slash1" if _combo_step == 0 else "slash2"
+	player.visual.play_named(anim, 0.28)
+	var damage := player.get_melee_damage() + (2 if _combo_step == 1 else 0)
+	var hits := _melee_hit(player.global_position, direction, SLASH_REACH, 75.0, damage, 110.0)
+	GameAudio.play("dash" if hits == 0 else "hit", -4.0, 0.1)
+	_combo_step = (_combo_step + 1) % 2
+	_combo_timer = COMBO_WINDOW
+	attack_cooldown = SLASH_COOLDOWN
+	return true
+
+## Held attack: a full circle at 1.8x damage.
+func sword_spin() -> bool:
+	if player.health <= 0:
+		return false
+	player.visual.play_named("spin", 0.42)
+	var hits := _melee_hit(player.global_position, Vector2.RIGHT, SPIN_REACH, 360.0, int(round(player.get_melee_damage() * 1.8)), 170.0)
+	GameAudio.play("gust", -4.0, 0.05)
+	Vfx.burst(self, player.global_position, [Color(1, 1, 1), Color(0.8, 0.9, 1.0)], 14, 90.0)
+	if hits > 0:
+		shake(2.5, 0.2)
+	attack_cooldown = SLASH_COOLDOWN * 2.0
+	return true
+
+## Damages enemies within reach and the arc (degrees); returns how many.
+func _melee_hit(origin: Vector2, direction: Vector2, reach: float, arc: float, damage: int, push: float) -> int:
+	var hits := 0
+	for candidate in get_tree().get_nodes_in_group("enemies"):
+		var enemy := candidate as SlimeEnemy
+		if enemy == null or enemy.is_queued_for_deletion() or enemy.health <= 0:
+			continue
+		var offset := enemy.global_position - origin
+		if offset.length() > reach + 8.0:
+			continue
+		if arc < 360.0 and offset.length() > 4.0 and rad_to_deg(absf(direction.angle_to(offset))) > arc * 0.5:
+			continue
+		enemy.take_damage(damage)
+		enemy.apply_knockback(offset.normalized() if offset.length() > 0.1 else direction, push)
+		hits += 1
+	return hits
+
+# --- Magic -------------------------------------------------------------------
+
+## Story mode: the heroine starts with the sword; Ilara awakens her magic
+## once the grove guardian falls. Free play (tests) has magic from the start.
+func magic_unlocked() -> bool:
+	return not director.story_mode() or director.has_flag("magic_unlocked")
+
 func _cast_spell() -> void:
+	if not magic_unlocked():
+		hud.show_message("Магия ещё спит. Пока — меч: ЛКМ, удерживать — круговой удар.", 2.5)
+		return
 	if cast_cooldown_remaining > 0.0:
 		return
 	var spell: Dictionary = spell_definitions.get(selected_spell_id, {})

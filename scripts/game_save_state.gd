@@ -145,7 +145,7 @@ static func _apply_player(player: PlayerCharacter, character: Dictionary) -> voi
 	player.generated_items = rolled.duplicate(true) if rolled is Dictionary else {}
 	player._generated_counter = maxi(int(character.get("generated_counter", 0)), player.generated_items.size())
 	player.inventory = character["inventory"].duplicate(true)
-	player.equipment = {"weapon": "", "armor": "", "amulet": "", "relic": ""}
+	player.equipment = {"blade": "", "weapon": "", "armor": "", "amulet": "", "relic": ""}
 	for slot in player.equipment.keys():
 		var saved_item: String = str(character["equipment"].get(slot, ""))
 		if not saved_item.is_empty() and player._slot_for_item(saved_item) == str(slot):

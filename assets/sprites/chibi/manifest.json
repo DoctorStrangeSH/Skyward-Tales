@@ -89,10 +89,14 @@
  "hero_f": {
   "anims": {
    "cast": 5,
+   "charge": 4,
    "faint": 27,
    "hit": 4,
    "idle": 6,
    "roll": 10,
+   "slash1": 6,
+   "slash2": 6,
+   "spin": 8,
    "walk": 6
   },
   "cell": [
@@ -104,10 +108,14 @@
  "hero_m": {
   "anims": {
    "cast": 5,
+   "charge": 4,
    "faint": 27,
    "hit": 4,
    "idle": 6,
    "roll": 10,
+   "slash1": 6,
+   "slash2": 6,
+   "spin": 8,
    "walk": 6
   },
   "cell": [

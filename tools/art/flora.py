@@ -63,11 +63,12 @@ def _canopy(canvas: Canvas, blobs, pal, rng: random.Random, glow=None) -> None:
 def tree(seed: int, pal, size: str = "large", glow=None) -> tuple[Canvas, tuple[int, int]]:
     """Returns (canvas, origin) where origin is the trunk base in canvas pixels."""
     rng = random.Random(seed)
-    width, height = (72, 84) if size == "large" else (56, 66)
+    # Sized for the chibi cast (~24 px tall heroes).
+    width, height = (58, 68) if size == "large" else (46, 54)
     canvas = Canvas(width, height)
     base_x, base_y = width // 2, height - 8
-    crown_r = 21 if size == "large" else 16
-    trunk_h = 20 if size == "large" else 15
+    crown_r = 17 if size == "large" else 13
+    trunk_h = 15 if size == "large" else 11
     # Ground shadow (soft, offset towards bottom-right like a late-morning sun).
     shadow = pal["shadow"]
     for y in range(base_y - 6, base_y + 7):
@@ -274,7 +275,7 @@ def stone_spire(seed: int, pal, size: str = "large") -> tuple[Canvas, tuple[int,
 def palm(seed: int, pal, size: str = "large") -> tuple[Canvas, tuple[int, int]]:
     """Leaning palm: ringed trunk and a crown of drooping fronds."""
     rng = random.Random(seed)
-    width, height = (60, 78) if size == "large" else (48, 60)
+    width, height = (50, 64) if size == "large" else (42, 52)
     c = Canvas(width, height)
     base_x, base_y = width // 2, height - 6
     for y in range(base_y - 2, base_y + 3):
@@ -282,7 +283,7 @@ def palm(seed: int, pal, size: str = "large") -> tuple[Canvas, tuple[int, int]]:
             if ((x + 0.5 - base_x) / 9) ** 2 + ((y + 0.5 - base_y) / 2.4) ** 2 <= 1:
                 c.blend(x, y, pal["shadow"])
     lean = rng.choice([-1, 1]) * rng.uniform(6, 10)
-    top_y = 18 if size == "large" else 14
+    top_y = 15 if size == "large" else 12
     bark = pal["bark"]
     steps = base_y - top_y
     for i in range(steps):
@@ -297,7 +298,7 @@ def palm(seed: int, pal, size: str = "large") -> tuple[Canvas, tuple[int, int]]:
     leaf = pal["leaf"]
     for k in range(7):
         ang = -math.pi / 2 + (k - 3) * 0.55 + rng.uniform(-0.1, 0.1)
-        length = rng.uniform(16, 22) if size == "large" else rng.uniform(12, 16)
+        length = rng.uniform(13, 18) if size == "large" else rng.uniform(10, 13)
         for j in range(int(length)):
             t = j / length
             x = cx + math.cos(ang) * j * 1.1
@@ -313,7 +314,7 @@ def palm(seed: int, pal, size: str = "large") -> tuple[Canvas, tuple[int, int]]:
 def pine(seed: int, pal, size: str = "large") -> tuple[Canvas, tuple[int, int]]:
     """Snow-tipped fir: stacked tiers over a short trunk."""
     rng = random.Random(seed)
-    width, height = (48, 84) if size == "large" else (38, 64)
+    width, height = (40, 68) if size == "large" else (32, 52)
     c = Canvas(width, height)
     base_x, base_y = width // 2, height - 6
     for y in range(base_y - 2, base_y + 3):

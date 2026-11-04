@@ -79,7 +79,7 @@
       "art": "decor_potion_table"
     },
     "forge": {
-      "name": "Горн",
+      "name": "Кузня Борина",
       "art": ""
     },
     "forge_steel": {
@@ -98,6 +98,10 @@
       "alchemy": [
         972,
         540
+      ],
+      "forge": [
+        470,
+        726
       ]
     },
     "stone_pass": {

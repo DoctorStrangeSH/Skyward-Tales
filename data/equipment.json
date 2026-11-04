@@ -306,6 +306,35 @@
       "slot": "",
       "rarity": "uncommon",
       "material": true
+    },
+    "traveler_sword": {
+      "name": "Меч странника",
+      "description": "Простой, но верный клинок. +4 к урону мечом.",
+      "slot": "blade",
+      "rarity": "common",
+      "melee": 4
+    },
+    "iron_sword": {
+      "name": "Железный меч",
+      "description": "Кованый клинок деревенской кузни. +8 к урону мечом.",
+      "slot": "blade",
+      "rarity": "uncommon",
+      "melee": 8
+    },
+    "steel_sword": {
+      "name": "Стальной меч",
+      "description": "Сталь Перевала. +14 к урону мечом.",
+      "slot": "blade",
+      "rarity": "rare",
+      "melee": 14
+    },
+    "skysteel_blade": {
+      "name": "Клинок небесной стали",
+      "description": "+22 к урону мечом и +3 ловкости.",
+      "slot": "blade",
+      "rarity": "epic",
+      "melee": 22,
+      "agility": 3
     }
   }
 }
