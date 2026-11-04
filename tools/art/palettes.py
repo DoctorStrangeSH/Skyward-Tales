@@ -137,5 +137,21 @@ MOUNTAIN = {
     "flowers": [ramp("#ffffff", "#d8e0e8"), ramp("#c8d8ff", "#7a90c8"), ramp("#f0e0ff", "#a890c8")],
 }
 
-STYLES = {"mountain": MOUNTAIN, "coast": COAST, "day": DAY, "night": NIGHT, "cave": CAVE, "sky": SKY, "spires": SPIRES, "rift": RIFT, "marsh": MARSH}
+CRYPT = {
+    # Ruins depths: torch-lit flagstones, dark brick walls, old moss.
+    "grass": ramp("#14100f", "#1e1816", "#2a2220", "#3a302c", "#4c403a", "#625248", "#7c6a5c"),
+    "dirt": ramp("#2a2220", "#3a302c", "#4c403a", "#625248", "#7c6a5c", "#968270"),
+    "water": ramp("#0a1420", "#122030", "#1a3044", "#28485e", "#4a6e84", "#a0c0d0"),
+    "stone": ramp("#1a1616", "#2a2424", "#3e3634", "#564c48", "#726660", "#948678"),
+    "leaf": ramp("#101410", "#182018", "#22302a", "#2e4034", "#3e5440", "#506a4e", "#6a8460"),
+    "bark": ramp("#1a1616", "#2a2424", "#3e3634", "#564c48", "#726660"),
+    "moss": ramp("#22302a", "#2e4034", "#3e5440", "#506a4e"),
+    "shadow": hex_color("#000000", 110),
+    "outline": hex_color("#0c0a0a"),
+    "glow": ramp("#ffb060", "#ffd890", "#fff4d0"),
+    "crystal": ramp("#fff4d0", "#ffd890", "#ffb060", "#c87a30", "#7a4a20"),
+    "flowers": [ramp("#c8d8a0", "#7a8a50"), ramp("#a8c0a8", "#5a7a5a"), ramp("#d0c0a0", "#8a7a5a")],
+}
+
+STYLES = {"crypt": CRYPT, "mountain": MOUNTAIN, "coast": COAST, "day": DAY, "night": NIGHT, "cave": CAVE, "sky": SKY, "spires": SPIRES, "rift": RIFT, "marsh": MARSH}
 ISLAND_STYLES = ("sky", "spires", "rift")

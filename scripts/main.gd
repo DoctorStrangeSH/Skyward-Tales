@@ -13,6 +13,8 @@ const WAYSTONE_SCRIPT := preload("res://scripts/waystone.gd")
 const SETTLEMENT_OBJECT_SCRIPT := preload("res://scripts/settlement_object.gd")
 const GATHER_NODE_SCRIPT := preload("res://scripts/gather_node.gd")
 const CRAFT_STATION_SCRIPT := preload("res://scripts/craft_station.gd")
+const DUNGEON_DOOR_SCRIPT := preload("res://scripts/dungeon_door.gd")
+const SPIKE_TRAP_SCRIPT := preload("res://scripts/spike_trap.gd")
 const LOOT_SCRIPT := preload("res://scripts/loot.gd")
 const CHEST_SCRIPT := preload("res://scripts/treasure_chest.gd")
 const SAVE_SCRIPT := preload("res://scripts/save_system.gd")
@@ -21,7 +23,7 @@ const MERCHANT_SHOP_SCRIPT := preload("res://scripts/merchant_shop.gd")
 const CRAFTING_SERVICE_SCRIPT := preload("res://scripts/crafting_service.gd")
 const GATE_SCRIPT := preload("res://scripts/region_gate.gd")
 ## Story bosses: defeated once (flag "<kind>_defeated"), never respawn.
-const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой колосс", "vail": "Вейл", "bog_king": "Болотный король", "crab_king": "Краб-король", "giant": "Горный великан"}
+const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой колосс", "vail": "Вейл", "bog_king": "Болотный король", "crab_king": "Краб-король", "giant": "Горный великан", "crypt_lord": "Повелитель склепа"}
 const ENEMY_SCRIPTS := {
 	"slime": preload("res://scripts/enemy.gd"),
 	"wolf": preload("res://scripts/forest_wolf.gd"),
@@ -39,6 +41,8 @@ const ENEMY_SCRIPTS := {
 	"crab_king": preload("res://scripts/crab_king.gd"),
 	"golem": preload("res://scripts/stone_golem.gd"),
 	"giant": preload("res://scripts/mountain_giant.gd"),
+	"skeleton": preload("res://scripts/skeleton.gd"),
+	"crypt_lord": preload("res://scripts/crypt_lord.gd"),
 	"sentinel": preload("res://scripts/sky_sentinel.gd")
 }
 const MATERIAL_ITEMS := ["wolf_pelt", "iron_ore"]
@@ -83,6 +87,8 @@ var opened_chests: Dictionary = {}
 var gathered_resource_nodes: Dictionary = {}
 ## Regions the hero has set foot in (world map shows the rest as unknown).
 var visited_regions: Dictionary = {}
+## Dungeon doors opened with keys.
+var opened_doors: Dictionary = {}
 var latest_cache_narrative: bool = false
 var autosave_enabled: bool = true
 var _autosave_pending: bool = false
@@ -205,7 +211,7 @@ func update_music() -> void:
 			GameAudio.music("boss")
 			return
 	var style := RegionCatalog.style(current_region)
-	GameAudio.music({"night": "night", "cave": "caves", "sky": "sky", "spires": "sky", "rift": "night", "marsh": "night", "coast": "sky", "mountain": "caves"}.get(style, "meadow"))
+	GameAudio.music({"night": "night", "cave": "caves", "sky": "sky", "spires": "sky", "rift": "night", "marsh": "night", "coast": "sky", "mountain": "caves", "crypt": "caves"}.get(style, "meadow"))
 
 func shake(strength: float, duration: float) -> void:
 	if not GameSettings.get_bool("screen_shake"):
@@ -261,6 +267,8 @@ func _interaction_prompt(target: Node2D) -> String:
 		return "E — " + target.verb if target.available else "E — пусто"
 	if target is CraftStation:
 		return "E — " + ("готовить" if target.station_id == "kitchen" else "мастерить")
+	if target is DungeonDoor:
+		return "E — открыть"
 	if target is SettlementObject:
 		return "E — доска поселения"
 	if target is WorldNpc:
@@ -409,6 +417,7 @@ func _populate_region() -> void:
 	_spawn_waystone(layout)
 	_spawn_gathering(layout)
 	_spawn_dynamic_props(layout)
+	_spawn_dungeon(layout)
 	var boss: Dictionary = layout.get("boss", {})
 	if not boss.is_empty() and quests.is_completed(str(boss.get("after_quest", ""))):
 		spawn_region_boss()
@@ -463,7 +472,7 @@ func _clear_region_actors() -> void:
 	for node in get_children():
 		if node is WorldNpc and node.is_companion:
 			continue
-		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is SettlementObject or node is GatherNode or node is CraftStation or node is MagicBolt or node is EnemyMagicOrb:
+		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is SettlementObject or node is GatherNode or node is CraftStation or node is DungeonDoor or node is SpikeTrap or node is MagicBolt or node is EnemyMagicOrb:
 			remove_child(node)
 			node.queue_free()
 	elder = null
@@ -626,6 +635,35 @@ func _spawn_waystone(layout: Dictionary) -> void:
 	stone.set_awake(waystone_awake(current_region))
 	stone.used.connect(_on_waystone_used)
 
+# --- Dungeons: locked doors and spike traps ----------------------------------
+
+func _spawn_dungeon(layout: Dictionary) -> void:
+	for entry in layout.get("doors", []):
+		var door := DUNGEON_DOOR_SCRIPT.new() as DungeonDoor
+		door.door_id = str(entry.get("id", ""))
+		door.key_item = str(entry.get("key", ""))
+		door.is_open = bool(opened_doors.get(door.door_id, false))
+		add_child(door)
+		door.global_position = _vec(entry.get("position"))
+		door.used.connect(_on_door_used)
+	for spot in layout.get("traps", []):
+		var trap := SPIKE_TRAP_SCRIPT.new() as SpikeTrap
+		add_child(trap)
+		trap.global_position = _vec(spot)
+
+func _on_door_used(door: DungeonDoor) -> void:
+	if door.is_open:
+		return
+	if not player.remove_item(door.key_item, 1):
+		hud.show_message("Заперто. Нужен ключ: %s." % player.get_item_name(door.key_item), 2.5)
+		return
+	opened_doors[door.door_id] = true
+	door.set_open(true)
+	GameAudio.play("chest", -2.0, 0.0)
+	shake(2.0, 0.2)
+	hud.show_message("Решётка поднимается!", 2.0)
+	request_autosave()
+
 ## Landmarks that change with quests (the lighthouse lights up).
 func _spawn_dynamic_props(layout: Dictionary) -> void:
 	for entry in layout.get("dynamic_props", []):
@@ -777,6 +815,8 @@ func _discover_nearby_enemies() -> void:
 			hud.show_tip("bestiary", "Совет: K — бестиарий со слабостями врагов.")
 
 static func enemy_kind(enemy: SlimeEnemy) -> String:
+	if enemy is CryptLord:
+		return "crypt_lord"
 	if enemy is VailBoss:
 		return "vail"
 	if enemy is BogKing:
@@ -805,6 +845,8 @@ static func enemy_kind(enemy: SlimeEnemy) -> String:
 		return "crab"
 	if enemy is StoneGolem:
 		return "golem"
+	if enemy is Skeleton:
+		return "skeleton"
 	if enemy is ForestWolf:
 		return "wolf"
 	if enemy is CaveBat:
@@ -876,7 +918,7 @@ func spawn_enemy(kind: String, spawn_position: Vector2, elite: String = "") -> S
 	match kind:
 		"guardian":
 			enemy.defeated.connect(func(xp: int) -> void: _on_guardian_defeated(xp, enemy.global_position))
-		"echo", "tempest", "vail", "bog_king", "crab_king", "giant":
+		"echo", "tempest", "vail", "bog_king", "crab_king", "giant", "crypt_lord":
 			enemy.defeated.connect(func(xp: int) -> void: _on_story_boss_defeated(kind, xp, enemy.global_position))
 		"wolf":
 			enemy.defeated.connect(func(xp: int) -> void:

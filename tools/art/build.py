@@ -47,8 +47,20 @@ def build_world() -> None:
         pal = STYLES[style]
         glow = pal.get("glow")
         print(f"region {region_id} ({style})")
-        save(terrain.render_ground(t, pal, seed=100 + index * 17), f"world/{region_id}_ground.png")
+        crypt = style == "crypt"
+        ground = terrain.render_crypt(t, pal, seed=100 + index * 17) if crypt else terrain.render_ground(t, pal, seed=100 + index * 17)
+        save(ground, f"world/{region_id}_ground.png")
         w, h = t["size"]
+        if crypt:
+            from pixel import Canvas as _Canvas
+            save(_Canvas(w, h), f"world/{region_id}_canopy.png")
+            for variant in range(3):
+                canvas, origin = flora.stone_spire(300 + index * 10 + variant, pal, "large" if variant != 2 else "small")
+                save(canvas, f"world/{style}_tree_{variant}.png", origin)
+            for variant in range(2):
+                canvas, origin = flora.rock_pile(400 + index * 10 + variant, pal)
+                save(canvas, f"world/{style}_bush_{variant}.png", origin)
+            continue
         border_pal = dict(pal, leaf=pal["cloud"], outline=pal["cloud"][0]) if style in ISLAND_STYLES else pal
         save(flora.canopy_border(w, h, border_pal, seed=200 + index, glow=glow), f"world/{region_id}_canopy.png")
         for variant in range(3):
@@ -120,7 +132,7 @@ def build_props() -> None:
         "health_potion": props.potion("red"), "mana_potion": props.potion("blue"),
         "wolf_pelt": props.pelt(), "relic": props.treasure("relic"), "pouch": props.treasure("pouch"),
         "gate_day": props.gate(False), "gate_night": props.gate(True), "gate_cave": props.cave_gate(), "gate_sky": props.sky_gate(), "gate_spires": props.sky_gate(), "gate_rift": props.sky_gate(), "gate_marsh": props.gate(False),
-        "gate_coast": props.gate(False), "gate_mountain": props.gate(False), "coal_sack": props.crate(),
+        "gate_coast": props.gate(False), "gate_mountain": props.gate(False), "gate_crypt": props.cave_gate(), "coal_sack": props.crate(),
         "waystone_on": props.waystone(True), "waystone_off": props.waystone(False),
         "marsh_lantern": props.herb("marsh_lantern"),
         "rift_throne": props.rune_circle(("#fbf6ff", "#e6d2ff", "#c9a2ff", "#6a3ac0")),

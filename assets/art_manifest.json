@@ -303,6 +303,16 @@
    39
   ]
  },
+ "props/gate_crypt.png": {
+  "size": [
+   36,
+   46
+  ],
+  "origin": [
+   18,
+   41
+  ]
+ },
  "props/gate_day.png": {
   "size": [
    34,
@@ -947,6 +957,106 @@
    54
   ]
  },
+ "world/crypt_bush_0.png": {
+  "size": [
+   26,
+   20
+  ],
+  "origin": [
+   13,
+   16
+  ]
+ },
+ "world/crypt_bush_1.png": {
+  "size": [
+   26,
+   20
+  ],
+  "origin": [
+   13,
+   16
+  ]
+ },
+ "world/crypt_door.png": {
+  "size": [
+   64,
+   40
+  ],
+  "origin": [
+   32,
+   38
+  ]
+ },
+ "world/crypt_door_open.png": {
+  "size": [
+   64,
+   40
+  ],
+  "origin": [
+   32,
+   38
+  ]
+ },
+ "world/crypt_spikes_down.png": {
+  "size": [
+   20,
+   14
+  ],
+  "origin": [
+   10,
+   12
+  ]
+ },
+ "world/crypt_spikes_up.png": {
+  "size": [
+   20,
+   14
+  ],
+  "origin": [
+   10,
+   12
+  ]
+ },
+ "world/crypt_torch.png": {
+  "size": [
+   12,
+   22
+  ],
+  "origin": [
+   6,
+   20
+  ]
+ },
+ "world/crypt_tree_0.png": {
+  "size": [
+   34,
+   86
+  ],
+  "origin": [
+   17,
+   81
+  ]
+ },
+ "world/crypt_tree_1.png": {
+  "size": [
+   34,
+   86
+  ],
+  "origin": [
+   17,
+   81
+  ]
+ },
+ "world/crypt_tree_2.png": {
+  "size": [
+   28,
+   60
+  ],
+  "origin": [
+   14,
+   55
+  ]
+ },
  "world/crystal_altar.png": {
   "size": [
    64,
@@ -1433,6 +1543,18 @@
   "origin": [
    54,
    104
+  ]
+ },
+ "world/ruins_depths_canopy.png": {
+  "size": [
+   1280,
+   960
+  ]
+ },
+ "world/ruins_depths_ground.png": {
+  "size": [
+   1280,
+   960
   ]
  },
  "world/salt_coast_canopy.png": {
