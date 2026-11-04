@@ -11,6 +11,7 @@ var status_label: Label
 var toasts: ToastStack
 var vitals: HudVitals
 var quest_label: Label
+var side_quest_label: Label
 var message_label: Label
 var prompt_label: Label
 var dialogue_panel: PanelContainer
@@ -100,6 +101,10 @@ func _ready() -> void:
 	quest_label.position = Vector2(8, 50)
 	quest_label.size = Vector2(300, 14)
 	root.add_child(quest_label)
+	side_quest_label = _make_label("", 9, Color(0.78, 0.9, 1.0))
+	side_quest_label.position = Vector2(8, 63)
+	side_quest_label.size = Vector2(300, 40)
+	root.add_child(side_quest_label)
 
 	minimap = preload("res://scripts/world_minimap.gd").new() as WorldMinimap
 	minimap.position = Vector2(502, 6)
@@ -379,6 +384,8 @@ func update_status(player: PlayerCharacter, quests: QuestManager) -> void:
 	if vitals != null:
 		vitals.set_values(player)
 	quest_label.text = "◆ " + quests.get_active_summary()
+	var side := quests.get_side_summaries()
+	side_quest_label.text = "\n".join(side.slice(0, 3).map(func(line: String) -> String: return "◇ " + line))
 	inventory_label.text = "Q  Зелье HP ×%d     R  Зелье MP ×%d" % [int(player.inventory.get("health_potion", 0)), int(player.inventory.get("mana_potion", 0))]
 	if inventory_open:
 		refresh_inventory(player)
@@ -486,7 +493,7 @@ func set_prompt(message: String) -> void:
 	prompt_label.text = message
 
 ## Maps a speaker's name to an NPC sprite sheet for the portrait.
-const PORTRAITS := {"Элиан": "elder", "Мира": "cartographer", "Бран": "merchant", "Торен": "hunter", "Борин": "blacksmith", "Илара": "grove_warden", "Дорн": "miner", "Ориэн": "archivist", "Вейл": "vail"}
+const PORTRAITS := {"Элиан": "elder", "Мира": "cartographer", "Бран": "merchant", "Торен": "hunter", "Борин": "blacksmith", "Илара": "grove_warden", "Дорн": "miner", "Ориэн": "archivist", "Вейл": "vail", "Ведана": "herbalist"}
 
 func _set_speaker(speaker: String) -> void:
 	dialogue_speaker_label.text = speaker

@@ -46,6 +46,8 @@ func _grant_reward(reward: Dictionary) -> String:
 ## Mirrors the conditions used by the conversations below.
 func marker_for(npc_id: String) -> String:
 	var quests := game.quests
+	if game.givers != null and game.givers.has_giver(npc_id):
+		return game.givers.marker_for(npc_id)
 	if game.director != null and game.director.talk_target() == npc_id:
 		var definition: Dictionary = quests.definitions.get(quests.active_quest_id, {})
 		if not bool(definition.get("talk_requires_progress", false)) or quests.is_ready_to_complete(quests.active_quest_id):
@@ -76,6 +78,8 @@ func marker_for(npc_id: String) -> String:
 # --- Choice routing ------------------------------------------------------
 
 func handle_choice(choice_id: String) -> void:
+	if game.givers != null and game.givers.handle_choice(choice_id):
+		return
 	match choice_id:
 		"merchant_quest_start":
 			_start_merchant_supply_quest()

@@ -5,6 +5,8 @@ signal interacted(source: Node2D)
 
 @export var item_id: String = "moonleaf"
 @export var display_name: String = "Лунный лист"
+## Quest this pickup counts for; empty means the region's herb_quest.
+var quest_id: String = ""
 
 func _ready() -> void:
 	add_to_group("interactables")
@@ -21,6 +23,6 @@ func art_name() -> String:
 		return "ore_node"
 	if item_id.begins_with("supply_crate_"):
 		return "supply_crate"
-	if item_id in ["map_fragment", "spirit_blossom", "echo_crystal", "sky_shard", "altar_heart", "memory_crystal", "wind_rune", "storm_heart", "rift_throne"]:
+	if item_id in ["map_fragment", "spirit_blossom", "echo_crystal", "sky_shard", "altar_heart", "memory_crystal", "wind_rune", "storm_heart", "rift_throne", "marsh_lantern"]:
 		return item_id
 	return "moonleaf"

@@ -244,6 +244,7 @@ def herb(kind: str) -> tuple[Canvas, tuple[int, int]]:
             "spirit_blossom": ramp("#f4ffff", "#9cfff0", "#3fd6d0", "#1f8a8a"),
             "memory_crystal": ramp("#fffbe0", "#fff2a8", "#ffd45c", "#c88a2a"),
             "wind_rune": ramp("#ffffff", "#c8f4ff", "#7ad0f0", "#3a7ab0"),
+            "marsh_lantern": ramp("#f4ffff", "#b8f4ff", "#5ad0e8", "#2a7a90"),
             "echo_crystal": ramp("#f6f0ff", "#d0b8ff", "#9a7aff", "#5a3ac0")}[kind]
     stem = ramp("#8fd862", "#4fa04e", "#2a6a44")
     if kind not in ("echo_crystal", "memory_crystal", "wind_rune"):
@@ -693,3 +694,29 @@ def app_icon() -> Canvas:
     big = Canvas(128, 128)
     big.px = small.px.repeat(4, axis=0).repeat(4, axis=1)
     return big
+
+
+def waystone(awake: bool) -> tuple[Canvas, tuple[int, int]]:
+    """Sky stone for fast travel: a floating rune slab over a stone plinth."""
+    c = Canvas(26, 42)
+    stone = ramp("#30344a", "#50566e", "#7a8098", "#a8aec4", "#d8dce8", "#f0f2f8")
+    glow = ramp("#ffffff", "#d8fbff", "#7ae8ff", "#2ab0d8") if awake else ramp("#8a90a8", "#6a7088", "#50566e", "#3a3e52")
+    for y in range(36, 42):
+        for x in range(26):
+            if ((x - 12.5) / 11) ** 2 + ((y - 39) / 2.6) ** 2 <= 1:
+                c.blend(x, y, (10, 14, 30, 90))
+    _block(c, 5, 31, 16, 8, stone, top=2)
+    # Floating slab.
+    for y in range(4, 27):
+        half = 5 if 7 < y < 24 else 4
+        for x in range(13 - half, 13 + half):
+            c.put(x, y, stone[4] if x < 11 else (stone[3] if x < 15 else stone[2]))
+    for y in (9, 13, 17, 21):
+        c.hline(10, 15, y, glow[2])
+    c.vline(12, 9, 21, glow[1])
+    if awake:
+        for k, (x, y) in enumerate(((4, 6), (21, 10), (3, 18), (22, 22))):
+            c.put(x, y, glow[0 if k % 2 else 1])
+        c.hline(9, 17, 28, glow[2])
+    c.outline(hex_color("#1a1c2a"))
+    return c, (13, 39)

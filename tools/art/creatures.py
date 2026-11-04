@@ -540,3 +540,51 @@ def tempest(facing: str, frame: int) -> Canvas:
             b.dot(x + (1 if k % 3 == 1 else 0) - (1 if k % 3 == 2 else 0), cy - 18 + k * 2, SPARK[0 if k % 2 else 1])
     b.outline(hex_color("#22203a"))
     return b.canvas()
+
+
+# --- Misty Marsh: toad and the Bog King ---------------------------------------
+
+TOAD = r4("#a8c86a", "#7a9e48", "#53743a", "#34502a")
+BELLY = r4("#f0e8b8", "#d8c88a", "#b0a064", "#80723e")
+CROWN = r4("#fff2a8", "#ffd45c", "#d99a2e", "#8a5a22")
+
+
+def _toad_body(b: Body, facing: str, frame: int, cx: float, cy: float, scale: float, crown: bool) -> None:
+    side = facing == "right"
+    back = facing in ("up", "up_right")
+    squash = [0, 1, 0, -1][frame] * scale * 0.6
+    w, h = 8 * scale, 5.5 * scale - squash
+    for sx in ((-w * 0.8, w * 0.8) if not side else (-w * 0.6, w * 0.6)):
+        b.part(b.ellipse(cx + sx, cy + h * 0.7, 2.6 * scale, 1.8 * scale), TOAD)
+    b.part(b.ellipse(cx, cy, w if not side else w * 0.85, h), TOAD, sphere=(cx - 2 * scale, cy - 3 * scale, w + 2))
+    if not back:
+        b.part(b.ellipse(cx + (2 * scale if side else 0), cy + h * 0.35, w * 0.55, h * 0.45), BELLY)
+    eyes = [-0.55, 0.55] if not side else [0.35]
+    for ex in eyes:
+        x = cx + ex * w
+        y = cy - h * 0.85
+        b.part(b.ellipse(x, y, 2.2 * scale, 2.2 * scale), TOAD, sphere=(x - 1, y - 1, 3 * scale))
+        if not back:
+            b.dot(x + (0.5 if side else 0), y, hex_color("#1a1a10"))
+            b.dot(x - 0.5, y - 0.8, hex_color("#ffffff"))
+    if crown:
+        top = cy - h - 2 * scale
+        for k in range(5):
+            x = cx - 4 * scale + k * 2 * scale
+            b.part(b.rect(x - 1, top - (2 if k % 2 == 0 else 0), x + 1, top + 2), CROWN)
+
+
+def toad(facing: str, frame: int) -> Canvas:
+    b = Body(32)
+    b.shadow(16, 27, 8, 1.8, 70)
+    _toad_body(b, facing, frame, 16, 21 - [0, 0, -2, -1][frame], 1.0, False)
+    b.outline(hex_color("#14200e"))
+    return b.canvas()
+
+
+def bog_king(facing: str, frame: int) -> Canvas:
+    b = Body(48)
+    b.shadow(24, 43, 15, 3, 90)
+    _toad_body(b, facing, frame, 24, 32 - [0, 0, -1, 0][frame], 1.8, True)
+    b.outline(hex_color("#14200e"))
+    return b.canvas()

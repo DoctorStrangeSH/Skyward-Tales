@@ -235,7 +235,9 @@
         "scene": "shard_inspect",
         "position": [895, 178]
       }
-    ]
+    ],
+    "level": 1,
+    "waystone": [700, 240]
   },
   "moonlit_grove": {
     "name": "Зачарованный лес",
@@ -315,6 +317,14 @@
         "label": "Вход в Хрустальные пещеры",
         "requires_guardian": true,
         "locked_message": "Древний хранитель запечатал проход в пещеры. Сначала одолейте его."
+      },
+      {
+        "target": "misty_marsh",
+        "position": [640, 840],
+        "arrival": [640, 110],
+        "label": "Тропа в Туманную топь",
+        "requires_quest": "main_guardian",
+        "locked_message": "Тропу в топь стережёт туман. Сначала разберитесь с Хранителем рощи."
       }
     ],
     "secrets": {
@@ -334,6 +344,12 @@
           [820, 445],
           [960, 365],
           [1280, 365]
+        ],
+        [
+          [650, 445],
+          [690, 560],
+          [680, 760],
+          [640, 864]
         ]
       ],
       "ponds": [
@@ -432,7 +448,9 @@
         [1214, 752],
         [1037, 282]
       ]
-    }
+    },
+    "level": 3,
+    "waystone": [580, 390]
   },
   "crystal_caves": {
     "name": "Хрустальные пещеры",
@@ -632,7 +650,9 @@
           "position": [1000, 660]
         }
       }
-    ]
+    ],
+    "level": 5,
+    "waystone": [640, 540]
   },
   "sky_island": {
     "name": "Небесный остров",
@@ -783,7 +803,9 @@
         }
       ],
       "bushes": []
-    }
+    },
+    "level": 7,
+    "waystone": [700, 480]
   },
   "wind_spires": {
     "name": "Ветреные шпили",
@@ -938,7 +960,9 @@
         [900, 300],
         [560, 250]
       ]
-    }
+    },
+    "level": 9,
+    "waystone": [300, 500]
   },
   "sky_rift": {
     "name": "Расколотый остров",
@@ -1059,6 +1083,188 @@
         [1120, 420],
         [620, 320],
         [880, 640]
+      ]
+    },
+    "level": 11,
+    "waystone": [330, 480]
+  },
+  "misty_marsh": {
+    "name": "Туманная топь",
+    "map_color": [0.36, 0.5, 0.42],
+    "level": 6,
+    "enemy_power": 1.6,
+    "waystone": [560, 180],
+    "npcs": [
+      {
+        "id": "herbalist",
+        "name": "Ведана",
+        "position": [420, 250],
+        "outfit_color": [0.45, 0.6, 0.35]
+      }
+    ],
+    "chests": [
+      {
+        "id": "marsh_reeds",
+        "position": [1150, 770],
+        "gold": 90,
+        "item": "health_potion",
+        "amount": 2
+      },
+      {
+        "id": "marsh_stump",
+        "position": [170, 700],
+        "gold": 70,
+        "item": "mana_potion",
+        "amount": 2
+      }
+    ],
+    "herbs": [
+      {
+        "id": "marsh_lantern",
+        "name": "Болотный огонь",
+        "position": [262, 540],
+        "quest": "marsh_lanterns"
+      },
+      {
+        "id": "marsh_lantern",
+        "name": "Болотный огонь",
+        "position": [540, 700],
+        "quest": "marsh_lanterns"
+      },
+      {
+        "id": "marsh_lantern",
+        "name": "Болотный огонь",
+        "position": [858, 628],
+        "quest": "marsh_lanterns"
+      },
+      {
+        "id": "marsh_lantern",
+        "name": "Болотный огонь",
+        "position": [1060, 360],
+        "quest": "marsh_lanterns"
+      }
+    ],
+    "story_objects": [],
+    "enemies": [
+      {
+        "kind": "toad",
+        "position": [400, 460]
+      },
+      {
+        "kind": "toad",
+        "position": [640, 560]
+      },
+      {
+        "kind": "toad",
+        "position": [840, 420]
+      },
+      {
+        "kind": "toad",
+        "position": [960, 560]
+      },
+      {
+        "kind": "toad",
+        "position": [720, 730]
+      },
+      {
+        "kind": "toad",
+        "position": [300, 650]
+      },
+      {
+        "kind": "wolf",
+        "position": [1100, 480]
+      },
+      {
+        "kind": "bog_king",
+        "position": [1030, 700],
+        "quest": "marsh_king"
+      }
+    ],
+    "gates": [
+      {
+        "target": "moonlit_grove",
+        "position": [640, 40],
+        "arrival": [640, 800],
+        "label": "Тропа в Лунную рощу"
+      }
+    ],
+    "secrets": {},
+    "terrain": {
+      "size": [1280, 864],
+      "style": "marsh",
+      "trails": [
+        [
+          [640, 0],
+          [640, 140],
+          [520, 260],
+          [600, 420],
+          [700, 520],
+          [880, 600],
+          [1030, 690]
+        ],
+        [
+          [600, 420],
+          [300, 520]
+        ],
+        [
+          [520, 260],
+          [820, 300],
+          [1060, 330]
+        ],
+        [
+          [700, 520],
+          [560, 690]
+        ]
+      ],
+      "ponds": [
+        {
+          "circle": [300, 610, 46]
+        },
+        {
+          "circle": [770, 570, 56]
+        },
+        {
+          "circle": [1010, 430, 40]
+        },
+        {
+          "circle": [560, 380, 30]
+        },
+        {
+          "circle": [1110, 690, 48]
+        },
+        {
+          "circle": [200, 320, 36]
+        }
+      ],
+      "trees": [
+        [120, 120],
+        [300, 120],
+        [880, 110],
+        [1060, 140],
+        [1180, 240],
+        [160, 440],
+        [420, 560],
+        [880, 460],
+        [1200, 420],
+        [420, 800],
+        [860, 800],
+        [1220, 600],
+        [700, 320],
+        [960, 250],
+        [260, 740],
+        [620, 800]
+      ],
+      "props": [],
+      "blockers": [],
+      "bushes": [
+        [360, 360],
+        [480, 480],
+        [650, 640],
+        [780, 470],
+        [920, 700],
+        [1130, 560],
+        [230, 560],
+        [700, 200]
       ]
     }
   }

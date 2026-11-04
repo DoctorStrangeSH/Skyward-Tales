@@ -9,6 +9,7 @@ const PLAYER_SCENE := preload("res://scenes/player.tscn")
 const BOLT_SCENE := preload("res://scenes/magic_bolt.tscn")
 const NPC_SCRIPT := preload("res://scripts/npc.gd")
 const COLLECTIBLE_SCRIPT := preload("res://scripts/collectible.gd")
+const WAYSTONE_SCRIPT := preload("res://scripts/waystone.gd")
 const LOOT_SCRIPT := preload("res://scripts/loot.gd")
 const CHEST_SCRIPT := preload("res://scripts/treasure_chest.gd")
 const SAVE_SCRIPT := preload("res://scripts/save_system.gd")
@@ -17,7 +18,7 @@ const MERCHANT_SHOP_SCRIPT := preload("res://scripts/merchant_shop.gd")
 const CRAFTING_SERVICE_SCRIPT := preload("res://scripts/crafting_service.gd")
 const GATE_SCRIPT := preload("res://scripts/region_gate.gd")
 ## Story bosses: defeated once (flag "<kind>_defeated"), never respawn.
-const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой колосс", "vail": "Вейл"}
+const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой колосс", "vail": "Вейл", "bog_king": "Болотный король"}
 const ENEMY_SCRIPTS := {
 	"slime": preload("res://scripts/enemy.gd"),
 	"wolf": preload("res://scripts/forest_wolf.gd"),
@@ -29,6 +30,8 @@ const ENEMY_SCRIPTS := {
 	"tempest": preload("res://scripts/tempest_colossus.gd"),
 	"shade": preload("res://scripts/rift_shade.gd"),
 	"vail": preload("res://scripts/vail_boss.gd"),
+	"toad": preload("res://scripts/marsh_toad.gd"),
+	"bog_king": preload("res://scripts/bog_king.gd"),
 	"sentinel": preload("res://scripts/sky_sentinel.gd")
 }
 const MATERIAL_ITEMS := ["wolf_pelt", "iron_ore"]
@@ -48,6 +51,7 @@ var companion: Companion
 var loot_rng := RandomNumberGenerator.new()
 var director: StoryDirector
 var pickups: QuestPickups
+var givers: QuestGivers
 var elder: WorldNpc
 var nearby_interactable: Node2D
 var spell_definitions: Dictionary = {}
@@ -98,6 +102,7 @@ func _ready() -> void:
 	crafting_service = CRAFTING_SERVICE_SCRIPT.new()
 	dialogues = NpcDialogues.new(self)
 	pickups = QuestPickups.new(self)
+	givers = QuestGivers.new(self)
 	story = StoryScene.new(self)
 	director = StoryDirector.new(self)
 	player = PLAYER_SCENE.instantiate() as PlayerCharacter
@@ -127,6 +132,7 @@ func _ready() -> void:
 	hud.defeat_menu_requested.connect(_go_to_title)
 	hud.skill_learn_requested.connect(learn_skill)
 	hud.dialogue_choice_selected.connect(_on_dialogue_choice_selected)
+	hud.world_map_view.travel_requested.connect(fast_travel)
 
 	_populate_region()
 	update_music.call_deferred()
@@ -181,7 +187,7 @@ func update_music() -> void:
 			GameAudio.music("boss")
 			return
 	var style := RegionCatalog.style(current_region)
-	GameAudio.music({"night": "night", "cave": "caves", "sky": "sky", "spires": "sky", "rift": "night"}.get(style, "meadow"))
+	GameAudio.music({"night": "night", "cave": "caves", "sky": "sky", "spires": "sky", "rift": "night", "marsh": "night"}.get(style, "meadow"))
 
 func shake(strength: float, duration: float) -> void:
 	if not GameSettings.get_bool("screen_shake"):
@@ -271,7 +277,7 @@ func _handle_key(keycode: Key) -> bool:
 				hud.toggle_inventory(player)
 			_close_books()
 			_update_minimap()
-			hud.open_world_map(current_region, player.global_position, discovered_landmarks.get(current_region, {}), quests.get_active_summary())
+			open_map()
 			return true
 		KEY_K when not world_blocked:
 			if hud.skills_visible:
@@ -354,9 +360,14 @@ func _populate_region() -> void:
 	for chest_data in layout.get("chests", []):
 		_spawn_chest(str(chest_data.get("id", "")), _vec(chest_data.get("position")), int(chest_data.get("gold", 0)), str(chest_data.get("item", "")), int(chest_data.get("amount", 0)))
 	for herb_data in layout.get("herbs", []):
-		_spawn_herb(_vec(herb_data.get("position")), str(herb_data.get("id", "moonleaf")), str(herb_data.get("name", "Лунный лист")))
+		_spawn_herb(_vec(herb_data.get("position")), str(herb_data.get("id", "moonleaf")), str(herb_data.get("name", "Лунный лист")), str(herb_data.get("quest", "")))
 	for enemy_data in layout.get("enemies", []):
+		# "quest": only while that quest is open (unique side bosses).
+		var needs := str(enemy_data.get("quest", ""))
+		if not needs.is_empty() and not quests.is_active(needs):
+			continue
 		spawn_enemy(str(enemy_data.get("kind", "slime")), _vec(enemy_data.get("position")), str(enemy_data.get("elite", "?")))
+	_spawn_waystone(layout)
 	var boss: Dictionary = layout.get("boss", {})
 	if not boss.is_empty() and quests.is_completed(str(boss.get("after_quest", ""))):
 		spawn_region_boss()
@@ -411,7 +422,7 @@ func _clear_region_actors() -> void:
 	for node in get_children():
 		if node is WorldNpc and node.is_companion:
 			continue
-		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is MagicBolt or node is EnemyMagicOrb:
+		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is MagicBolt or node is EnemyMagicOrb:
 			remove_child(node)
 			node.queue_free()
 	elder = null
@@ -501,10 +512,83 @@ func _on_region_travel(target_region: String, arrival: Vector2) -> void:
 	if bool(gate_data.get("requires_guardian", false)) and not guardian_defeated:
 		hud.show_message(str(gate_data.get("locked_message", "Путь пока закрыт.")), 2.5)
 		return
+	_travel(target_region, arrival)
+
+func _travel(target_region: String, arrival: Vector2) -> void:
 	GameAudio.play("travel", -4.0, 0.0)
 	_set_region(target_region, arrival)
 	director.on_region_entered(current_region)
+	var recommended := RegionCatalog.level(current_region)
+	if recommended > player.level + 2:
+		hud.show_message("Опасные земли! Рекомендуемый уровень: %d" % recommended, 3.5)
 	request_autosave()
+
+# --- Open world: region levels, waystones, fast travel ----------------------
+
+func _scale_to_region(enemy: SlimeEnemy) -> void:
+	var power := RegionCatalog.enemy_power(current_region)
+	if is_equal_approx(power, 1.0) or enemy is GroveGuardian:
+		return
+	enemy.max_health = int(round(enemy.max_health * power))
+	enemy.health = enemy.max_health
+	enemy.attack_damage = int(round(enemy.attack_damage * power))
+	enemy.xp_reward = int(round(enemy.xp_reward * power))
+	enemy.combat_feedback.set_health(enemy.health, enemy.max_health)
+
+## Enemies tied to a quest ("quest" in the region layout) appear when it opens.
+func spawn_quest_enemies(quest_id: String) -> void:
+	for enemy_data in _layout().get("enemies", []):
+		if str(enemy_data.get("quest", "")) == quest_id:
+			spawn_enemy(str(enemy_data.get("kind", "slime")), _vec(enemy_data.get("position")), str(enemy_data.get("elite", "")))
+
+func _spawn_waystone(layout: Dictionary) -> void:
+	var spot: Variant = layout.get("waystone", null)
+	if not spot is Array:
+		return
+	var stone := WAYSTONE_SCRIPT.new() as Waystone
+	stone.region_id = current_region
+	add_child(stone)
+	stone.global_position = _vec(spot)
+	stone.set_awake(waystone_awake(current_region))
+	stone.used.connect(_on_waystone_used)
+
+func waystone_awake(region_id: String) -> bool:
+	return director.has_flag("waystone_" + region_id)
+
+## Regions with an awakened stone, in world order.
+func travel_destinations() -> Array[String]:
+	var result: Array[String] = []
+	for region_id in RegionCatalog.all():
+		if RegionCatalog.waystone(region_id) is Array and waystone_awake(region_id):
+			result.append(str(region_id))
+	return result
+
+func _on_waystone_used(stone: Waystone) -> void:
+	if not stone.awake:
+		director.set_flag("waystone_" + stone.region_id)
+		stone.set_awake(true)
+		Vfx.sparkle(self, stone.global_position)
+		GameAudio.play("quest", -4.0, 0.0)
+		hud.show_message("Небесный камень пробуждён. Перемещение — на карте (M).", 3.5)
+		request_autosave()
+		return
+	open_map()
+
+func open_map() -> void:
+	hud.open_world_map(current_region, player.global_position, discovered_landmarks.get(current_region, {}), quests.get_active_summary())
+	hud.world_map_view.set_destinations(current_region, travel_destinations())
+
+## Fast travel to an awakened stone. Refused during a boss fight.
+func fast_travel(region_id: String) -> bool:
+	if region_id == current_region or not waystone_awake(region_id):
+		return false
+	for actor in get_children():
+		if actor is GroveGuardian and not actor.is_queued_for_deletion() and actor.health > 0:
+			hud.show_message("Нельзя переместиться посреди битвы.", 2.5)
+			return false
+	hud.close_world_map()
+	_travel(region_id, _vec(RegionCatalog.waystone(region_id)) + Vector2(0, 26))
+	return true
 
 func _update_minimap() -> void:
 	var region_markers: Dictionary = discovered_landmarks.get(current_region, {})
@@ -535,6 +619,8 @@ func _discover_nearby_enemies() -> void:
 static func enemy_kind(enemy: SlimeEnemy) -> String:
 	if enemy is VailBoss:
 		return "vail"
+	if enemy is BogKing:
+		return "bog_king"
 	if enemy is TempestColossus:
 		return "tempest"
 	if enemy is EchoWarden:
@@ -549,6 +635,8 @@ static func enemy_kind(enemy: SlimeEnemy) -> String:
 		return "shaman"
 	if enemy is WindWisp:
 		return "wisp"
+	if enemy is MarshToad:
+		return "toad"
 	if enemy is ForestWolf:
 		return "wolf"
 	if enemy is CaveBat:
@@ -575,6 +663,8 @@ func _spawn_npc(npc_data: Dictionary) -> void:
 	var handler := Callable(self, "_on_%s_interacted" % npc_id)
 	if handler.is_valid():
 		npc.interacted.connect(handler)
+	elif givers.has_giver(npc_id):
+		npc.interacted.connect(func(_source: Node2D) -> void: givers.talk(npc_id))
 	else:
 		push_warning("У NPC нет обработчика диалога: " + npc_id)
 	if npc_id == "elder":
@@ -607,6 +697,7 @@ func spawn_enemy(kind: String, spawn_position: Vector2, elite: String = "") -> S
 		EliteModifiers.apply(enemy, elite)
 	add_child(enemy)
 	EliteModifiers.finish(enemy)
+	_scale_to_region(enemy)
 	_track_kill_quests(enemy, kind)
 	if enemy is GroveGuardian:
 		GameAudio.play("boss_roar", -2.0, 0.0)
@@ -614,7 +705,7 @@ func spawn_enemy(kind: String, spawn_position: Vector2, elite: String = "") -> S
 	match kind:
 		"guardian":
 			enemy.defeated.connect(func(xp: int) -> void: _on_guardian_defeated(xp, enemy.global_position))
-		"echo", "tempest", "vail":
+		"echo", "tempest", "vail", "bog_king":
 			enemy.defeated.connect(func(xp: int) -> void: _on_story_boss_defeated(kind, xp, enemy.global_position))
 		"wolf":
 			enemy.defeated.connect(func(xp: int) -> void:
@@ -629,9 +720,10 @@ func spawn_enemy(kind: String, spawn_position: Vector2, elite: String = "") -> S
 func _spawn_guardian(spawn_position: Vector2) -> void:
 	spawn_enemy("guardian", spawn_position)
 
-func _spawn_herb(spawn_position: Vector2, item_id: String = "moonleaf", label: String = "Лунный лист") -> void:
+func _spawn_herb(spawn_position: Vector2, item_id: String = "moonleaf", label: String = "Лунный лист", quest_id: String = "") -> void:
 	var herb := COLLECTIBLE_SCRIPT.new() as WorldCollectible
 	herb.item_id = item_id
+	herb.quest_id = quest_id
 	herb.display_name = label
 	add_child(herb)
 	herb.global_position = spawn_position
