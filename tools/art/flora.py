@@ -348,3 +348,53 @@ def pine(seed: int, pal, size: str = "large") -> tuple[Canvas, tuple[int, int]]:
                     c.put(x, y, pal["grass"][5])
     c.outline(pal["outline"])
     return c, (base_x, base_y)
+
+
+def dead_tree(seed: int, pal, size: str = "large") -> tuple[Canvas, tuple[int, int]]:
+    """Charred, leafless tree of the Ashen Waste with glowing ember cracks."""
+    rng = random.Random(seed)
+    width, height = (44, 60) if size == "large" else (34, 46)
+    canvas = Canvas(width, height)
+    bark = pal["bark"]
+    glow = pal.get("glow", [(255, 160, 60, 255)] * 3)
+    base_x, base_y = width // 2, height - 4
+    for y in range(height):
+        for x in range(width):
+            if ((x + 0.5 - base_x) / (width * 0.32)) ** 2 + ((y + 0.5 - base_y) / 3.0) ** 2 <= 1:
+                canvas.blend(x, y, pal["shadow"])
+    trunk_h = int(height * 0.62)
+
+    def limb(x: float, y: float, angle: float, length: float, thick: float, depth: int) -> None:
+        steps = int(length)
+        for i in range(steps):
+            t = i / max(1, steps)
+            px = x + math.cos(angle) * i
+            py = y - math.sin(angle) * i
+            r = max(0.6, thick * (1 - t * 0.7))
+            for dx in range(-int(r), int(r) + 1):
+                color = bark[1] if dx < 0 else (bark[2] if dx == 0 else bark[0])
+                canvas.put(int(px + dx), int(py), color)
+            if depth > 0 and i == steps - 1:
+                for turn in (-0.55, 0.5):
+                    if rng.random() < 0.85:
+                        limb(px, py, angle + turn + rng.uniform(-0.2, 0.2), length * rng.uniform(0.5, 0.7), r * 0.8, depth - 1)
+
+    # Trunk with roots, then branches.
+    for y in range(base_y - trunk_h, base_y + 1):
+        t = (base_y - y) / trunk_h
+        half = 3.2 - t * 1.4 + (1.5 if y > base_y - 4 else 0)
+        for dx in range(-int(half), int(half) + 1):
+            canvas.put(base_x + dx, y, bark[1] if dx < 0 else (bark[2] if dx < 2 else bark[0]))
+    for dx in (-5, -4, 4, 5):
+        canvas.put(base_x + dx, base_y, bark[1])
+    top = base_y - trunk_h
+    limb(base_x, top + 4, math.pi / 2 + 0.5, height * 0.3, 2.2, 2)
+    limb(base_x, top + 2, math.pi / 2 - 0.45, height * 0.32, 2.2, 2)
+    limb(base_x, top + 10, math.pi / 2 + 1.1, height * 0.2, 1.6, 1)
+    # Ember cracks.
+    for _ in range(4 if size == "large" else 2):
+        y = rng.randint(top + 6, base_y - 3)
+        canvas.put(base_x + rng.choice((-1, 0, 1)), y, glow[0])
+        canvas.put(base_x + rng.choice((-1, 0, 1)), y + 1, glow[1])
+    canvas.outline(pal["outline"])
+    return canvas, (base_x, base_y)

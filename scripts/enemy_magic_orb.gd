@@ -6,6 +6,8 @@ var speed: float = 150.0
 var damage: int = 9
 var lifetime: float = 3.0
 var consumed: bool = false
+var outer_color := Color(0.46, 0.86, 0.62)
+var core_color := Color(0.87, 1.0, 0.79)
 
 func _ready() -> void:
 	collision_layer = 0
@@ -20,8 +22,14 @@ func _ready() -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	draw_circle(Vector2.ZERO, 5.0, Color(0.46, 0.86, 0.62))
-	draw_circle(Vector2(-1, -1), 2.0, Color(0.87, 1.0, 0.79))
+	draw_circle(Vector2.ZERO, 5.0, outer_color)
+	draw_circle(Vector2(-1, -1), 2.0, core_color)
+
+## Fire orbs of the Ashen Waste.
+func make_fire() -> EnemyMagicOrb:
+	outer_color = Color(1.0, 0.45, 0.15)
+	core_color = Color(1.0, 0.9, 0.5)
+	return self
 
 func setup(travel_direction: Vector2, orb_damage: int = 9) -> void:
 	direction = travel_direction.normalized() if travel_direction.length_squared() > 0.0001 else Vector2.RIGHT

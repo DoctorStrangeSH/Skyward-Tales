@@ -20,6 +20,28 @@
   ],
   "feet": 40
  },
+ "ash_cultist": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
+ "ash_hermit": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
  "blacksmith": {
   "anims": {
    "idle": 8

@@ -23,6 +23,7 @@ import apron  # noqa: E402
 import title_art  # noqa: E402
 import gates  # noqa: E402
 import minimap  # noqa: E402
+import recolor  # noqa: E402
 import props  # noqa: E402
 import terrain  # noqa: E402
 from palettes import ISLAND_STYLES, STYLES  # noqa: E402
@@ -86,11 +87,13 @@ def build_world() -> None:
                 canvas, origin = flora.palm(300 + index * 10 + variant, pal, size)
             elif style == "spires":
                 canvas, origin = flora.stone_spire(300 + index * 10 + variant, pal, size)
+            elif style == "ash":
+                canvas, origin = flora.dead_tree(300 + index * 10 + variant, pal, size)
             else:
                 canvas, origin = flora.tree(300 + index * 10 + variant, pal, size, glow=glow)
             save(canvas, f"world/{style}_tree_{variant}.png", origin)
         for variant in range(2):
-            if style in ("cave", "rift"):
+            if style in ("cave", "rift", "ash"):
                 canvas, origin = flora.rock_pile(400 + index * 10 + variant, pal)
             else:
                 canvas, origin = flora.bush(400 + index * 10 + variant, pal, glow=glow)
@@ -148,6 +151,7 @@ def build_props() -> None:
         "gate_coast": props.gate(False), "gate_mountain": props.gate(False), "gate_crypt": props.cave_gate(), "coal_sack": props.crate(),
         "waystone_on": props.waystone(True), "waystone_off": props.waystone(False),
         "marsh_lantern": props.herb("marsh_lantern"),
+        "ember_coal": props.herb("ember_coal"),
         "rift_throne": props.rune_circle(("#fbf6ff", "#e6d2ff", "#c9a2ff", "#6a3ac0")),
         "wind_rune": props.herb("wind_rune"), "storm_heart": props.rune_circle(("#ffffff", "#c8f4ff", "#7ad0f0", "#3a7ab0")),
         "memory_crystal": props.herb("memory_crystal"),
@@ -180,6 +184,7 @@ def main() -> int:
         build_world()
     if args.only in (None, "characters"):
         build_characters()
+        recolor.build(ROOT)
     if args.only in (None, "props"):
         build_props()
     manifest_path = ROOT / "assets" / "art_manifest.json"

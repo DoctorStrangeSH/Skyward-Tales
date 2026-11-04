@@ -20,6 +20,8 @@ DAY_CLOUD = [(206, 222, 244, 255), (226, 236, 250, 255), (242, 247, 253, 255), (
 NIGHT_SKY = [(34, 40, 82, 255), (44, 52, 100, 255), (58, 66, 120, 255), (74, 82, 140, 255)]
 NIGHT_CLOUD = [(70, 80, 134, 255), (88, 98, 152, 255), (108, 118, 170, 255), (130, 140, 190, 255)]
 NIGHT_STYLES = ("night", "marsh", "rift")
+ASH_SKY = [(54, 34, 34, 255), (70, 44, 40, 255), (90, 56, 48, 255), (112, 70, 56, 255)]
+ASH_CLOUD = [(96, 74, 70, 255), (118, 92, 84, 255), (140, 112, 100, 255), (166, 136, 120, 255)]
 
 
 def _rgba(color) -> np.ndarray:
@@ -33,6 +35,8 @@ def render(terrain: dict, pal: dict, seed: int) -> dict[str, Canvas]:
     night = terrain.get("style") in NIGHT_STYLES
     sky = NIGHT_SKY if night else DAY_SKY
     cloud = NIGHT_CLOUD if night else DAY_CLOUD
+    if terrain.get("style") == "ash":
+        sky, cloud = ASH_SKY, ASH_CLOUD
     stone = pal["stone"]
     dirt = pal["dirt"]
     leaf = pal["leaf"]

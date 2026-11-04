@@ -535,6 +535,73 @@
         "amount": 1
       },
       "unique_output": true
+    },
+    "forge_obsidian_blade": {
+      "name": "Обсидиановый клинок",
+      "description": "Стальной клинок, закалённый в лаве.",
+      "gold_cost": 120,
+      "station": "forge_steel",
+      "requires_recipe": "recipe_obsidian",
+      "ingredients": [
+        {
+          "item_id": "steel_sword",
+          "amount": 1
+        },
+        {
+          "item_id": "obsidian_shard",
+          "amount": 4
+        },
+        {
+          "item_id": "ember_core",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "item_id": "obsidian_blade",
+        "amount": 1
+      },
+      "unique_output": true
+    },
+    "hand_ash_cloak": {
+      "name": "Пепельный плащ",
+      "description": "Шкуры пепельных псов и тлеющее ядро.",
+      "gold_cost": 0,
+      "station": "hand",
+      "ingredients": [
+        {
+          "item_id": "ash_hide",
+          "amount": 4
+        },
+        {
+          "item_id": "ember_core",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "item_id": "ash_cloak",
+        "amount": 1
+      },
+      "unique_output": true
+    },
+    "hand_star_tonic": {
+      "name": "Звёздный тоник",
+      "description": "Осколки звёзд и синецвет — тоник ветра.",
+      "gold_cost": 0,
+      "station": "hand",
+      "ingredients": [
+        {
+          "item_id": "star_fragment",
+          "amount": 2
+        },
+        {
+          "item_id": "bluebell",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "item_id": "swift_tonic",
+        "amount": 1
+      }
     }
   }
 }

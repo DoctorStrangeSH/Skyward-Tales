@@ -245,9 +245,10 @@ def herb(kind: str) -> tuple[Canvas, tuple[int, int]]:
             "memory_crystal": ramp("#fffbe0", "#fff2a8", "#ffd45c", "#c88a2a"),
             "wind_rune": ramp("#ffffff", "#c8f4ff", "#7ad0f0", "#3a7ab0"),
             "marsh_lantern": ramp("#f4ffff", "#b8f4ff", "#5ad0e8", "#2a7a90"),
-            "echo_crystal": ramp("#f6f0ff", "#d0b8ff", "#9a7aff", "#5a3ac0")}[kind]
+            "echo_crystal": ramp("#f6f0ff", "#d0b8ff", "#9a7aff", "#5a3ac0"),
+            "ember_coal": ramp("#fff0b0", "#ffc060", "#ff7a2a", "#a8341a")}[kind]
     stem = ramp("#8fd862", "#4fa04e", "#2a6a44")
-    if kind not in ("echo_crystal", "memory_crystal", "wind_rune"):
+    if kind not in ("echo_crystal", "memory_crystal", "wind_rune", "ember_coal"):
         for y in range(9, 19):
             c.put(10, y, stem[1] if y % 3 else stem[2])
     # Halo.
@@ -268,7 +269,7 @@ def herb(kind: str) -> tuple[Canvas, tuple[int, int]]:
             r = 0.4 + k * 0.22
             c.put(round(10 + math.cos(ang) * r), round(10 + math.sin(ang) * r), glow[1] if k < 10 else glow[0])
         c.put(10, 10, glow[0])
-    elif kind in ("echo_crystal", "memory_crystal"):
+    elif kind in ("echo_crystal", "memory_crystal", "ember_coal"):
         # Three faceted shards growing from a stone.
         for sx, top, w in ((10, 2, 2), (6, 8, 1), (14, 7, 1)):
             for y in range(top, 18):

@@ -313,6 +313,15 @@ def main() -> int:
         "keeper": dict(colors={HAIR_LIGHT: (200, 200, 196), HAIR_SHADE: (150, 150, 150), RED_DARK: (30, 40, 70),
                                RED_MID: (46, 62, 104), RED_LIGHT: (220, 180, 80), MAUVE: (30, 34, 50)},
                        trim=True, ahoge=False, beard=((210, 210, 206), (160, 160, 160)), fill=((30, 40, 70), (46, 62, 104))),
+        # Ignat, the hermit of the Ashen Waste: ash-grey hair and beard, charcoal robe, ember trim.
+        "ash_hermit": dict(colors={HAIR_LIGHT: (176, 170, 164), HAIR_SHADE: (128, 122, 118), RED_DARK: (44, 36, 36),
+                                   RED_MID: (70, 58, 56), RED_LIGHT: (230, 120, 50), MAUVE: (30, 24, 24)},
+                           trim=True, ahoge=False, beard=((190, 184, 178), (140, 134, 128)), fill=((44, 36, 36), (70, 58, 56))),
+        # Ash cultists: black hoods, crimson robes, burning eyes.
+        "ash_cultist": dict(colors={HAIR_LIGHT: (40, 30, 32), HAIR_SHADE: (24, 18, 20), RED_DARK: (90, 20, 20),
+                                    RED_MID: (140, 34, 28), RED_LIGHT: (255, 150, 60), MAUVE: (40, 14, 14),
+                                    SKIN_LIGHT: (150, 120, 110), SKIN_SHADE: (110, 86, 80), INK: (255, 120, 40), GOLD: (255, 170, 70)},
+                            ahoge=False),
         # Vail: long white hair, violet Keeper robes.
         "vail": dict(colors={RED_DARK: (58, 40, 98), RED_MID: (92, 66, 150), RED_LIGHT: (176, 132, 236), MAUVE: (40, 30, 60),
                              GOLD: (210, 180, 255)}, ahoge=False),
