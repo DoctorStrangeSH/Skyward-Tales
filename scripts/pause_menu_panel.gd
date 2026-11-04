@@ -30,6 +30,8 @@ var settings_page: VBoxContainer
 var hints_toggle: CheckButton
 var damage_toggle: CheckButton
 var shake_toggle: CheckButton
+var music_slider: HSlider
+var sfx_slider: HSlider
 
 func _ready() -> void:
 	position = Vector2(190, 40)
@@ -66,6 +68,8 @@ func _ready() -> void:
 	hints_toggle = _toggle(settings_page, "Обучающие советы", "hints")
 	damage_toggle = _toggle(settings_page, "Числа урона над врагами", "damage_numbers")
 	shake_toggle = _toggle(settings_page, "Тряска экрана", "screen_shake")
+	music_slider = _slider(settings_page, "Музыка", "music_volume")
+	sfx_slider = _slider(settings_page, "Звуки", "sfx_volume")
 	_button(settings_page, "Показать советы заново", func() -> void: GameSettings.reset_tips())
 	_button(settings_page, "Назад", func() -> void: show_page(main_page))
 	show_page(main_page)
@@ -91,6 +95,24 @@ func _toggle(parent: VBoxContainer, title: String, key: String) -> CheckButton:
 	toggle.toggled.connect(func(on: bool) -> void: GameSettings.set_bool(key, on))
 	parent.add_child(toggle)
 	return toggle
+
+func _slider(parent: VBoxContainer, title: String, key: String) -> HSlider:
+	var row := HBoxContainer.new()
+	var label := _label(title, 10, Color(0.92, 0.92, 0.88))
+	label.custom_minimum_size = Vector2(62, 0)
+	row.add_child(label)
+	var slider := HSlider.new()
+	slider.min_value = 0.0
+	slider.max_value = 1.0
+	slider.step = 0.05
+	slider.custom_minimum_size = Vector2(110, 14)
+	slider.value = GameSettings.get_float(key)
+	slider.value_changed.connect(func(value: float) -> void:
+		GameSettings.set_float(key, value)
+		GameAudio.apply_volumes())
+	row.add_child(slider)
+	parent.add_child(row)
+	return slider
 
 func _label(text: String, size: int, color: Color) -> Label:
 	var label := Label.new()

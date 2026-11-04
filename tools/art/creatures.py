@@ -500,36 +500,43 @@ def tempest(facing: str, frame: int) -> Canvas:
     """Marble giant crowned with a storm cloud, a lightning core in its chest."""
     b = Body(48)
     bob = [0, -1, -1, 0][frame]
-    b.shadow(24, 44, 14, 3.2, 85)
+    b.shadow(24, 45, 15, 3.2, 90)
     side = facing == "right"
     back = facing in ("up", "up_right")
-    cy = 26 + bob
-    w = 8 if side else 11
-    # Floating fists.
-    for sx in ((-15, 15) if not side else (-11,)):
-        b.part(b.ellipse(24 + sx, cy + 6 - (bob if sx > 0 else 0), 4.5, 5), MARBLE, sphere=(22 + sx, cy + 3, 6))
-        b.part(b.rect(24 + sx - 4, cy + 1, 24 + sx + 3, cy + 2), BRASS)
-    b.part(b.ellipse(24, cy + 4, w, 12), MARBLE, sphere=(20, cy - 2, 15))
-    b.part(b.rect(24 - w, cy - 6, 24 + w - 1, cy - 4), BRASS)
-    b.part(b.ellipse(24 + (2 if side else 0), cy - 11, 6.5, 6), MARBLE, sphere=(22, cy - 14, 7))
-    # Storm-cloud crown.
-    for k, (dx, dy, r) in enumerate(((-7, -18, 5), (0, -21, 6), (7, -18, 5), (-3, -15, 4), (4, -15, 4))):
-        b.part(b.ellipse(24 + dx + math.sin(frame + k) * 0.8, cy + dy, r, r * 0.8), STORM, sphere=(20, cy - 24, 10))
+    cy = 27 + bob
+    w = 9 if side else 12
+    # Floating fists, a little apart from the body.
+    for sx in ((-17, 17) if not side else (-12,)):
+        fy = cy + 7 - (bob if sx > 0 else -bob)
+        b.part(b.ellipse(24 + sx, fy, 5, 5.5), MARBLE, sphere=(22 + sx, fy - 3, 6))
+        b.part(b.rect(24 + sx - 4, fy - 5, 24 + sx + 3, fy - 4), BRASS)
+    # Tapering torso fading into a whirl of wind below.
+    b.part(b.ellipse(24, cy + 1, w, 10), MARBLE, sphere=(20, cy - 5, 15))
+    b.part(b.ellipse(24, cy + 11, w * 0.55, 5), MARBLE, sphere=(22, cy + 8, 8))
+    for k in range(3):
+        b.part(b.ellipse(24 + (k - 1) * 2 + math.sin(frame + k) * 1.5, cy + 16 + k * 2.5, 6 - k * 1.6, 1.4), WIND)
+    # Brass pauldrons.
+    for sx in ((-w + 1, w - 1) if not side else (-w + 2,)):
+        b.part(b.ellipse(24 + sx, cy - 6, 4.5, 3.5), BRASS, sphere=(22 + sx, cy - 8, 5))
+    b.part(b.rect(24 - w + 3, cy - 8, 24 + w - 4, cy - 6), BRASS)
+    b.part(b.ellipse(24 + (2 if side else 0), cy - 11, 5.5, 5), MARBLE, sphere=(22, cy - 14, 6))
+    # Storm-cloud crown: light tops, dark bellies.
+    for k, (dx, dy, r) in enumerate(((-9, -20, 5), (0, -23, 6.5), (9, -20, 5), (-5, -18, 4), (5, -18, 4))):
+        b.part(b.ellipse(24 + dx + math.sin(frame + k) * 0.8, cy + dy, r, r * 0.68), STORM, sphere=(20, cy - 26, 10))
     if not back:
         core_x = 24 + (3 if side else (2 if facing == "down_right" else 0))
-        b.part(b.ellipse(core_x, cy + 3, 3.4, 3.8), SPARK, separate=False)
-        b.dot(core_x - 1, cy + 2, SPARK[0])
-        for k in range(3):
-            b.dot(core_x + [-1, 1, 0][k] * (frame % 2 + 1), cy + 7 + k, SPARK[1])
+        b.part(b.ellipse(core_x, cy + 1, 3.6, 4.2), SPARK, separate=False)
+        b.dot(core_x - 1, cy, SPARK[0])
         eyes = [core_x - 3, core_x + 2] if not side else [core_x + 2]
         for ex in eyes:
-            b.dot(ex, cy - 11, hex_color("#9cf0ff"))
-            b.dot(ex + 1, cy - 11, hex_color("#ffffff"))
+            b.dot(ex, cy - 10, hex_color("#9cf0ff"))
+            b.dot(ex + 1, cy - 10, hex_color("#ffffff"))
     else:
-        b.part(b.rect(22, cy - 2, 25, cy + 10), BRASS)
+        b.part(b.rect(22, cy - 4, 25, cy + 8), BRASS)
+    # Crackling bolts from the crown.
     if frame in (1, 3):
-        x = 24 + (8 if frame == 1 else -9)
-        for k in range(6):
-            b.dot(x + (k % 2), cy - 16 + k * 2, SPARK[0])
+        x = 24 + (12 if frame == 1 else -13)
+        for k in range(8):
+            b.dot(x + (1 if k % 3 == 1 else 0) - (1 if k % 3 == 2 else 0), cy - 18 + k * 2, SPARK[0 if k % 2 else 1])
     b.outline(hex_color("#22203a"))
     return b.canvas()

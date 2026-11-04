@@ -44,6 +44,7 @@ func gust() -> bool:
 	var hero := get_tree().get_first_node_in_group("player") as CharacterBody2D
 	if hero == null or health <= 0:
 		return false
+	GameAudio.play("gust", -3.0, 0.05)
 	Vfx.burst(get_parent(), global_position, [Color(1, 1, 1), Color(0.75, 0.92, 1.0)], 16, 120.0)
 	var offset := hero.global_position - global_position
 	if offset.length() > GUST_RADIUS:

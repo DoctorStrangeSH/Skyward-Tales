@@ -63,7 +63,7 @@ SKY = {
 
 SPIRES = {
     # Golden hour high above the clouds: warm stone needles, wind-combed grass.
-    "grass": ramp("#2a3a4a", "#3a5a5a", "#4f7a62", "#76966a", "#a6b476", "#d6d08a", "#f6eaa8"),
+    "grass": ramp("#34524a", "#4a6e56", "#62865c", "#7c9a62", "#98ac6a", "#b8bc78", "#e0d496"),
     "dirt": ramp("#5a3e4a", "#7a5a5a", "#9a7a6a", "#bc9a80", "#dabca0", "#f2dcc0"),
     "water": ramp("#2a3a6a", "#3a5a90", "#5a82b8", "#86aad8", "#b8d0ee", "#f0f6ff"),
     "stone": ramp("#3a2a3e", "#5a4250", "#7e5e64", "#a6827a", "#ccaa96", "#f0d8c0"),

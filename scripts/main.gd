@@ -87,6 +87,7 @@ func _ready() -> void:
 	y_sort_enabled = true
 	quests = QuestManager.new()
 	quests.quest_completed.connect(func(quest_id: String) -> void:
+		GameAudio.play("quest", -2.0, 0.0)
 		request_autosave()
 		if director != null:
 			director.on_quest_completed(quest_id))
@@ -103,7 +104,9 @@ func _ready() -> void:
 	player.stats_changed.connect(_refresh_hud)
 	player.level_up.connect(_on_level_up)
 	player.died.connect(_on_player_died)
-	player.hurt.connect(func(amount: int) -> void: shake(clampf(1.5 + amount * 0.15, 1.5, 4.0), 0.18))
+	player.hurt.connect(func(amount: int) -> void:
+		GameAudio.play("hurt", -3.0)
+		shake(clampf(1.5 + amount * 0.15, 1.5, 4.0), 0.18))
 	player.second_wind_triggered.connect(func() -> void: hud.show_message("Второе дыхание! Смерть отступила.", 3.0))
 	_apply_camera_limits()
 	StoryText.reset()
@@ -124,6 +127,7 @@ func _ready() -> void:
 	hud.dialogue_choice_selected.connect(_on_dialogue_choice_selected)
 
 	_populate_region()
+	update_music.call_deferred()
 
 	if get_tree().has_meta("skyward_continue") and bool(get_tree().get_meta("skyward_continue")):
 		get_tree().remove_meta("skyward_continue")
@@ -138,6 +142,26 @@ func _ready() -> void:
 	_refresh_hud()
 
 ## Camera shake (off when the "Тряска экрана" setting is disabled).
+## Hit-stop: a few frames of near-frozen time make heavy blows land.
+## Skipped headless so tests keep a steady clock.
+func hit_stop(duration: float) -> void:
+	if duration <= 0.0 or DisplayServer.get_name() == "headless" or Engine.time_scale < 1.0:
+		return
+	Engine.time_scale = 0.05
+	get_tree().create_timer(duration, true, false, true).timeout.connect(func() -> void: Engine.time_scale = 1.0)
+
+func _exit_tree() -> void:
+	Engine.time_scale = 1.0
+
+## Region music by art style; bosses override it while alive.
+func update_music() -> void:
+	for actor in get_children():
+		if actor is GroveGuardian and not actor.is_queued_for_deletion() and actor.health > 0:
+			GameAudio.music("boss")
+			return
+	var style := RegionCatalog.style(current_region)
+	GameAudio.music({"night": "night", "cave": "caves", "sky": "sky", "spires": "sky"}.get(style, "meadow"))
+
 func shake(strength: float, duration: float) -> void:
 	if not GameSettings.get_bool("screen_shake"):
 		return
@@ -265,7 +289,8 @@ func _handle_key(keycode: Key) -> bool:
 			load_game()
 			return true
 		KEY_SHIFT when not world_blocked and not hud.inventory_open:
-			player.start_dodge()
+			if player.start_dodge():
+				GameAudio.play("dash", -6.0)
 			return true
 		KEY_I when not world_blocked:
 			hud.toggle_inventory(player)
@@ -377,6 +402,7 @@ func _set_region(region_id: String, arrival: Vector2, notify: bool = true) -> vo
 	if world != null and world.has_method("configure_region"):
 		world.configure_region(current_region)
 	_populate_region()
+	update_music.call_deferred()
 	player.global_position = arrival
 	_place_companion()
 	if notify and hud != null:
@@ -454,6 +480,7 @@ func _on_region_travel(target_region: String, arrival: Vector2) -> void:
 	if bool(gate_data.get("requires_guardian", false)) and not guardian_defeated:
 		hud.show_message(str(gate_data.get("locked_message", "Путь пока закрыт.")), 2.5)
 		return
+	GameAudio.play("travel", -4.0, 0.0)
 	_set_region(target_region, arrival)
 	director.on_region_entered(current_region)
 	request_autosave()
@@ -555,6 +582,9 @@ func spawn_enemy(kind: String, spawn_position: Vector2, elite: String = "") -> S
 		EliteModifiers.apply(enemy, elite)
 	add_child(enemy)
 	EliteModifiers.finish(enemy)
+	if enemy is GroveGuardian:
+		GameAudio.play("boss_roar", -2.0, 0.0)
+		update_music.call_deferred()
 	match kind:
 		"guardian":
 			enemy.defeated.connect(func(xp: int) -> void: _on_guardian_defeated(xp, enemy.global_position))
@@ -714,6 +744,7 @@ func _on_chest_opened(id: String, gold: int, item: String, amount: int) -> void:
 	if opened_chests.has(id):
 		return
 	opened_chests[id] = true
+	GameAudio.play("chest", -2.0, 0.0)
 	latest_cache_narrative = id == CARTOGRAPHER_CACHE_ID
 	player.add_gold(gold)
 	var has_item := not item.is_empty() and amount > 0
@@ -736,6 +767,7 @@ func _on_chest_bonus(item_id: String, rarity: String) -> void:
 		hud.show_message(find, 3.0)
 
 func _on_guardian_defeated(xp: int, death_position: Vector2) -> void:
+	update_music.call_deferred()
 	if guardian_defeated:
 		return
 	guardian_defeated = true
@@ -757,6 +789,8 @@ func _on_story_boss_defeated(kind: String, xp: int, death_position: Vector2) -> 
 	_spawn_loot(death_position, "ancient_relic")
 	spawn_generated_loot(death_position + Vector2(14, 6), "rare")
 	shake(6.0, 0.6)
+	hit_stop(0.2)
+	update_music.call_deferred()
 	hud.show_message("%s повержен!" % STORY_BOSSES[kind], 3.0)
 	_grant_sky_seal()
 	director.on_boss_defeated(kind)
@@ -806,6 +840,7 @@ func spawn_generated_loot(at: Vector2, minimum_rarity: String = "common") -> Str
 
 func _on_loot_collected(item_id: String, amount: int) -> void:
 	player.add_item(item_id, amount)
+	GameAudio.play("pickup", -4.0, 0.02)
 	hud.show_message("Получено: %s ×%d" % [player.get_item_name(item_id), amount], 2.0)
 
 # --- Inventory -----------------------------------------------------------
@@ -842,6 +877,7 @@ func _use_consumable(item_id: String, label: String = "") -> void:
 # --- Levels and talents --------------------------------------------------
 
 func _on_level_up(new_level: int) -> void:
+	GameAudio.play("level_up", -2.0, 0.0)
 	# No pause: each level gives a skill point to spend in the tree (T).
 	Vfx.level_up(self, player.global_position)
 	if hud != null and not game_over:
@@ -912,6 +948,7 @@ func _cast_spell() -> void:
 	add_child(bolt)
 	bolt.global_position = player.global_position + direction * 12.0
 	player.play_cast(direction)
+	GameAudio.play({"fireball": "cast_fire", "frostbolt": "cast_ice", "chain_lightning": "cast_lightning"}.get(selected_spell_id, "cast_fire"), -5.0)
 	cast_cooldown_total = float(spell.get("cooldown", 0.25)) * player.get_cooldown_multiplier()
 	cast_cooldown_remaining = cast_cooldown_total
 	_update_spell_hud()
