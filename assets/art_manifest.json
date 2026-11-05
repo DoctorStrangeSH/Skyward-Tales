@@ -1027,6 +1027,26 @@
    18
   ]
  },
+ "props/meteor_iron.png": {
+  "size": [
+   28,
+   24
+  ],
+  "origin": [
+   14,
+   19
+  ]
+ },
+ "props/mine_entrance.png": {
+  "size": [
+   72,
+   58
+  ],
+  "origin": [
+   36,
+   55
+  ]
+ },
  "props/moonleaf.png": {
   "size": [
    20,
@@ -2193,6 +2213,16 @@
   "origin": [
    23,
    46
+  ]
+ },
+ "world/mine_entrance.png": {
+  "size": [
+   72,
+   58
+  ],
+  "origin": [
+   36,
+   55
   ]
  },
  "world/misty_marsh_apron_bottom.png": {

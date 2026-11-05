@@ -155,6 +155,41 @@ def cave(exit_light: bool) -> tuple[Canvas, tuple[int, int]]:
     return c, (36, 55)
 
 
+def mine() -> tuple[Canvas, tuple[int, int]]:
+    """Mine adit on the Stone Pass: rock arch with a timber frame, rails
+    leading out and a lantern hook."""
+    c = Canvas(72, 58)
+    _shadow(c, 36, 55, 32, 4)
+
+    def dark(cv: Canvas, x: int, y: int, depth: float) -> None:
+        cv.put(x, y, hex_color("#0e0a16") if depth < 0.7 else hex_color("#1c1626"))
+
+    _arch(c, 36, 56, 34, 50, 17, 34, dark)
+    # Timber frame: two posts and a lintel.
+    for px in (19, 50):
+        c.rect(px, 24, 4, 32, WOOD[2])
+        c.vline(px, 24, 55, WOOD[1])
+        c.vline(px + 3, 24, 55, WOOD[3])
+    c.rect(17, 21, 38, 5, WOOD[1])
+    c.hline(17, 54, 21, WOOD[0])
+    c.hline(17, 54, 25, WOOD[3])
+    for x in (22, 36, 50):
+        c.put(x, 23, WOOD[3])
+    # Rails out of the dark.
+    iron = ramp("#c8ccd4", "#7a8090", "#4a4e60")
+    for y in range(44, 57):
+        spread = (y - 44) // 3
+        c.put(31 - spread, y, iron[1])
+        c.put(41 + spread, y, iron[1])
+        if y % 3 == 0:
+            c.hline(30 - spread, 42 + spread, y, WOOD[2])
+    # Lantern on the lintel.
+    c.rect(35, 27, 3, 4, hex_color("#ffd36a"))
+    c.put(36, 26, iron[2])
+    _outline(c)
+    return c, (36, 55)
+
+
 def stairs(down: bool) -> tuple[Canvas, tuple[int, int]]:
     c = Canvas(60, 56)
     _shadow(c, 30, 52, 28, 4)
@@ -204,6 +239,7 @@ def build() -> dict[str, tuple[Canvas, tuple[int, int]]]:
         "gate_cave_exit": cave(True),
         "gate_stairs_down": stairs(True),
         "gate_stairs_up": stairs(False),
+        "mine_entrance": mine(),
         "lever_off": lever(False),
         "lever_on": lever(True),
         "vent_idle": vent(False),

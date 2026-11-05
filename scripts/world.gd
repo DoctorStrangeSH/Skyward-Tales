@@ -9,9 +9,11 @@ const MAP_WIDTH := 80
 const MAP_HEIGHT := 54
 const COLLISION_WORLD := 4
 const ART_DIR := "res://assets/world/"
-const PROP_TEXTURES := {"ruins": "ruins.png", "standing_stones": "standing_stones.png", "crystal_altar": "crystal_altar.png", "sky_archive": "sky_archive.png"}
+const PROP_TEXTURES := {"ruins": "ruins.png", "standing_stones": "standing_stones.png", "crystal_altar": "crystal_altar.png", "sky_archive": "sky_archive.png", "mine_entrance": "mine_entrance.png"}
 
 var region_id: String = "greenreach"
+## Props may depend on the story or the world ("requires_state" / "unless_state").
+var allows: Callable
 var terrain: Dictionary = {}
 var art_manifest: Dictionary = {}
 
@@ -51,6 +53,8 @@ func _build() -> void:
 		_add_sprite("%s_tree_%d.png" % [style, variant], pos + Vector2(0, 10))
 		_add_wall(pos + Vector2(0.0, 5.0), Vector2(10.0, 11.0))
 	for prop in terrain.get("props", []):
+		if allows.is_valid() and not allows.call(prop):
+			continue
 		var kind := str(prop.get("kind", ""))
 		# "decor_*" props come from the purchased pack (tools/art/chibi.py).
 		var file: String = PROP_TEXTURES.get(kind, kind + ".png" if kind.begins_with("decor_") or kind.begins_with("village_") else "")

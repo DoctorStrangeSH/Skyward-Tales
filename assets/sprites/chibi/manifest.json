@@ -234,6 +234,17 @@
   ],
   "feet": 40
  },
+ "pass_miner": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
  "settler_cook": {
   "anims": {
    "idle": 6,

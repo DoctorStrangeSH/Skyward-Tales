@@ -40,6 +40,7 @@ const ENEMY_SCRIPTS := {
 	"crab": preload("res://scripts/coast_crab.gd"),
 	"crab_king": preload("res://scripts/crab_king.gd"),
 	"golem": preload("res://scripts/stone_golem.gd"),
+	"ore_golem": preload("res://scripts/ore_golem.gd"),
 	"giant": preload("res://scripts/mountain_giant.gd"),
 	"skeleton": preload("res://scripts/skeleton.gd"),
 	"crypt_lord": preload("res://scripts/crypt_lord.gd"),
@@ -89,6 +90,8 @@ var epilogue: Epilogue
 var quest_nav: QuestNav
 var world_state: WorldState
 var village: VillageLife
+var mine: PassMine
+var borin: BorinStory
 var achievements: Achievements
 var cast_cooldown_total: float = 0.0
 var defeated_enemies: int = 0
@@ -179,6 +182,11 @@ func _ready() -> void:
 	world_state.name = "WorldState"
 	world_state.game = self
 	add_child(world_state)
+	borin = BorinStory.new(self)
+	mine = PassMine.new()
+	mine.name = "PassMine"
+	mine.game = self
+	add_child(mine)
 	village = VillageLife.new()
 	village.name = "VillageLife"
 	village.game = self
@@ -525,6 +533,20 @@ func _layout(region_id: String = current_region) -> Dictionary:
 static func _vec(value: Variant, fallback: Vector2 = Vector2.ZERO) -> Vector2:
 	return GameSaveState.read_position(value, fallback)
 
+## Region entries may depend on the world: "requires_state" / "unless_state"
+## name a world state (world_state.gd) or a story flag.
+func layout_allows(entry: Variant) -> bool:
+	if not entry is Dictionary:
+		return true
+	var need := str(entry.get("requires_state", ""))
+	if not need.is_empty() and not state_on(need):
+		return false
+	var block := str(entry.get("unless_state", ""))
+	return block.is_empty() or not state_on(block)
+
+func state_on(state_id: String) -> bool:
+	return (world_state != null and world_state.has(state_id)) or director.has_flag(state_id)
+
 func _populate_region() -> void:
 	var layout := _layout()
 	for npc_data in layout.get("npcs", []):
@@ -559,6 +581,8 @@ func _populate_region() -> void:
 		var needs := str(enemy_data.get("quest", ""))
 		if not needs.is_empty() and not quests.is_active(needs):
 			continue
+		if not layout_allows(enemy_data):
+			continue
 		_spawn_layout_enemy(enemy_data)
 	_spawn_waystone(layout)
 	_spawn_gathering(layout)
@@ -579,7 +603,9 @@ var _play_clock: float = 0.0
 func _spawn_layout_enemy(enemy_data: Dictionary) -> SlimeEnemy:
 	var kind := str(enemy_data.get("kind", "slime"))
 	var enemy := spawn_enemy(kind, _vec(enemy_data.get("position")), str(enemy_data.get("elite", "?")))
-	if enemy == null or enemy_data.has("quest") or kind in STORY_BOSSES or kind == "guardian":
+	if kind == "ore_golem" and enemy != null:
+		enemy.defeated.connect(func(_xp: int) -> void: mine.on_leader_defeated())
+	if enemy == null or enemy_data.has("quest") or kind in STORY_BOSSES or kind in ["guardian", "ore_golem"]:
 		return enemy
 	var region_id := current_region
 	enemy.defeated.connect(func(_xp: int) -> void:
@@ -602,6 +628,8 @@ func _process_respawns(delta: float) -> void:
 			entry["at"] = _play_clock + 3.0
 			continue
 		_respawns.erase(entry)
+		if not layout_allows(entry["data"]):
+			continue
 		var enemy := _spawn_layout_enemy(entry["data"])
 		if enemy != null:
 			enemy.modulate.a = 0.0
@@ -669,6 +697,7 @@ func _set_region(region_id: String, arrival: Vector2, notify: bool = true) -> vo
 		achievements.set_max("regions", visited_regions.size())
 	_clear_region_actors()
 	if world != null and world.has_method("configure_region"):
+		world.set("allows", layout_allows)
 		world.configure_region(current_region)
 	_populate_region()
 	update_music.call_deferred()
@@ -691,6 +720,8 @@ func start_new_story(hero_name: String, gender: String) -> void:
 ## Places story objects whose quest is active (skips ones already present).
 func spawn_story_objects() -> void:
 	for object_data in _layout().get("story_objects", []):
+		if not layout_allows(object_data):
+			continue
 		var object_id := str(object_data.get("id", ""))
 		var quest_id := str(object_data.get("quest", ""))
 		if not bool(quests.states.get(quest_id, {}).get("started", false)) or quests.is_completed(quest_id):
@@ -948,9 +979,18 @@ func _refresh_dynamic_props() -> void:
 # --- Gathering and crafting stations -----------------------------------------
 
 func _spawn_gathering(layout: Dictionary) -> void:
-	var entries: Array = layout.get("gather", [])
+	_spawn_gathering_entries(layout.get("gather", []))
+	_spawn_craft_stations()
+
+## only_state: spawn just the entries that need this world state (they appear
+## mid-visit, e.g. the rich veins of a freed mine).
+func _spawn_gathering_entries(entries: Array, only_state: String = "") -> void:
 	for index in range(entries.size()):
 		var entry: Dictionary = entries[index]
+		if not layout_allows(entry):
+			continue
+		if not only_state.is_empty() and str(entry.get("requires_state", "")) != only_state:
+			continue
 		var info := crafting.kind(str(entry.get("kind", "")))
 		if info.is_empty():
 			continue
@@ -964,6 +1004,8 @@ func _spawn_gathering(layout: Dictionary) -> void:
 		node.global_position = _vec(entry.get("position"))
 		node.set_ready(crafting.is_ready(node.key))
 		node.used.connect(crafting.gather)
+
+func _spawn_craft_stations() -> void:
 	var stations: Dictionary = crafting.data.get("placements", {}).get(current_region, {})
 	for station_id in stations:
 		var info := crafting.station(str(station_id))
@@ -1198,6 +1240,8 @@ static func enemy_kind(enemy: SlimeEnemy) -> String:
 		return "toad"
 	if enemy is CoastCrab:
 		return "crab"
+	if enemy is OreGolem:
+		return "ore_golem"
 	if enemy is StoneGolem:
 		return "golem"
 	if enemy is Skeleton:
@@ -1218,6 +1262,8 @@ func _spawn_npc(npc_data: Dictionary) -> void:
 	# "requires_flag": "ending" — only after the finale choice.
 	var needs_flag := str(npc_data.get("requires_flag", ""))
 	if needs_flag == "ending" and epilogue.ending().is_empty():
+		return
+	if not layout_allows(npc_data):
 		return
 	if not needs_flag.is_empty() and needs_flag != "ending" and not director.has_flag(needs_flag):
 		return
@@ -1364,6 +1410,20 @@ func _on_merchant_interacted(_source: Node2D) -> void:
 func _on_hunter_interacted(_source: Node2D) -> void:
 	if not director.try_talk("hunter"):
 		dialogues.on_hunter()
+
+func _on_pass_miner_interacted(_source: Node2D) -> void:
+	mine.talk_miner()
+
+## Rewards for quests handed out in code (Borin's story).
+func npc_reward(quest_id: String) -> void:
+	var summary := dialogues._grant_reward(quests.get_reward(quest_id))
+	hud.show_message("Задание выполнено: %s%s" % [str(quests.definitions.get(quest_id, {}).get("title", quest_id)), (" · " + summary) if not summary.is_empty() else ""], 3.5)
+
+## Rebuilds the land's art after the world changed (new buildings).
+func refresh_world_art() -> void:
+	if world != null and world.has_method("configure_region"):
+		world.set("allows", layout_allows)
+		world.configure_region(current_region)
 
 func _on_blacksmith_interacted(_source: Node2D) -> void:
 	if not director.try_talk("blacksmith"):
@@ -1931,6 +1991,8 @@ func _cast_spell() -> void:
 	_update_spell_hud()
 
 func _refresh_hud() -> void:
+	if borin != null:
+		borin.sync_progress()
 	if hud != null and player != null and quests != null:
 		hud.update_status(player, quests)
 

@@ -594,6 +594,31 @@ def sky_shard() -> tuple[Canvas, tuple[int, int]]:
     return c, (15, 23)
 
 
+def meteor_iron() -> tuple[Canvas, tuple[int, int]]:
+    """Sky metal: a dark star-iron lump with silver-blue veins in a crater."""
+    c = Canvas(28, 24)
+    dirt = ramp("#6a5a52", "#4a3c38", "#2e2428")
+    for y in range(14, 23):
+        for x in range(1, 27):
+            d = ((x + 0.5 - 14) / 12.5) ** 2 + ((y + 0.5 - 18.5) / 4.2) ** 2
+            if d <= 1:
+                c.put(x, y, dirt[2] if d < 0.45 else (dirt[1] if d < 0.8 else dirt[0]))
+    metal = ramp("#c8d4e8", "#7a86a0", "#4a5068", "#2a2c3c")
+    for y in range(4, 20):
+        for x in range(5, 23):
+            d = ((x + 0.5 - 14) / 8.5) ** 2 + ((y + 0.5 - 12.5) / 7.5) ** 2
+            if d <= 1:
+                shade = 0 if (x < 11 and y < 9) else (1 if d < 0.35 else (2 if d < 0.75 else 3))
+                c.put(x, y, metal[shade])
+    vein = ramp("#ffffff", "#9ef0ff", "#4ab0e8")
+    for x, y in ((9, 10), (10, 11), (11, 11), (12, 12), (16, 8), (17, 9), (17, 10), (15, 15), (16, 15), (19, 13)):
+        c.put(x, y, vein[1])
+    for x, y in ((10, 11), (17, 9), (16, 15)):
+        c.put(x, y, vein[0])
+    _finish(c)
+    return c, (14, 19)
+
+
 def rune_circle(colors=("#f6f0ff", "#d0b8ff", "#9a7aff", "#5a3ac0")) -> tuple[Canvas, tuple[int, int]]:
     """Glowing rune ring on the floor (crystal altar, storm heart)."""
     c = Canvas(40, 18)

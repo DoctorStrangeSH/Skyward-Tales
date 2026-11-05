@@ -331,6 +331,10 @@ def main() -> int:
         "herald": dict(colors={HAIR_LIGHT: (70, 60, 80), HAIR_SHADE: (44, 36, 54), RED_DARK: (60, 110, 170),
                                RED_MID: (220, 230, 244), RED_LIGHT: (255, 220, 120), MAUVE: (40, 60, 96),
                                GOLD: (255, 214, 110)}, trim=True, ahoge=False),
+        # Vetta, the Stone Pass miner: copper hair, ochre work coat.
+        "pass_miner": dict(colors={HAIR_LIGHT: (190, 100, 50), HAIR_SHADE: (130, 64, 34), RED_DARK: (140, 100, 40),
+                                   RED_MID: (200, 160, 80), RED_LIGHT: (240, 210, 130), MAUVE: (80, 70, 60),
+                                   GOLD: (220, 180, 90)}, trim=False),
         # Olm, the night guard: dark hair, steel-grey coat, red sash.
         "guard": dict(colors={HAIR_LIGHT: (96, 70, 52), HAIR_SHADE: (64, 46, 34), RED_DARK: (150, 40, 40),
                               RED_MID: (120, 130, 150), RED_LIGHT: (190, 200, 214), MAUVE: (60, 66, 84),

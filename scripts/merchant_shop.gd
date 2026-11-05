@@ -12,6 +12,8 @@ var sell_trust_bonus: Dictionary = {}
 var caravan_offers: Dictionary = {}
 var caravan_open: bool = false
 var price_mult: float = 1.0
+## Per-item sell multipliers (iron sells dear while the mine is lost).
+var sell_mult: Dictionary = {}
 
 func _init() -> void:
 	var file := FileAccess.open(DATA_PATH, FileAccess.READ)
@@ -51,6 +53,7 @@ func get_sell_price(item_id: String, bran_trust: int = 0, player: PlayerCharacte
 		return -1
 	if bran_trust >= int(sell_trust_bonus.get("trust", 999)):
 		price *= 1.0 + float(sell_trust_bonus.get("bonus", 0.0))
+	price *= float(sell_mult.get(item_id, 1.0))
 	return maxi(1, roundi(price))
 
 ## Copies the player can sell: equipped items keep one copy on the hero.

@@ -188,6 +188,13 @@
       "stat": "caravans",
       "goal": 5,
       "gold": 500
+    },
+    "mine_freed": {
+      "title": "Свет в забое",
+      "description": "Освободите шахту на Каменном Перевале.",
+      "stat": "mines",
+      "goal": 1,
+      "gold": 250
     }
   }
 }
