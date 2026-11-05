@@ -23,7 +23,7 @@ const MERCHANT_SHOP_SCRIPT := preload("res://scripts/merchant_shop.gd")
 const CRAFTING_SERVICE_SCRIPT := preload("res://scripts/crafting_service.gd")
 const GATE_SCRIPT := preload("res://scripts/region_gate.gd")
 ## Story bosses: defeated once (flag "<kind>_defeated"), never respawn.
-const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой колосс", "vail": "Вейл", "bog_king": "Болотный король", "crab_king": "Краб-король", "giant": "Горный великан", "crypt_lord": "Повелитель склепа", "ash_lord": "Владыка Пепла", "forge_titan": "Титан Горнила", "pattern_voice": "Голос Узора"}
+const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой колосс", "vail": "Вейл", "bog_king": "Болотный король", "crab_king": "Краб-король", "giant": "Горный великан", "crypt_lord": "Повелитель склепа", "ash_lord": "Владыка Пепла", "forge_titan": "Титан Горнила", "pattern_voice": "Голос Узора", "pattern_shade": "Тень Узора"}
 const ENEMY_SCRIPTS := {
 	"slime": preload("res://scripts/enemy.gd"),
 	"wolf": preload("res://scripts/forest_wolf.gd"),
@@ -49,7 +49,8 @@ const ENEMY_SCRIPTS := {
 	"ash_cultist": preload("res://scripts/ash_cultist.gd"),
 	"ash_lord": preload("res://scripts/ash_lord.gd"),
 	"forge_titan": preload("res://scripts/forge_titan.gd"),
-	"pattern_voice": preload("res://scripts/pattern_voice.gd")
+	"pattern_voice": preload("res://scripts/pattern_voice.gd"),
+	"pattern_shade": preload("res://scripts/pattern_shade.gd")
 }
 const MATERIAL_ITEMS := ["wolf_pelt", "iron_ore"]
 const RARITY_LABELS := {"common": "ОБЫЧНАЯ", "uncommon": "НЕОБЫЧНАЯ", "rare": "РЕДКАЯ"}
@@ -84,6 +85,7 @@ var day_night: DayNight
 var treasure: TreasureHunt
 var contracts: Contracts
 var legends: Legends
+var epilogue: Epilogue
 var achievements: Achievements
 var cast_cooldown_total: float = 0.0
 var defeated_enemies: int = 0
@@ -175,6 +177,10 @@ func _ready() -> void:
 	legends.game = self
 	add_child(legends)
 	legends.legend_defeated.connect(func(_id: String) -> void: achievements.add("legends"))
+	epilogue = Epilogue.new()
+	epilogue.name = "Epilogue"
+	epilogue.game = self
+	add_child(epilogue)
 	fishing.finished.connect(func(caught: String) -> void:
 		if not caught.is_empty():
 			achievements.add("fish"))
@@ -353,6 +359,8 @@ func _interaction_prompt(target: Node2D) -> String:
 		return "E — доска заказов"
 	if target is DigSpot:
 		return "E — копать"
+	if target is PatternRift:
+		return "E — закрыть разлом"
 	if target is DungeonLever:
 		return "E — опустить рычаг"
 	if target is SettlementObject:
@@ -512,6 +520,7 @@ func _populate_region() -> void:
 		board.global_position = _vec(spot)
 		board.used.connect(func(_b: ContractBoard) -> void: contracts.open_board())
 	treasure.spawn_mark()
+	epilogue.spawn_rift()
 	for node_data in layout.get("resource_nodes", []):
 		var node_id := str(node_data.get("id", ""))
 		if not bool(gathered_resource_nodes.get(node_id, false)):
@@ -590,7 +599,7 @@ func _clear_region_actors() -> void:
 	for node in get_children():
 		if node is WorldNpc and node.is_companion:
 			continue
-		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is SettlementObject or node is GatherNode or node is CraftStation or node is DungeonDoor or node is SpikeTrap or node is FlameVent or node is DungeonLever or node is ContractBoard or node is DigSpot or node is MagicBolt or node is EnemyMagicOrb:
+		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is SettlementObject or node is GatherNode or node is CraftStation or node is DungeonDoor or node is SpikeTrap or node is FlameVent or node is DungeonLever or node is ContractBoard or node is DigSpot or node is PatternRift or node is MagicBolt or node is EnemyMagicOrb:
 			remove_child(node)
 			node.queue_free()
 	elder = null
@@ -653,7 +662,12 @@ func choose_finale(ending: String) -> void:
 	achievements.add("ending")
 	director.queue_scene("ending_" + ending, func() -> void:
 		hud.show_title_card("Конец · %s" % ("Живое небо" if ending == "restore" else "Звёзды над землёй"), 6.0)
-		hud.show_message("Спасибо за игру! Мир остаётся открытым: побочные задания, подземелья и события ждут.", 8.0)
+		hud.show_message("Спасибо за игру! %s Вестник Сорен ждёт в Зелёных Пределах." % epilogue.blessing_text(), 8.0)
+		if current_region == "greenreach":
+			for npc_data in _layout().get("npcs", []):
+				if str(npc_data.get("id", "")) == "herald":
+					_spawn_npc(npc_data)
+			update_npc_markers()
 		request_autosave())
 
 ## Mira joins the party (Act II); safe to call more than once.
@@ -726,6 +740,8 @@ func _scale_to_region(enemy: SlimeEnemy) -> void:
 		enemy.xp_reward = int(round(enemy.xp_reward * 1.3))
 		enemy.health = enemy.max_health
 		enemy.combat_feedback.set_health(enemy.health, enemy.max_health)
+	if epilogue != null:
+		enemy.xp_reward = int(round(enemy.xp_reward * epilogue.xp_mult()))
 	var power := RegionCatalog.enemy_power(current_region)
 	if is_equal_approx(power, 1.0) or enemy is GroveGuardian:
 		return
@@ -994,6 +1010,7 @@ func _update_minimap() -> void:
 	hud.minimap.update_map(current_region, player.global_position, region_markers)
 	var live := minimap_markers()
 	live.append_array(treasure.minimap_marker())
+	live.append_array(epilogue.minimap_marker())
 	hud.minimap.day_time = day_night.time if day_night.cycles_here() else -1.0
 	hud.minimap.set_live(live, player.facing)
 	if hud.world_map_visible:
@@ -1061,6 +1078,8 @@ func _discover_nearby_enemies() -> void:
 static func enemy_kind(enemy: SlimeEnemy) -> String:
 	if enemy is LootImp:
 		return "loot_imp"
+	if enemy is PatternShade:
+		return "pattern_shade"
 	if enemy is PatternVoice:
 		return "pattern_voice"
 	if enemy is ForgeTitan:
@@ -1118,6 +1137,12 @@ func _enemy_kind(enemy: SlimeEnemy) -> String:
 
 func _spawn_npc(npc_data: Dictionary) -> void:
 	var npc_id := str(npc_data.get("id", ""))
+	# "requires_flag": "ending" — only after the finale choice.
+	var needs_flag := str(npc_data.get("requires_flag", ""))
+	if needs_flag == "ending" and epilogue.ending().is_empty():
+		return
+	if not needs_flag.is_empty() and needs_flag != "ending" and not director.has_flag(needs_flag):
+		return
 	if npc_id == "cartographer" and companion != null:
 		return  # Mira travels with the hero instead of waiting at camp
 	var npc := NPC_SCRIPT.new() as WorldNpc
@@ -1176,7 +1201,7 @@ func spawn_enemy(kind: String, spawn_position: Vector2, elite: String = "") -> S
 	match kind:
 		"guardian":
 			enemy.defeated.connect(func(xp: int) -> void: _on_guardian_defeated(xp, enemy.global_position))
-		"echo", "tempest", "vail", "bog_king", "crab_king", "giant", "crypt_lord", "ash_lord", "forge_titan", "pattern_voice":
+		"echo", "tempest", "vail", "bog_king", "crab_king", "giant", "crypt_lord", "ash_lord", "forge_titan", "pattern_voice", "pattern_shade":
 			enemy.defeated.connect(func(xp: int) -> void: _on_story_boss_defeated(kind, xp, enemy.global_position))
 		"wolf":
 			enemy.defeated.connect(func(xp: int) -> void:
@@ -1385,6 +1410,8 @@ func _on_story_boss_defeated(kind: String, xp: int, death_position: Vector2) -> 
 		return
 	director.set_flag(kind + "_defeated")
 	achievements.add("bosses")
+	if kind == "pattern_shade":
+		achievements.add("shade")
 	player.add_experience(xp)
 	_spawn_loot(death_position, "ancient_relic")
 	spawn_generated_loot(death_position + Vector2(14, 6), "rare")
@@ -1450,7 +1477,7 @@ func roll_drops(kind: String, at: Vector2, elite: bool = false) -> Array:
 		var coins := loot_rng.randi_range(int(gold_range[0]), int(gold_range[1])) + maxi(0, enemy_power_bonus())
 		if elite:
 			coins *= int(tables.get("elite", {}).get("gold_mult", 3))
-		coins = roundi(float(coins) * player.get_gold_multiplier() * (1.3 if day_night != null and day_night.night_here() else 1.0))
+		coins = roundi(float(coins) * player.get_gold_multiplier() * (1.3 if day_night != null and day_night.night_here() else 1.0) * (epilogue.gold_mult() if epilogue != null else 1.0))
 		if coins > 0:
 			_spawn_loot(_scatter(at), "gold").amount = coins
 			dropped.append("gold")

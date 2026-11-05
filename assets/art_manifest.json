@@ -89,6 +89,12 @@
    16
   ]
  },
+ "icons/earth_star.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/ember_coal.png": {
   "size": [
    16,
@@ -258,6 +264,12 @@
   ]
  },
  "icons/pattern_key.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/pattern_shard.png": {
   "size": [
    16,
    16
@@ -438,6 +450,12 @@
   ]
  },
  "icons/sky_seal.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/sky_thread.png": {
   "size": [
    16,
    16

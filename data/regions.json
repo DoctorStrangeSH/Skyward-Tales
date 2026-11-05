@@ -37,6 +37,12 @@
         "name": "Лира",
         "position": [924, 508],
         "outfit_color": [0.4, 0.3, 0.6]
+      },
+      {
+        "id": "herald",
+        "name": "Сорен, вестник",
+        "position": [690, 604],
+        "requires_flag": "ending"
       }
     ],
     "resource_nodes": [
@@ -5409,6 +5415,12 @@
       {
         "kind": "shade",
         "position": [820, 300]
+      },
+      {
+        "kind": "pattern_shade",
+        "position": [640, 400],
+        "quest": "post_shadow",
+        "elite": ""
       }
     ],
     "gates": [

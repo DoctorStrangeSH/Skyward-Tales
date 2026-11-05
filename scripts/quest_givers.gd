@@ -36,7 +36,10 @@ func current_quest(npc_id: String) -> String:
 	return ""
 
 func _unlocked(quest_id: String) -> bool:
-	var needs := str(game.quests.definitions.get(quest_id, {}).get("requires_quest", ""))
+	var definition: Dictionary = game.quests.definitions.get(quest_id, {})
+	if str(definition.get("requires_flag", "")) == "ending" and game.epilogue.ending().is_empty():
+		return false
+	var needs := str(definition.get("requires_quest", ""))
 	return needs.is_empty() or game.quests.is_completed(needs)
 
 ## "quest" (!) when an offer is waiting, "ready" (?) when a reward is due.

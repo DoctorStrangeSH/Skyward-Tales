@@ -596,5 +596,50 @@
       "gold": 800
     },
     "main": true
+  },
+  {
+    "id": "post_rifts",
+    "title": "Трещины Узора",
+    "description": "Закройте шесть разломов Узора: в Зачарованном лесу, Туманной топи, на Солёном берегу, Каменном Перевале, в Пепельной пустоши и на Расколотом острове. Подойдите к разлому, нажмите E и одолейте отголоски.",
+    "target": 6,
+    "side": true,
+    "requires_flag": "ending",
+    "reward": {
+      "experience": 1500,
+      "gold": 800,
+      "items": [
+        {
+          "id": "pattern_shard",
+          "amount": 3
+        }
+      ]
+    }
+  },
+  {
+    "id": "post_shadow",
+    "title": "Тень Узора",
+    "description": "Вся тьма из разломов стеклась к Сердцу неба. Одолейте Тень Узора у ядра.",
+    "target": 1,
+    "side": true,
+    "kill_kind": "pattern_shade",
+    "requires_quest": "post_rifts",
+    "reward": {
+      "experience": 3000,
+      "gold": 1500,
+      "items_by_flag": {
+        "ending_restore": [
+          {
+            "id": "sky_thread",
+            "amount": 1
+          }
+        ],
+        "ending_lower": [
+          {
+            "id": "earth_star",
+            "amount": 1
+          }
+        ]
+      }
+    }
   }
 ]

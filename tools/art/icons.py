@@ -632,7 +632,23 @@ def build_ash() -> dict[str, Canvas]:
         "crab_aegis": armor(ramp("#e0e8f4", "#9aa8c0", "#5c6a84"), ramp("#fff0d8", "#e8d4b0", "#b89a70")),
         "golem_heart": gem(ramp("#fff0c0", "#e0a040", "#8a5a20")),
         "spark_collar": gem(ramp("#fff0b0", "#ff8a2a", "#a8341a")),
+        "pattern_shard": _pattern_shard(),
+        "sky_thread": gem(ramp("#f0ffff", "#7adcff", "#3a70c0")),
+        "earth_star": gem(ramp("#fffbe0", "#ffd060", "#a86a20")),
     }
+
+
+def _pattern_shard() -> Canvas:
+    c = Canvas(16, 16)
+    light = ramp("#fff6e0", "#c8a0ff", "#6a3aa8")
+    for y in range(2, 14):
+        half = (y - 2) // 3 if y < 9 else (13 - y) // 2
+        for x in range(8 - half, 9 + half):
+            c.put(x, y, light[1] if x < 8 else light[2])
+    c.put(7, 4, light[0])
+    c.put(8, 6, light[0])
+    c.put(7, 8, light[0])
+    return _finish(c)
 
 
 def _map_icon() -> Canvas:

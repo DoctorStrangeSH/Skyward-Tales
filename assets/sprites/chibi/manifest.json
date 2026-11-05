@@ -109,6 +109,17 @@
   ],
   "feet": 40
  },
+ "herald": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
  "herbalist": {
   "anims": {
    "idle": 8

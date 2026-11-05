@@ -29,7 +29,13 @@ func _grant_reward(reward: Dictionary) -> String:
 	game.player.add_experience(int(reward.get("experience", 0)))
 	game.player.add_gold(int(reward.get("gold", 0)))
 	var summary := ""
-	var items: Variant = reward.get("items", [])
+	var items: Variant = (reward.get("items", []) as Array).duplicate() if reward.get("items", []) is Array else []
+	# "items_by_flag": gifts that depend on a story flag (the finale choice).
+	var by_flag: Variant = reward.get("items_by_flag", {})
+	if by_flag is Dictionary:
+		for flag in by_flag:
+			if game.director.has_flag(str(flag)) and by_flag[flag] is Array:
+				items.append_array(by_flag[flag])
 	if items is Array:
 		for item in items:
 			if item is Dictionary:
@@ -127,6 +133,15 @@ func handle_choice(choice_id: String) -> void:
 
 func on_elder() -> void:
 	var quests := game.quests
+	match game.epilogue.ending():
+		"restore":
+			_say("Старейшина Элиан", "Видишь, как ночами горит небо? Это Узор, {hero}. Острова живы, и дети спрашивают, когда ты вернёшься. Сорен из ордена искал тебя — он ждёт неподалёку.")
+			game._refresh_hud()
+			return
+		"lower":
+			_say("Старейшина Элиан", "Земля приняла нас мягко. Ночами падают звёзды, а внизу нас встретили новые соседи. Ты {сделал|сделала} верный выбор, {hero}. Сорен из ордена искал тебя — он ждёт неподалёку.")
+			game._refresh_hud()
+			return
 	if quests.is_completed("moonleaf_gathering"):
 		if game.relationships.get_score("elder") >= 20:
 			_say("Старейшина Элиан", "Ты {доказал|доказала}, что думаешь не только о себе. Я открыл для тебя старое хранилище у северных руин — там поселение прятало припасы во время войны.")

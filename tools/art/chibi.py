@@ -327,6 +327,10 @@ def main() -> int:
                               RED_MID: (220, 208, 170), RED_LIGHT: (255, 236, 160), SKIN_LIGHT: (250, 240, 226),
                               SKIN_SHADE: (220, 200, 180), MAUVE: (150, 136, 110), GOLD: (255, 230, 140)},
                       ahoge=False, alpha=0.85),
+        # Soren, herald of the reborn Keeper order: dark hair, white-and-sky-blue robe, gold trim.
+        "herald": dict(colors={HAIR_LIGHT: (70, 60, 80), HAIR_SHADE: (44, 36, 54), RED_DARK: (60, 110, 170),
+                               RED_MID: (220, 230, 244), RED_LIGHT: (255, 220, 120), MAUVE: (40, 60, 96),
+                               GOLD: (255, 214, 110)}, trim=True, ahoge=False),
         # Vail: long white hair, violet Keeper robes.
         "vail": dict(colors={RED_DARK: (58, 40, 98), RED_MID: (92, 66, 150), RED_LIGHT: (176, 132, 236), MAUVE: (40, 30, 60),
                              GOLD: (210, 180, 255)}, ahoge=False),
