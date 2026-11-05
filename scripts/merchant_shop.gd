@@ -7,6 +7,11 @@ var offers: Dictionary = {}
 var discount_tiers: Array = []
 var sell_prices: Dictionary = {}
 var sell_trust_bonus: Dictionary = {}
+## The world shapes the market: a rescued caravan brings "caravan_offers"
+## and cheaper prices; a lost one makes everything dearer.
+var caravan_offers: Dictionary = {}
+var caravan_open: bool = false
+var price_mult: float = 1.0
 
 func _init() -> void:
 	var file := FileAccess.open(DATA_PATH, FileAccess.READ)
@@ -26,6 +31,9 @@ func _init() -> void:
 	var raw_sell: Variant = parsed.get("sell_prices", {})
 	if raw_sell is Dictionary:
 		sell_prices = raw_sell.duplicate(true)
+	var raw_caravan: Variant = parsed.get("caravan_offers", {})
+	if raw_caravan is Dictionary:
+		caravan_offers = raw_caravan.duplicate(true)
 	var raw_bonus: Variant = parsed.get("sell_trust_bonus", {})
 	if raw_bonus is Dictionary:
 		sell_trust_bonus = raw_bonus.duplicate(true)
@@ -86,18 +94,29 @@ func get_discount(reputation: int) -> float:
 func get_discount_percent(reputation: int) -> int:
 	return roundi(get_discount(reputation) * 100.0)
 
+## The current catalog: regular goods plus caravan goods while the route is open.
+func catalog() -> Dictionary:
+	if not caravan_open:
+		return offers
+	var all := offers.duplicate()
+	for item_id in caravan_offers:
+		all[item_id] = caravan_offers[item_id]
+	return all
+
 func get_price(item_id: String, reputation: int = 0) -> int:
-	if not offers.has(item_id) or not offers[item_id] is Dictionary:
+	var all := catalog()
+	if not all.has(item_id) or not all[item_id] is Dictionary:
 		return -1
-	var base_price := int(offers[item_id].get("base_price", 0))
+	var base_price := int(all[item_id].get("base_price", 0))
 	if base_price <= 0:
 		return -1
-	return maxi(1, floori(float(base_price) * (1.0 - get_discount(reputation))))
+	return maxi(1, floori(float(base_price) * (1.0 - get_discount(reputation)) * price_mult))
 
 func get_offers(reputation: int = 0, bran_trust: int = 0) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	for item_id in offers:
-		var definition: Variant = offers[item_id]
+	var all := catalog()
+	for item_id in all:
+		var definition: Variant = all[item_id]
 		if not definition is Dictionary:
 			continue
 		if bran_trust < int(definition.get("required_bran_trust", 0)):
@@ -126,9 +145,10 @@ func get_offers(reputation: int = 0, bran_trust: int = 0) -> Array[Dictionary]:
 func purchase(player: PlayerCharacter, item_id: String, reputation: int = 0, bran_trust: int = 0) -> Dictionary:
 	if player == null:
 		return {"success": false, "message": "Покупка сейчас недоступна."}
-	if not offers.has(item_id):
+	var all := catalog()
+	if not all.has(item_id):
 		return {"success": false, "message": "Такого товара нет в каталоге."}
-	var definition: Dictionary = offers[item_id]
+	var definition: Dictionary = all[item_id]
 	if bran_trust < int(definition.get("required_bran_trust", 0)):
 		return {"success": false, "message": "Бран пока не готов предложить этот товар."}
 	var trade: Variant = definition.get("trade", {})

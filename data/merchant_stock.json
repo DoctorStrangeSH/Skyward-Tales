@@ -66,5 +66,37 @@
   "sell_trust_bonus": {
     "trust": 20,
     "bonus": 0.1
+  },
+  "caravan_offers": {
+    "treasure_map": {
+      "name": "Карта сокровищ",
+      "description": "Заморская карта: крест где-то в посещённых землях",
+      "base_price": 90
+    },
+    "power_elixir": {
+      "name": "Эликсир мощи",
+      "description": "Временно усиливает урон",
+      "base_price": 70
+    },
+    "crystal_lens": {
+      "name": "Хрустальная линза",
+      "description": "Редкий амулет из-за моря",
+      "base_price": 210
+    },
+    "steel_sword": {
+      "name": "Стальной меч",
+      "description": "Надёжный клинок заморской ковки",
+      "base_price": 240
+    },
+    "cog_charm": {
+      "name": "Механический талисман",
+      "description": "Диковинка небесных мастеров",
+      "base_price": 180
+    },
+    "wind_essence": {
+      "name": "Эссенция ветра",
+      "description": "Редкий материал для ремесла",
+      "base_price": 45
+    }
   }
 }

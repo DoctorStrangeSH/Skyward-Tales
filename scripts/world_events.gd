@@ -9,7 +9,7 @@ class_name WorldEvents
 ## Events are not saved; the next one comes after a pause.
 
 const INTERVAL := Vector2(150.0, 300.0)
-const KINDS := ["starfall", "elite", "thief", "tailwind", "trader", "meteor"]
+const KINDS := ["starfall", "elite", "thief", "tailwind", "trader", "meteor", "caravan", "caravan"]
 const TRADER_TIME := 120.0
 const NPC_SCRIPT := preload("res://scripts/npc.gd")
 const IMP_SCRIPT := preload("res://scripts/loot_imp.gd")
@@ -61,7 +61,22 @@ func start(kind: String) -> bool:
 			return _trader()
 		"meteor":
 			return _meteor()
+		"caravan":
+			return _caravan()
 	return false
+
+## A merchant caravan under attack (see caravan.gd). Not in the village.
+func _caravan() -> bool:
+	if game.current_region == game.village.region():
+		return _starfall()
+	var caravan := Caravan.new()
+	game.add_child(caravan)
+	caravan.global_position = _spot_near(110.0, 180.0)
+	caravan.setup(game, game.epilogue._local_kinds(), 4)
+	game.hud.show_title_card("Нападение на караван!", 2.5)
+	game.hud.show_message("Твари напали на торговый караван. Отбейте его за минуту!", 4.0)
+	GameAudio.play("boss_roar", -10.0, 0.0)
+	return true
 
 func _spot_near(distance_min: float, distance_max: float) -> Vector2:
 	var size: Vector2 = game.world.map_size()

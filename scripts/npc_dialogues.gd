@@ -407,6 +407,11 @@ func on_merchant() -> void:
 	var discount_percent: int = game.merchant_shop.get_discount_percent(reputation)
 	var choices: Array[Dictionary] = []
 	var message := "Добро пожаловать! Чем могу помочь?"
+	# The road decides the market.
+	var route_open: bool = game.world_state.has("trade_route")
+	var plundered: bool = game.world_state.has("caravan_lost")
+	game.merchant_shop.caravan_open = route_open
+	game.merchant_shop.price_mult = 0.9 if route_open else (1.15 if plundered else 1.0)
 	if quests.is_completed(quest_id):
 		message = "Благодаря тебе лавка снова получает товары. %s." % game.relationships.get_reaction("bran")
 	elif quests.is_ready_to_complete(quest_id):
@@ -417,6 +422,10 @@ func on_merchant() -> void:
 		message = "Осталось найти ящики с припасами: %d из 3." % int(quests.states[quest_id].get("progress", 0))
 	elif quests.is_completed("moonleaf_gathering") and quests.active_quest_id.is_empty():
 		choices.append({"id": "merchant_quest_start", "label": "Помочь вернуть потерянные поставки"})
+	if route_open:
+		message += "\nКараван дошёл — заморские товары и скидка 10%% ещё %d дн.!" % game.world_state.days_left("trade_route")
+	elif plundered:
+		message += "\nКараван разграбили… Пока цены выше обычного."
 	if discount_percent > 0:
 		message += "\nЗа помощь поселению действует скидка %d%%." % discount_percent
 	else:
