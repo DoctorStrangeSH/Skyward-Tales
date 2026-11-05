@@ -86,7 +86,7 @@ func _run() -> void:
 	if not _verify(dest.has("moonlit_grove") and dest.has("misty_marsh"), "both stones are destinations"):
 		return
 	game.open_map()
-	if not _verify(game.hud.world_map_view.travel_row.get_child_count() == 3, "map lists travel buttons"):
+	if not _verify(game.hud.world_map_view.overview.awake.size() == 2 and game.hud.world_map_view.travel_row.get_child_count() == 3, "the world map knows the awakened stones"):
 		return
 	if not _verify(game.fast_travel("moonlit_grove") and game.current_region == "moonlit_grove", "fast travel to the grove"):
 		return

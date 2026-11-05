@@ -86,6 +86,7 @@ var treasure: TreasureHunt
 var contracts: Contracts
 var legends: Legends
 var epilogue: Epilogue
+var quest_nav: QuestNav
 var achievements: Achievements
 var cast_cooldown_total: float = 0.0
 var defeated_enemies: int = 0
@@ -177,6 +178,7 @@ func _ready() -> void:
 	legends.game = self
 	add_child(legends)
 	legends.legend_defeated.connect(func(_id: String) -> void: achievements.add("legends"))
+	quest_nav = QuestNav.new(self)
 	epilogue = Epilogue.new()
 	epilogue.name = "Epilogue"
 	epilogue.game = self
@@ -221,7 +223,7 @@ func _ready() -> void:
 			hud.update_hotbar(skills.hotbar_entries())
 		hud.refresh_hero_panel(player, skills))
 	hud.pause_save_requested.connect(save_game)
-	hud.pause_load_requested.connect(load_game)
+	hud.pause_load_requested.connect(func() -> void: load_game(true))
 	hud.pause_menu_requested.connect(_go_to_title)
 	hud.defeat_restart_requested.connect(_restart_run)
 	hud.defeat_load_requested.connect(_load_from_defeat)
@@ -315,6 +317,8 @@ func _process(delta: float) -> void:
 		_update_sword(delta)
 	if player == null or hud == null or game_over:
 		return
+	_process_respawns(delta)
+	_tick_autosave(delta)
 	_update_spell_hud()
 	hud.update_hotbar(skills.hotbar_entries())
 	hud.quest_tracker.extra = contracts.tracker_entries()
@@ -333,10 +337,14 @@ func _process(delta: float) -> void:
 		if not player.buffs.is_empty():
 			_refresh_hud()
 	_discover_nearby_enemies()
+	# The minimap redraws every frame (smooth); discovery and quest targets
+	# are refreshed a few times a second.
 	_minimap_clock -= delta
 	if _minimap_clock <= 0.0:
-		_minimap_clock = 0.12
-		_update_minimap()
+		_minimap_clock = 0.3
+		_discover_landmarks()
+		quest_nav.refresh()
+	_draw_minimap()
 	hud.update_dodge(player.dodge_cooldown_left, player.dodge_cooldown, player.dodge_time_left > 0.0)
 	nearby_interactable = _find_nearest_interactable()
 	var busy: bool = hud.dialogue_visible or hud.inventory_open or hud.overlay_visible() or hud.world_map_visible or fishing.active()
@@ -540,7 +548,7 @@ func _populate_region() -> void:
 		var needs := str(enemy_data.get("quest", ""))
 		if not needs.is_empty() and not quests.is_active(needs):
 			continue
-		spawn_enemy(str(enemy_data.get("kind", "slime")), _vec(enemy_data.get("position")), str(enemy_data.get("elite", "?")))
+		_spawn_layout_enemy(enemy_data)
 	_spawn_waystone(layout)
 	_spawn_gathering(layout)
 	_spawn_dynamic_props(layout)
@@ -550,6 +558,43 @@ func _populate_region() -> void:
 		spawn_region_boss()
 	for gate_data in layout.get("gates", []):
 		_spawn_gate(str(gate_data.get("target", "")), _vec(gate_data.get("position")), _vec(gate_data.get("arrival")), str(gate_data.get("label", "")))
+
+## Ordinary monsters come back a while after they fall (bosses, quest foes,
+## legends and event foes do not).
+const ENEMY_RESPAWN := 40.0
+var _respawns: Array = []
+var _play_clock: float = 0.0
+
+func _spawn_layout_enemy(enemy_data: Dictionary) -> SlimeEnemy:
+	var kind := str(enemy_data.get("kind", "slime"))
+	var enemy := spawn_enemy(kind, _vec(enemy_data.get("position")), str(enemy_data.get("elite", "?")))
+	if enemy == null or enemy_data.has("quest") or kind in STORY_BOSSES or kind == "guardian":
+		return enemy
+	var region_id := current_region
+	enemy.defeated.connect(func(_xp: int) -> void:
+		_respawns.append({"region": region_id, "data": enemy_data, "at": _play_clock + ENEMY_RESPAWN}))
+	return enemy
+
+func _process_respawns(delta: float) -> void:
+	_play_clock += delta
+	if _respawns.is_empty():
+		return
+	for entry in _respawns.duplicate():
+		if float(entry["at"]) > _play_clock:
+			continue
+		if str(entry["region"]) != current_region:
+			_respawns.erase(entry)
+			continue
+		var at := _vec(entry["data"].get("position"))
+		# Never pop up in plain sight: wait until the hero walks away.
+		if player.global_position.distance_to(at) < 200.0:
+			entry["at"] = _play_clock + 3.0
+			continue
+		_respawns.erase(entry)
+		var enemy := _spawn_layout_enemy(entry["data"])
+		if enemy != null:
+			enemy.modulate.a = 0.0
+			enemy.create_tween().tween_property(enemy, "modulate:a", 1.0, 0.8)
 
 func _spawn_pending_supply_crates(layout: Dictionary) -> void:
 	var state: Dictionary = quests.states.get("bran_supply_run", {})
@@ -604,6 +649,7 @@ func _clear_region_actors() -> void:
 			node.queue_free()
 	elder = null
 	nearby_interactable = null
+	_respawns.clear()
 
 func _set_region(region_id: String, arrival: Vector2, notify: bool = true) -> void:
 	current_region = RegionCatalog.resolve(region_id)
@@ -776,6 +822,9 @@ func _herb_quest(herb_data: Dictionary) -> String:
 
 ## A quest just started: its herbs and enemies in this region appear now.
 func _on_quest_started(quest_id: String) -> void:
+	request_autosave()
+	if world != null:
+		spawn_story_objects()
 	if world == null:
 		return
 	for herb_data in _layout().get("herbs", []):
@@ -972,13 +1021,23 @@ func _on_waystone_used(stone: Waystone) -> void:
 		hud.show_message("Небесный камень пробуждён. Перемещение — на карте (M).", 3.5)
 		request_autosave()
 		return
-	open_map()
+	open_map(true)
 
-func open_map() -> void:
+## The map (M). From a sky stone it opens on the world tab, ready to travel.
+func open_map(world_tab: bool = false) -> void:
+	quest_nav.refresh()
 	hud.open_world_map(current_region, player.global_position, discovered_landmarks.get(current_region, {}), quests.get_active_summary())
-	hud.world_map.set_live(minimap_markers(), player.facing)
-	hud.world_map_view.set_destinations(current_region, travel_destinations())
-	hud.world_map_view.set_world(current_region, visited_regions)
+	var live := minimap_markers()
+	live.append_array(treasure.minimap_marker())
+	live.append_array(epilogue.minimap_marker())
+	live.append_array(quest_nav.minimap_markers())
+	hud.world_map.set_live(live, player.facing)
+	var destinations := travel_destinations()
+	hud.world_map_view.set_destinations(current_region, destinations)
+	var goal := quest_nav.main_region()
+	hud.world_map_view.set_world(current_region, visited_regions, destinations, quest_nav.region_badges(), QuestNav.route(current_region, goal) if not goal.is_empty() else [])
+	if world_tab:
+		hud.world_map_view.show_world(true)
 
 ## Fast travel to an awakened stone. Refused during a boss fight.
 func fast_travel(region_id: String) -> bool:
@@ -996,6 +1055,11 @@ const MINIMAP_DISCOVER := 160.0
 var _minimap_clock: float = 0.0
 
 func _update_minimap() -> void:
+	_discover_landmarks()
+	quest_nav.refresh()
+	_draw_minimap()
+
+func _discover_landmarks() -> void:
 	var region_markers: Dictionary = discovered_landmarks.get(current_region, {})
 	for actor in get_children():
 		var kind := _landmark_kind(actor)
@@ -1007,10 +1071,13 @@ func _update_minimap() -> void:
 		if not region_markers.has(marker_id):
 			region_markers[marker_id] = {"position": [actor.global_position.x, actor.global_position.y], "kind": kind}
 	discovered_landmarks[current_region] = region_markers
-	hud.minimap.update_map(current_region, player.global_position, region_markers)
+
+func _draw_minimap() -> void:
+	hud.minimap.update_map(current_region, player.global_position, discovered_landmarks.get(current_region, {}))
 	var live := minimap_markers()
 	live.append_array(treasure.minimap_marker())
 	live.append_array(epilogue.minimap_marker())
+	live.append_array(quest_nav.minimap_markers())
 	hud.minimap.day_time = day_night.time if day_night.cycles_here() else -1.0
 	hud.minimap.set_live(live, player.facing)
 	if hud.world_map_visible:
@@ -1582,6 +1649,7 @@ func _use_consumable(item_id: String, label: String = "") -> void:
 func _on_level_up(new_level: int) -> void:
 	GameAudio.play("level_up", -2.0, 0.0)
 	achievements.set_max("level", new_level)
+	request_autosave()
 	# No pause: each level gives a skill point to spend in the tree (T).
 	Vfx.level_up(self, player.global_position)
 	if hud != null and not game_over:
@@ -1888,13 +1956,29 @@ func request_autosave() -> void:
 		_autosave_pending = true
 		autosave.call_deferred()
 
+## Besides saving on every important event, the game saves itself every two
+## minutes of play (not in the middle of a conversation or a cutscene).
+const AUTOSAVE_INTERVAL := 120.0
+var _autosave_clock: float = 0.0
+
+func _tick_autosave(delta: float) -> void:
+	_autosave_clock += delta
+	if _autosave_clock < AUTOSAVE_INTERVAL:
+		return
+	if hud.dialogue_visible or story.active or fishing.active():
+		return
+	_autosave_clock = 0.0
+	request_autosave()
+
 func autosave() -> bool:
 	_autosave_pending = false
 	if not autosave_enabled or game_over or player == null or not is_inside_tree():
 		return false
 	var success: bool = SAVE_SCRIPT.save_snapshot(make_save_snapshot(), autosave_path())
-	if success and hud != null and hud.message_time <= 0.0:
-		hud.show_message("Автосохранение", 1.2)
+	if success:
+		_autosave_clock = 0.0
+		if hud != null:
+			hud.show_save_indicator()
 	return success
 
 func save_game() -> bool:

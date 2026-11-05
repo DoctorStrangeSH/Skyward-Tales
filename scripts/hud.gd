@@ -22,6 +22,7 @@ var dialogue_speaker_label: Label
 var dialogue_hint_label: Label
 var dialogue_portrait: TextureRect
 var title_card: Label
+var save_indicator: Control
 var spell_label: Label
 var spell_cooldown_bar: ProgressBar
 var dodge_label: Label
@@ -327,7 +328,7 @@ func _process(delta: float) -> void:
 			message_label.text = ""
 	# Big title cards hide while a window (journal, bag...) covers the screen.
 	if title_card != null and is_instance_valid(title_card):
-		title_card.visible = not (journal_view.visible or inventory_open)
+		title_card.visible = not (journal_view.visible or inventory_open or world_map_visible or overlay_visible())
 
 func _unhandled_input(event: InputEvent) -> void:
 	if world_map_visible:
@@ -360,6 +361,7 @@ func open_world_map(region: String, hero: Vector2, landmarks: Dictionary, quest:
 	if world_map_visible or defeat_visible or talent_visible:
 		return
 	world_map_view.show_region(region, hero, landmarks, quest)
+	world_map_view.move_to_front()
 	world_map_visible = true
 	get_tree().paused = true
 
@@ -616,6 +618,13 @@ func show_scene_line(speaker: String, message: String, portrait_path: String) ->
 	_layout_dialogue()
 
 ## Big chapter title in the middle of the screen that fades in and out.
+## A small "saved" badge in the corner: a spinning gem, then a check mark.
+func show_save_indicator() -> void:
+	if save_indicator == null:
+		save_indicator = SaveIndicator.new()
+		dialogue_panel.get_parent().add_child(save_indicator)
+	(save_indicator as SaveIndicator).play()
+
 func show_title_card(text: String, duration: float = 3.0) -> void:
 	# A newer card replaces the old one instead of piling on top of it.
 	if title_card != null and is_instance_valid(title_card):

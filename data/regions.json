@@ -1023,7 +1023,7 @@
         "position": [321, 191]
       }
     ],
-    "map_pos": [0.3, 0.5],
+    "map_pos": [0.27, 0.55],
     "contract_boards": [
       [740, 606]
     ]
@@ -1287,7 +1287,7 @@
         "position": [544, 287]
       }
     ],
-    "map_pos": [0.48, 0.42]
+    "map_pos": [0.45, 0.36]
   },
   "crystal_caves": {
     "name": "Хрустальные пещеры",
@@ -1523,7 +1523,7 @@
         "position": [799, 519]
       }
     ],
-    "map_pos": [0.66, 0.5]
+    "map_pos": [0.58, 0.55]
   },
   "sky_island": {
     "name": "Небесный остров",
@@ -1692,7 +1692,7 @@
         "position": [607, 608]
       }
     ],
-    "map_pos": [0.72, 0.22]
+    "map_pos": [0.6, 0.18]
   },
   "wind_spires": {
     "name": "Ветреные шпили",
@@ -1851,7 +1851,7 @@
     },
     "level": 9,
     "waystone": [300, 500],
-    "map_pos": [0.86, 0.3]
+    "map_pos": [0.75, 0.28]
   },
   "sky_rift": {
     "name": "Расколотый остров",
@@ -1990,7 +1990,7 @@
     },
     "level": 11,
     "waystone": [330, 480],
-    "map_pos": [0.95, 0.1]
+    "map_pos": [0.9, 0.42]
   },
   "misty_marsh": {
     "name": "Туманная топь",
@@ -2226,7 +2226,7 @@
         "position": [580, 341]
       }
     ],
-    "map_pos": [0.5, 0.82]
+    "map_pos": [0.45, 0.8]
   },
   "salt_coast": {
     "name": "Солёный берег",
@@ -2234,7 +2234,7 @@
     "level": 4,
     "enemy_power": 1.3,
     "waystone": [900, 520],
-    "map_pos": [0.05, 0.62],
+    "map_pos": [0.08, 0.55],
     "npcs": [
       {
         "id": "keeper",
@@ -2700,7 +2700,7 @@
     "level": 8,
     "enemy_power": 1.0,
     "waystone": [700, 640],
-    "map_pos": [0.62, 0.85],
+    "map_pos": [0.73, 0.8],
     "npcs": [
       {
         "id": "smith_master",
@@ -3275,7 +3275,7 @@
     "map_color": [0.4, 0.34, 0.3],
     "level": 3,
     "enemy_power": 1.0,
-    "map_pos": [0.42, 0.7],
+    "map_pos": [0.27, 0.86],
     "npcs": [],
     "chests": [
       {
@@ -3952,7 +3952,7 @@
     "level": 10,
     "enemy_power": 1.15,
     "waystone": [760, 640],
-    "map_pos": [0.86, 0.78],
+    "map_pos": [0.9, 0.74],
     "npcs": [
       {
         "id": "ash_hermit",
@@ -4417,7 +4417,7 @@
     "map_color": [0.36, 0.16, 0.12],
     "level": 12,
     "enemy_power": 1.25,
-    "map_pos": [0.9, 0.92],
+    "map_pos": [0.81, 0.97],
     "npcs": [],
     "chests": [
       {
@@ -5349,7 +5349,7 @@
     "level": 14,
     "enemy_power": 1.35,
     "waystone": [640, 640],
-    "map_pos": [0.97, 0.03],
+    "map_pos": [0.9, 0.1],
     "npcs": [],
     "chests": [
       {

@@ -57,7 +57,7 @@ func refresh() -> void:
 		"bite":
 			hint.text = "КЛЮЁТ! Жмите E / ЛКМ!"
 		"reel":
-			hint.text = "Тяните! Держите E / ЛКМ — зона идёт вверх, отпустите — вниз. Держите рыбу в зелёной зоне."
+			hint.text = "Тяните! Держите E / ЛКМ — зелёная зона идёт вправо, отпустите — влево. Держите рыбу в зоне."
 	var reeling := _fishing.state == "reel"
 	bar.visible = reeling
 	progress.visible = reeling
