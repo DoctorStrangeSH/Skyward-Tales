@@ -22,6 +22,7 @@ var _chatter_clock: float = 3.0
 var _greeted: Dictionary = {}
 var _patrol_index: int = 0
 var _clock: float = 0.0
+var _last_greet: float = -999.0
 
 func _ready() -> void:
 	rng.randomize()
@@ -64,6 +65,12 @@ func spot(npc_id: String, for_phase: String) -> Vector2:
 	var routine: Dictionary = data.get("npcs", {}).get(npc_id, {})
 	match for_phase:
 		"evening":
+			# With a tavern, evenings move to its door.
+			if game.settlement.building_level(VillageBuildings.TAVERN) >= 1:
+				var door := SkywardGame._vec(game.settlement.building_info(VillageBuildings.TAVERN).get("position")) + Vector2(0, 34)
+				var keys: Array = data.get("npcs", {}).keys()
+				var slot := keys.find(npc_id)
+				return door + Vector2(-56 + slot * 26, 6 + (slot % 2) * 10)
 			return SkywardGame._vec(routine.get("evening", [0, 0]))
 		"night":
 			return SkywardGame._vec(routine.get("home", [0, 0]))
@@ -186,7 +193,8 @@ func _chatter(delta: float) -> void:
 func _greet() -> void:
 	var hero := game.player.global_position
 	var lines: Array = data.get("greetings", {}).get(phase, [])
-	if lines.is_empty():
+	# One greeting at a time, not a chorus.
+	if lines.is_empty() or _clock - _last_greet < 6.0:
 		return
 	for npc in villagers():
 		if npc.asleep or npc.is_walking() or not npc.bubble_text.is_empty():
@@ -198,5 +206,6 @@ func _greet() -> void:
 		if now - last < 90.0:
 			continue
 		_greeted[npc.npc_id] = now
+		_last_greet = now
 		npc.say(StoryText.format(str(lines[rng.randi_range(0, lines.size() - 1)])), 3.0)
 		return

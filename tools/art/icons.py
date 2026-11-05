@@ -701,9 +701,23 @@ def build_ash() -> dict[str, Canvas]:
         "golem_heart": gem(ramp("#fff0c0", "#e0a040", "#8a5a20")),
         "spark_collar": gem(ramp("#fff0b0", "#ff8a2a", "#a8341a")),
         "pattern_shard": _pattern_shard(),
+        "ancient_tome": _tome(),
         "sky_thread": gem(ramp("#f0ffff", "#7adcff", "#3a70c0")),
         "earth_star": gem(ramp("#fffbe0", "#ffd060", "#a86a20")),
     }
+
+
+def _tome() -> Canvas:
+    c = Canvas(16, 16)
+    cover = ramp("#7ad8b0", "#2a7a5a", "#14402e")
+    c.rect(3, 2, 10, 12, cover[1])
+    c.rect(3, 2, 2, 12, cover[2])
+    c.rect(12, 3, 1, 10, hex_color("#f0e8d0"))
+    c.hline(3, 12, 2, cover[0])
+    for x, y in ((8, 6), (7, 7), (8, 7), (9, 7), (8, 8), (8, 9)):
+        c.put(x, y, GOLD[1])
+    c.put(8, 7, GOLD[0])
+    return _finish(c)
 
 
 def _pattern_shard() -> Canvas:
