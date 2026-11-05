@@ -383,6 +383,12 @@
    16
   ]
  },
+ "icons/skill_crystal_totem.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/skill_dodge.png": {
   "size": [
    16,
@@ -402,6 +408,12 @@
   ]
  },
  "icons/skill_frostbolt.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skill_guardian_oath.png": {
   "size": [
    16,
    16
@@ -444,6 +456,12 @@
   ]
  },
  "icons/skill_snare.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skill_spirit_wolf.png": {
   "size": [
    16,
    16

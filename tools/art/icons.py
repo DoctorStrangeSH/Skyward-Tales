@@ -375,6 +375,29 @@ def skill_icon(kind: str) -> Canvas:
             c.put(9 - dx, y, white)
             c.put(8 - dx, y, hex_color("#bfefff"))
         c.hline(2, 5, 8, hex_color("#9fdfff"))
+    elif kind == "spirit_wolf":
+        _sky_bg(c, ramp("#e0f4ff", "#5a7ac8", "#24305a"))
+        pale = hex_color("#d8ecff")
+        for x, y in ((4, 9), (5, 8), (6, 8), (7, 8), (8, 8), (9, 8), (10, 7), (11, 6), (12, 5), (11, 4), (10, 5),
+                     (5, 9), (6, 9), (7, 9), (8, 9), (9, 9), (5, 10), (9, 10), (5, 11), (9, 11), (3, 8), (2, 7)):
+            c.put(x, y, pale)
+        c.put(11, 5, hex_color("#5af0ff"))
+    elif kind == "crystal_totem":
+        _sky_bg(c, ramp("#f0e8ff", "#8a6ac8", "#30205a"))
+        for y in range(2, 13):
+            half = (y - 2) // 2 if y < 7 else (12 - y) // 2
+            for x in range(7 - half, 8 + half + 1):
+                c.put(x, y, hex_color("#c8b0ff") if x < 8 else hex_color("#8a6ad8"))
+        c.put(7, 4, white)
+        c.hline(5, 10, 14, hex_color("#5a4a8a"))
+    elif kind == "guardian_oath":
+        _sky_bg(c, ramp("#fff4d0", "#c89a3a", "#5a3e18"))
+        for y in range(3, 13):
+            w = 5 if y < 9 else 5 - (y - 8)
+            for x in range(8 - w, 8 + w):
+                c.put(x, y, hex_color("#e8e0d0") if x < 8 else hex_color("#b8a890"))
+        c.vline(8, 3, 12, GOLD[1])
+        c.hline(4, 11, 6, GOLD[1])
     elif kind == "volley":
         _sky_bg(c, ramp("#fff0c0", "#6a9a4a", "#2e4a20"))
         for dx in (-3, 0, 3):
@@ -489,7 +512,7 @@ def build_combat() -> dict[str, Canvas]:
         "skysteel_blade": sword(ramp("#ffffff", "#9cf0ff", "#3a8fe0"), GOLD, "#ffe066"),
         "skyclaw_blade": sword(ramp("#ffffff", "#c8d4e8", "#4a5068"), GOLD, "#9ef0ff"),
     }
-    for kind in ["lunge", "shockwave", "war_cry", "blade_wave", "imbue", "volley", "snare", "slash", "dodge", "fireball", "frostbolt", "chain_lightning", *PASSIVE_SYMBOLS]:
+    for kind in ["lunge", "shockwave", "war_cry", "blade_wave", "imbue", "volley", "snare", "spirit_wolf", "crystal_totem", "guardian_oath", "slash", "dodge", "fireball", "frostbolt", "chain_lightning", *PASSIVE_SYMBOLS]:
         result[f"skill_{kind}"] = skill_icon(kind)
     return result
 
