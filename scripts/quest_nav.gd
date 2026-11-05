@@ -41,6 +41,7 @@ func _collect() -> Array:
 				_add(result, region_id, at, "turnin", str(npc.get("name", "")))
 			elif marker == "quest":
 				_add(result, region_id, at, "offer", str(npc.get("name", "")))
+	result.append_array(game.guild.targets())
 	# A lost mine is a job for anyone passing by.
 	if game.mine.overrun() and not quests.is_active(BorinStory.DREAM) and game.visited_regions.has(PassMine.REGION):
 		_add(result, PassMine.REGION, PassMine.ENTRANCE + Vector2(0, 50), "side", "Шахта захвачена")

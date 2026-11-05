@@ -2885,6 +2885,26 @@
    41
   ]
  },
+ "world/village_guild_1.png": {
+  "size": [
+   100,
+   90
+  ],
+  "origin": [
+   50,
+   87
+  ]
+ },
+ "world/village_guild_2.png": {
+  "size": [
+   100,
+   90
+  ],
+  "origin": [
+   50,
+   87
+  ]
+ },
  "world/village_hall.png": {
   "size": [
    114,
@@ -2903,6 +2923,26 @@
   "origin": [
    11,
    16
+  ]
+ },
+ "world/village_home_1.png": {
+  "size": [
+   74,
+   76
+  ],
+  "origin": [
+   37,
+   73
+  ]
+ },
+ "world/village_home_2.png": {
+  "size": [
+   88,
+   84
+  ],
+  "origin": [
+   44,
+   81
   ]
  },
  "world/village_house_large.png": {

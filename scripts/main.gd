@@ -96,6 +96,7 @@ var combos: ElementalCombos
 var gear: GearEffects
 var farm: Farm
 var buildings: VillageBuildings
+var guild: AdventurersGuild
 var achievements: Achievements
 var cast_cooldown_total: float = 0.0
 var defeated_enemies: int = 0
@@ -188,6 +189,7 @@ func _ready() -> void:
 	add_child(world_state)
 	borin = BorinStory.new(self)
 	buildings = VillageBuildings.new(self)
+	guild = AdventurersGuild.new(self)
 	farm = Farm.new()
 	farm.name = "Farm"
 	farm.game = self
@@ -414,6 +416,8 @@ func _interaction_prompt(target: Node2D) -> String:
 		return "E — закрыть разлом"
 	if target is FarmBed:
 		return farm.prompt(target.index)
+	if target is SettlementObject and target.kind == "door":
+		return target.label
 	if target is DungeonLever:
 		return "E — опустить рычаг"
 	if target is SettlementObject:
@@ -635,6 +639,7 @@ func _populate_region() -> void:
 		_spawn_gate(str(gate_data.get("target", "")), _vec(gate_data.get("position")), _vec(gate_data.get("arrival")), str(gate_data.get("label", "")))
 	buildings.spawn_mercenary()
 	buildings.reveal_chests()
+	guild.spawn_target()
 
 ## Ordinary monsters come back a while after they fall (bosses, quest foes,
 ## legends and event foes do not).
@@ -1474,6 +1479,9 @@ func on_reaction(reaction_id: String, at: Vector2) -> void:
 
 func _on_tavern_keeper_interacted(_source: Node2D) -> void:
 	buildings.talk_tavern()
+
+func _on_guild_master_interacted(_source: Node2D) -> void:
+	guild.talk()
 
 func _on_librarian_interacted(_source: Node2D) -> void:
 	buildings.talk_library()

@@ -347,6 +347,10 @@ def main() -> int:
         "mercenary": dict(colors={HAIR_LIGHT: (60, 50, 50), HAIR_SHADE: (40, 32, 34), RED_DARK: (70, 50, 40),
                                   RED_MID: (130, 110, 90), RED_LIGHT: (190, 196, 206), MAUVE: (60, 60, 70),
                                   GOLD: (200, 200, 210)}, trim=True, ahoge=False),
+        # Ragna, head of the Adventurers' Guild: black braid, blue-steel coat.
+        "guild_master": dict(colors={HAIR_LIGHT: (50, 44, 56), HAIR_SHADE: (30, 26, 36), RED_DARK: (40, 60, 120),
+                                     RED_MID: (70, 100, 170), RED_LIGHT: (200, 206, 220), MAUVE: (50, 50, 70),
+                                     GOLD: (240, 200, 90)}, trim=True, ahoge=False),
         # Olm, the night guard: dark hair, steel-grey coat, red sash.
         "guard": dict(colors={HAIR_LIGHT: (96, 70, 52), HAIR_SHADE: (64, 46, 34), RED_DARK: (150, 40, 40),
                               RED_MID: (120, 130, 150), RED_LIGHT: (190, 200, 214), MAUVE: (60, 66, 84),

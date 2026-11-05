@@ -251,6 +251,20 @@
       "stat": "buildings",
       "goal": 6,
       "gold": 400
+    },
+    "bounty_5": {
+      "title": "Охотница за головами",
+      "description": "Выполните 5 охот гильдии.",
+      "stat": "bounties",
+      "goal": 5,
+      "gold": 300
+    },
+    "guild_gold": {
+      "title": "Золотой ранг",
+      "description": "Достигните золотого ранга гильдии.",
+      "stat": "guild_rank",
+      "goal": 4,
+      "gold": 800
     }
   }
 }

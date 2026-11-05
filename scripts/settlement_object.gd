@@ -9,9 +9,11 @@ signal used(object: SettlementObject)
 var kind: String = "plot"        # "board", "plot" or "house"
 var art: String = "village_plot"
 var wall_width: float = 56.0
+## Prompt for a door ("E — войти в дом").
+var label: String = ""
 
 func _ready() -> void:
-	if kind == "board":
+	if kind == "board" or kind == "door":
 		add_to_group("interactables")
 	if kind == "house":
 		var body := StaticBody2D.new()
@@ -33,4 +35,6 @@ func interact() -> void:
 	used.emit(self)
 
 func _draw() -> void:
+	if art.is_empty():
+		return
 	WorldArt.draw_prop(self, "world/%s.png" % art)

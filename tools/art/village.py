@@ -183,6 +183,44 @@ def library(level: int) -> tuple[Canvas, tuple[int, int]]:
     return c, origin
 
 
+def _shield(c: Canvas, x: int, y: int) -> None:
+    steel = hex_color("#c8ccd4")
+    c.rect(x + 2, y + 1, 7, 5, hex_color("#3a5ab0"))
+    c.rect(x + 3, y + 6, 5, 2, hex_color("#3a5ab0"))
+    c.put(x + 5, y + 8, hex_color("#3a5ab0"))
+    for i in range(5):
+        c.put(x + 3 + i, y + 2 + i, steel)
+        c.put(x + 7 - i, y + 2 + i, steel)
+
+
+def guild(level: int) -> tuple[Canvas, tuple[int, int]]:
+    """The Adventurers' Guild: a slate-roofed hall, a shield sign; banners at level 2."""
+    c, origin = house(96, roof_pal=SLATE, windows=2, chimney=False, seed=13)
+    wall_y = int(96 * 0.55) + 2
+    _hanging_sign(c, 60, wall_y + 2, _shield)
+    if level >= 2:
+        for x in (8, 88):
+            c.vline(x, wall_y - 6, wall_y + 22, TIMBER[0])
+            c.rect(x + 1, wall_y - 5, 5, 12, hex_color("#b03a3a"))
+            c.put(x + 3, wall_y + 7, hex_color("#b03a3a"))
+            c.put(x + 3, wall_y - 1, GOLD)
+    c.outline(OUTLINE)
+    return c, origin
+
+
+def home(level: int) -> tuple[Canvas, tuple[int, int]]:
+    """The heroine's own cottage; at level 2 it grows a porch and a lantern."""
+    c, origin = house(70 if level < 2 else 84, windows=2 if level >= 2 else 1, seed=14)
+    if level >= 2:
+        wall_y = int(84 * 0.55) + 2
+        c.rect(30, wall_y + 10, 3, 14, TIMBER[1])
+        c.rect(53, wall_y + 10, 3, 14, TIMBER[1])
+        c.hline(28, 58, wall_y + 9, TIMBER[0])
+        c.rect(40, wall_y + 2, 4, 5, hex_color("#ffd36a"))
+    c.outline(OUTLINE)
+    return c, origin
+
+
 def fence(horizontal: bool = True) -> tuple[Canvas, tuple[int, int]]:
     if horizontal:
         c = Canvas(34, 16)
@@ -319,6 +357,10 @@ def build(root: pathlib.Path) -> None:
         "village_tavern_2": tavern(2),
         "village_library_1": library(1),
         "village_library_2": library(2),
+        "village_guild_1": guild(1),
+        "village_guild_2": guild(2),
+        "village_home_1": home(1),
+        "village_home_2": home(2),
         "village_fence_h": fence(True),
         "village_fence_v": fence(False),
         "village_well": well(),
