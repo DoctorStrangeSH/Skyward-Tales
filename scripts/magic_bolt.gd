@@ -77,6 +77,8 @@ func _on_body_entered(body: Node2D) -> void:
 		body.take_elemental_damage(damage, _element_for_spell()) if body.has_method("take_elemental_damage") else body.take_damage(damage)
 		if not body.is_queued_for_deletion() and body.has_method("react_to_spell"):
 			body.react_to_spell(spell_id)
+		if not body.is_queued_for_deletion() and get_parent() != null and get_parent().has_method("on_spell_hit"):
+			get_parent().on_spell_hit(body)
 		if spell_id == "fireball" and burn_duration > 0.0 and body.has_method("apply_burning") and not body.is_queued_for_deletion():
 			body.apply_burning(burn_damage, burn_duration)
 		if spell_id == "chain_lightning":

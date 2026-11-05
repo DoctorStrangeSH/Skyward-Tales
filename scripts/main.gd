@@ -93,6 +93,7 @@ var village: VillageLife
 var mine: PassMine
 var borin: BorinStory
 var combos: ElementalCombos
+var gear: GearEffects
 var achievements: Achievements
 var cast_cooldown_total: float = 0.0
 var defeated_enemies: int = 0
@@ -184,6 +185,10 @@ func _ready() -> void:
 	world_state.game = self
 	add_child(world_state)
 	borin = BorinStory.new(self)
+	gear = GearEffects.new()
+	gear.name = "GearEffects"
+	gear.game = self
+	add_child(gear)
 	combos = ElementalCombos.new()
 	combos.name = "ElementalCombos"
 	combos.game = self
@@ -222,7 +227,12 @@ func _ready() -> void:
 	player.recipe_learned.connect(func(recipe_item: String) -> void:
 		hud.show_message("Выучен рецепт: " + player.get_item_name(recipe_item).trim_prefix("Рецепт: "), 3.0)
 		GameAudio.play("quest", -4.0, 0.0))
+	player.parried.connect(func(source: Node) -> void: gear.on_parry(source))
+	player.blocked.connect(func(_amount: int) -> void:
+		GameAudio.play("hit", -8.0, 0.4)
+		Vfx.sparkle(self, player.global_position + player.facing * 12.0))
 	player.hurt.connect(func(amount: int) -> void:
+		gear.on_hurt(amount, player.last_attacker)
 		GameAudio.play("hurt", -3.0)
 		shake(clampf(1.5 + amount * 0.15, 1.5, 4.0), 0.18))
 	player.second_wind_triggered.connect(func() -> void: hud.show_message("Второе дыхание! Смерть отступила.", 3.0))
@@ -423,6 +433,8 @@ func _input(event: InputEvent) -> void:
 			fishing.cancel()
 			get_viewport().set_input_as_handled()
 		return
+	if event is InputEventKey and not event.pressed and event.keycode == KEY_F:
+		player.end_guard()
 	if event is InputEventKey and event.pressed and not event.echo:
 		if _handle_key(event.keycode):
 			get_viewport().set_input_as_handled()
@@ -510,6 +522,11 @@ func _handle_key(keycode: Key) -> bool:
 		KEY_SHIFT when not world_blocked and not hud.inventory_open:
 			if player.start_dodge():
 				GameAudio.play("dash", -6.0)
+				gear.on_dodge()
+			return true
+		KEY_F when not world_blocked and not hud.inventory_open:
+			if player.start_guard():
+				player.visual.play_named("charge", 0.3)
 			return true
 		KEY_I when not world_blocked:
 			hud.toggle_inventory(player)
@@ -1418,6 +1435,11 @@ func _on_hunter_interacted(_source: Node2D) -> void:
 	if not director.try_talk("hunter"):
 		dialogues.on_hunter()
 
+## Magic bolts report hits (gear effects such as the jelly staff).
+func on_spell_hit(enemy: Node) -> void:
+	if gear != null:
+		gear.on_spell_hit(enemy)
+
 ## Enemies report elemental combos here (enemy.gd → _announce_reaction).
 func on_reaction(reaction_id: String, at: Vector2) -> void:
 	if combos != null:
@@ -1586,6 +1608,7 @@ func _on_wolf_defeated(xp_reward: int, death_position: Vector2, elite: bool = fa
 
 func _on_enemy_defeated(xp_reward: int, death_position: Vector2, kind: String = "", elite: bool = false) -> void:
 	player.add_experience(xp_reward)
+	gear.on_kill()
 	defeated_enemies += 1
 	contracts.on_kill(kind)
 	achievements.add("kills")
@@ -1891,10 +1914,17 @@ func _strike(enemy: SlimeEnemy, damage: int, push_direction: Vector2, push: floa
 	if crit:
 		damage *= 2
 		Vfx.sparkle(self, enemy.global_position)
+	var shaped := gear.modify_strike(damage)
+	damage = int(shaped["damage"])
+	if bool(shaped["riposte"]):
+		enemy.combat_feedback.show_reaction("КОНТРАТАКА!")
+		Vfx.sparkle(self, enemy.global_position)
+		shake(3.0, 0.15)
 	enemy.take_damage(damage)
 	enemy.apply_knockback(push_direction, push)
 	last_hit_enemies.append(enemy)
 	combos.on_strike(enemy, damage)
+	gear.on_strike(enemy, damage)
 	var heal := player.get_melee_lifesteal()
 	if heal > 0 and player.health < player.max_health:
 		player.health = mini(player.max_health, player.health + heal)

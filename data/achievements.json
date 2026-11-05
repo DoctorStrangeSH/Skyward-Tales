@@ -209,6 +209,20 @@
       "stat": "combos",
       "goal": 6,
       "gold": 600
+    },
+    "parry_10": {
+      "title": "Стальной ответ",
+      "description": "Парируйте 10 ударов (F в момент удара).",
+      "stat": "parries",
+      "goal": 10,
+      "gold": 200
+    },
+    "streak_30": {
+      "title": "Неудержимая",
+      "description": "Серия из 30 ударов без единой раны.",
+      "stat": "streak",
+      "goal": 30,
+      "gold": 300
     }
   }
 }
