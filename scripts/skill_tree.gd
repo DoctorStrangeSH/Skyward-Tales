@@ -64,6 +64,34 @@ static func learn(player: PlayerCharacter, skill_id: String) -> bool:
 		return false
 	return player.apply_talent(skill_id)
 
+## Gold to unlearn everything (a mentor's lesson grows dearer with level).
+static func reset_cost(player: PlayerCharacter) -> int:
+	return 30 * maxi(1, player.level)
+
+## Unlearns every skill: points come back, sky seals too.
+static func reset(player: PlayerCharacter) -> bool:
+	if spent_points(player) <= 0 or player.gold < reset_cost(player):
+		return false
+	player.add_gold(-reset_cost(player))
+	var defs := definitions()
+	var seals_back := 0
+	for skill_id in player.talents.keys():
+		var rank_now := int(player.talents[skill_id])
+		if bool(defs.get(skill_id, {}).get("seal", false)):
+			seals_back += rank_now
+		match str(skill_id):
+			"vitality":
+				player.max_health = maxi(1, player.max_health - 15 * rank_now)
+				player.health = mini(player.health, player.max_health)
+			"mana_well":
+				player.max_mana = maxi(1, player.max_mana - 12 * rank_now)
+				player.mana = mini(player.mana, player.max_mana)
+	player.talents.clear()
+	if seals_back > 0:
+		player.add_item(SEAL_ITEM, seals_back)
+	player.stats_changed.emit()
+	return true
+
 static func branch_skills(branch_id: String) -> Array[String]:
 	var result: Array[String] = []
 	var defs := definitions()

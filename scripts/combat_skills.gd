@@ -32,7 +32,11 @@ func lock_reason(skill_id: String) -> String:
 	if is_spell(skill_id):
 		return "" if game.magic_unlocked() else "Магия спит"
 	var needed := int(data.get("level", 1))
-	return "" if game.player.level >= needed else "Ур. %d" % needed
+	if game.player.level < needed:
+		return "Ур. %d" % needed
+	if bool(data.get("magic", false)) and not game.magic_unlocked():
+		return "Магия спит"
+	return ""
 
 func cooldown_left(skill_id: String) -> float:
 	if is_spell(skill_id):
@@ -82,6 +86,8 @@ func use(skill_id: String) -> bool:
 			ok = _war_cry(data)
 		"blade_wave":
 			ok = _blade_wave(data)
+		"imbue":
+			ok = _imbue(data)
 	if ok:
 		var total := float(data.get("cooldown", 5.0)) * player.get_skill_cooldown_multiplier()
 		cooldowns[skill_id] = total
@@ -144,6 +150,17 @@ func _blade_wave(data: Dictionary) -> bool:
 	game._streak(player.global_position + direction * 10.0, player.global_position + direction * reach, Color(0.8, 0.95, 1.0, 0.9), 8.0)
 	GameAudio.play("gust", -4.0, 0.08)
 	return true
+
+func _imbue(data: Dictionary) -> bool:
+	var player := game.player
+	var cost := int(data.get("mana", 15))
+	if not player.spend_mana(cost):
+		game.hud.show_message("Не хватает маны.", 1.5)
+		return false
+	player.visual.play_named("charge", 0.4)
+	game._ring(player.global_position, 30.0, ElementalCombos.ELEMENT_COLORS.get(ElementalCombos.ELEMENT_OF.get(game.selected_spell_id, "fire"), Color.WHITE))
+	GameAudio.play("level_up", -10.0, 0.1)
+	return game.combos.start_imbue(float(data.get("duration", 10.0)))
 
 ## Entries for the HUD hotbar: four skills, then dodge and the potions.
 func hotbar_entries() -> Array:

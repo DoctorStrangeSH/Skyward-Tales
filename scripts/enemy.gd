@@ -23,6 +23,10 @@ var burn_time_left: float = 0.0
 var burn_tick_interval: float = 0.5
 var burn_tick_timer: float = 0.0
 var burn_damage: int = 0
+## Elemental combos (see react_to_spell / react_to_melee):
+## shocked by lightning, blinded by steam (cannot attack).
+var shock_time_left: float = 0.0
+var blind_time_left: float = 0.0
 var firestorm_cooldown_left: float = 0.0
 var elemental_multipliers: Dictionary = {}
 var visual: DirectionalSprite
@@ -157,6 +161,8 @@ func _physics_process(delta: float) -> void:
 	slow_time_left = maxf(0.0, slow_time_left - delta)
 	if slow_time_left <= 0.0:
 		slow_factor = 1.0
+	shock_time_left = maxf(0.0, shock_time_left - delta)
+	blind_time_left = maxf(0.0, blind_time_left - delta)
 	attack_cooldown = maxf(0.0, attack_cooldown - delta)
 	var player := get_tree().get_first_node_in_group("player") as Node2D
 	if player == null or not player.is_physics_processing():
@@ -174,7 +180,7 @@ func _physics_process(delta: float) -> void:
 		BrainState.CHASE:
 			if distance_to_player > attack_range:
 				desired = _shape_chase(offset.normalized(), delta)
-			elif attack_cooldown <= 0.0 and player.has_method("take_damage"):
+			elif attack_cooldown <= 0.0 and blind_time_left <= 0.0 and player.has_method("take_damage"):
 				if attack_windup_duration > 0.0 or attack_lunge_duration > 0.0:
 					_start_special_attack(offset.normalized())
 				else:
@@ -294,7 +300,7 @@ func _update_special_attack(delta: float, player: Node2D) -> bool:
 
 func _refresh_elemental_feedback() -> void:
 	if combat_feedback != null:
-		combat_feedback.set_statuses(burn_time_left > 0.0, slow_time_left > 0.0)
+		combat_feedback.set_statuses(burn_time_left > 0.0, slow_time_left > 0.0, shock_time_left > 0.0, blind_time_left > 0.0)
 
 func take_elemental_damage(amount: int, element: String) -> void:
 	var multiplier: float = clampf(float(elemental_multipliers.get(element, 1.0)), 0.25, 2.0)
@@ -344,40 +350,122 @@ func _spread_firestorm_burning(damage_per_tick: int, duration: float) -> void:
 			continue
 		nearby.apply_burning(damage_per_tick, duration)
 
+## Combo strength grows with the hero.
+func _reaction_power() -> float:
+	var arena := get_parent()
+	var hero: Variant = arena.get("player") if arena != null else null
+	return 1.0 + 0.1 * float(hero.level - 1) if hero != null else 1.0
+
+func _announce_reaction(reaction_id: String, label: String) -> void:
+	if combat_feedback != null:
+		combat_feedback.show_reaction(label)
+	var arena := get_parent()
+	if arena != null and arena.has_method("on_reaction"):
+		arena.on_reaction(reaction_id, global_position)
+
+func _enemies_near(radius: float) -> Array:
+	var result: Array = []
+	for candidate in get_tree().get_nodes_in_group("enemies"):
+		var other := candidate as Node2D
+		if other == null or other == self or other.is_queued_for_deletion():
+			continue
+		if global_position.distance_to(other.global_position) <= radius:
+			result.append(other)
+	return result
+
+func apply_shock(duration: float) -> void:
+	shock_time_left = maxf(shock_time_left, duration * get_status_duration_multiplier("lightning"))
+	_refresh_elemental_feedback()
+
+func apply_blind(duration: float) -> void:
+	blind_time_left = maxf(blind_time_left, duration)
+	_refresh_elemental_feedback()
+
 func react_to_spell(spell_id: String) -> int:
 	# Elemental reactions resolve after the direct hit and before the next status is applied.
 	var bonus_damage: int = 0
+	var power := _reaction_power()
 	if spell_id == "frostbolt" and burn_time_left > 0.0:
+		# Steam: a cloud that blinds and slows everyone around.
 		burn_time_left = 0.0
 		burn_tick_timer = 0.0
 		burn_damage = 0
-		if combat_feedback != null:
-			combat_feedback.show_reaction("ПАР!")
-		take_elemental_damage(8, "ice")
-		bonus_damage += 8
+		_announce_reaction("steam", "ПАР!")
+		var steam := roundi(8 * power)
+		take_elemental_damage(steam, "ice")
+		bonus_damage += steam
+		for other in _enemies_near(56.0) + [self]:
+			if is_instance_valid(other) and other.has_method("apply_blind"):
+				other.apply_blind(2.0)
+				other.apply_slow(0.5, 2.0)
+
+	if spell_id == "fireball" and shock_time_left > 0.0:
+		# Overload: the charge bursts into a fiery blast.
+		shock_time_left = 0.0
+		_announce_reaction("overload", "ПЕРЕГРУЗКА!")
+		var blast := roundi(10 * power)
+		for other in _enemies_near(52.0):
+			if other.has_method("take_elemental_damage"):
+				other.take_elemental_damage(blast, "fire")
+				if is_instance_valid(other) and other.has_method("apply_knockback"):
+					other.apply_knockback((other.global_position - global_position).normalized(), 140.0)
+		take_elemental_damage(blast, "fire")
+		bonus_damage += blast
 
 	if spell_id == "chain_lightning":
 		if slow_time_left > 0.0:
+			# Crystal chain: the frost conducts lightning to every chilled foe nearby.
 			slow_time_left = 0.0
 			slow_factor = 1.0
-			if combat_feedback != null:
-				combat_feedback.show_reaction("РАЗРЯД!")
-			take_elemental_damage(6, "lightning")
-			bonus_damage += 6
+			_announce_reaction("crystal", "КРИСТАЛЬНАЯ ЦЕПЬ!")
+			var crack := roundi(7 * power)
+			take_elemental_damage(crack, "lightning")
+			bonus_damage += crack
+			for other in _enemies_near(120.0):
+				if other.get("slow_time_left") != null and float(other.slow_time_left) > 0.0:
+					other.take_elemental_damage(crack, "lightning")
 		if health > 0 and burn_time_left > 0.0 and firestorm_cooldown_left <= 0.0:
 			# Firestorm keeps the original burn on its source, but spreads a weaker version.
 			var spread_damage: int = maxi(1, int(ceil(float(burn_damage) * 0.5)))
 			var spread_duration: float = minf(burn_time_left, FIRESTORM_SPREAD_DURATION)
 			firestorm_cooldown_left = FIRESTORM_REACTION_COOLDOWN
 			_spread_firestorm_burning(spread_damage, spread_duration)
-			if combat_feedback != null:
-				combat_feedback.show_reaction("ОГНЕННАЯ БУРЯ!")
+			_announce_reaction("firestorm", "ОГНЕННАЯ БУРЯ!")
 			take_elemental_damage(FIRESTORM_BONUS_DAMAGE, "lightning")
 			bonus_damage += FIRESTORM_BONUS_DAMAGE
 
+	if spell_id == "chain_lightning" and health > 0 and bonus_damage == 0:
+		apply_shock(2.5)
 	if bonus_damage > 0:
 		_refresh_elemental_feedback()
 	return bonus_damage
+
+## Sword hits meet the elements: a chilled foe shatters, a shocked one
+## conducts the blow to its neighbours. Returns bonus damage dealt.
+func react_to_melee(damage: int) -> int:
+	if health <= 0:
+		return 0
+	if slow_time_left > 0.0 and slow_factor < 0.95:
+		slow_time_left = 0.0
+		slow_factor = 1.0
+		_announce_reaction("shatter", "РАСКОЛ!")
+		var shatter := maxi(1, roundi(damage * 0.6))
+		take_elemental_damage(shatter, "ice")
+		return shatter
+	if shock_time_left > 0.0:
+		shock_time_left = 0.0
+		_announce_reaction("conduct", "ПРОВОДНИК!")
+		var arc := maxi(1, roundi(damage * 0.5))
+		var struck := 0
+		for other in _enemies_near(90.0):
+			if struck >= 2:
+				break
+			if other.has_method("take_elemental_damage"):
+				other.take_elemental_damage(arc, "lightning")
+				struck += 1
+		Vfx.burst(get_parent(), global_position, [Color(1, 1, 1), Color(0.85, 0.75, 1.0), Color(0.5, 0.4, 1.0, 0)], 12, 80.0, 0.3)
+		return arc * struck
+	return 0
 
 func apply_slow(multiplier: float, duration: float) -> void:
 	slow_factor = minf(slow_factor, clampf(multiplier, 0.1, 1.0))
