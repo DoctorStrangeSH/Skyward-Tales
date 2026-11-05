@@ -48,6 +48,27 @@
         "item_id": "mana_potion",
         "amount": 3
       }
+    },
+    "seed_healroot": {
+      "name": "Семена целебного корня",
+      "description": "Для огорода",
+      "base_price": 6
+    },
+    "seed_bluebell": {
+      "name": "Семена синецвета",
+      "description": "Для огорода",
+      "base_price": 8
+    },
+    "seed_wheat": {
+      "name": "Семена пшеницы",
+      "description": "Для огорода",
+      "base_price": 5
+    },
+    "seed_sunberry": {
+      "name": "Семена солнечной ягоды",
+      "description": "Редкие семена",
+      "base_price": 24,
+      "required_bran_trust": 10
     }
   },
   "sell_prices": {
@@ -61,7 +82,11 @@
     "mana_amulet": 40,
     "ironbound_staff": 55,
     "reinforced_wolf_mantle": 60,
-    "ancient_relic": 150
+    "ancient_relic": 150,
+    "wheat": 3,
+    "sunberry": 7,
+    "bread": 6,
+    "berry_pie": 18
   },
   "sell_trust_bonus": {
     "trust": 20,

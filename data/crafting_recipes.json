@@ -602,6 +602,42 @@
         "item_id": "swift_tonic",
         "amount": 1
       }
+    },
+    "cook_bread": {
+      "name": "Деревенский хлеб",
+      "description": "Две пшеницы — тёплый хлеб.",
+      "gold_cost": 0,
+      "station": "kitchen",
+      "ingredients": [
+        {
+          "item_id": "wheat",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "item_id": "bread",
+        "amount": 1
+      }
+    },
+    "cook_berry_pie": {
+      "name": "Ягодный пирог",
+      "description": "Пшеница и солнечные ягоды.",
+      "gold_cost": 0,
+      "station": "kitchen",
+      "ingredients": [
+        {
+          "item_id": "wheat",
+          "amount": 2
+        },
+        {
+          "item_id": "sunberry",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "item_id": "berry_pie",
+        "amount": 1
+      }
     }
   }
 }
