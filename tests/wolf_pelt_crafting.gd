@@ -45,7 +45,8 @@ func _run() -> void:
 		return
 	game.player.add_item("wolf_pelt", 3)
 	game._on_hunter_interacted(null)
-	if not _verify(game.hud.dialogue_choices_container.get_child_count() == 0, "equipped mantle cannot be crafted a second time"):
+	var offers_mantle: bool = game.hud.dialogue_choices_container.get_children().any(func(b: Node) -> bool: return b is Button and (b as Button).text.contains("накидк"))
+	if not _verify(not offers_mantle, "equipped mantle cannot be crafted a second time"):
 		return
 	if not _verify(not game.player.remove_item("wolf_pelt", 4), "cannot remove more materials than owned"):
 		return

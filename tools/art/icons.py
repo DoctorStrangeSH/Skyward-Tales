@@ -182,6 +182,9 @@ def pattern_key() -> Canvas:
 def build() -> dict[str, Canvas]:
     return {
         "apprentice_staff": staff(ramp("#c8f0a0", "#7fcf6a", "#3f8f5a")),
+        "hunting_bow": bow(ramp("#d8a868", "#a06a3a", "#5a3a20")),
+        "elm_longbow": bow(ramp("#e8c890", "#8a5a30", "#4a2e18"), tip="#c0c8d0"),
+        "wind_bow": bow(ramp("#e0f8ff", "#6ab0d8", "#2e5a88"), string="#ffffff", tip="#ffe066"),
         "ironbound_staff": iron_staff(),
         "leather_armor": armor(LEATHER, GOLD),
         "wolfskin_mantle": mantle(FUR, LEATHER[1]),
@@ -312,6 +315,25 @@ def sword(blade, hilt=None, gem_color=None) -> Canvas:
     return _finish(c)
 
 
+def bow(wood, string="#e8e0d0", tip=None) -> Canvas:
+    """A recurve bow, diagonal, with its string."""
+    c = Canvas(16, 16)
+    import math
+    for i in range(24):
+        t = i / 23.0
+        # Curve from top-right to bottom-left, bulging up-left.
+        x = 13 - 11 * t - math.sin(t * math.pi) * 3.2
+        y = 2 + 11 * t - math.sin(t * math.pi) * 3.2
+        c.put(int(round(x)), int(round(y)), wood[1])
+        c.put(int(round(x)) + 1, int(round(y)), wood[2])
+    for i in range(12):
+        c.put(13 - i, 2 + i, hex_color(string))
+    c.put(13, 1, wood[0]); c.put(1, 13, wood[0])
+    if tip:
+        c.put(13, 2, hex_color(tip)); c.put(2, 13, hex_color(tip))
+    return _finish(c)
+
+
 def _sky_bg(c: Canvas, colors) -> None:
     """Round badge behind a skill symbol so skills read apart from items."""
     c.ellipse(7.5, 7.5, 7.2, 7.2, colors[2])
@@ -353,6 +375,20 @@ def skill_icon(kind: str) -> Canvas:
             c.put(9 - dx, y, white)
             c.put(8 - dx, y, hex_color("#bfefff"))
         c.hline(2, 5, 8, hex_color("#9fdfff"))
+    elif kind == "volley":
+        _sky_bg(c, ramp("#fff0c0", "#6a9a4a", "#2e4a20"))
+        for dx in (-3, 0, 3):
+            for i in range(7):
+                c.put(5 + i + dx // 2, 11 - i + dx, white)
+            c.put(12 + dx // 2, 4 + dx, GOLD[0])
+    elif kind == "snare":
+        _sky_bg(c, ramp("#e0e0e0", "#7a7a80", "#3a3a40"))
+        for x in range(3, 13):
+            c.put(x, 11, hex_color("#c8ccd4"))
+        for x in range(4, 13, 2):
+            c.put(x, 10, white)
+            c.put(x - 1, 9, hex_color("#c8ccd4"))
+        c.ellipse(7.5, 11.0, 2.0, 1.0, hex_color("#8a6a40"))
     elif kind == "imbue":
         _sky_bg(c, ramp("#f0e0ff", "#7a4ab8", "#2e1e50"))
         for i in range(10):
@@ -453,7 +489,7 @@ def build_combat() -> dict[str, Canvas]:
         "skysteel_blade": sword(ramp("#ffffff", "#9cf0ff", "#3a8fe0"), GOLD, "#ffe066"),
         "skyclaw_blade": sword(ramp("#ffffff", "#c8d4e8", "#4a5068"), GOLD, "#9ef0ff"),
     }
-    for kind in ["lunge", "shockwave", "war_cry", "blade_wave", "imbue", "slash", "dodge", "fireball", "frostbolt", "chain_lightning", *PASSIVE_SYMBOLS]:
+    for kind in ["lunge", "shockwave", "war_cry", "blade_wave", "imbue", "volley", "snare", "slash", "dodge", "fireball", "frostbolt", "chain_lightning", *PASSIVE_SYMBOLS]:
         result[f"skill_{kind}"] = skill_icon(kind)
     return result
 

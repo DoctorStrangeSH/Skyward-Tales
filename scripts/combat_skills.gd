@@ -36,6 +36,8 @@ func lock_reason(skill_id: String) -> String:
 		return "Ур. %d" % needed
 	if bool(data.get("magic", false)) and not game.magic_unlocked():
 		return "Магия спит"
+	if bool(data.get("bow", false)) and not game.player.has_bow():
+		return "Нужен лук"
 	return ""
 
 func cooldown_left(skill_id: String) -> float:
@@ -88,6 +90,10 @@ func use(skill_id: String) -> bool:
 			ok = _blade_wave(data)
 		"imbue":
 			ok = _imbue(data)
+		"snare":
+			ok = _snare(data)
+		"volley":
+			ok = _volley(data)
 	if ok:
 		var total := float(data.get("cooldown", 5.0)) * player.get_skill_cooldown_multiplier()
 		cooldowns[skill_id] = total
@@ -149,6 +155,28 @@ func _blade_wave(data: Dictionary) -> bool:
 	game._line_hit(player.global_position, direction, reach, float(data.get("width", 20)), _damage(data), 90.0)
 	game._streak(player.global_position + direction * 10.0, player.global_position + direction * reach, Color(0.8, 0.95, 1.0, 0.9), 8.0)
 	GameAudio.play("gust", -4.0, 0.08)
+	return true
+
+const MAX_TRAPS := 2
+
+func _snare(_data: Dictionary) -> bool:
+	var traps: Array = game.get_children().filter(func(n: Node) -> bool: return n is SnareTrap and not n.is_queued_for_deletion())
+	if traps.size() >= MAX_TRAPS:
+		traps[0].queue_free()
+	var trap := SnareTrap.new()
+	trap.game = game
+	trap.damage = 10 + game.player.level * 2
+	game.add_child(trap)
+	trap.global_position = game.player.global_position
+	GameAudio.play("hit", -10.0, 0.4)
+	return true
+
+func _volley(_data: Dictionary) -> bool:
+	var aim := game._aim_direction()
+	for i in 5:
+		game.shoot_arrow(aim.rotated(deg_to_rad(-20.0 + 10.0 * i)), roundi(game.player.get_ranged_damage() * 0.8), false)
+	game.player.play_cast(aim)
+	GameAudio.play("gust", -6.0, 0.1)
 	return true
 
 func _imbue(data: Dictionary) -> bool:

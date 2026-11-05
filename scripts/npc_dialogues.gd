@@ -93,6 +93,9 @@ func handle_choice(choice_id: String) -> void:
 		return
 	if game.borin != null and game.borin.handle_choice(choice_id):
 		return
+	if choice_id.begins_with("toren_buy:"):
+		_toren_buy(choice_id.trim_prefix("toren_buy:"))
+		return
 	if game.settlement != null and game.settlement.handle_choice(choice_id):
 		return
 	if game.crafting != null and game.crafting.handle_choice(choice_id):
@@ -273,6 +276,30 @@ func _can_craft_mantle() -> bool:
 		and int(player.inventory.get("wolfskin_mantle", 0)) == 0 \
 		and str(player.equipment.get("armor", "")) != "wolfskin_mantle"
 
+## Toren's bows: the way of the ranger.
+const TOREN_BOWS := {"hunting_bow": [120, 1], "elm_longbow": [380, 8]}
+
+func _toren_bow_choices() -> Array[Dictionary]:
+	var choices: Array[Dictionary] = []
+	for item_id in TOREN_BOWS:
+		var price := int(TOREN_BOWS[item_id][0])
+		var level := int(TOREN_BOWS[item_id][1])
+		if game.player.level >= level:
+			choices.append({"id": "toren_buy:" + item_id, "label": "%s — %d золота" % [game.player.get_item_name(item_id), price]})
+	return choices
+
+func _toren_buy(item_id: String) -> void:
+	if not TOREN_BOWS.has(item_id):
+		return
+	var price := int(TOREN_BOWS[item_id][0])
+	if game.player.gold < price:
+		_say("Торен, охотник", "Хороший лук стоит хороших денег. Нужно %d золота." % price)
+		return
+	game.player.add_gold(-price)
+	game.player.add_item(item_id, 1)
+	_say("Торен, охотник", "Держи. Наденешь лук — правая рука забудет заклинания, зато стрела летит дальше любого огня. Удерживай выстрел — и бей наверняка. А капканы ставь там, где зверь пойдёт.")
+	game._refresh_hud()
+
 func on_hunter() -> void:
 	const quest_id := "toren_wolf_hunt"
 	var quests := game.quests
@@ -282,7 +309,9 @@ func on_hunter() -> void:
 			{"id": "hunter_craft:later", "label": "Пока оставить шкуры"}
 		])
 	elif quests.is_completed(quest_id):
-		_say("Торен, охотник", "Шкуры уже высушены, а тропы снова безопасны. %s." % game.relationships.get_reaction("toren"))
+		var choices := _toren_bow_choices()
+		choices.append({"id": "hunter_craft:later", "label": "Просто поболтать"})
+		_ask("Торен, охотник", "Шкуры уже высушены, а тропы снова безопасны. %s. Хочешь лук? Делаю сам." % game.relationships.get_reaction("toren"), choices)
 	elif quests.is_ready_to_complete(quest_id):
 		_ask("Торен, охотник", "Три волка больше не угрожают дороге. Какую награду предпочитаешь?", [
 			{"id": "hunter_reward:gold", "label": "35 золота и 40 опыта"},
