@@ -40,6 +40,16 @@ func spawn() -> void:
 		object.wall_width = float(data.get("wall", 56))
 		game.add_child(object)
 		object.global_position = at
+		var door: Dictionary = data.get("door", {})
+		if not door.is_empty():
+			var entrance := SettlementObject.new()
+			entrance.kind = "door"
+			entrance.art = ""
+			entrance.label = str(door.get("label", "E — войти"))
+			game.add_child(entrance)
+			entrance.global_position = at + SkywardGame._vec(door.get("offset", [0, 14]))
+			var building_id := str(id)
+			entrance.used.connect(func(_o: SettlementObject) -> void: use_door(building_id))
 
 ## NPC entries (keepers) for the village region.
 func npcs() -> Array[Dictionary]:
@@ -97,6 +107,42 @@ func spawn_mercenary() -> void:
 	game.add_child(merc)
 	merc.global_position = game.player.global_position + Vector2(-24, 12)
 
+# --- The heroine's home ------------------------------------------------------
+
+const HOME := "home"
+
+func use_door(building_id: String) -> void:
+	if building_id != HOME:
+		return
+	var choices: Array[Dictionary] = [
+		{"id": "home_sleep", "label": "Лечь спать до утра"},
+		{"id": "home_close", "label": "Выйти"},
+	]
+	game._show_dialogue_choices("Дом героини", StoryText.format("Тёплый дом, мягкая постель. Здесь можно выспаться, {hero}: утром — полные силы и «Отдых»."), choices)
+
+## Sleep until the next morning: full health and mana, the "rested" buff.
+## Time moves on — crops grow and villagers start a new day.
+func sleep() -> bool:
+	if level(HOME) < 1:
+		return false
+	var clock := game.day_night
+	if clock.time >= 0.27:
+		clock.day += 1
+	clock.time = 0.27
+	var player := game.player
+	player.health = player.max_health
+	player.mana = player.max_mana
+	var cozy := level(HOME) >= 2
+	player.add_buff("power", 0.15 if cozy else 0.1, 300.0, "Отдых")
+	if cozy:
+		player.add_buff("regen", 2.0, 300.0, "Тепло камина")
+	player.stats_changed.emit()
+	game.hud.show_title_card("Новый день", 2.0)
+	game.hud.show_message("Вы выспались: силы восстановлены, «Отдых» +%d%% силы на 5 минут." % (15 if cozy else 10), 3.5)
+	GameAudio.play("level_up", -8.0, 0.0)
+	game.request_autosave()
+	return true
+
 # --- Library --------------------------------------------------------------
 
 func talk_library() -> void:
@@ -136,7 +182,11 @@ func reveal_chests() -> void:
 	game.discovered_landmarks[game.current_region] = markers
 
 func handle_choice(choice_id: String) -> bool:
-	if choice_id in ["tavern_close", "library_close"]:
+	if choice_id == "home_sleep":
+		game.dialogues._close()
+		sleep()
+		return true
+	if choice_id in ["tavern_close", "library_close", "home_close"]:
 		game.dialogues._close()
 		return true
 	if choice_id.begins_with("tavern_buy:"):
