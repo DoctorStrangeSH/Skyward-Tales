@@ -122,6 +122,67 @@ def house(width: int = 72, roof_pal=ROOF, windows: int = 1, chimney: bool = True
     return c, (c.w // 2, top + h - 1)
 
 
+MOSS = [hex_color(c) for c in ("#1e3a34", "#2a4c42", "#3a6a58", "#4c8a6c", "#62a884", "#8ccaa4")]
+WINE = [hex_color(c) for c in ("#4a1a22", "#62222a", "#7e2e34", "#9a3c40", "#b4544e", "#d27a6a")]
+
+
+def _hanging_sign(c: Canvas, x: int, y: int, draw) -> None:
+    """A wooden sign on a bracket beside the door, with a symbol."""
+    c.hline(x - 2, x + 12, y - 2, TIMBER[0])
+    c.vline(x + 1, y - 2, y, TIMBER[0])
+    c.vline(x + 9, y - 2, y, TIMBER[0])
+    c.rect(x - 1, y, 13, 10, TIMBER[3])
+    c.rect(x, y + 1, 11, 8, TIMBER[4])
+    draw(c, x, y)
+
+
+def _mug(c: Canvas, x: int, y: int) -> None:
+    foam = hex_color("#f6f2e0")
+    beer = hex_color("#f4b41b")
+    c.rect(x + 3, y + 3, 5, 5, beer)
+    c.hline(x + 3, x + 7, y + 2, foam)
+    c.put(x + 8, y + 4, TIMBER[0]); c.put(x + 9, y + 5, TIMBER[0]); c.put(x + 8, y + 6, TIMBER[0])
+
+
+def _book(c: Canvas, x: int, y: int) -> None:
+    c.rect(x + 2, y + 2, 7, 6, hex_color("#3a5ab0"))
+    c.vline(x + 5, y + 2, y + 7, hex_color("#f6f2e0"))
+    c.put(x + 3, y + 3, hex_color("#f4b41b")); c.put(x + 7, y + 3, hex_color("#f4b41b"))
+
+
+def tavern(level: int) -> tuple[Canvas, tuple[int, int]]:
+    """The Tavern: a wide house with a wine-red roof, a mug sign and barrels."""
+    c, origin = house(104, roof_pal=WINE, windows=2, seed=11)
+    wall_y = int(104 * 0.55) + 2
+    _hanging_sign(c, 64, wall_y + 2, _mug)
+    if level >= 2:
+        # A second storey dormer and a lantern.
+        for x in (14, 86):
+            c.rect(x, wall_y + 18, 6, 8, TIMBER[2])
+            c.hline(x, x + 5, wall_y + 18, TIMBER[4])
+            c.hline(x, x + 5, wall_y + 21, TIMBER[1])
+        c.rect(48, wall_y - 8, 9, 6, PLASTER[2])
+        c.rect(50, wall_y - 7, 5, 4, hex_color("#ffd36a"))
+    c.outline(OUTLINE)
+    return c, origin
+
+
+def library(level: int) -> tuple[Canvas, tuple[int, int]]:
+    """The Library: tall moss-green roof, a book sign, a star dome at level 2."""
+    c, origin = house(84, roof_pal=MOSS, windows=2, chimney=False, seed=12)
+    wall_y = int(84 * 0.55) + 2
+    _hanging_sign(c, 52, wall_y + 2, _book)
+    if level >= 2:
+        cx = 44
+        for y in range(0, 9):
+            half = int((1 - (y / 9) ** 2) ** 0.5 * 9) if y < 9 else 0
+            for x in range(cx - half, cx + half + 1):
+                c.put(x, 9 - y, hex_color("#7ad8ff") if (x + y) % 4 else hex_color("#c8f0ff"))
+        c.put(cx, 1, hex_color("#ffe066"))
+    c.outline(OUTLINE)
+    return c, origin
+
+
 def fence(horizontal: bool = True) -> tuple[Canvas, tuple[int, int]]:
     if horizontal:
         c = Canvas(34, 16)
@@ -254,6 +315,10 @@ def build(root: pathlib.Path) -> None:
         "village_house_large": house(92, windows=2, seed=2),
         "village_house_slate": house(72, roof_pal=SLATE, seed=3, sign=True),
         "village_hall": house(110, windows=2, seed=4, chimney=False, sign=True),
+        "village_tavern_1": tavern(1),
+        "village_tavern_2": tavern(2),
+        "village_library_1": library(1),
+        "village_library_2": library(2),
         "village_fence_h": fence(True),
         "village_fence_v": fence(False),
         "village_well": well(),

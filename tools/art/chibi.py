@@ -335,6 +335,18 @@ def main() -> int:
         "pass_miner": dict(colors={HAIR_LIGHT: (190, 100, 50), HAIR_SHADE: (130, 64, 34), RED_DARK: (140, 100, 40),
                                    RED_MID: (200, 160, 80), RED_LIGHT: (240, 210, 130), MAUVE: (80, 70, 60),
                                    GOLD: (220, 180, 90)}, trim=False),
+        # Greta, the tavern keeper: auburn hair, wine apron.
+        "tavern_keeper": dict(colors={HAIR_LIGHT: (160, 70, 40), HAIR_SHADE: (110, 44, 26), RED_DARK: (110, 30, 40),
+                                      RED_MID: (180, 60, 64), RED_LIGHT: (240, 220, 190), MAUVE: (90, 50, 50),
+                                      GOLD: (240, 200, 120)}, trim=False),
+        # Olwin, the librarian: grey hair, moss-green robe.
+        "librarian": dict(colors={HAIR_LIGHT: (200, 200, 205), HAIR_SHADE: (150, 150, 160), RED_DARK: (30, 70, 60),
+                                  RED_MID: (60, 120, 96), RED_LIGHT: (140, 200, 160), MAUVE: (40, 60, 60),
+                                  GOLD: (230, 200, 110)}, trim=True, ahoge=False, beard=((220, 220, 225), (180, 182, 190))),
+        # A sellsword from the tavern: dark hair, steel and leather.
+        "mercenary": dict(colors={HAIR_LIGHT: (60, 50, 50), HAIR_SHADE: (40, 32, 34), RED_DARK: (70, 50, 40),
+                                  RED_MID: (130, 110, 90), RED_LIGHT: (190, 196, 206), MAUVE: (60, 60, 70),
+                                  GOLD: (200, 200, 210)}, trim=True, ahoge=False),
         # Olm, the night guard: dark hair, steel-grey coat, red sash.
         "guard": dict(colors={HAIR_LIGHT: (96, 70, 52), HAIR_SHADE: (64, 46, 34), RED_DARK: (150, 40, 40),
                               RED_MID: (120, 130, 150), RED_LIGHT: (190, 200, 214), MAUVE: (60, 66, 84),

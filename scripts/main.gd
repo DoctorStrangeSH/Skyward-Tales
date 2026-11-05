@@ -95,6 +95,7 @@ var borin: BorinStory
 var combos: ElementalCombos
 var gear: GearEffects
 var farm: Farm
+var buildings: VillageBuildings
 var achievements: Achievements
 var cast_cooldown_total: float = 0.0
 var defeated_enemies: int = 0
@@ -186,6 +187,7 @@ func _ready() -> void:
 	world_state.game = self
 	add_child(world_state)
 	borin = BorinStory.new(self)
+	buildings = VillageBuildings.new(self)
 	farm = Farm.new()
 	farm.name = "Farm"
 	farm.game = self
@@ -631,6 +633,8 @@ func _populate_region() -> void:
 		spawn_region_boss()
 	for gate_data in layout.get("gates", []):
 		_spawn_gate(str(gate_data.get("target", "")), _vec(gate_data.get("position")), _vec(gate_data.get("arrival")), str(gate_data.get("label", "")))
+	buildings.spawn_mercenary()
+	buildings.reveal_chests()
 
 ## Ordinary monsters come back a while after they fall (bosses, quest foes,
 ## legends and event foes do not).
@@ -1072,6 +1076,7 @@ func _spawn_settlement() -> void:
 			kind = "house"
 		_spawn_settlement_object(kind, art, Vector2(float(p[0]), float(p[1])))
 	farm.spawn()
+	buildings.spawn()
 
 func _spawn_settlement_object(kind: String, art: String, at: Vector2) -> void:
 	var object := SETTLEMENT_OBJECT_SCRIPT.new() as SettlementObject
@@ -1086,6 +1091,8 @@ func _spawn_settlement_object(kind: String, art: String, at: Vector2) -> void:
 func on_building_upgraded(building_id: String) -> void:
 	if building_id == Farm.BUILDING:
 		farm.refresh()
+	elif current_region == settlement.village_region():
+		refresh_settlement()
 
 ## Rebuilds the village objects and settlers after a house goes up.
 func refresh_settlement() -> void:
@@ -1465,6 +1472,12 @@ func on_reaction(reaction_id: String, at: Vector2) -> void:
 	if combos != null:
 		combos.on_reaction(reaction_id, at)
 
+func _on_tavern_keeper_interacted(_source: Node2D) -> void:
+	buildings.talk_tavern()
+
+func _on_librarian_interacted(_source: Node2D) -> void:
+	buildings.talk_library()
+
 func _on_pass_miner_interacted(_source: Node2D) -> void:
 	mine.talk_miner()
 
@@ -1602,6 +1615,8 @@ func _on_story_boss_defeated(kind: String, xp: int, death_position: Vector2) -> 
 		return
 	director.set_flag(kind + "_defeated")
 	achievements.add("bosses")
+	# Every great foe guards a page of the Keepers' lore.
+	_spawn_loot(death_position + Vector2(-16, 8), VillageBuildings.TOME)
 	if kind == "pattern_shade":
 		achievements.add("shade")
 	player.add_experience(xp)
@@ -1655,6 +1670,8 @@ func chest_tier_reward(tier: String, at: Vector2) -> String:
 			_spawn_loot(at + Vector2(-12, 12), "gold").amount = 40 + 10 * player.level
 			if loot_rng.randf() < 0.35:
 				_spawn_loot(at + Vector2(12, -6), TreasureHunt.MAP_ITEM)
+			if loot_rng.randf() < 0.2:
+				_spawn_loot(at + Vector2(-14, -4), VillageBuildings.TOME)
 			return spawn_generated_loot(at + Vector2(10, 14), "rare")
 	return ""
 

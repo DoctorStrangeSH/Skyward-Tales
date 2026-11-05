@@ -11,6 +11,12 @@
    16
   ]
  },
+ "icons/ancient_tome.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/apprentice_staff.png": {
   "size": [
    16,
@@ -2939,6 +2945,26 @@
    32
   ]
  },
+ "world/village_library_1.png": {
+  "size": [
+   88,
+   84
+  ],
+  "origin": [
+   44,
+   81
+  ]
+ },
+ "world/village_library_2.png": {
+  "size": [
+   88,
+   84
+  ],
+  "origin": [
+   44,
+   81
+  ]
+ },
  "world/village_plot.png": {
   "size": [
    70,
@@ -2957,6 +2983,26 @@
   "origin": [
    10,
    24
+  ]
+ },
+ "world/village_tavern_1.png": {
+  "size": [
+   108,
+   95
+  ],
+  "origin": [
+   54,
+   92
+  ]
+ },
+ "world/village_tavern_2.png": {
+  "size": [
+   108,
+   95
+  ],
+  "origin": [
+   54,
+   92
   ]
  },
  "world/village_well.png": {

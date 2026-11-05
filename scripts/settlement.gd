@@ -98,6 +98,8 @@ func _completed_quests() -> int:
 ## found, and (in the village) settlers at their house or by the board.
 func npcs_for(region_id: String) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
+	if region_id == village_region() and game.buildings != null:
+		result.append_array(game.buildings.npcs())
 	var waiting_index := 0
 	for id in settlers():
 		var entry: Dictionary = settlers()[id]

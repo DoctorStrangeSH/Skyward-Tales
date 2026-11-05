@@ -95,6 +95,7 @@ func _on_defeated(legend_id: String, at: Vector2) -> void:
 	var reward := str(info.get("reward", ""))
 	if not reward.is_empty():
 		game._spawn_loot(at, reward).settle_time = 1.0
+	game._spawn_loot(at + Vector2(-14, 6), VillageBuildings.TOME)
 	var coins := game._spawn_loot(at + Vector2(14, 6), "gold")
 	coins.amount = 60 * maxi(1, RegionCatalog.level(game.current_region))
 	game.shake(5.0, 0.4)

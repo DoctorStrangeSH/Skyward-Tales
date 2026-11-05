@@ -212,6 +212,28 @@
   ],
   "feet": 40
  },
+ "librarian": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
+ "mercenary": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
  "merchant": {
   "anims": {
    "idle": 6,
@@ -312,6 +334,17 @@
   "feet": 40
  },
  "smith_master": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
+ "tavern_keeper": {
   "anims": {
    "idle": 6,
    "walk": 6

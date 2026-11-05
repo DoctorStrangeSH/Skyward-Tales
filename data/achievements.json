@@ -237,6 +237,20 @@
       "stat": "harvests",
       "goal": 50,
       "gold": 500
+    },
+    "scholar_5": {
+      "title": "Книжница",
+      "description": "Прочтите 5 древних томов.",
+      "stat": "tomes",
+      "goal": 5,
+      "gold": 300
+    },
+    "builder_6": {
+      "title": "Зодчая",
+      "description": "Наберите 6 уровней построек в деревне.",
+      "stat": "buildings",
+      "goal": 6,
+      "gold": 400
     }
   }
 }
