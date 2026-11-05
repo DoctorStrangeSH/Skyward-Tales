@@ -107,11 +107,32 @@ func select_gender(value: String) -> void:
 	gender = "f" if value == "f" else "m"
 	male_button.button_pressed = gender == "m"
 	female_button.button_pressed = gender == "f"
+	# The chosen card glows gold; the other one fades back.
+	_style_card(male_button, gender == "m")
+	_style_card(female_button, gender == "f")
 	if not _name_touched or name_edit.text.strip_edges().is_empty():
 		name_edit.text = StoryText.DEFAULT_NAMES[gender]
 		_name_touched = false
 	for card in _cards:
 		(_cards[card] as AtlasTexture).region.position.x = 16
+
+func _style_card(button: Button, chosen: bool) -> void:
+	var style := StyleBoxFlat.new()
+	style.set_corner_radius_all(6)
+	style.set_border_width_all(3 if chosen else 1)
+	style.border_color = Color(1.0, 0.82, 0.36) if chosen else Color(0.36, 0.3, 0.42)
+	style.bg_color = Color(0.32, 0.22, 0.12, 0.95) if chosen else Color(0.1, 0.09, 0.14, 0.9)
+	style.shadow_color = Color(1.0, 0.75, 0.3, 0.45) if chosen else Color(0, 0, 0, 0)
+	style.shadow_size = 6 if chosen else 0
+	for state in ["normal", "hover", "pressed", "hover_pressed", "focus"]:
+		var variant := style.duplicate() as StyleBoxFlat
+		if state.begins_with("hover") and not chosen:
+			variant.border_color = Color(0.7, 0.6, 0.45)
+		button.add_theme_stylebox_override(state, variant)
+	button.modulate = Color.WHITE if chosen else Color(0.7, 0.7, 0.75)
+	var caption := button.get_child(1) as Label
+	if caption != null:
+		caption.add_theme_color_override("font_color", Color(1.0, 0.88, 0.5) if chosen else Color(0.75, 0.75, 0.8))
 
 func hero_data() -> Dictionary:
 	var hero_name := name_edit.text.strip_edges()

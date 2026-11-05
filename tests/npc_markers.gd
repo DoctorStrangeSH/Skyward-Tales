@@ -23,7 +23,7 @@ func _run() -> void:
 	if not _verify(d.marker_for("cartographer") == "" and d.marker_for("hunter") == "" and d.marker_for("merchant") == "", "side quests locked before helping the elder"):
 		return
 	game.update_npc_markers()
-	if not _verify(game.elder.marker == "quest", "marker is applied to the elder node"):
+	if not _verify(game.elder.marker == "quest_main", "marker is applied to the elder node"):
 		return
 
 	game.quests.start_quest("moonleaf_gathering")

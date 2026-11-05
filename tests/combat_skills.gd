@@ -76,7 +76,7 @@ func _run() -> void:
 	if hero.assign_skill(1, "unknown_skill"):
 		return _fail("unknown skills can't go on the bar")
 	var entries: Array = game.skills.hotbar_entries()
-	if entries.size() != 7 or str(entries[4]["key"]) != "Sh" or int(entries[5]["count"]) < 0:
+	if entries.size() != 7 or str(entries[4]["key"]) != "Пр" or int(entries[5]["count"]) < 0:
 		return _fail("the bar shows four skills, dodge and potions")
 
 	# Spells on the bar cast through the hotbar.

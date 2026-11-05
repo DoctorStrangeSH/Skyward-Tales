@@ -776,6 +776,21 @@
   },
   "chain": [
     {
+      "after": "main_guardian",
+      "start": "crystal_heart",
+      "scene": ""
+    },
+    {
+      "after": "main_star_map",
+      "start": "grove_spirits",
+      "scene": ""
+    },
+    {
+      "after": "main_prologue",
+      "start": "moonleaf_gathering",
+      "scene": "elder_after_shard"
+    },
+    {
       "after": "moonleaf_gathering",
       "start": "main_star_map",
       "scene": "elder_star_map"

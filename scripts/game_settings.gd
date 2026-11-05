@@ -48,6 +48,52 @@ static func reset_tips() -> void:
 		_cfg().erase_section("tips_seen")
 	_cfg().save(PATH)
 
+# --- Display ---------------------------------------------------------------
+
+const RESOLUTIONS := [Vector2i(1280, 720), Vector2i(1366, 768), Vector2i(1600, 900), Vector2i(1920, 1080), Vector2i(2560, 1440), Vector2i(3840, 2160)]
+const WINDOW_MODES := ["Окно", "Полный экран", "Без рамки"]
+
+static func resolution_index() -> int:
+	return clampi(int(_cfg().get_value("display", "resolution", 0)), 0, RESOLUTIONS.size() - 1)
+
+static func window_mode_index() -> int:
+	return clampi(int(_cfg().get_value("display", "window_mode", 0)), 0, WINDOW_MODES.size() - 1)
+
+static func set_display(resolution: int, window_mode: int) -> void:
+	_cfg().set_value("display", "resolution", resolution)
+	_cfg().set_value("display", "window_mode", window_mode)
+	_cfg().save(PATH)
+	apply_display()
+
+static func resolution_label(index: int) -> String:
+	var size: Vector2i = RESOLUTIONS[index]
+	return "%d × %d" % [size.x, size.y]
+
+## Applies the stored resolution and window mode (no-op when headless).
+static func apply_display() -> void:
+	if DisplayServer.get_name() == "headless":
+		return
+	var mode := window_mode_index()
+	match mode:
+		1:
+			DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_BORDERLESS, false)
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+		2:
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+			DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_BORDERLESS, true)
+			var screen := DisplayServer.window_get_current_screen()
+			DisplayServer.window_set_position(DisplayServer.screen_get_position(screen))
+			DisplayServer.window_set_size(DisplayServer.screen_get_size(screen))
+		_:
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+			DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_BORDERLESS, false)
+			var size: Vector2i = RESOLUTIONS[resolution_index()]
+			var screen := DisplayServer.window_get_current_screen()
+			var usable := DisplayServer.screen_get_usable_rect(screen)
+			size = Vector2i(mini(size.x, usable.size.x), mini(size.y, usable.size.y))
+			DisplayServer.window_set_size(size)
+			DisplayServer.window_set_position(usable.position + (usable.size - size) / 2)
+
 ## Forget cached values (tests use this after changing the file).
 static func reload() -> void:
 	_config = null

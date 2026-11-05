@@ -66,7 +66,7 @@ func _run() -> void:
 	await process_frame
 	if village.guard != null and is_instance_valid(village.guard) and not village.guard.is_queued_for_deletion():
 		return _fail("the guard goes off duty in the morning")
-	var smith := _npc(game, "blacksmith")
+	var smith := _npc(game, "merchant")
 	if elder.asleep or smith.asleep or not smith.is_walking():
 		return _fail("in the morning villagers go back to work")
 

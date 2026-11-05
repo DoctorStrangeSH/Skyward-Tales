@@ -165,7 +165,8 @@ def build_props() -> None:
         "memory_crystal": props.herb("memory_crystal"),
         "echo_crystal": props.herb("echo_crystal"), "sky_shard": props.sky_shard(), "meteor_iron": props.meteor_iron(), "altar_heart": props.rune_circle(),
         "marker_quest": props.marker("quest"), "marker_ready": props.marker("ready"),
-        "marker_service": props.marker("service"), "key_e": props.key_badge(),
+        "marker_service": props.marker("service"),
+        "marker_quest_main": props.marker("quest_main"), "marker_ready_main": props.marker("ready_main"), "key_e": props.key_badge(),
     }
     items.update(chests.build())
     items.update(gates.build())

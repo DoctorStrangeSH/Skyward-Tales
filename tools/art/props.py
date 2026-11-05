@@ -454,7 +454,10 @@ def marker(kind: str) -> tuple[Canvas, tuple[int, int]]:
     c = Canvas(11, 15)
     gold = ramp("#fff6c0", "#ffd45c", "#e0962e", "#8a4a22")
     blue = ramp("#e8fbff", "#8fe0ff", "#3f9ae0", "#25407a")
-    pal = blue if kind == "service" else gold
+    green = ramp("#f0fff0", "#9cf5a0", "#3fb85a", "#1d5a34")
+    main = kind.endswith("_main")
+    kind = kind.removesuffix("_main")
+    pal = green if kind == "service" else (gold if main else blue)
     glyphs = {
         "quest": ["..###..", "..###..", "..###..", "..###..", "..##...", "..##...", ".......", "..##...", "..##..."],
         "ready": [".#####.", "###.###", "....###", "...###.", "..###..", "..##...", ".......", "..##...", "..##..."],

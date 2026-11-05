@@ -19,8 +19,8 @@ func _init(owner_game: SkywardGame) -> void:
 func refresh() -> void:
 	targets = _collect()
 
-func _add(result: Array, region_id: String, position: Variant, kind: String, title: String) -> void:
-	result.append({"region": region_id, "position": position, "kind": kind, "title": title})
+func _add(result: Array, region_id: String, position: Variant, kind: String, title: String, main: bool = false) -> void:
+	result.append({"region": region_id, "position": position, "kind": kind, "title": title, "main": main or kind == "main"})
 
 func _collect() -> Array:
 	var result: Array = []
@@ -34,13 +34,14 @@ func _collect() -> Array:
 			if str(npc.get("requires_flag", "")) == "ending" and game.epilogue.ending().is_empty():
 				continue
 			var marker := game.dialogues.marker_for(npc_id)
+			var story_quest := game.dialogues.marker_style(npc_id, marker).ends_with("_main")
 			var at: Vector2 = SkywardGame._vec(npc.get("position"))
 			if region_id == game.current_region:
 				at = _live_npc(npc_id, at)
 			if marker == "ready":
-				_add(result, region_id, at, "turnin", str(npc.get("name", "")))
+				_add(result, region_id, at, "turnin", str(npc.get("name", "")), story_quest)
 			elif marker == "quest":
-				_add(result, region_id, at, "offer", str(npc.get("name", "")))
+				_add(result, region_id, at, "offer", str(npc.get("name", "")), story_quest)
 	result.append_array(game.guild.targets())
 	# A lost mine is a job for anyone passing by.
 	if game.mine.overrun() and not quests.is_active(BorinStory.DREAM) and game.visited_regions.has(PassMine.REGION):
@@ -187,7 +188,7 @@ func minimap_markers() -> Array:
 		if target["kind"] in ["main", "side"]:
 			result.append({"kind": "goal_" + str(target["kind"]), "position": target["position"]})
 		else:
-			result.append({"kind": "quest" if target["kind"] == "offer" else "ready", "position": target["position"]})
+			result.append({"kind": "quest" if target["kind"] == "offer" else "ready", "position": target["position"], "main": bool(target.get("main", false))})
 	var goal := main_region()
 	if not goal.is_empty() and goal != game.current_region:
 		var path := route(game.current_region, goal)
@@ -205,4 +206,6 @@ func region_badges() -> Dictionary:
 		if not result.has(region_id):
 			result[region_id] = {}
 		result[region_id][str(target["kind"])] = true
+		if bool(target.get("main", false)) and target["kind"] in ["offer", "turnin"]:
+			result[region_id][str(target["kind"]) + "_main"] = true
 	return result

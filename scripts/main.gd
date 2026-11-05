@@ -272,6 +272,8 @@ func _ready() -> void:
 	hud.defeat_menu_requested.connect(_go_to_title)
 	hud.skill_learn_requested.connect(learn_skill)
 	hud.skills_reset_requested.connect(reset_skills)
+	hud.dialogue_dismissed.connect(func() -> void: player.set_physics_process(true))
+	hud.can_dismiss_dialogue = func() -> bool: return not story.active
 	hud.skills_view.combos = combos
 	hud.dialogue_choice_selected.connect(_on_dialogue_choice_selected)
 	hud.world_map_view.travel_requested.connect(fast_travel)
@@ -539,7 +541,7 @@ func _handle_key(keycode: Key) -> bool:
 		KEY_F9 when not world_blocked:
 			load_game()
 			return true
-		KEY_SHIFT when not world_blocked and not hud.inventory_open:
+		KEY_SPACE when not world_blocked and not hud.inventory_open:
 			if player.start_dodge():
 				GameAudio.play("dash", -6.0)
 				gear.on_dodge()
@@ -875,6 +877,7 @@ func _scale_to_region(enemy: SlimeEnemy) -> void:
 		enemy.xp_reward = int(round(enemy.xp_reward * 1.3))
 		enemy.health = enemy.max_health
 		enemy.combat_feedback.set_health(enemy.health, enemy.max_health)
+	enemy.xp_reward = maxi(1, int(round(enemy.xp_reward * XP_RATE)))
 	if epilogue != null:
 		enemy.xp_reward = int(round(enemy.xp_reward * epilogue.xp_mult()))
 	var power := RegionCatalog.enemy_power(current_region)
@@ -1525,11 +1528,42 @@ func update_npc_markers() -> void:
 			# The companion is always at hand: mark her only when she advances the story.
 			if actor.is_companion and marker != "ready":
 				marker = ""
-			actor.set_marker(marker)
+			actor.set_marker(dialogues.marker_style(actor.npc_id, marker))
 
 func _show_dialogue(speaker: String, message: String) -> void:
 	player.set_physics_process(false)
-	hud.show_dialogue(speaker, StoryText.format(message))
+	hud.show_dialogue(speaker, StoryText.format(_vary_line(speaker, message)))
+
+## The same NPC doesn't repeat the same line: on a repeat they make small talk
+## from data/chatter.json (rotating), and every third time remind the task.
+var _chatter: Dictionary = {}
+var _last_said: Dictionary = {}
+var _repeat_count: Dictionary = {}
+
+func _vary_line(speaker: String, message: String) -> String:
+	if _chatter.is_empty():
+		var file := FileAccess.open("res://data/chatter.json", FileAccess.READ)
+		_chatter = JSON.parse_string(file.get_as_text()) if file != null else {"speakers": {}}
+	if str(_last_said.get(speaker, "")) != message:
+		_last_said[speaker] = message
+		_repeat_count[speaker] = 0
+		return message
+	var count: int = int(_repeat_count.get(speaker, 0)) + 1
+	_repeat_count[speaker] = count
+	if count % 3 == 0:
+		return message
+	var pool: Array = (_chatter.get("speakers", {}) as Dictionary).get(speaker, []).duplicate()
+	if pool.size() < 3:
+		pool.append_array(_chatter.get("_any", []))
+	if pool.is_empty():
+		return message
+	var key := speaker + "#chat"
+	var line := str(pool[randi() % pool.size()])
+	if pool.size() > 1:
+		while line == str(_last_said.get(key, "")):
+			line = str(pool[randi() % pool.size()])
+	_last_said[key] = line
+	return line
 
 func _show_dialogue_choices(speaker: String, message: String, choices: Array[Dictionary]) -> void:
 	player.set_physics_process(false)
@@ -1700,19 +1734,24 @@ func roll_drops(kind: String, at: Vector2, elite: bool = false) -> Array:
 			_spawn_loot(_scatter(at), "gold").amount = coins
 			dropped.append("gold")
 	for entry in table.get("items", []):
-		if loot_rng.randf() < float(entry.get("chance", 0.0)):
+		if loot_rng.randf() < float(entry.get("chance", 0.0)) * LOOT_RATE:
 			_spawn_loot(_scatter(at), str(entry.get("item", "")))
 			dropped.append(str(entry.get("item", "")))
-	if loot_rng.randf() < float(table.get("potion", 0.2)):
+	if loot_rng.randf() < float(table.get("potion", 0.2)) * LOOT_RATE:
 		var potion := "health_potion" if loot_rng.randf() < 0.6 else "mana_potion"
 		_spawn_loot(_scatter(at), potion)
 		dropped.append(potion)
-	if not elite and loot_rng.randf() < float(table.get("gear", LootGenerator.drop_chance())):
+	if not elite and loot_rng.randf() < float(table.get("gear", LootGenerator.drop_chance())) * GEAR_RATE:
 		dropped.append(spawn_generated_loot(_scatter(at)))
-	if not RegionCatalog.is_underground(RegionCatalog.style(current_region)) and loot_rng.randf() < 0.03:
+	if not RegionCatalog.is_underground(RegionCatalog.style(current_region)) and loot_rng.randf() < 0.015:
 		_spawn_loot(_scatter(at), TreasureHunt.MAP_ITEM)
 		dropped.append(TreasureHunt.MAP_ITEM)
 	return dropped
+
+## Balance: monster drops and experience (lower = slower, rarer).
+const LOOT_RATE := 0.6
+const GEAR_RATE := 0.45
+const XP_RATE := 0.7
 
 var _drop_tables: Dictionary = {}
 

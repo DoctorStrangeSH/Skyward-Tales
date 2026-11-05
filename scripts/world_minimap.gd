@@ -117,11 +117,11 @@ func _draw() -> void:
 			if kind in ["goal_main", "goal_gate"]:
 				_draw_edge_arrow(area, at, Color(1.0, 0.78, 0.2), 1.4)
 			elif kind in ["goal_side", "ready", "quest"]:
-				_draw_edge_arrow(area, at, Color(1.0, 0.95, 0.75) if kind != "ready" else Color(0.5, 1.0, 0.5))
+				_draw_edge_arrow(area, at, QuestColors.GOLD if bool(marker.get("main", false)) else QuestColors.BLUE)
 			elif kind in ["gate", "treasure", "rift"] and follow:
 				_draw_edge_arrow(area, at, Color(0.95, 0.95, 0.8, 0.7))
 			continue
-		_draw_marker(kind, at, str(marker.get("label", "")))
+		_draw_marker(kind, at, str(marker.get("label", "")), bool(marker.get("main", false)))
 	_draw_hero(_map_point(hero_position))
 	if follow:
 		draw_rect(area, Color(0.1, 0.07, 0.06), false, 1.0)
@@ -141,19 +141,19 @@ func _all_markers() -> Array:
 	result.append_array(live)
 	return result
 
-func _draw_marker(kind: String, at: Vector2, label: String) -> void:
+func _draw_marker(kind: String, at: Vector2, label: String, main: bool = false) -> void:
 	var font := UiFont.font()
 	var pulse := 0.5 + 0.5 * sin(_clock * 5.0)
 	match kind:
 		"npc":
 			draw_rect(Rect2(at - Vector2(1.5, 1.5), Vector2(3, 3)), Color(0.95, 0.92, 0.85))
 		"quest", "ready":
-			var color := Color(1.0, 0.82, 0.25) if kind == "quest" else Color(0.45, 1.0, 0.45)
+			var color := QuestColors.GOLD if main else QuestColors.BLUE
 			draw_circle(at, 4.0 + pulse, Color(color, 0.25))
 			draw_circle(at, 3.0, Color(0.1, 0.07, 0.05))
 			draw_string(font, at + Vector2(-2, 3), "!" if kind == "quest" else "?", HORIZONTAL_ALIGNMENT_LEFT, -1, UiFont.px(8), color)
 		"service":
-			draw_circle(at, 2.5, Color(0.5, 0.8, 1.0))
+			draw_circle(at, 2.5, QuestColors.GREEN)
 		"gate":
 			draw_rect(Rect2(at - Vector2(3, 3), Vector2(6, 6)), Color(0.1, 0.07, 0.05))
 			draw_rect(Rect2(at - Vector2(2, 2), Vector2(4, 4)), Color(1.0, 0.92, 0.7))
@@ -194,7 +194,7 @@ func _draw_marker(kind: String, at: Vector2, label: String) -> void:
 			draw_circle(at, 3.0, Color(0.15, 0.05, 0.25))
 			draw_arc(at, 2.4, _clock * 3.0, _clock * 3.0 + PI * 1.3, 8, Color(0.95, 0.75, 1.0), 1.0)
 		"goal_main", "goal_side":
-			var gold := Color(1.0, 0.8, 0.2) if kind == "goal_main" else Color(1.0, 0.96, 0.8)
+			var gold := QuestColors.GOLD if kind == "goal_main" else QuestColors.BLUE
 			draw_circle(at, 5.5 + pulse * 1.5, Color(gold, 0.25))
 			_draw_diamond(at, 4.2, Color(0.12, 0.08, 0.04))
 			_draw_diamond(at, 3.0, gold)

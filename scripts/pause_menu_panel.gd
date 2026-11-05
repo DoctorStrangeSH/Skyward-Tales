@@ -13,7 +13,8 @@ const CONTROLS := [
 	["ЛКМ", "удар мечом, удерживать — вихрь"],
 	["ПКМ", "выбранное заклинание"],
 	["1 – 4", "навыки на панели"],
-	["Shift", "рывок (неуязвимость)"],
+	["Shift (держать)", "бег"],
+	["Пробел", "рывок (неуязвимость)"],
 	["F", "блок; вовремя — парирование и контратака"],
 	["E", "говорить, подбирать, открывать"],
 	["Q / R", "зелье здоровья / маны"],
@@ -25,7 +26,7 @@ const CONTROLS := [
 	["K", "бестиарий"],
 	["M", "карта региона"],
 	["F6 / F9", "быстрое сохранение / загрузка"],
-	["Esc", "пауза"],
+	["Esc", "закрыть окно / пауза"],
 ]
 
 var main_page: VBoxContainer
@@ -36,6 +37,8 @@ var damage_toggle: CheckButton
 var shake_toggle: CheckButton
 var music_slider: HSlider
 var sfx_slider: HSlider
+var resolution_picker: OptionButton
+var window_picker: OptionButton
 
 func _ready() -> void:
 	position = Vector2(190, 40)
@@ -74,6 +77,15 @@ func _ready() -> void:
 	shake_toggle = _toggle(settings_page, "Тряска экрана", "screen_shake")
 	music_slider = _slider(settings_page, "Музыка", "music_volume")
 	sfx_slider = _slider(settings_page, "Звуки", "sfx_volume")
+	var resolutions: Array = []
+	for index in GameSettings.RESOLUTIONS.size():
+		resolutions.append(GameSettings.resolution_label(index))
+	resolution_picker = _picker(settings_page, "Разрешение", resolutions, GameSettings.resolution_index())
+	window_picker = _picker(settings_page, "Режим", GameSettings.WINDOW_MODES, GameSettings.window_mode_index())
+	var apply := func(_index: int) -> void:
+		GameSettings.set_display(resolution_picker.selected, window_picker.selected)
+	resolution_picker.item_selected.connect(apply)
+	window_picker.item_selected.connect(apply)
 	_button(settings_page, "Показать советы заново", func() -> void: GameSettings.reset_tips())
 	_button(settings_page, "Назад", func() -> void: show_page(main_page))
 	show_page(main_page)
@@ -117,6 +129,22 @@ func _slider(parent: VBoxContainer, title: String, key: String) -> HSlider:
 	row.add_child(slider)
 	parent.add_child(row)
 	return slider
+
+func _picker(parent: VBoxContainer, title: String, options: Array, selected: int) -> OptionButton:
+	var row := HBoxContainer.new()
+	var label := _label(title, 10, Color(0.92, 0.92, 0.88))
+	label.custom_minimum_size = Vector2(62, 0)
+	row.add_child(label)
+	var picker := OptionButton.new()
+	picker.custom_minimum_size = Vector2(110, 14)
+	picker.add_theme_font_size_override("font_size", UiFont.px(10))
+	for option in options:
+		picker.add_item(str(option))
+	picker.get_popup().add_theme_font_size_override("font_size", UiFont.px(10))
+	picker.select(selected)
+	row.add_child(picker)
+	parent.add_child(row)
+	return picker
 
 func _label(text: String, size: int, color: Color) -> Label:
 	var label := Label.new()

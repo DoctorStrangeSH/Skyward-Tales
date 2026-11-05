@@ -324,7 +324,7 @@ func _draw_marks(region_id: String) -> void:
 		if not marks.has(kind):
 			continue
 		var at := Vector2(x, rect.position.y + 2)
-		var color: Color = {"main": Color(1.0, 0.78, 0.2), "side": Color(1.0, 0.95, 0.8), "turnin": Color(0.45, 1.0, 0.45), "offer": Color(1.0, 0.82, 0.3)}[kind]
+		var color: Color = QuestColors.GOLD if kind == "main" or marks.has(kind + "_main") else QuestColors.BLUE
 		var radius := 5.0 if kind == "main" else 4.0
 		if kind == "main":
 			draw_circle(at, radius + 2.0 + pulse * 1.5, Color(color, 0.3))

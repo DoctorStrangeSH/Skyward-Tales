@@ -1053,7 +1053,27 @@
    14
   ]
  },
+ "props/marker_quest_main.png": {
+  "size": [
+   11,
+   15
+  ],
+  "origin": [
+   5,
+   14
+  ]
+ },
  "props/marker_ready.png": {
+  "size": [
+   11,
+   15
+  ],
+  "origin": [
+   5,
+   14
+  ]
+ },
+ "props/marker_ready_main.png": {
   "size": [
    11,
    15

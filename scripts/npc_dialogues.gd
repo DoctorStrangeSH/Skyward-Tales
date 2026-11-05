@@ -86,6 +86,28 @@ func marker_for(npc_id: String) -> String:
 				return "service"
 	return ""
 
+## The marker sprite for an NPC: story quests are gold, side quests blue,
+## services green ("quest_main", "ready_main", "quest", "ready", "service").
+func marker_style(npc_id: String, marker: String) -> String:
+	if not marker in ["quest", "ready"]:
+		return marker
+	return marker + "_main" if _is_main(_marker_quest(npc_id)) else marker
+
+func _is_main(quest_id: String) -> bool:
+	return bool(game.quests.definitions.get(quest_id, {}).get("main", false))
+
+## Which quest an NPC's marker is about ("" when unknown).
+func _marker_quest(npc_id: String) -> String:
+	if game.givers != null and game.givers.has_giver(npc_id):
+		return game.givers.current_quest(npc_id)
+	if game.director != null and game.director.talk_target() == npc_id:
+		return game.quests.active_quest_id
+	return {
+		"elder": "moonleaf_gathering", "cartographer": "lost_cartographer_notes",
+		"grove_warden": "grove_spirits", "hunter": "toren_wolf_hunt", "merchant": "bran_supply_run",
+		"miner": "crystal_heart"
+	}.get(npc_id, "")
+
 # --- Choice routing ------------------------------------------------------
 
 func handle_choice(choice_id: String) -> void:

@@ -26,6 +26,9 @@ var facing: Vector2 = Vector2.DOWN
 var visual: DirectionalSprite
 var mana_regen_accumulator: float = 0.0
 var dodge_time_left: float = 0.0
+## Hold Shift to run.
+const SPRINT_MULT := 1.55
+var sprinting: bool = false
 var dodge_cooldown_left: float = 0.0
 var dodge_direction: Vector2 = Vector2.DOWN
 var inventory: Dictionary = {}
@@ -144,7 +147,8 @@ func _physics_process(_delta: float) -> void:
 	var moving := direction.length_squared() > 0.01
 	if moving:
 		facing = direction.normalized()
-	velocity = direction * get_move_speed()
+	sprinting = moving and not blocking and Input.is_action_pressed("sprint")
+	velocity = direction * get_move_speed() * (SPRINT_MULT if sprinting else 1.0)
 	move_and_slide()
 	visual.set_direction_vector(facing)
 	visual.set_moving(moving)
@@ -243,7 +247,7 @@ func add_experience(amount: int) -> void:
 	while experience >= experience_to_next:
 		experience -= experience_to_next
 		level += 1
-		experience_to_next = int(round(float(experience_to_next) * 1.35))
+		experience_to_next = int(round(float(experience_to_next) * 1.42))
 		max_health += 10
 		max_mana += 5
 		health = max_health
