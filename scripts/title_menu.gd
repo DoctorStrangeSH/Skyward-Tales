@@ -7,9 +7,14 @@ var menu_column: VBoxContainer
 var creation: HeroCreationPanel
 var _menu_frame: PanelContainer
 
+static var _display_applied := false
+
 func _ready() -> void:
 	get_tree().paused = false
 	GameAudio.music("sky")
+	if not _display_applied:
+		_display_applied = true
+		GameSettings.apply_display()
 	# CI smoke test of exported builds: `SkywardTales -- --smoke` opens the world.
 	if "--smoke" in OS.get_cmdline_user_args():
 		get_tree().change_scene_to_file.call_deferred("res://scenes/main.tscn")

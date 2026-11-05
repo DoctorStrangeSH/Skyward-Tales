@@ -257,7 +257,7 @@ func hotbar_entries() -> Array:
 			"locked": lock_reason(skill_id) if not skill_id.is_empty() else "", "count": -1,
 		})
 	var dodge_total := maxf(0.01, player.get_dodge_cooldown()) if player.has_method("get_dodge_cooldown") else 1.0
-	entries.append({"key": "Sh", "icon": "icons/skill_dodge.png", "name": "Перекат", "cooldown": clampf(player.dodge_cooldown_left / dodge_total, 0.0, 1.0), "locked": "", "count": -1})
+	entries.append({"key": "Пр", "icon": "icons/skill_dodge.png", "name": "Перекат", "cooldown": clampf(player.dodge_cooldown_left / dodge_total, 0.0, 1.0), "locked": "", "count": -1})
 	entries.append({"key": "Q", "icon": "icons/health_potion.png", "name": "Зелье здоровья", "cooldown": 0.0, "locked": "", "count": int(player.inventory.get("health_potion", 0))})
 	entries.append({"key": "R", "icon": "icons/mana_potion.png", "name": "Зелье маны", "cooldown": 0.0, "locked": "", "count": int(player.inventory.get("mana_potion", 0))})
 	return entries

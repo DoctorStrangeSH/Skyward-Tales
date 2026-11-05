@@ -58,13 +58,18 @@ func on_quest_completed(quest_id: String) -> void:
 		var next_quest := str(link.get("start", ""))
 		var scene := str(link.get("scene", ""))
 		var title := str(link.get("title", ""))
-		queue_scene(scene, func() -> void:
+		var begin := func() -> void:
 			if not title.is_empty():
 				game.hud.show_title_card(title, 4.0)
 			if not next_quest.is_empty() and game.quests.start_quest(next_quest):
 				game.hud.show_message("Новая глава: " + str(game.quests.definitions[next_quest].get("title", "")), 3.0)
 				game.spawn_story_objects()
-			game._refresh_hud())
+			game._refresh_hud()
+		# The next chapter starts at once: with its scene, or right away.
+		if scene.is_empty() or not game.story.has_scene(scene):
+			begin.call_deferred()
+		else:
+			queue_scene(scene, begin)
 
 ## Returns true if talking to this NPC advanced the main story.
 func try_talk(npc_id: String) -> bool:

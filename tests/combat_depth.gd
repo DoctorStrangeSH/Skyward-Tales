@@ -63,7 +63,7 @@ func _run() -> void:
 			fierce = node
 	if not _verify(fierce != null, "the grove has a placed fierce wolf"):
 		return
-	if not _verify(fierce.combat_feedback.elite_name == "Свирепый" and fierce.attack_damage == 18 and fierce.xp_reward == 48, "elite modifier changes title, damage and experience"):
+	if not _verify(fierce.combat_feedback.elite_name == "Свирепый" and fierce.attack_damage == 18 and fierce.xp_reward == int(round(48 * SkywardGame.XP_RATE)), "elite modifier changes title, damage and experience"):
 		return
 	if not _verify(fierce.visual.scale.x > 1.2 and fierce.get_node_or_null("EliteAura") != null, "elites are bigger and glow"):
 		return

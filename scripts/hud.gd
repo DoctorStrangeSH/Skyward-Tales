@@ -334,15 +334,51 @@ func _process(delta: float) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if world_map_visible:
-		if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_M:
+		if event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_M, KEY_ESCAPE]:
 			close_world_map()
 			get_viewport().set_input_as_handled()
 		return
-	if defeat_visible or talent_visible or overlay_visible():
+	if defeat_visible or talent_visible:
 		return
 	if event.is_action_pressed("pause"):
-		_set_paused(not get_tree().paused)
+		# Esc: first close whatever window is open; with none — the menu.
+		if get_tree().paused and pause_panel.visible:
+			_set_paused(false)
+		elif not close_top_window():
+			_set_paused(true)
 		get_viewport().set_input_as_handled()
+
+signal dialogue_dismissed
+## Story scenes can't be skipped with Esc; main sets this.
+var can_dismiss_dialogue: Callable = func() -> bool: return true
+
+## Closes the top-most window (Esc). Returns false when nothing was open.
+func close_top_window() -> bool:
+	if dialogue_visible:
+		if not bool(can_dismiss_dialogue.call()):
+			return true
+		close_dialogue()
+		dialogue_dismissed.emit()
+		return true
+	if inventory_open:
+		inventory_open = false
+		inventory_panel.visible = false
+		if comparison_panel != null:
+			comparison_panel.visible = false
+		return true
+	if journal_visible:
+		journal_visible = false
+		journal_view.visible = false
+		return true
+	if skills_visible:
+		skills_visible = false
+		skills_view.visible = false
+		return true
+	if bestiary_visible:
+		bestiary_visible = false
+		bestiary_panel.visible = false
+		return true
+	return false
 
 func _pause_button(parent: VBoxContainer, label: String, callback: Callable) -> void:
 	var button := Button.new()
@@ -464,7 +500,7 @@ func update_spell(spell_name: String, mana_cost: int, current_mana: int, remaini
 func update_dodge(remaining: float, cooldown: float, dodging: bool) -> void:
 	if dodge_label == null or dodge_cooldown_bar == null:
 		return
-	dodge_label.text = "SHIFT — УКЛОНЕНИЕ" if dodging else ("SHIFT — ГОТОВО" if remaining <= 0.001 else "SHIFT — ОТКАТ %.1fс" % remaining)
+	dodge_label.text = "ПРОБЕЛ — РЫВОК" if dodging else ("ПРОБЕЛ — ГОТОВО" if remaining <= 0.001 else "ПРОБЕЛ — ОТКАТ %.1fс" % remaining)
 	dodge_label.modulate = Color(0.65, 0.95, 1.0) if remaining <= 0.001 else Color(0.67, 0.73, 0.8)
 	dodge_cooldown_bar.value = 1.0 if cooldown <= 0.0 else clampf(1.0 - remaining / cooldown, 0.0, 1.0)
 
