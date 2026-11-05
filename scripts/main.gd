@@ -348,6 +348,7 @@ func _process(delta: float) -> void:
 	_session_time += delta
 	_update_shake(delta)
 	cast_cooldown_remaining = maxf(0.0, cast_cooldown_remaining - delta)
+	_update_bow(delta)
 	if player != null:
 		_update_sword(delta)
 	if player == null or hud == null or game_over:
@@ -458,13 +459,19 @@ func _input(event: InputEvent) -> void:
 			else:
 				_attack_released()
 			get_viewport().set_input_as_handled()
+	elif event.is_action_released("cast_spell") and _bow_holding:
+		_bow_release()
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("cast_spell"):
 		# Clicks on buttons (dialogue choices, menus) must reach the GUI, so the
 		# click is consumed only when it really casts a spell.
 		if get_viewport().gui_get_hovered_control() != null:
 			return
 		if not get_tree().paused and not hud.dialogue_visible and not hud.inventory_open and not hud.overlay_visible():
-			_cast_spell()
+			if player.has_bow():
+				_bow_press()
+			else:
+				_cast_spell()
 			get_viewport().set_input_as_handled()
 
 ## Returns true when the key was consumed and must not reach other handlers.
@@ -707,7 +714,7 @@ func _clear_region_actors() -> void:
 	for node in get_children():
 		if node is WorldNpc and node.is_companion:
 			continue
-		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is SettlementObject or node is GatherNode or node is CraftStation or node is DungeonDoor or node is SpikeTrap or node is FlameVent or node is DungeonLever or node is ContractBoard or node is DigSpot or node is PatternRift or node is Caravan or node is MagicBolt or node is EnemyMagicOrb:
+		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is SettlementObject or node is GatherNode or node is CraftStation or node is DungeonDoor or node is SpikeTrap or node is FlameVent or node is DungeonLever or node is ContractBoard or node is DigSpot or node is PatternRift or node is Caravan or node is Arrow or node is SnareTrap or node is MagicBolt or node is EnemyMagicOrb:
 			remove_child(node)
 			node.queue_free()
 	elder = null
@@ -1797,6 +1804,12 @@ func _grant_sky_seal() -> void:
 # --- Magic ---------------------------------------------------------------
 
 func _update_spell_hud() -> void:
+	if player.has_bow() and hud.spell_label != null:
+		var ready := cast_cooldown_remaining <= 0.0
+		hud.spell_label.text = "Лук · ПКМ · удерживать — прицельный" + (" · ГОТОВО" if ready else "")
+		hud.spell_label.modulate = Color.WHITE
+		hud.spell_cooldown_bar.value = 1.0 - (cast_cooldown_remaining / cast_cooldown_total if cast_cooldown_total > 0.0 else 0.0)
+		return
 	if not magic_unlocked():
 		if hud.spell_label != null:
 			hud.spell_label.text = "Меч · ЛКМ · удерживать — вихрь"
@@ -2005,6 +2018,49 @@ func _place_spell_on_hotbar(spell_id: String) -> void:
 ## once the grove guardian falls. Free play (tests) has magic from the start.
 func magic_unlocked() -> bool:
 	return not director.story_mode() or director.has_flag("magic_unlocked")
+
+# --- Bow (ranger) ----------------------------------------------------------
+
+const BOW_COOLDOWN := 0.45
+const AIM_TIME := 0.55
+var _bow_holding: bool = false
+var _bow_held: float = 0.0
+
+func _bow_press() -> void:
+	if cast_cooldown_remaining > 0.0 or player.health <= 0:
+		return
+	_bow_holding = true
+	_bow_held = 0.0
+	player.visual.play_named("charge", 30.0)
+
+func _update_bow(delta: float) -> void:
+	if not _bow_holding:
+		return
+	var before := _bow_held
+	_bow_held += delta
+	if before < AIM_TIME and _bow_held >= AIM_TIME:
+		Vfx.sparkle(self, player.global_position + Vector2(0, -10))
+
+func _bow_release() -> void:
+	if not _bow_holding:
+		return
+	_bow_holding = false
+	var aimed := _bow_held >= AIM_TIME
+	var damage := player.get_ranged_damage() * (2 if aimed else 1)
+	var pierce := (99 if player.equipment.get("weapon", "") == "wind_bow" else 2) if aimed else 0
+	shoot_arrow(_aim_direction(), damage, aimed, pierce)
+	player.play_cast(_aim_direction())
+	GameAudio.play("dash", -6.0 if not aimed else -2.0, 0.2)
+	cast_cooldown_total = BOW_COOLDOWN * (1.6 if aimed else 1.0)
+	cast_cooldown_remaining = cast_cooldown_total
+	_update_spell_hud()
+
+func shoot_arrow(direction: Vector2, damage: int, aimed: bool, pierce: int = 0) -> Arrow:
+	var arrow := Arrow.new()
+	arrow.setup(self, direction, damage, pierce, aimed)
+	add_child(arrow)
+	arrow.global_position = player.global_position + direction.normalized() * 10.0
+	return arrow
 
 func _cast_spell() -> void:
 	if not magic_unlocked():

@@ -753,6 +753,35 @@
       "crit": 7,
       "lifesteal": 3,
       "value": 700
+    },
+    "hunting_bow": {
+      "name": "Охотничий лук",
+      "description": "Лук Торена: +6 к урону стрел. Лук в руке заменяет заклинания: ПКМ — выстрел, удерживать — прицельный (пробивает, ×2).",
+      "slot": "weapon",
+      "bow": true,
+      "rarity": "common",
+      "ranged": 6,
+      "value": 60
+    },
+    "elm_longbow": {
+      "name": "Вязовый длинный лук",
+      "description": "+11 к урону стрел, +3% крит. ПКМ — выстрел, удерживать — прицельный.",
+      "slot": "weapon",
+      "bow": true,
+      "rarity": "rare",
+      "ranged": 11,
+      "crit": 3,
+      "value": 190
+    },
+    "wind_bow": {
+      "name": "Лук Ветров",
+      "description": "Заморский лук: +16 к урону стрел, +5 к ловкости. Особое: прицельный выстрел пробивает всех на пути.",
+      "slot": "weapon",
+      "bow": true,
+      "rarity": "epic",
+      "ranged": 16,
+      "agility": 5,
+      "value": 320
     }
   }
 }

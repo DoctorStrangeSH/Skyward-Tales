@@ -95,6 +95,12 @@
    16
   ]
  },
+ "icons/elm_longbow.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/ember_coal.png": {
   "size": [
    16,
@@ -186,6 +192,12 @@
   ]
  },
  "icons/herb_tea.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/hunting_bow.png": {
   "size": [
    16,
    16
@@ -431,6 +443,12 @@
    16
   ]
  },
+ "icons/skill_snare.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/skill_steady_hand.png": {
   "size": [
    16,
@@ -444,6 +462,12 @@
   ]
  },
  "icons/skill_treasure_sense.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skill_volley.png": {
   "size": [
    16,
    16
@@ -594,6 +618,12 @@
   ]
  },
  "icons/whetstone.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/wind_bow.png": {
   "size": [
    16,
    16

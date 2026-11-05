@@ -306,6 +306,16 @@ func get_melee_damage() -> int:
 		damage *= 1.1
 	return int(round(damage * (1.0 + buff_value("power"))))
 
+## A bow in the weapon slot turns the right hand from spells to arrows.
+func has_bow() -> bool:
+	var weapon := str(equipment.get("weapon", ""))
+	return not weapon.is_empty() and bool(get_item_definition(weapon).get("bow", false))
+
+## Arrow damage: base 6, +1.8 per level, the bow's "ranged", +0.6 per agility.
+func get_ranged_damage() -> int:
+	var damage := 6.0 + 1.8 * float(level - 1) + float(_equipped_stat("ranged")) + float(get_stat("agility")) * 0.6
+	return int(round(damage * (1.0 + buff_value("power"))))
+
 func get_armor() -> int:
 	return _equipped_stat("armor") + int(buff_value("armor")) + 2 * int(talents.get("iron_skin", 0)) + (3 if has_passive("toughness") else 0)
 
