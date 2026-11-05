@@ -395,6 +395,12 @@
    16
   ]
  },
+ "icons/skill_imbue.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/skill_keen_eye.png": {
   "size": [
    16,
@@ -456,6 +462,12 @@
   ]
  },
  "icons/sky_thread.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skyclaw_blade.png": {
   "size": [
    16,
    16

@@ -4,6 +4,11 @@ class_name SkillTreePanel
 ## Skill tree window (T): four branch columns, tiers top to bottom.
 
 signal learn_requested(skill_id: String)
+signal reset_requested
+
+## Codex of elemental combos (ElementalCombos), shown on its own tab.
+var combos: Object
+var reset_button: Button
 
 var header: Label
 var columns: HBoxContainer
@@ -45,6 +50,25 @@ func _ready() -> void:
 		var group_id := str(entry["id"])
 		tab.pressed.connect(func() -> void: show_group(group_id))
 		group_bar.add_child(tab)
+	var combo_tab := Button.new()
+	combo_tab.text = "Комбинации"
+	combo_tab.toggle_mode = true
+	combo_tab.custom_minimum_size = Vector2(100, 20)
+	combo_tab.add_theme_font_size_override("font_size", UiFont.px(10))
+	combo_tab.focus_mode = Control.FOCUS_NONE
+	UiStyle.small_toggle(combo_tab)
+	combo_tab.pressed.connect(func() -> void: show_group("combos"))
+	group_bar.add_child(combo_tab)
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	group_bar.add_child(spacer)
+	reset_button = Button.new()
+	reset_button.custom_minimum_size = Vector2(170, 20)
+	reset_button.add_theme_font_size_override("font_size", UiFont.px(9))
+	reset_button.focus_mode = Control.FOCUS_NONE
+	reset_button.pressed.connect(func() -> void: reset_requested.emit())
+	reset_button.mouse_entered.connect(func() -> void: detail.text = "Сброс навыков: все очки и Печати Неба вернутся — можно собрать новый билд.")
+	group_bar.add_child(reset_button)
 	columns = HBoxContainer.new()
 	columns.add_theme_constant_override("separation", 6)
 	box.add_child(columns)
@@ -61,13 +85,19 @@ func show_group(group_id: String) -> void:
 
 func populate(player: PlayerCharacter) -> void:
 	_player = player
-	for index in group_bar.get_child_count():
+	for index in SkillTree.GROUPS.size():
 		(group_bar.get_child(index) as Button).button_pressed = str(SkillTree.GROUPS[index]["id"]) == group
+	(group_bar.get_child(SkillTree.GROUPS.size()) as Button).button_pressed = group == "combos"
+	reset_button.text = "Сбросить навыки — %d зол." % SkillTree.reset_cost(player)
+	reset_button.disabled = SkillTree.spent_points(player) <= 0
 	for child in columns.get_children():
 		columns.remove_child(child)
 		child.queue_free()
 	buttons.clear()
 	header.text = "Очки навыков: %d     Печати Неба: %d" % [SkillTree.available_points(player), SkillTree.seals(player)]
+	if group == "combos":
+		_populate_combos()
+		return
 	var defs := SkillTree.definitions()
 	for branch in SkillTree.BRANCHES:
 		if str(branch.get("group", "")) != group:
@@ -85,6 +115,21 @@ func populate(player: PlayerCharacter) -> void:
 				column.add_child(_label("  ↓", 9, Color(0.6, 0.6, 0.7)))
 			last_tier = tier
 			column.add_child(_skill_button(player, skill_id, definition, branch["color"]))
+
+func _populate_combos() -> void:
+	var column := VBoxContainer.new()
+	column.custom_minimum_size = Vector2(584, 0)
+	column.add_theme_constant_override("separation", 3)
+	columns.add_child(column)
+	column.add_child(_label("Стихии и клинок усиливают друг друга. Наложите эффект — и ударьте другой стихией или мечом.", 9, Color(0.85, 0.88, 0.95)))
+	var entries: Array = combos.codex() if combos != null else []
+	for entry in entries:
+		var seen := bool(entry["seen"])
+		var row := _label("%s  %s — %s. %s" % ["✦" if seen else "?", str(entry["name"]) if seen else "???", str(entry["recipe"]), str(entry["text"]) if seen else "Откройте в бою."], 9, Color(1.0, 0.88, 0.6) if seen else Color(0.6, 0.62, 0.7))
+		row.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		row.custom_minimum_size = Vector2(584, 0)
+		column.add_child(row)
+	detail.text = "Открыто комбинаций: %d из %d. «Зачарованный клинок» (умение с 6 ур.) даёт мечу стихию выбранного заклинания." % [entries.filter(func(e: Dictionary) -> bool: return e["seen"]).size(), entries.size()]
 
 func _skill_button(player: PlayerCharacter, skill_id: String, definition: Dictionary, color: Color) -> Button:
 	var rank := SkillTree.rank(player, skill_id)

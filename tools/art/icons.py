@@ -353,6 +353,14 @@ def skill_icon(kind: str) -> Canvas:
             c.put(9 - dx, y, white)
             c.put(8 - dx, y, hex_color("#bfefff"))
         c.hline(2, 5, 8, hex_color("#9fdfff"))
+    elif kind == "imbue":
+        _sky_bg(c, ramp("#f0e0ff", "#7a4ab8", "#2e1e50"))
+        for i in range(10):
+            c.put(3 + i, 12 - i, white)
+            c.put(4 + i, 12 - i, hex_color("#c8d0d8"))
+        c.hline(2, 6, 11, GOLD[1])
+        for x, y, col in ((9, 3, "#ff9a3a"), (12, 6, "#7ad0ff"), (11, 2, "#d8b8ff"), (13, 4, "#ffe066")):
+            c.put(x, y, hex_color(col))
     elif kind == "slash":
         _sky_bg(c, ramp("#f8f0e0", "#8a7a6a", "#3e3430"))
         for i in range(9):
@@ -443,8 +451,9 @@ def build_combat() -> dict[str, Canvas]:
         "iron_sword": sword(ramp("#dfe6ea", "#a3adb6", "#6a7480")),
         "steel_sword": sword(ramp("#f4f8fc", "#c0ccd8", "#7a8aa0"), gem_color="#5aaaf0"),
         "skysteel_blade": sword(ramp("#ffffff", "#9cf0ff", "#3a8fe0"), GOLD, "#ffe066"),
+        "skyclaw_blade": sword(ramp("#ffffff", "#c8d4e8", "#4a5068"), GOLD, "#9ef0ff"),
     }
-    for kind in ["lunge", "shockwave", "war_cry", "blade_wave", "slash", "dodge", "fireball", "frostbolt", "chain_lightning", *PASSIVE_SYMBOLS]:
+    for kind in ["lunge", "shockwave", "war_cry", "blade_wave", "imbue", "slash", "dodge", "fireball", "frostbolt", "chain_lightning", *PASSIVE_SYMBOLS]:
         result[f"skill_{kind}"] = skill_icon(kind)
     return result
 

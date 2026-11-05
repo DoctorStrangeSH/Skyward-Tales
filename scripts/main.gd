@@ -92,6 +92,7 @@ var world_state: WorldState
 var village: VillageLife
 var mine: PassMine
 var borin: BorinStory
+var combos: ElementalCombos
 var achievements: Achievements
 var cast_cooldown_total: float = 0.0
 var defeated_enemies: int = 0
@@ -183,6 +184,10 @@ func _ready() -> void:
 	world_state.game = self
 	add_child(world_state)
 	borin = BorinStory.new(self)
+	combos = ElementalCombos.new()
+	combos.name = "ElementalCombos"
+	combos.game = self
+	add_child(combos)
 	mine = PassMine.new()
 	mine.name = "PassMine"
 	mine.game = self
@@ -247,6 +252,8 @@ func _ready() -> void:
 	hud.defeat_load_requested.connect(_load_from_defeat)
 	hud.defeat_menu_requested.connect(_go_to_title)
 	hud.skill_learn_requested.connect(learn_skill)
+	hud.skills_reset_requested.connect(reset_skills)
+	hud.skills_view.combos = combos
 	hud.dialogue_choice_selected.connect(_on_dialogue_choice_selected)
 	hud.world_map_view.travel_requested.connect(fast_travel)
 
@@ -1411,6 +1418,11 @@ func _on_hunter_interacted(_source: Node2D) -> void:
 	if not director.try_talk("hunter"):
 		dialogues.on_hunter()
 
+## Enemies report elemental combos here (enemy.gd → _announce_reaction).
+func on_reaction(reaction_id: String, at: Vector2) -> void:
+	if combos != null:
+		combos.on_reaction(reaction_id, at)
+
 func _on_pass_miner_interacted(_source: Node2D) -> void:
 	mine.talk_miner()
 
@@ -1740,6 +1752,20 @@ func learn_skill(skill_id: String) -> bool:
 	_refresh_hud()
 	return true
 
+## A new build: all skill points (and sky seals) come back for gold.
+func reset_skills() -> bool:
+	if SkillTree.spent_points(player) <= 0:
+		hud.show_message("Навыки ещё не изучены.", 2.0)
+		return false
+	if not SkillTree.reset(player):
+		hud.show_message("Сброс стоит %d золота." % SkillTree.reset_cost(player), 2.5)
+		return false
+	hud.show_message("Навыки сброшены: очков — %d. Соберите новый билд!" % SkillTree.available_points(player), 3.0)
+	hud.refresh_skill_tree(player)
+	_refresh_hud()
+	request_autosave()
+	return true
+
 ## Bosses grant a Sky Seal that unlocks one tier-3 skill.
 func _grant_sky_seal() -> void:
 	player.add_item(SkillTree.SEAL_ITEM)
@@ -1868,6 +1894,7 @@ func _strike(enemy: SlimeEnemy, damage: int, push_direction: Vector2, push: floa
 	enemy.take_damage(damage)
 	enemy.apply_knockback(push_direction, push)
 	last_hit_enemies.append(enemy)
+	combos.on_strike(enemy, damage)
 	var heal := player.get_melee_lifesteal()
 	if heal > 0 and player.health < player.max_health:
 		player.health = mini(player.max_health, player.health + heal)

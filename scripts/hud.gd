@@ -83,6 +83,7 @@ signal hero_unequip_requested(slot: String)
 signal handcraft_requested
 signal hero_assign_requested(slot_index: int, skill_id: String)
 signal skill_learn_requested(skill_id: String)
+signal skills_reset_requested
 var journal_visible: bool = false
 var minimap: WorldMinimap
 var world_map_panel: PanelContainer
@@ -269,6 +270,7 @@ func _ready() -> void:
 	skills_view = SkillTreePanel.new()
 	root.add_child(skills_view)
 	skills_view.learn_requested.connect(func(id: String) -> void: skill_learn_requested.emit(id))
+	skills_view.reset_requested.connect(func() -> void: skills_reset_requested.emit())
 
 	# Dialogue box: portrait on the left, name tag, text and choices.
 	dialogue_panel = PanelContainer.new()

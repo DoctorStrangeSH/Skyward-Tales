@@ -29,7 +29,7 @@ func _run() -> void:
 	lightning.setup(Vector2.RIGHT, 15)
 	root.add_child(lightning)
 	lightning._on_body_entered(enemy)
-	if not _check(enemy.health == 81 and enemy.slow_time_left == 0.0 and enemy.slow_factor == 1.0, "shock must consume slow and deal 6 bonus damage"):
+	if not _check(enemy.health == 80 and enemy.slow_time_left == 0.0 and enemy.slow_factor == 1.0, "crystal chain must consume slow and deal 7 bonus damage"):
 		return
 	if not _check(enemy.react_to_spell("chain_lightning") == 0, "no repeat reaction without status"):
 		return

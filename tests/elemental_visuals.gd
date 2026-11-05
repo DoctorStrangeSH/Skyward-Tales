@@ -25,7 +25,7 @@ func _run() -> void:
 		quit(1)
 		return
 	enemy.react_to_spell("chain_lightning")
-	if enemy.combat_feedback.chilled or enemy.combat_feedback.reaction_name != "РАЗРЯД!":
+	if enemy.combat_feedback.chilled or enemy.combat_feedback.reaction_name != "КРИСТАЛЬНАЯ ЦЕПЬ!":
 		push_error("STATUS VISUAL TEST: shock reaction not shown")
 		quit(1)
 		return

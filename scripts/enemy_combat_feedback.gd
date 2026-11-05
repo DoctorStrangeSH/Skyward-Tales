@@ -12,6 +12,9 @@ var warning: bool = false
 var elite: bool = false
 var burning: bool = false
 var chilled: bool = false
+var shocked: bool = false
+var blinded: bool = false
+var _spark_clock: float = 0.0
 var reaction_name: String = ""
 var reaction_time: float = 0.0
 ## Ground arrow showing where a lunge will go (empty when length is 0).
@@ -44,11 +47,16 @@ func set_warning(enabled: bool) -> void:
 	warning = enabled
 	queue_redraw()
 
-func set_statuses(fire: bool, ice: bool) -> void:
-	if burning == fire and chilled == ice:
+func set_statuses(fire: bool, ice: bool, shock: bool = false, blind: bool = false) -> void:
+	if shock or blind:
+		_spark_clock += 0.1
+		queue_redraw()
+	if burning == fire and chilled == ice and shocked == shock and blinded == blind:
 		return
 	burning = fire
 	chilled = ice
+	shocked = shock
+	blinded = blind
 	queue_redraw()
 
 func set_telegraph(direction: Vector2, length: float) -> void:
@@ -97,6 +105,14 @@ func _draw() -> void:
 		draw_circle(Vector2(4, -14), 2.5, Color(1.0, 0.8, 0.24, 0.86))
 	if chilled:
 		draw_arc(Vector2.ZERO, 11.0, 0.0, TAU, 20, Color(0.42, 0.85, 1.0, 0.9), 2.0)
+	if shocked:
+		# Little sparks crawling over the body.
+		for i in 3:
+			var a := _spark_clock * 2.0 + i * 2.1
+			var p := Vector2(cos(a) * 8.0, -8.0 + sin(a * 1.3) * 6.0)
+			draw_polyline(PackedVector2Array([p, p + Vector2(2, -3), p + Vector2(0, -4), p + Vector2(3, -7)]), Color(0.95, 0.85, 1.0, 0.95), 1.0)
+	if blinded:
+		draw_arc(Vector2(0, bar_y - 8), 4.0, _spark_clock * 3.0, _spark_clock * 3.0 + PI * 1.5, 8, Color(0.9, 0.9, 0.95, 0.9), 1.2)
 	if reaction_time > 0.0:
 		draw_string(UiFont.font(), Vector2(-22, bar_y - 15.0 - (0.8 - reaction_time) * 15.0), reaction_name, HORIZONTAL_ALIGNMENT_LEFT, -1, UiFont.px(10), Color(0.92, 0.98, 1.0, reaction_time / 0.8))
 	if warning:

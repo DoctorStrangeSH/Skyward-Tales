@@ -195,6 +195,20 @@
       "stat": "mines",
       "goal": 1,
       "gold": 250
+    },
+    "combo_first": {
+      "title": "Алхимия стихий",
+      "description": "Вызовите первую комбинацию стихий.",
+      "stat": "combos",
+      "goal": 1,
+      "gold": 100
+    },
+    "combo_all": {
+      "title": "Повелитель стихий",
+      "description": "Откройте все 6 комбинаций.",
+      "stat": "combos",
+      "goal": 6,
+      "gold": 600
     }
   }
 }
