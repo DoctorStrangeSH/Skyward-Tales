@@ -92,6 +92,12 @@ func use(skill_id: String) -> bool:
 			ok = _imbue(data)
 		"snare":
 			ok = _snare(data)
+		"spirit_wolf":
+			ok = _spirit_wolf(data)
+		"crystal_totem":
+			ok = _crystal_totem(data)
+		"guardian_oath":
+			ok = _guardian_oath(data)
 		"volley":
 			ok = _volley(data)
 	if ok:
@@ -158,6 +164,54 @@ func _blade_wave(data: Dictionary) -> bool:
 	return true
 
 const MAX_TRAPS := 2
+const MAX_SPIRITS := 2
+
+func _summon_element() -> String:
+	return str(ElementalCombos.ELEMENT_OF.get(game.selected_spell_id, "fire"))
+
+func _summon_power() -> float:
+	return game.player.get_spell_power_multiplier()
+
+func _spirit_wolf(data: Dictionary) -> bool:
+	if not game.player.spend_mana(int(data.get("mana", 25))):
+		game.hud.show_message("Не хватает маны.", 1.5)
+		return false
+	var spirits: Array = game.get_children().filter(func(n: Node) -> bool: return n is SpiritAlly and not n.is_queued_for_deletion())
+	if spirits.size() >= MAX_SPIRITS:
+		spirits[0].queue_free()
+	var spirit := SpiritAlly.new()
+	spirit.game = game
+	spirit.element = _summon_element()
+	spirit.life = float(data.get("duration", 20.0))
+	spirit.damage = roundi((6 + game.player.level * 1.5) * _summon_power())
+	game.add_child(spirit)
+	spirit.global_position = game.player.global_position + Vector2(18, 6)
+	GameAudio.play("cast_ice" if spirit.element == "ice" else "cast_fire", -6.0, 0.1)
+	return true
+
+func _crystal_totem(data: Dictionary) -> bool:
+	if not game.player.spend_mana(int(data.get("mana", 30))):
+		game.hud.show_message("Не хватает маны.", 1.5)
+		return false
+	for node in game.get_children():
+		if node is CrystalTotem:
+			node.queue_free()
+	var totem := CrystalTotem.new()
+	totem.game = game
+	totem.element = _summon_element()
+	totem.life = float(data.get("duration", 14.0))
+	totem.damage = roundi((5 + game.player.level * 1.2) * _summon_power())
+	game.add_child(totem)
+	totem.global_position = game.player.global_position + game._aim_direction() * 24.0
+	GameAudio.play("level_up", -10.0, 0.2)
+	return true
+
+func _guardian_oath(data: Dictionary) -> bool:
+	game.player.oath_left = float(data.get("duration", 6.0))
+	game.player.add_buff("oath", 0.0, game.player.oath_left, "Клятва стража")
+	game._ring(game.player.global_position, 34.0, Color(1.0, 0.85, 0.4))
+	GameAudio.play("level_up", -8.0, 0.0)
+	return true
 
 func _snare(_data: Dictionary) -> bool:
 	var traps: Array = game.get_children().filter(func(n: Node) -> bool: return n is SnareTrap and not n.is_queued_for_deletion())

@@ -49,6 +49,8 @@ const BLOCK_SHARE := 0.4
 var parry_left: float = 0.0
 var blocking: bool = false
 var guard_cooldown_left: float = 0.0
+## Guardian's Oath: half damage, blows thrown back at the attacker.
+var oath_left: float = 0.0
 ## Who dealt the latest blow (for gear such as the toad crown).
 var last_attacker: Node
 var starlight_essence_used: int = 0
@@ -85,6 +87,11 @@ func end_guard() -> void:
 	queue_redraw()
 
 func _draw() -> void:
+	if oath_left > 0.0:
+		# A golden ward circles the hero during the oath.
+		var t := Time.get_ticks_msec() / 400.0
+		draw_arc(Vector2(0, -8), 17.0, t, t + TAU * 0.8, 24, Color(1.0, 0.85, 0.4, 0.8), 1.5)
+		draw_arc(Vector2(0, -8), 20.0, -t, -t + TAU * 0.5, 18, Color(1.0, 0.95, 0.7, 0.5), 1.0)
 	if not blocking:
 		return
 	# A shimmering guard arc in front of the hero.
@@ -107,6 +114,9 @@ func _physics_process(_delta: float) -> void:
 	_update_buffs(_delta)
 	dodge_cooldown_left = maxf(0.0, dodge_cooldown_left - _delta)
 	guard_cooldown_left = maxf(0.0, guard_cooldown_left - _delta)
+	if oath_left > 0.0:
+		oath_left = maxf(0.0, oath_left - _delta)
+		queue_redraw()
 	if parry_left > 0.0:
 		parry_left = maxf(0.0, parry_left - _delta)
 		queue_redraw()
@@ -196,6 +206,14 @@ func take_damage(amount: int, source: Node = null) -> void:
 		var kept := roundi(amount * BLOCK_SHARE)
 		blocked.emit(amount - kept)
 		amount = kept
+	if oath_left > 0.0:
+		if source != null and is_instance_valid(source) and source.has_method("take_damage") and source != self:
+			source.take_damage(amount)
+			var feedback: Variant = source.get("combat_feedback")
+			if feedback != null and is_instance_valid(source):
+				feedback.show_reaction("ОТРАЖЕНО!")
+		amount = roundi(amount * 0.5)
+		call_deferred("heal", maxi(1, roundi(max_health * 0.03)))
 	var previous_health: int = health
 	health = maxi(0, health - maxi(1, roundi(float(amount - get_armor()) * (1.0 - get_damage_reduction()))))
 	if health < previous_health:
