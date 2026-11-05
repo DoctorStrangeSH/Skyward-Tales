@@ -10,7 +10,11 @@ class_name Fishing
 signal finished(caught: String)
 
 const DATA_PATH := "res://data/fish.json"
-const BITE_WINDOW := 0.8
+const BITE_WINDOW := 1.4
+## Early presses forgiven before the fish takes fright.
+const EARLY_LIMIT := 3
+## Seconds at the start of reeling when the catch bar cannot drop.
+const REEL_GRACE := 1.2
 
 var game: SkywardGame
 var data: Dictionary = {}
@@ -33,6 +37,8 @@ var progress: float = 0.0
 var holding: bool = false
 var manual_input: bool = false
 var _start_health: int = 0
+var early_presses: int = 0
+var _reel_time: float = 0.0
 var _cast_at: Vector2
 var _line: Line2D
 var _bobber: Node2D
@@ -55,6 +61,7 @@ func start(spot: GatherNode) -> bool:
 		game.hud.show_message("Здесь пока не клюёт. Рыба вернётся позже.", 2.0)
 		return false
 	node = spot
+	early_presses = 0
 	state = "waiting"
 	timer = rng.randf_range(1.4, 3.4)
 	species = _roll_species()
@@ -88,7 +95,13 @@ func _roll_species() -> String:
 func press() -> void:
 	match state:
 		"waiting":
-			_end("", "Рано! Рыба испугалась. Подождите, пока поплавок нырнёт.")
+			early_presses += 1
+			if early_presses >= EARLY_LIMIT:
+				_end("", "Рыба испугалась суеты. Ждите, пока поплавок нырнёт!")
+			else:
+				# Forgiven: the fish only hesitates a little longer.
+				timer += 0.6
+				game.hud.show_message("Рано! Ждите, пока поплавок нырнёт (ещё %d)." % (EARLY_LIMIT - early_presses), 1.6)
 		"bite":
 			_begin_reel()
 
@@ -98,13 +111,14 @@ func cancel() -> void:
 
 func _begin_reel() -> void:
 	state = "reel"
-	zone_width = lerpf(0.36, 0.2, difficulty)
-	zone = 0.0
+	zone_width = lerpf(0.42, 0.27, difficulty)
+	zone = 0.2
 	zone_speed = 0.0
 	fish_pos = 0.35
-	fish_target = 0.5
-	fish_timer = 0.0
-	progress = 0.3
+	fish_target = 0.4
+	fish_timer = 0.8
+	progress = 0.45
+	_reel_time = 0.0
 	GameAudio.play("hit", -8.0, 0.05)
 
 func _process(delta: float) -> void:
@@ -134,25 +148,29 @@ func _process(delta: float) -> void:
 
 func _update_reel(delta: float) -> void:
 	# Zone: holding lifts it, gravity pulls it down, bounces softly at the ends.
-	zone_speed += (2.4 if holding else -2.1) * delta
-	zone_speed = clampf(zone_speed, -1.4, 1.4)
+	# Responsive and calm: quick to react, quick to stop.
+	_reel_time += delta
+	zone_speed += (3.2 if holding else -2.6) * delta
+	zone_speed = clampf(zone_speed, -1.1, 1.1)
 	zone += zone_speed * delta
 	if zone < 0.0:
 		zone = 0.0
-		zone_speed = absf(zone_speed) * 0.25
+		zone_speed = absf(zone_speed) * 0.15
 	elif zone > 1.0 - zone_width:
 		zone = 1.0 - zone_width
-		zone_speed = -absf(zone_speed) * 0.25
+		zone_speed = -absf(zone_speed) * 0.15
 	# Fish: darts to new spots, faster and more often when it is harder.
 	fish_timer -= delta
 	if fish_timer <= 0.0:
-		fish_timer = rng.randf_range(lerpf(1.3, 0.45, difficulty), lerpf(2.0, 0.9, difficulty))
-		fish_target = rng.randf_range(0.05, 0.95)
-	fish_pos = move_toward(fish_pos, fish_target, lerpf(0.25, 0.85, difficulty) * delta)
+		fish_timer = rng.randf_range(lerpf(1.6, 0.7, difficulty), lerpf(2.4, 1.2, difficulty))
+		# Short darts: the fish moves to a nearby spot, not across the bar.
+		var reach := lerpf(0.3, 0.6, difficulty)
+		fish_target = clampf(fish_pos + rng.randf_range(-reach, reach), 0.05, 0.95)
+	fish_pos = move_toward(fish_pos, fish_target, lerpf(0.2, 0.55, difficulty) * delta)
 	if fish_inside():
-		progress += 0.42 * delta
-	else:
-		progress -= lerpf(0.18, 0.32, difficulty) * delta
+		progress += 0.45 * delta
+	elif _reel_time > REEL_GRACE:
+		progress -= lerpf(0.1, 0.2, difficulty) * delta
 	if progress >= 1.0:
 		_catch()
 	elif progress <= 0.0:

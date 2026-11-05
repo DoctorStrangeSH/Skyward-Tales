@@ -35,7 +35,7 @@ func _ready() -> void:
 func update_map(new_region: String, position: Vector2, landmarks: Dictionary) -> void:
 	region_id = new_region
 	hero_position = position
-	known_landmarks = landmarks.duplicate(true)
+	known_landmarks = landmarks
 	queue_redraw()
 
 func set_live(markers: Array, heading: Vector2) -> void:
@@ -114,8 +114,12 @@ func _draw() -> void:
 		var at := _map_point(marker["position"])
 		var kind: String = marker["kind"]
 		if not area.grow(-2).has_point(at):
-			if kind in ["gate", "quest", "treasure", "rift"] and follow:
-				_draw_edge_arrow(area, at, Color(1.0, 0.85, 0.4) if kind == "quest" else Color(0.95, 0.95, 0.8))
+			if kind in ["goal_main", "goal_gate"]:
+				_draw_edge_arrow(area, at, Color(1.0, 0.78, 0.2), 1.4)
+			elif kind in ["goal_side", "ready", "quest"]:
+				_draw_edge_arrow(area, at, Color(1.0, 0.95, 0.75) if kind != "ready" else Color(0.5, 1.0, 0.5))
+			elif kind in ["gate", "treasure", "rift"] and follow:
+				_draw_edge_arrow(area, at, Color(0.95, 0.95, 0.8, 0.7))
 			continue
 		_draw_marker(kind, at, str(marker.get("label", "")))
 	_draw_hero(_map_point(hero_position))
@@ -189,6 +193,23 @@ func _draw_marker(kind: String, at: Vector2, label: String) -> void:
 			draw_circle(at, 4.5 + pulse, Color(0.7, 0.35, 1.0, 0.3))
 			draw_circle(at, 3.0, Color(0.15, 0.05, 0.25))
 			draw_arc(at, 2.4, _clock * 3.0, _clock * 3.0 + PI * 1.3, 8, Color(0.95, 0.75, 1.0), 1.0)
+		"goal_main", "goal_side":
+			var gold := Color(1.0, 0.8, 0.2) if kind == "goal_main" else Color(1.0, 0.96, 0.8)
+			draw_circle(at, 5.5 + pulse * 1.5, Color(gold, 0.25))
+			_draw_diamond(at, 4.2, Color(0.12, 0.08, 0.04))
+			_draw_diamond(at, 3.0, gold)
+			draw_rect(Rect2(at + Vector2(-0.5, -2), Vector2(1, 2.5)), Color(0.12, 0.08, 0.04))
+			draw_rect(Rect2(at + Vector2(-0.5, 1), Vector2(1, 1)), Color(0.12, 0.08, 0.04))
+		"goal_gate":
+			draw_arc(at, 6.0 + pulse * 1.5, 0.0, TAU, 16, Color(1.0, 0.8, 0.2, 0.9), 1.2)
+			draw_rect(Rect2(at - Vector2(3, 3), Vector2(6, 6)), Color(0.1, 0.07, 0.05))
+			draw_rect(Rect2(at - Vector2(2, 2), Vector2(4, 4)), Color(1.0, 0.8, 0.2))
+			if not label.is_empty():
+				var text := "→ " + label
+				var width := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, UiFont.px(8)).x
+				var spot := Vector2(clampf(at.x - width * 0.5, _area().position.x + 1, _area().end.x - width - 1), clampf(at.y - 8, _area().position.y + 8, _area().end.y - 2))
+				draw_string_outline(font, spot, text, HORIZONTAL_ALIGNMENT_LEFT, -1, UiFont.px(8), 3, Color(0, 0, 0, 0.9))
+				draw_string(font, spot, text, HORIZONTAL_ALIGNMENT_LEFT, -1, UiFont.px(8), Color(1.0, 0.85, 0.35))
 		"secret":
 			draw_rect(Rect2(at - Vector2(2, 2), Vector2(4, 4)), Color(0.82, 0.55, 1.0))
 		_:
@@ -208,7 +229,10 @@ func _draw_sky_clock(at: Vector2) -> void:
 		draw_circle(at, 4.6, Color(1.0, 0.7, 0.3, 0.35))
 		draw_circle(at, 3.4, Color(1.0, 0.62, 0.3) if warm else Color(1.0, 0.88, 0.35))
 
-func _draw_edge_arrow(area: Rect2, at: Vector2, color: Color) -> void:
+func _draw_diamond(at: Vector2, radius: float, color: Color) -> void:
+	draw_colored_polygon(PackedVector2Array([at + Vector2(0, -radius), at + Vector2(radius, 0), at + Vector2(0, radius), at + Vector2(-radius, 0)]), color)
+
+func _draw_edge_arrow(area: Rect2, at: Vector2, color: Color, size_mult: float = 1.0) -> void:
 	var center := area.get_center()
 	var direction := (at - center).normalized()
 	var inner := area.grow(-5)
@@ -219,7 +243,11 @@ func _draw_edge_arrow(area: Rect2, at: Vector2, color: Color) -> void:
 		t = minf(t, ((inner.end.y if direction.y > 0 else inner.position.y) - center.y) / direction.y)
 	var tip := center + direction * t
 	var side := Vector2(-direction.y, direction.x)
-	draw_colored_polygon(PackedVector2Array([tip + direction * 3.0, tip - direction * 2.0 + side * 2.5, tip - direction * 2.0 - side * 2.5]), color)
+	var a := tip + direction * 3.0 * size_mult
+	var b := tip - direction * 2.0 * size_mult + side * 2.5 * size_mult
+	var c := tip - direction * 2.0 * size_mult - side * 2.5 * size_mult
+	draw_colored_polygon(PackedVector2Array([a + direction, b + side - direction, c - side - direction]), Color(0.08, 0.05, 0.03, 0.9))
+	draw_colored_polygon(PackedVector2Array([a, b, c]), color)
 
 func _draw_hero(at: Vector2) -> void:
 	var side := Vector2(-facing.y, facing.x)

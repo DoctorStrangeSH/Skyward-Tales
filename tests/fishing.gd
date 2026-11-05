@@ -1,6 +1,6 @@
 extends SceneTree
 
-## Fishing minigame: early strike scares the fish, a missed bite escapes,
+## Fishing minigame: one early strike is forgiven, repeated ones scare the fish, a missed bite escapes,
 ## hooking and reeling catches a fish into the log; spot rests; journal tabs.
 
 func _initialize() -> void:
@@ -39,8 +39,12 @@ func _run() -> void:
 	if hero.is_physics_processing():
 		return _fail("the hero stands still while fishing")
 	fishing.press()
+	if not fishing.active() or fishing.state != "waiting":
+		return _fail("one early strike is forgiven")
+	fishing.press()
+	fishing.press()
 	if fishing.active() or not spot.available or not hero.is_physics_processing():
-		return _fail("an early strike ends fishing without resting the spot")
+		return _fail("repeated early strikes end fishing without resting the spot")
 
 	# Missing the bite lets the fish go.
 	game.crafting.gather(spot)
@@ -93,7 +97,7 @@ func _run() -> void:
 		fishing.fish_target = 0.95
 		fishing.fish_pos = 0.95
 		fishing.fish_timer = 99.0
-		for i in 400:
+		for i in 1200:
 			if not fishing.active():
 				break
 			await process_frame
