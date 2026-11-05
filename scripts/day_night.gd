@@ -23,6 +23,8 @@ const CYCLING_STYLES := ["day", "coast", "mountain", "sky", "spires", "marsh", "
 var game: SkywardGame
 ## 0 = midnight, 0.25 = dawn, 0.5 = noon, 0.75 = dusk.
 var time: float = 0.36
+## Days passed since the start (for timed world states).
+var day: int = 0
 var paused: bool = false
 var canvas: CanvasModulate
 var fireflies: CPUParticles2D
@@ -39,7 +41,10 @@ func _process(delta: float) -> void:
 	if game == null or game.get_tree().paused:
 		return
 	if not paused:
-		time = fmod(time + delta / CYCLE, 1.0)
+		var next := time + delta / CYCLE
+		if next >= 1.0:
+			day += 1
+		time = fmod(next, 1.0)
 	if _region != game.current_region:
 		_region = game.current_region
 		_rebuild_fireflies()
@@ -125,8 +130,13 @@ func _rebuild_fireflies() -> void:
 	game.add_child(fireflies)
 
 func make_snapshot() -> Dictionary:
-	return {"time": time}
+	return {"time": time, "day": day}
 
 func restore_snapshot(data: Variant) -> void:
 	if data is Dictionary:
 		time = clampf(float(data.get("time", time)), 0.0, 1.0)
+		day = int(data.get("day", day))
+
+## Absolute time in days (day + fraction).
+func now() -> float:
+	return float(day) + time

@@ -331,6 +331,14 @@ def main() -> int:
         "herald": dict(colors={HAIR_LIGHT: (70, 60, 80), HAIR_SHADE: (44, 36, 54), RED_DARK: (60, 110, 170),
                                RED_MID: (220, 230, 244), RED_LIGHT: (255, 220, 120), MAUVE: (40, 60, 96),
                                GOLD: (255, 214, 110)}, trim=True, ahoge=False),
+        # Olm, the night guard: dark hair, steel-grey coat, red sash.
+        "guard": dict(colors={HAIR_LIGHT: (96, 70, 52), HAIR_SHADE: (64, 46, 34), RED_DARK: (150, 40, 40),
+                              RED_MID: (120, 130, 150), RED_LIGHT: (190, 200, 214), MAUVE: (60, 66, 84),
+                              GOLD: (200, 200, 210)}, trim=True, ahoge=False),
+        # Neya, the caravan trader: chestnut hair, orange travel coat.
+        "caravaner": dict(colors={HAIR_LIGHT: (170, 96, 50), HAIR_SHADE: (120, 64, 34), RED_DARK: (150, 80, 30),
+                                  RED_MID: (220, 140, 60), RED_LIGHT: (250, 200, 120), MAUVE: (90, 60, 40),
+                                  GOLD: (240, 200, 90)}, trim=False),
         # Vail: long white hair, violet Keeper robes.
         "vail": dict(colors={RED_DARK: (58, 40, 98), RED_MID: (92, 66, 150), RED_LIGHT: (176, 132, 236), MAUVE: (40, 30, 60),
                              GOLD: (210, 180, 255)}, ahoge=False),

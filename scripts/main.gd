@@ -87,6 +87,8 @@ var contracts: Contracts
 var legends: Legends
 var epilogue: Epilogue
 var quest_nav: QuestNav
+var world_state: WorldState
+var village: VillageLife
 var achievements: Achievements
 var cast_cooldown_total: float = 0.0
 var defeated_enemies: int = 0
@@ -173,6 +175,14 @@ func _ready() -> void:
 	achievements.name = "Achievements"
 	achievements.game = self
 	add_child(achievements)
+	world_state = WorldState.new()
+	world_state.name = "WorldState"
+	world_state.game = self
+	add_child(world_state)
+	village = VillageLife.new()
+	village.name = "VillageLife"
+	village.game = self
+	add_child(village)
 	legends = Legends.new()
 	legends.name = "Legends"
 	legends.game = self
@@ -374,7 +384,7 @@ func _interaction_prompt(target: Node2D) -> String:
 	if target is SettlementObject:
 		return "E — доска поселения"
 	if target is WorldNpc:
-		return "E — поговорить"
+		return "E — постучать" if target.asleep else "E — поговорить"
 	if target is RegionGate:
 		var verb: String = {"cave_mouth": "войти в пещеру", "cave_exit": "выйти", "stairs_down": "спуститься", "stairs_up": "подняться"}.get(target.kind, "по мосту")
 		return "E — %s: %s · ур. %d" % [verb, RegionCatalog.display_name(target.target_region), RegionCatalog.level(target.target_region)]
@@ -529,6 +539,7 @@ func _populate_region() -> void:
 		board.used.connect(func(_b: ContractBoard) -> void: contracts.open_board())
 	treasure.spawn_mark()
 	epilogue.spawn_rift()
+	village.on_region_ready()
 	for node_data in layout.get("resource_nodes", []):
 		var node_id := str(node_data.get("id", ""))
 		if not bool(gathered_resource_nodes.get(node_id, false)):
@@ -644,7 +655,7 @@ func _clear_region_actors() -> void:
 	for node in get_children():
 		if node is WorldNpc and node.is_companion:
 			continue
-		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is SettlementObject or node is GatherNode or node is CraftStation or node is DungeonDoor or node is SpikeTrap or node is FlameVent or node is DungeonLever or node is ContractBoard or node is DigSpot or node is PatternRift or node is MagicBolt or node is EnemyMagicOrb:
+		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is SettlementObject or node is GatherNode or node is CraftStation or node is DungeonDoor or node is SpikeTrap or node is FlameVent or node is DungeonLever or node is ContractBoard or node is DigSpot or node is PatternRift or node is Caravan or node is MagicBolt or node is EnemyMagicOrb:
 			remove_child(node)
 			node.queue_free()
 	elder = null

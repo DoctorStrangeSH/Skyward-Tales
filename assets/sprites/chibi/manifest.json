@@ -63,6 +63,17 @@
   ],
   "feet": 30
  },
+ "caravaner": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
  "cartographer": {
   "anims": {
    "hit": 4,
@@ -99,6 +110,17 @@
   "feet": 40
  },
  "grove_warden": {
+  "anims": {
+   "idle": 6,
+   "walk": 6
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 40
+ },
+ "guard": {
   "anims": {
    "idle": 6,
    "walk": 6

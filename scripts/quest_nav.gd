@@ -34,10 +34,13 @@ func _collect() -> Array:
 			if str(npc.get("requires_flag", "")) == "ending" and game.epilogue.ending().is_empty():
 				continue
 			var marker := game.dialogues.marker_for(npc_id)
+			var at: Vector2 = SkywardGame._vec(npc.get("position"))
+			if region_id == game.current_region:
+				at = _live_npc(npc_id, at)
 			if marker == "ready":
-				_add(result, region_id, SkywardGame._vec(npc.get("position")), "turnin", str(npc.get("name", "")))
+				_add(result, region_id, at, "turnin", str(npc.get("name", "")))
 			elif marker == "quest":
-				_add(result, region_id, SkywardGame._vec(npc.get("position")), "offer", str(npc.get("name", "")))
+				_add(result, region_id, at, "offer", str(npc.get("name", "")))
 	for quest_id in quests.definitions:
 		if not quests.is_active(quest_id) or quests.is_ready_to_complete(quest_id):
 			continue
@@ -108,6 +111,13 @@ func _objectives(quest_id: String, definition: Dictionary) -> Array:
 			var pos: Array = game.epilogue.rifts[region_id]
 			found.append([str(region_id), Vector2(float(pos[0]), float(pos[1]))])
 	return found
+
+## Villagers walk around: use where they are now.
+func _live_npc(npc_id: String, fallback: Vector2) -> Vector2:
+	for node in game.get_children():
+		if node is WorldNpc and node.npc_id == npc_id and not node.is_queued_for_deletion():
+			return node.global_position
+	return fallback
 
 func _live_collectible(item_id: String) -> bool:
 	for node in game.get_children():
