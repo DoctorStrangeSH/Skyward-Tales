@@ -114,7 +114,7 @@ func _draw() -> void:
 		var at := _map_point(marker["position"])
 		var kind: String = marker["kind"]
 		if not area.grow(-2).has_point(at):
-			if kind in ["gate", "quest", "treasure"] and follow:
+			if kind in ["gate", "quest", "treasure", "rift"] and follow:
 				_draw_edge_arrow(area, at, Color(1.0, 0.85, 0.4) if kind == "quest" else Color(0.95, 0.95, 0.8))
 			continue
 		_draw_marker(kind, at, str(marker.get("label", "")))
@@ -185,6 +185,10 @@ func _draw_marker(kind: String, at: Vector2, label: String) -> void:
 			draw_line(at + Vector2(-3, 3), at + Vector2(3, -3), Color(0, 0, 0), 3.0)
 			draw_line(at + Vector2(-3, -3), at + Vector2(3, 3), red, 1.5)
 			draw_line(at + Vector2(-3, 3), at + Vector2(3, -3), red, 1.5)
+		"rift":
+			draw_circle(at, 4.5 + pulse, Color(0.7, 0.35, 1.0, 0.3))
+			draw_circle(at, 3.0, Color(0.15, 0.05, 0.25))
+			draw_arc(at, 2.4, _clock * 3.0, _clock * 3.0 + PI * 1.3, 8, Color(0.95, 0.75, 1.0), 1.0)
 		"secret":
 			draw_rect(Rect2(at - Vector2(2, 2), Vector2(4, 4)), Color(0.82, 0.55, 1.0))
 		_:

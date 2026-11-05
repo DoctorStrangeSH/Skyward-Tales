@@ -713,6 +713,36 @@
       "crit": 4,
       "lifesteal": 1,
       "value": 240
+    },
+    "pattern_shard": {
+      "name": "Осколок Узора",
+      "description": "Застывший свет из закрытого разлома. Очень ценен.",
+      "slot": "",
+      "rarity": "rare",
+      "material": true,
+      "value": 45
+    },
+    "sky_thread": {
+      "name": "Нить живого неба",
+      "description": "Дар ордена за Тень Узора (небо зажжено): +14 к урону заклинаний, +40 маны, +6% крит.",
+      "slot": "amulet",
+      "rarity": "legendary",
+      "spell_bonus": {
+        "*": 14
+      },
+      "max_mana": 40,
+      "crit": 6,
+      "value": 600
+    },
+    "earth_star": {
+      "name": "Звезда земли",
+      "description": "Дар ордена за Тень Узора (острова опущены): +14 к урону мечом, +60 к здоровью, +8 к броне.",
+      "slot": "amulet",
+      "rarity": "legendary",
+      "melee": 14,
+      "max_health": 60,
+      "armor": 8,
+      "value": 600
     }
   }
 }

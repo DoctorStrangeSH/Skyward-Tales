@@ -160,6 +160,20 @@
       "stat": "ending",
       "goal": 1,
       "gold": 500
+    },
+    "rift_closer": {
+      "title": "Шов на небе",
+      "description": "Закройте 6 разломов Узора.",
+      "stat": "rifts",
+      "goal": 6,
+      "gold": 500
+    },
+    "shadow_slayer": {
+      "title": "Свет после тени",
+      "description": "Одолейте Тень Узора.",
+      "stat": "shade",
+      "goal": 1,
+      "gold": 1000
     }
   }
 }

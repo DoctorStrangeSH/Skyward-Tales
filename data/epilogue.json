@@ -1,0 +1,28 @@
+{
+  "rifts": {
+    "moonlit_grove": [
+      656,
+      451
+    ],
+    "misty_marsh": [
+      637,
+      432
+    ],
+    "salt_coast": [
+      761,
+      541
+    ],
+    "stone_pass": [
+      788,
+      539
+    ],
+    "ashen_waste": [
+      802,
+      538
+    ],
+    "sky_rift": [
+      658,
+      458
+    ]
+  }
+}
