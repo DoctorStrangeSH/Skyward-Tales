@@ -40,6 +40,17 @@ var second_wind_ready_in: float = 0.0
 const SECOND_WIND_COOLDOWN := 90.0
 signal second_wind_triggered
 signal hurt(amount: int)
+## Guard (F): a short parry window, then a block while F is held.
+signal parried(source: Node)
+signal blocked(amount: int)
+const PARRY_WINDOW := 0.3
+const GUARD_COOLDOWN := 0.45
+const BLOCK_SHARE := 0.4
+var parry_left: float = 0.0
+var blocking: bool = false
+var guard_cooldown_left: float = 0.0
+## Who dealt the latest blow (for gear such as the toad crown).
+var last_attacker: Node
 var starlight_essence_used: int = 0
 var equipment_definitions: Dictionary = {}
 
@@ -53,6 +64,33 @@ func _ready() -> void:
 	_apply_look()
 	Vfx.enable_flash(visual)
 	add_child(visual)
+
+func heal(amount: int) -> void:
+	if health <= 0 or amount <= 0:
+		return
+	health = mini(max_health, health + amount)
+	stats_changed.emit()
+
+func start_guard() -> bool:
+	if guard_cooldown_left > 0.0 or health <= 0 or dodge_time_left > 0.0:
+		return false
+	parry_left = PARRY_WINDOW + (0.1 if equipment.get("armor", "") == "crab_aegis" else 0.0)
+	blocking = true
+	guard_cooldown_left = GUARD_COOLDOWN
+	queue_redraw()
+	return true
+
+func end_guard() -> void:
+	blocking = false
+	queue_redraw()
+
+func _draw() -> void:
+	if not blocking:
+		return
+	# A shimmering guard arc in front of the hero.
+	var bright := parry_left > 0.0
+	var angle := facing.angle()
+	draw_arc(Vector2(0, -8), 15.0, angle - 1.0, angle + 1.0, 14, Color(1.0, 0.95, 0.7, 0.95) if bright else Color(0.7, 0.8, 1.0, 0.7), 3.0 if bright else 2.0)
 
 func start_dodge() -> bool:
 	if dodge_time_left > 0.0 or dodge_cooldown_left > 0.0 or health <= 0:
@@ -68,6 +106,10 @@ func start_dodge() -> bool:
 func _physics_process(_delta: float) -> void:
 	_update_buffs(_delta)
 	dodge_cooldown_left = maxf(0.0, dodge_cooldown_left - _delta)
+	guard_cooldown_left = maxf(0.0, guard_cooldown_left - _delta)
+	if parry_left > 0.0:
+		parry_left = maxf(0.0, parry_left - _delta)
+		queue_redraw()
 	second_wind_ready_in = maxf(0.0, second_wind_ready_in - _delta)
 	if dodge_time_left > 0.0:
 		dodge_time_left = maxf(0.0, dodge_time_left - _delta)
@@ -140,9 +182,20 @@ func play_cast(direction: Vector2) -> void:
 	if not visual.play_named("cast", 0.32):
 		visual.play_action(_cast_sheet(), 0.32)
 
-func take_damage(amount: int) -> void:
+func take_damage(amount: int, source: Node = null) -> void:
 	if dodge_time_left > 0.0 or health <= 0:
 		return
+	last_attacker = source
+	if parry_left > 0.0:
+		# A perfect parry: no damage, the attacker staggers.
+		parry_left = 0.0
+		guard_cooldown_left = 0.0
+		parried.emit(source)
+		return
+	if blocking:
+		var kept := roundi(amount * BLOCK_SHARE)
+		blocked.emit(amount - kept)
+		amount = kept
 	var previous_health: int = health
 	health = maxi(0, health - maxi(1, roundi(float(amount - get_armor()) * (1.0 - get_damage_reduction()))))
 	if health < previous_health:
@@ -228,7 +281,7 @@ func get_dodge_cooldown() -> float:
 	return dodge_cooldown * maxf(0.5, 1.0 - 0.02 * float(get_stat("agility")))
 
 func get_move_speed() -> float:
-	return move_speed * (1.0 + minf(0.25, 0.01 * float(get_stat("agility")))) * (1.0 + buff_value("speed")) * (1.08 if has_passive("fleet") else 1.0)
+	return move_speed * (1.0 + minf(0.25, 0.01 * float(get_stat("agility")))) * (1.0 + buff_value("speed")) * (1.08 if has_passive("fleet") else 1.0) * (0.5 if blocking else 1.0)
 
 func get_item_name(item_id: String) -> String:
 	return str(get_item_definition(item_id).get("name", item_id))
@@ -278,7 +331,11 @@ func get_crit_chance() -> float:
 
 ## Part of incoming damage that is ignored (Unbreakable).
 func get_damage_reduction() -> float:
-	return 0.15 if has_skill("unbreakable") else 0.0
+	var reduction := 0.15 if has_skill("unbreakable") else 0.0
+	# Golem heart: stone skin when the hero is close to falling.
+	if equipment.get("relic", "") == "golem_heart" and health < max_health * 0.3:
+		reduction += 0.3
+	return reduction
 
 ## Health restored by each sword hit.
 func get_melee_lifesteal() -> int:

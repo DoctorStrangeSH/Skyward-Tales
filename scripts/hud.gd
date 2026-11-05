@@ -620,6 +620,28 @@ func show_scene_line(speaker: String, message: String, portrait_path: String) ->
 	_layout_dialogue()
 
 ## Big chapter title in the middle of the screen that fades in and out.
+## Hit streak counter under the minimap: "×12 В УДАРЕ!".
+var streak_label: Label
+
+func set_streak(count: int, left: float) -> void:
+	if streak_label == null:
+		streak_label = Label.new()
+		streak_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		streak_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		streak_label.position = Vector2(500, 128)
+		streak_label.size = Vector2(132, 30)
+		streak_label.add_theme_font_size_override("font_size", UiFont.px(16))
+		streak_label.add_theme_constant_override("outline_size", 4)
+		streak_label.add_theme_color_override("font_outline_color", Color(0.1, 0.05, 0.03))
+		dialogue_panel.get_parent().add_child(streak_label)
+	streak_label.visible = count >= 3
+	if count < 3:
+		return
+	var hot := count >= 20
+	streak_label.text = "×%d%s" % [count, "  В УДАРЕ!" if count >= 10 else ""]
+	streak_label.add_theme_color_override("font_color", Color(1.0, 0.45, 0.25) if hot else (Color(1.0, 0.8, 0.3) if count >= 10 else Color(0.95, 0.95, 0.9)))
+	streak_label.modulate.a = clampf(0.35 + left, 0.0, 1.0)
+
 ## A small "saved" badge in the corner: a spinning gem, then a check mark.
 func show_save_indicator() -> void:
 	if save_indicator == null:

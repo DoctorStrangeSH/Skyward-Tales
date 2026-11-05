@@ -184,7 +184,7 @@ func _physics_process(delta: float) -> void:
 				if attack_windup_duration > 0.0 or attack_lunge_duration > 0.0:
 					_start_special_attack(offset.normalized())
 				else:
-					player.take_damage(attack_damage)
+					player.take_damage(attack_damage, self)
 					attack_cooldown = attack_cooldown_duration
 		BrainState.RETREAT:
 			desired = -offset.normalized() if distance_to_player < give_up_radius else Vector2.ZERO
@@ -286,7 +286,7 @@ func _update_special_attack(delta: float, player: Node2D) -> bool:
 		visual.set_moving(true)
 		move_and_slide()
 		if not attack_has_hit and player.has_method("take_damage") and global_position.distance_to(player.global_position) <= attack_hit_radius:
-			player.take_damage(attack_damage)
+			player.take_damage(attack_damage, self)
 			attack_has_hit = true
 		attack_timer = maxf(0.0, attack_timer - delta)
 		if attack_timer <= 0.0:
