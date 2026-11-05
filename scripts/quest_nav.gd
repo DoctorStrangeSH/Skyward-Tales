@@ -41,6 +41,9 @@ func _collect() -> Array:
 				_add(result, region_id, at, "turnin", str(npc.get("name", "")))
 			elif marker == "quest":
 				_add(result, region_id, at, "offer", str(npc.get("name", "")))
+	# A lost mine is a job for anyone passing by.
+	if game.mine.overrun() and not quests.is_active(BorinStory.DREAM) and game.visited_regions.has(PassMine.REGION):
+		_add(result, PassMine.REGION, PassMine.ENTRANCE + Vector2(0, 50), "side", "Шахта захвачена")
 	for quest_id in quests.definitions:
 		if not quests.is_active(quest_id) or quests.is_ready_to_complete(quest_id):
 			continue
@@ -59,6 +62,8 @@ func _objectives(quest_id: String, definition: Dictionary) -> Array:
 		var layout := RegionCatalog.get_region(region_id)
 		var here: bool = region_id == game.current_region
 		for item in layout.get("story_objects", []):
+			if not game.layout_allows(item):
+				continue
 			if str(item.get("quest", "")) == quest_id and (not here or _live_collectible(str(item.get("id", "")))):
 				found.append([region_id, SkywardGame._vec(item.get("position"))])
 		var herb_quest := RegionCatalog.herb_quest(region_id)
@@ -106,6 +111,8 @@ func _objectives(quest_id: String, definition: Dictionary) -> Array:
 	for trigger in game.director.on_enter:
 		if str(trigger.get("completes", "")) == quest_id:
 			found.append([str(trigger.get("region", "")), null])
+	if quest_id == BorinStory.DREAM and game.mine.overrun():
+		found.append([PassMine.REGION, PassMine.ENTRANCE + Vector2(0, 50)])
 	if quest_id == Epilogue.RIFT_QUEST:
 		for region_id in game.epilogue.open_rift_regions():
 			var pos: Array = game.epilogue.rifts[region_id]

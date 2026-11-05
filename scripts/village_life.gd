@@ -158,6 +158,11 @@ func rumor() -> String:
 			var info: Dictionary = game.legends.data[legend_id]
 			live.append("Говорят, по ночам в землях «%s» бродит %s. Огромный, светится!" % [RegionCatalog.display_name(str(info.get("region", ""))), str(info.get("name", ""))])
 			break
+	var mine_news := game.mine.rumor()
+	if not mine_news.is_empty():
+		live.append(mine_news)
+	if game.borin.upgraded():
+		live.append("Видал новую кузницу Борина? Говорят, он теперь куёт из небесного металла!")
 	if not game.epilogue.open_rift_regions().is_empty():
 		live.append("Над землями снова трещит небо — разломы Узора. Сорен места себе не находит.")
 	# Fresh news comes up more often.

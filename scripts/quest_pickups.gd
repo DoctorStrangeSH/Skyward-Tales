@@ -23,6 +23,8 @@ func handle(herb: WorldCollectible) -> void:
 		_collect_supply_crate(herb)
 	elif herb.item_id.begins_with("iron_ore_node_"):
 		_mine_ore(herb)
+	elif herb.item_id == "meteor_iron":
+		_collect_meteor(herb)
 	elif not game.story_object(herb.item_id).is_empty():
 		_inspect_story_object(herb)
 		return
@@ -31,6 +33,15 @@ func handle(herb: WorldCollectible) -> void:
 	else:
 		_collect_quest_herb(herb)
 	game._refresh_hud()
+
+## Borin's star iron: progress, not an instant completion.
+func _collect_meteor(herb: WorldCollectible) -> void:
+	if game.quests.is_active(BorinStory.DREAM):
+		game.quests.add_progress(BorinStory.DREAM, 1)
+		game.hud.show_title_card("Звёздное железо!", 2.0)
+		game.hud.show_message("Тяжёлое, звенящее железо со звезды. Отнесите его Борину.", 3.5)
+		GameAudio.play("level_up", -6.0, 0.0)
+	_collect(herb)
 
 ## Plays the object's scene, then completes its main-story quest.
 func _inspect_story_object(herb: WorldCollectible) -> void:

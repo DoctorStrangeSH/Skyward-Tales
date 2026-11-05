@@ -111,6 +111,8 @@ def build_world() -> None:
     save(canvas, "world/crystal_altar.png", origin)
     canvas, origin = props.sky_archive(STYLES["sky"])
     save(canvas, "world/sky_archive.png", origin)
+    canvas, origin = gates.mine()
+    save(canvas, "world/mine_entrance.png", origin)
 
 
 def build_characters() -> None:
@@ -161,7 +163,7 @@ def build_props() -> None:
         "rift_throne": props.rune_circle(("#fbf6ff", "#e6d2ff", "#c9a2ff", "#6a3ac0")),
         "wind_rune": props.herb("wind_rune"), "storm_heart": props.rune_circle(("#ffffff", "#c8f4ff", "#7ad0f0", "#3a7ab0")),
         "memory_crystal": props.herb("memory_crystal"),
-        "echo_crystal": props.herb("echo_crystal"), "sky_shard": props.sky_shard(), "altar_heart": props.rune_circle(),
+        "echo_crystal": props.herb("echo_crystal"), "sky_shard": props.sky_shard(), "meteor_iron": props.meteor_iron(), "altar_heart": props.rune_circle(),
         "marker_quest": props.marker("quest"), "marker_ready": props.marker("ready"),
         "marker_service": props.marker("service"), "key_e": props.key_badge(),
     }

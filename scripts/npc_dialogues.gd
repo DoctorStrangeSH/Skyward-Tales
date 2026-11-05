@@ -78,6 +78,9 @@ func marker_for(npc_id: String) -> String:
 	if npc_id == "hunter" and quests.is_completed("toren_wolf_hunt") and _can_craft_mantle():
 		return "service"
 	if npc_id == "blacksmith":
+		var story := game.borin.marker()
+		if not story.is_empty():
+			return story
 		for recipe in ["reinforce_wolfskin_mantle", "forge_ironbound_staff"]:
 			if bool(game.crafting_service.get_recipe_status(game.player, recipe).get("success", false)):
 				return "service"
@@ -87,6 +90,8 @@ func marker_for(npc_id: String) -> String:
 
 func handle_choice(choice_id: String) -> void:
 	if game.givers != null and game.givers.handle_choice(choice_id):
+		return
+	if game.borin != null and game.borin.handle_choice(choice_id):
 		return
 	if game.settlement != null and game.settlement.handle_choice(choice_id):
 		return
@@ -330,6 +335,11 @@ func _craft_wolfskin_mantle() -> void:
 # --- Blacksmith Borin ----------------------------------------------------
 
 func on_blacksmith() -> void:
+	if game.borin.talk():
+		return
+	on_blacksmith_crafting()
+
+func on_blacksmith_crafting() -> void:
 	var crafting := game.crafting_service
 	var choices: Array[Dictionary] = []
 	var mantle_status: Dictionary = crafting.get_recipe_status(game.player, "reinforce_wolfskin_mantle")
@@ -412,6 +422,7 @@ func on_merchant() -> void:
 	var plundered: bool = game.world_state.has("caravan_lost")
 	game.merchant_shop.caravan_open = route_open
 	game.merchant_shop.price_mult = 0.9 if route_open else (1.15 if plundered else 1.0)
+	game.merchant_shop.sell_mult = {"iron_ore": game.mine.iron_price_mult()}
 	if quests.is_completed(quest_id):
 		message = "Благодаря тебе лавка снова получает товары. %s." % game.relationships.get_reaction("bran")
 	elif quests.is_ready_to_complete(quest_id):

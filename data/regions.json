@@ -655,6 +655,21 @@
         {
           "kind": "village_fence_v",
           "position": [146, 668]
+        },
+        {
+          "kind": "decor_forge",
+          "position": [500, 690],
+          "requires_state": "borin_forge_2"
+        },
+        {
+          "kind": "decor_weapon_rack",
+          "position": [540, 700],
+          "requires_state": "borin_forge_2"
+        },
+        {
+          "kind": "decor_armor_stand",
+          "position": [336, 700],
+          "requires_state": "borin_forge_2"
         }
       ],
       "blockers": [
@@ -2706,6 +2721,12 @@
         "id": "smith_master",
         "name": "Гунхильд",
         "position": [800, 410]
+      },
+      {
+        "id": "pass_miner",
+        "name": "Шахтёрка Ветта",
+        "position": [1132, 600],
+        "requires_state": "mine_cleared"
       }
     ],
     "chests": [
@@ -2752,6 +2773,13 @@
         "quest": "main_echoes",
         "scene": "echo_pass",
         "position": [260, 700]
+      },
+      {
+        "id": "meteor_iron",
+        "name": "Метеоритное железо",
+        "quest": "borin_dream",
+        "position": [1190, 596],
+        "unless_state": "mine_overrun"
       }
     ],
     "enemies": [
@@ -2779,6 +2807,27 @@
         "kind": "giant",
         "position": [1380, 300],
         "quest": "pass_giant"
+      },
+      {
+        "kind": "ore_golem",
+        "position": [1190, 628],
+        "requires_state": "mine_overrun",
+        "elite": ""
+      },
+      {
+        "kind": "golem",
+        "position": [1130, 648],
+        "requires_state": "mine_overrun"
+      },
+      {
+        "kind": "golem",
+        "position": [1262, 616],
+        "requires_state": "mine_overrun"
+      },
+      {
+        "kind": "golem",
+        "position": [1205, 684],
+        "requires_state": "mine_overrun"
       }
     ],
     "gates": [
@@ -2836,6 +2885,16 @@
       {
         "kind": "wood",
         "position": [1480, 960]
+      },
+      {
+        "kind": "iron",
+        "position": [1250, 585],
+        "requires_state": "mine_cleared"
+      },
+      {
+        "kind": "iron",
+        "position": [1125, 565],
+        "requires_state": "mine_cleared"
       }
     ],
     "terrain": {
@@ -3163,6 +3222,10 @@
         {
           "kind": "village_well",
           "position": [720, 640]
+        },
+        {
+          "kind": "mine_entrance",
+          "position": [1190, 575]
         }
       ],
       "blockers": [

@@ -743,6 +743,16 @@
       "max_health": 60,
       "armor": 8,
       "value": 600
+    },
+    "skyclaw_blade": {
+      "name": "Небесный коготь",
+      "description": "Клинок Борина из звёздного железа, закалённый в пепле: +18 к урону мечом, +7% крит, +3% вампиризма.",
+      "slot": "blade",
+      "rarity": "legendary",
+      "melee": 18,
+      "crit": 7,
+      "lifesteal": 3,
+      "value": 700
     }
   }
 }
