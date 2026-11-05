@@ -14,6 +14,7 @@ var data: Dictionary = {}
 var recruited: Dictionary = {}     # settler id -> true
 var homes: Dictionary = {}         # plot id -> settler id
 var gift_marks: Dictionary = {}    # settler id -> completed quests when last served
+var buildings: Dictionary = {}     # building id -> level (farm, …)
 
 func _init(owner_game: SkywardGame) -> void:
 	game = owner_game
@@ -182,6 +183,10 @@ func handle_choice(choice_id: String) -> bool:
 		game.dialogues._close()
 		invite(choice_id.trim_prefix("settle_invite:"))
 		return true
+	if choice_id.begins_with("settle_upgrade:"):
+		game.dialogues._close()
+		upgrade(choice_id.trim_prefix("settle_upgrade:"))
+		return true
 	if choice_id.begins_with("settle_build:"):
 		game.dialogues._close()
 		build(choice_id.trim_prefix("settle_build:"))
@@ -202,6 +207,77 @@ func invite(id: String) -> bool:
 	game.request_autosave()
 	return true
 
+# --- Buildings with levels (data: buildings) -------------------------------
+
+func building_level(id: String) -> int:
+	return int(buildings.get(id, 0))
+
+func building_info(id: String) -> Dictionary:
+	return data.get("buildings", {}).get(id, {})
+
+## The next level's needs, or {} when the building is complete.
+func next_level(id: String) -> Dictionary:
+	var levels: Array = building_info(id).get("levels", [])
+	var current := building_level(id)
+	return levels[current] if current < levels.size() else {}
+
+func upgrade_cost(id: String) -> int:
+	return int(round(float(next_level(id).get("gold", 0)) * _discount()))
+
+func upgrade_materials(id: String) -> Dictionary:
+	var result := {}
+	var mats: Dictionary = next_level(id).get("materials", {})
+	for item_id in mats:
+		result[item_id] = maxi(1, int(round(float(mats[item_id]) * _discount())))
+	return result
+
+func upgrade(id: String) -> bool:
+	var step := next_level(id)
+	if step.is_empty():
+		return false
+	var cost := upgrade_cost(id)
+	if game.player.gold < cost:
+		game.hud.show_message("Не хватает золота: нужно %d." % cost, 2.5)
+		return false
+	var mats := upgrade_materials(id)
+	for item_id in mats:
+		if int(game.player.inventory.get(item_id, 0)) < int(mats[item_id]):
+			game.hud.show_message("Не хватает: %s (нужно %d)." % [game.player.get_item_name(item_id), int(mats[item_id])], 3.0)
+			return false
+	for item_id in mats:
+		game.player.remove_item(item_id, int(mats[item_id]))
+	game.player.gold -= cost
+	game.player.stats_changed.emit()
+	buildings[id] = building_level(id) + 1
+	var name := str(building_info(id).get("name", id))
+	game.hud.show_title_card("%s · ур. %d" % [name, building_level(id)], 2.2)
+	game.hud.show_message(str(step.get("text", "")), 4.0)
+	GameAudio.play("chest", -2.0, 0.0)
+	game.achievements.set_max("buildings", _total_levels())
+	game.on_building_upgraded(id)
+	game.request_autosave()
+	return true
+
+func _total_levels() -> int:
+	var total := 0
+	for id in buildings:
+		total += int(buildings[id])
+	return total
+
+func _building_choices() -> Array[Dictionary]:
+	var choices: Array[Dictionary] = []
+	for id in data.get("buildings", {}):
+		var step := next_level(str(id))
+		if step.is_empty():
+			continue
+		var parts: Array[String] = []
+		var mats := upgrade_materials(str(id))
+		for item_id in mats:
+			parts.append("%s %d/%d" % [game.player.get_item_name(item_id), int(game.player.inventory.get(item_id, 0)), int(mats[item_id])])
+		var verb := "Построить" if building_level(str(id)) == 0 else "Улучшить"
+		choices.append({"id": "settle_upgrade:" + str(id), "label": "%s: %s (ур. %d) — %d золота%s" % [verb, str(building_info(str(id)).get("name", id)), building_level(str(id)) + 1, upgrade_cost(str(id)), (", " + ", ".join(parts)) if not parts.is_empty() else ""]})
+	return choices
+
 # --- Building -------------------------------------------------------------
 
 func open_board() -> void:
@@ -220,6 +296,10 @@ func open_board() -> void:
 			lines += "\nВстречайте людей в других землях и зовите их сюда — для каждого найдётся участок."
 		else:
 			lines += "\nВсе участки заняты."
+	for id in buildings:
+		lines += "\n%s — ур. %d" % [str(building_info(str(id)).get("name", id)), int(buildings[id])]
+	choices.append_array(_building_choices())
+	if choices.is_empty():
 		game._show_dialogue("Доска поселения", lines)
 		return
 	choices.append({"id": "settle_later", "label": "Позже"})
@@ -251,14 +331,18 @@ func build(id: String) -> bool:
 	return true
 
 func make_snapshot() -> Dictionary:
-	return {"recruited": recruited.duplicate(), "homes": homes.duplicate(), "gifts": gift_marks.duplicate()}
+	return {"recruited": recruited.duplicate(), "homes": homes.duplicate(), "gifts": gift_marks.duplicate(), "buildings": buildings.duplicate()}
 
 func restore_snapshot(snapshot: Variant) -> void:
 	recruited = {}
 	homes = {}
 	gift_marks = {}
+	buildings = {}
 	if not snapshot is Dictionary:
 		return
+	if snapshot.get("buildings", {}) is Dictionary:
+		for id in snapshot["buildings"]:
+			buildings[str(id)] = int(snapshot["buildings"][id])
 	for id in snapshot.get("recruited", {}):
 		if settlers().has(id):
 			recruited[id] = true

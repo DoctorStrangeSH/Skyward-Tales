@@ -93,6 +93,8 @@ func handle_choice(choice_id: String) -> void:
 		return
 	if game.borin != null and game.borin.handle_choice(choice_id):
 		return
+	if game.farm != null and game.farm.handle_choice(choice_id):
+		return
 	if choice_id.begins_with("toren_buy:"):
 		_toren_buy(choice_id.trim_prefix("toren_buy:"))
 		return

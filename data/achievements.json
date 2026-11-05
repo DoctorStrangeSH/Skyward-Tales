@@ -223,6 +223,20 @@
       "stat": "streak",
       "goal": 30,
       "gold": 300
+    },
+    "farmer_10": {
+      "title": "Своя земля",
+      "description": "Соберите 10 урожаев.",
+      "stat": "harvests",
+      "goal": 10,
+      "gold": 150
+    },
+    "farmer_50": {
+      "title": "Хозяйка огорода",
+      "description": "Соберите 50 урожаев.",
+      "stat": "harvests",
+      "goal": 50,
+      "gold": 500
     }
   }
 }

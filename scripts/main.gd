@@ -94,6 +94,7 @@ var mine: PassMine
 var borin: BorinStory
 var combos: ElementalCombos
 var gear: GearEffects
+var farm: Farm
 var achievements: Achievements
 var cast_cooldown_total: float = 0.0
 var defeated_enemies: int = 0
@@ -185,6 +186,10 @@ func _ready() -> void:
 	world_state.game = self
 	add_child(world_state)
 	borin = BorinStory.new(self)
+	farm = Farm.new()
+	farm.name = "Farm"
+	farm.game = self
+	add_child(farm)
 	gear = GearEffects.new()
 	gear.name = "GearEffects"
 	gear.game = self
@@ -405,6 +410,8 @@ func _interaction_prompt(target: Node2D) -> String:
 		return "E — копать"
 	if target is PatternRift:
 		return "E — закрыть разлом"
+	if target is FarmBed:
+		return farm.prompt(target.index)
 	if target is DungeonLever:
 		return "E — опустить рычаг"
 	if target is SettlementObject:
@@ -714,7 +721,7 @@ func _clear_region_actors() -> void:
 	for node in get_children():
 		if node is WorldNpc and node.is_companion:
 			continue
-		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is SettlementObject or node is GatherNode or node is CraftStation or node is DungeonDoor or node is SpikeTrap or node is FlameVent or node is DungeonLever or node is ContractBoard or node is DigSpot or node is PatternRift or node is Caravan or node is Arrow or node is SnareTrap or node is SpiritAlly or node is CrystalTotem or node is MagicBolt or node is EnemyMagicOrb:
+		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is SettlementObject or node is GatherNode or node is CraftStation or node is DungeonDoor or node is SpikeTrap or node is FlameVent or node is DungeonLever or node is ContractBoard or node is DigSpot or node is PatternRift or node is Caravan or node is Arrow or node is SnareTrap or node is SpiritAlly or node is CrystalTotem or node is FarmBed or node is FarmPatch or node is MagicBolt or node is EnemyMagicOrb:
 			remove_child(node)
 			node.queue_free()
 	elder = null
@@ -1064,6 +1071,7 @@ func _spawn_settlement() -> void:
 			art = str(settlement.settler(str(settlement.homes[plot_id])).get("house", "village_house_small"))
 			kind = "house"
 		_spawn_settlement_object(kind, art, Vector2(float(p[0]), float(p[1])))
+	farm.spawn()
 
 func _spawn_settlement_object(kind: String, art: String, at: Vector2) -> void:
 	var object := SETTLEMENT_OBJECT_SCRIPT.new() as SettlementObject
@@ -1074,10 +1082,15 @@ func _spawn_settlement_object(kind: String, art: String, at: Vector2) -> void:
 	if kind == "board":
 		object.used.connect(func(_o: SettlementObject) -> void: settlement.open_board())
 
+## A village building grew a level (settlement.upgrade).
+func on_building_upgraded(building_id: String) -> void:
+	if building_id == Farm.BUILDING:
+		farm.refresh()
+
 ## Rebuilds the village objects and settlers after a house goes up.
 func refresh_settlement() -> void:
 	for node in get_children():
-		if node is SettlementObject or (node is WorldNpc and node.npc_id.begins_with("settler_")):
+		if node is SettlementObject or node is FarmBed or node is FarmPatch or (node is WorldNpc and node.npc_id.begins_with("settler_")):
 			remove_child(node)
 			node.queue_free()
 	_spawn_settlement()
