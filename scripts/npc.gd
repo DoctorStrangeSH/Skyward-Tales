@@ -18,6 +18,8 @@ var is_companion: bool = false
 var _marker_time: float = 0.0
 ## Daily life (VillageLife): walking between spots, speech bubbles, sleep.
 var walk_speed: float = 38.0
+## Another character's sprite to wear ("look" in the region data).
+var look_id: String = ""
 var asleep: bool = false
 var sleep_on_arrival: bool = false
 var bubble_text: String = ""
@@ -29,9 +31,10 @@ var _idle_moving: bool = false
 func _ready() -> void:
 	add_to_group("interactables")
 	var sheet := "res://assets/sprites/npcs/%s.png" % npc_id
-	if not npc_id.is_empty() and DIRECTIONAL_SPRITE_SCRIPT.has_chibi(npc_id):
+	var look := look_id if not look_id.is_empty() else npc_id
+	if not look.is_empty() and DIRECTIONAL_SPRITE_SCRIPT.has_chibi(look):
 		visual = DIRECTIONAL_SPRITE_SCRIPT.new() as DirectionalSprite
-		visual.configure_chibi(npc_id, 9.0)
+		visual.configure_chibi(look, 9.0)
 		visual.set_direction_vector(Vector2.DOWN)
 		visual.set_moving(false)
 		add_child(visual)

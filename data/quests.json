@@ -670,5 +670,94 @@
         }
       ]
     }
+  },
+  {
+    "id": "haven_letters",
+    "title": "Письма, унесённые ветром",
+    "description": "Найдите четыре письма, которые ветер разнёс по Гавани, и верните их смотрительнице Агате.",
+    "target": 4,
+    "side": true,
+    "reward": {
+      "experience": 80,
+      "gold": 50,
+      "items": [
+        {
+          "id": "bread",
+          "amount": 3
+        }
+      ]
+    }
+  },
+  {
+    "id": "haven_flour",
+    "title": "Мука для праздника",
+    "description": "Отыщите три мешка муки, укатившиеся с мельничной телеги, для пекаря Тимофея.",
+    "target": 3,
+    "side": true,
+    "reward": {
+      "experience": 70,
+      "gold": 40,
+      "items": [
+        {
+          "id": "berry_pie",
+          "amount": 2
+        }
+      ]
+    }
+  },
+  {
+    "id": "haven_seeds",
+    "title": "Небесные семена",
+    "description": "Соберите пять небесных семечек на лугах Гавани для садовницы Ивы.",
+    "target": 5,
+    "side": true,
+    "reward": {
+      "experience": 90,
+      "gold": 30,
+      "items": [
+        {
+          "id": "seed_sunberry",
+          "amount": 4
+        },
+        {
+          "id": "seed_bluebell",
+          "amount": 2
+        }
+      ]
+    }
+  },
+  {
+    "id": "haven_songs",
+    "title": "Песни упавших островов",
+    "description": "Найдите три листка со старыми песнями для сказительницы Весты.",
+    "target": 3,
+    "side": true,
+    "reward": {
+      "experience": 120,
+      "gold": 60,
+      "items": [
+        {
+          "id": "ancient_tome",
+          "amount": 1
+        }
+      ]
+    }
+  },
+  {
+    "id": "haven_kitten",
+    "title": "Где Пушок?",
+    "description": "Найдите рыжего котёнка Тиши. Он любит прятаться у пруда.",
+    "target": 1,
+    "side": true,
+    "reward": {
+      "experience": 60,
+      "gold": 20,
+      "items": [
+        {
+          "id": "sunberry",
+          "amount": 5
+        }
+      ]
+    }
   }
 ]

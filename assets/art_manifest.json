@@ -971,6 +971,16 @@
    18
   ]
  },
+ "props/flour_sack.png": {
+  "size": [
+   16,
+   16
+  ],
+  "origin": [
+   8,
+   14
+  ]
+ },
  "props/gate_bridge_h.png": {
   "size": [
    48,
@@ -1191,6 +1201,36 @@
    10
   ]
  },
+ "props/lore_stone.png": {
+  "size": [
+   18,
+   26
+  ],
+  "origin": [
+   9,
+   24
+  ]
+ },
+ "props/lost_kitten.png": {
+  "size": [
+   18,
+   16
+  ],
+  "origin": [
+   9,
+   14
+  ]
+ },
+ "props/lost_letter.png": {
+  "size": [
+   16,
+   14
+  ],
+  "origin": [
+   8,
+   12
+  ]
+ },
  "props/mana_potion.png": {
   "size": [
    14,
@@ -1361,6 +1401,16 @@
    9
   ]
  },
+ "props/sky_seed.png": {
+  "size": [
+   16,
+   16
+  ],
+  "origin": [
+   8,
+   14
+  ]
+ },
  "props/sky_shard.png": {
   "size": [
    30,
@@ -1369,6 +1419,16 @@
   "origin": [
    15,
    23
+  ]
+ },
+ "props/song_scroll.png": {
+  "size": [
+   16,
+   16
+  ],
+  "origin": [
+   8,
+   14
   ]
  },
  "props/spirit_blossom.png": {
@@ -2369,6 +2429,92 @@
    1280
   ]
  },
+ "world/haven_apron_bottom.png": {
+  "size": [
+   1920,
+   160
+  ]
+ },
+ "world/haven_apron_left.png": {
+  "size": [
+   160,
+   1088
+  ]
+ },
+ "world/haven_apron_right.png": {
+  "size": [
+   160,
+   1088
+  ]
+ },
+ "world/haven_apron_top.png": {
+  "size": [
+   1920,
+   160
+  ]
+ },
+ "world/haven_bush_0.png": {
+  "size": [
+   28,
+   22
+  ],
+  "origin": [
+   14,
+   18
+  ]
+ },
+ "world/haven_bush_1.png": {
+  "size": [
+   28,
+   22
+  ],
+  "origin": [
+   14,
+   18
+  ]
+ },
+ "world/haven_canopy.png": {
+  "size": [
+   1600,
+   1088
+  ]
+ },
+ "world/haven_ground.png": {
+  "size": [
+   1600,
+   1088
+  ]
+ },
+ "world/haven_tree_0.png": {
+  "size": [
+   58,
+   68
+  ],
+  "origin": [
+   29,
+   60
+  ]
+ },
+ "world/haven_tree_1.png": {
+  "size": [
+   58,
+   68
+  ],
+  "origin": [
+   29,
+   60
+  ]
+ },
+ "world/haven_tree_2.png": {
+  "size": [
+   46,
+   54
+  ],
+  "origin": [
+   23,
+   46
+  ]
+ },
  "world/magma_bush_0.png": {
   "size": [
    26,
@@ -3033,6 +3179,36 @@
    1080
   ]
  },
+ "world/village_anchor.png": {
+  "size": [
+   56,
+   128
+  ],
+  "origin": [
+   28,
+   123
+  ]
+ },
+ "world/village_arch.png": {
+  "size": [
+   56,
+   54
+  ],
+  "origin": [
+   28,
+   51
+  ]
+ },
+ "world/village_bench.png": {
+  "size": [
+   30,
+   18
+  ],
+  "origin": [
+   15,
+   16
+  ]
+ },
  "world/village_board.png": {
   "size": [
    34,
@@ -3071,6 +3247,46 @@
   "origin": [
    33,
    41
+  ]
+ },
+ "world/village_flowers_a.png": {
+  "size": [
+   34,
+   18
+  ],
+  "origin": [
+   17,
+   16
+  ]
+ },
+ "world/village_flowers_b.png": {
+  "size": [
+   34,
+   18
+  ],
+  "origin": [
+   17,
+   16
+  ]
+ },
+ "world/village_flowers_c.png": {
+  "size": [
+   34,
+   18
+  ],
+  "origin": [
+   17,
+   16
+  ]
+ },
+ "world/village_fountain.png": {
+  "size": [
+   64,
+   52
+  ],
+  "origin": [
+   32,
+   48
   ]
  },
  "world/village_guild_1.png": {
@@ -3133,6 +3349,16 @@
    81
   ]
  },
+ "world/village_house_blue.png": {
+  "size": [
+   64,
+   71
+  ],
+  "origin": [
+   32,
+   68
+  ]
+ },
  "world/village_house_large.png": {
   "size": [
    96,
@@ -3141,6 +3367,26 @@
   "origin": [
    48,
    85
+  ]
+ },
+ "world/village_house_long.png": {
+  "size": [
+   108,
+   95
+  ],
+  "origin": [
+   54,
+   92
+  ]
+ },
+ "world/village_house_moss.png": {
+  "size": [
+   84,
+   82
+  ],
+  "origin": [
+   42,
+   79
   ]
  },
  "world/village_house_slate.png": {
@@ -3161,6 +3407,16 @@
   "origin": [
    34,
    70
+  ]
+ },
+ "world/village_house_wine.png": {
+  "size": [
+   72,
+   75
+  ],
+  "origin": [
+   36,
+   72
   ]
  },
  "world/village_lamp.png": {
@@ -3191,6 +3447,26 @@
   "origin": [
    44,
    81
+  ]
+ },
+ "world/village_market_green.png": {
+  "size": [
+   52,
+   44
+  ],
+  "origin": [
+   26,
+   40
+  ]
+ },
+ "world/village_market_red.png": {
+  "size": [
+   52,
+   44
+  ],
+  "origin": [
+   26,
+   40
   ]
  },
  "world/village_plot.png": {
@@ -3241,6 +3517,16 @@
   "origin": [
    17,
    36
+  ]
+ },
+ "world/village_windmill.png": {
+  "size": [
+   84,
+   112
+  ],
+  "origin": [
+   42,
+   107
   ]
  },
  "world/wind_spires_apron_bottom.png": {

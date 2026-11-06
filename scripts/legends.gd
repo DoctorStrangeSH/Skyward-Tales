@@ -49,6 +49,8 @@ func dark() -> bool:
 	return game.day_night.night_here() or RegionCatalog.style(game.current_region) == "night"
 
 func try_spawn() -> SlimeEnemy:
+	if RegionCatalog.is_peaceful(game.current_region):
+		return null
 	var legend_id := legend_for(game.current_region)
 	if legend_id.is_empty() or defeated.has(legend_id):
 		return null

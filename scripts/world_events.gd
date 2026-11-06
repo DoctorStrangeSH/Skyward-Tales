@@ -37,7 +37,7 @@ func _process(delta: float) -> void:
 
 ## Only outdoors, out of story scenes and boss fights.
 func can_happen() -> bool:
-	if RegionCatalog.is_underground(RegionCatalog.style(game.current_region)):
+	if RegionCatalog.is_underground(RegionCatalog.style(game.current_region)) or RegionCatalog.is_peaceful(game.current_region):
 		return false
 	if game.story.active or game.hud.dialogue_visible:
 		return false

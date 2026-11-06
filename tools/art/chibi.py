@@ -359,6 +359,39 @@ def main() -> int:
         "caravaner": dict(colors={HAIR_LIGHT: (170, 96, 50), HAIR_SHADE: (120, 64, 34), RED_DARK: (150, 80, 30),
                                   RED_MID: (220, 140, 60), RED_LIGHT: (250, 200, 120), MAUVE: (90, 60, 40),
                                   GOLD: (240, 200, 90)}, trim=False),
+        # --- Тихая Гавань ---
+        # Agatha, warden of the Haven: steel-grey hair, navy coat, gold buttons.
+        "haven_warden": dict(colors={HAIR_LIGHT: (180, 186, 200), HAIR_SHADE: (130, 136, 156), RED_DARK: (34, 44, 84),
+                                     RED_MID: (52, 70, 124), RED_LIGHT: (220, 200, 140), MAUVE: (40, 40, 60),
+                                     GOLD: (250, 210, 90)}, ahoge=False),
+        # Timofey the baker: wheat-blond hair, flour-white apron, ginger beard.
+        "haven_baker": dict(colors={HAIR_LIGHT: (240, 210, 130), HAIR_SHADE: (190, 150, 80), RED_DARK: (180, 170, 150),
+                                    RED_MID: (236, 228, 210), RED_LIGHT: (200, 120, 70), MAUVE: (110, 90, 70),
+                                    GOLD: (230, 190, 110)}, trim=True, ahoge=False, beard=((210, 120, 60), (160, 86, 40)),
+                            fill=((180, 170, 150), (236, 228, 210))),
+        # Iva the gardener: chestnut hair, leaf-green dress.
+        "haven_gardener": dict(colors={HAIR_LIGHT: (170, 100, 60), HAIR_SHADE: (120, 66, 40), RED_DARK: (46, 96, 50),
+                                       RED_MID: (80, 150, 70), RED_LIGHT: (240, 150, 170), MAUVE: (40, 60, 40),
+                                       GOLD: (250, 220, 120)}),
+        # Tisha, a girl looking for her kitten: copper hair, sunny yellow dress.
+        "haven_child": dict(colors={HAIR_LIGHT: (240, 140, 70), HAIR_SHADE: (190, 96, 44), RED_DARK: (190, 140, 30),
+                                    RED_MID: (246, 200, 70), RED_LIGHT: (120, 180, 240), MAUVE: (120, 90, 40),
+                                    GOLD: (255, 240, 180)}),
+        # Lel the bard: black hair, teal coat, a gold lute strap.
+        "haven_bard": dict(colors={HAIR_LIGHT: (60, 50, 70), HAIR_SHADE: (36, 30, 46), RED_DARK: (30, 90, 96),
+                                   RED_MID: (50, 140, 140), RED_LIGHT: (240, 220, 160), MAUVE: (30, 50, 60),
+                                   GOLD: (250, 200, 80)}, trim=True, fill=((30, 90, 96), (50, 140, 140))),
+        # Sol, keeper of the sky anchor: long white beard, rune-blue robe.
+        "haven_anchor": dict(colors={RED_DARK: (40, 70, 110), RED_MID: (70, 110, 160), RED_LIGHT: (140, 240, 230),
+                                     MAUVE: (40, 50, 70), GOLD: (140, 240, 230)},
+                             trim=True, ahoge=False, beard=((246, 246, 240), (200, 206, 214)), fill=((40, 70, 110), (70, 110, 160))),
+        # Haven villagers.
+        "haven_villager_a": dict(colors={HAIR_LIGHT: (120, 80, 60), HAIR_SHADE: (84, 54, 40), RED_DARK: (110, 60, 90),
+                                         RED_MID: (160, 96, 130), RED_LIGHT: (240, 220, 200), MAUVE: (70, 46, 60),
+                                         GOLD: (240, 200, 140)}, ahoge=False),
+        "haven_villager_b": dict(colors={HAIR_LIGHT: (200, 90, 50), HAIR_SHADE: (150, 60, 34), RED_DARK: (90, 66, 40),
+                                         RED_MID: (130, 100, 60), RED_LIGHT: (200, 210, 220), MAUVE: (60, 50, 40),
+                                         GOLD: (220, 200, 160)}, trim=True, ahoge=False, fill=((90, 66, 40), (130, 100, 60))),
         # Vail: long white hair, violet Keeper robes.
         "vail": dict(colors={RED_DARK: (58, 40, 98), RED_MID: (92, 66, 150), RED_LIGHT: (176, 132, 236), MAUVE: (40, 30, 60),
                              GOLD: (210, 180, 255)}, ahoge=False),
@@ -404,6 +437,8 @@ def main() -> int:
     village.build_gathering(ROOT)
     village.build_coast(ROOT)
     village.build_dungeon(ROOT)
+    import haven
+    haven.build(ROOT)
     (OUT / "manifest.json").write_text(json.dumps(manifest, indent=1, sort_keys=True) + "\n")
     return 0
 

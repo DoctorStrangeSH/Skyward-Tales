@@ -82,7 +82,7 @@ static func capture(game: SkywardGame) -> Dictionary:
 			"visited": game.visited_regions.duplicate(),
 			"doors": game.opened_doors.duplicate(),
 			"day": game.day_night.make_snapshot(), "treasure": game.treasure.make_snapshot(), "contracts": game.contracts.make_snapshot(),
-			"legends": game.legends.make_snapshot(), "achievements": game.achievements.make_snapshot(), "epilogue": game.epilogue.make_snapshot(), "world_state": game.world_state.make_snapshot(), "mine": game.mine.make_snapshot(), "combos": game.combos.make_snapshot(), "farm": game.farm.make_snapshot(), "buildings": game.buildings.make_snapshot(), "guild": game.guild.make_snapshot()
+			"legends": game.legends.make_snapshot(), "achievements": game.achievements.make_snapshot(), "lore": game.lore.make_snapshot(), "epilogue": game.epilogue.make_snapshot(), "world_state": game.world_state.make_snapshot(), "mine": game.mine.make_snapshot(), "combos": game.combos.make_snapshot(), "farm": game.farm.make_snapshot(), "buildings": game.buildings.make_snapshot(), "guild": game.guild.make_snapshot()
 		},
 		"magic": game.selected_spell_id
 	}
@@ -114,6 +114,7 @@ static func apply(game: SkywardGame, data: Dictionary) -> bool:
 	game.contracts.restore_snapshot(world_data.get("contracts", {}))
 	game.legends.restore_snapshot(world_data.get("legends", {}))
 	game.achievements.restore_snapshot(world_data.get("achievements", {}))
+	game.lore.restore_snapshot(world_data.get("lore", {}))
 	game.epilogue.restore_snapshot(world_data.get("epilogue", {}))
 	game.world_state.restore_snapshot(world_data.get("world_state", {}))
 	game.mine.restore_snapshot(world_data.get("mine", {}))

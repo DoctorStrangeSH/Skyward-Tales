@@ -164,6 +164,8 @@ func _add_weather(size: Vector2) -> void:
 	if style == "ash":
 		_weather("Embers", size, 70, 5.0, Vector2.UP, Vector2(0, -14), 10.0, 26.0, Color(1.0, 0.62, 0.2), 1.0, 2.0)
 		_weather("Ash", size, 120, 9.0, Vector2(0.3, 1.0), Vector2(4, 10), 6.0, 14.0, Color(0.7, 0.66, 0.64, 0.8), 1.0, 1.5)
+	elif style == "haven":
+		_weather("Petals", size, 60, 9.0, Vector2(1.0, 0.6), Vector2(3, 6), 8.0, 18.0, Color(1.0, 0.75, 0.84, 0.9), 1.0, 2.0)
 	elif style == "mountain":
 		_weather("Snow", size, 160, 10.0, Vector2(0.25, 1.0), Vector2(6, 12), 10.0, 22.0, Color(0.96, 0.98, 1.0, 0.9), 1.0, 2.0)
 

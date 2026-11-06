@@ -27,4 +27,6 @@ func art_name() -> String:
 		return "supply_crate"
 	if item_id in ["map_fragment", "spirit_blossom", "echo_crystal", "sky_shard", "altar_heart", "memory_crystal", "wind_rune", "storm_heart", "rift_throne", "marsh_lantern", "ember_coal", "pattern_core"]:
 		return item_id
+	if ResourceLoader.exists("res://assets/props/%s.png" % item_id):
+		return item_id
 	return "moonleaf"

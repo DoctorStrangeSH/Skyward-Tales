@@ -170,6 +170,12 @@
         "position": [1420, 332],
         "arrival": [224, 860],
         "label": "Спуск в глубины руин"
+      },
+      {
+        "target": "haven",
+        "position": [200, 1244],
+        "arrival": [800, 110],
+        "label": "Мост в Тихую Гавань"
       }
     ],
     "secrets": {
@@ -1041,6 +1047,12 @@
     "map_pos": [0.27, 0.55],
     "contract_boards": [
       [740, 606]
+    ],
+    "lore": [
+      {
+        "id": "lore_greenreach",
+        "position": [520, 553]
+      }
     ]
   },
   "moonlit_grove": {
@@ -1302,7 +1314,13 @@
         "position": [544, 287]
       }
     ],
-    "map_pos": [0.45, 0.36]
+    "map_pos": [0.45, 0.36],
+    "lore": [
+      {
+        "id": "lore_grove",
+        "position": [210, 390]
+      }
+    ]
   },
   "crystal_caves": {
     "name": "Хрустальные пещеры",
@@ -1707,7 +1725,13 @@
         "position": [607, 608]
       }
     ],
-    "map_pos": [0.6, 0.18]
+    "map_pos": [0.6, 0.18],
+    "lore": [
+      {
+        "id": "lore_sky",
+        "position": [910, 476]
+      }
+    ]
   },
   "wind_spires": {
     "name": "Ветреные шпили",
@@ -1866,7 +1890,13 @@
     },
     "level": 9,
     "waystone": [300, 500],
-    "map_pos": [0.75, 0.28]
+    "map_pos": [0.75, 0.28],
+    "lore": [
+      {
+        "id": "lore_spires",
+        "position": [200, 510]
+      }
+    ]
   },
   "sky_rift": {
     "name": "Расколотый остров",
@@ -2241,7 +2271,13 @@
         "position": [580, 341]
       }
     ],
-    "map_pos": [0.45, 0.8]
+    "map_pos": [0.45, 0.8],
+    "lore": [
+      {
+        "id": "lore_marsh",
+        "position": [894, 660]
+      }
+    ]
   },
   "salt_coast": {
     "name": "Солёный берег",
@@ -2707,7 +2743,13 @@
         [1169, 758],
         [1121, 556]
       ]
-    }
+    },
+    "lore": [
+      {
+        "id": "lore_coast",
+        "position": [516, 450]
+      }
+    ]
   },
   "stone_pass": {
     "name": "Каменный Перевал",
@@ -3331,6 +3373,12 @@
     },
     "contract_boards": [
       [960, 560]
+    ],
+    "lore": [
+      {
+        "id": "lore_pass",
+        "position": [1400, 560]
+      }
     ]
   },
   "ruins_depths": {
@@ -4473,6 +4521,12 @@
     },
     "contract_boards": [
       [620, 580]
+    ],
+    "lore": [
+      {
+        "id": "lore_ash",
+        "position": [166, 504]
+      }
     ]
   },
   "forge_depths": {
@@ -5638,6 +5692,1019 @@
         [182, 564],
         [966, 140],
         [907, 240]
+      ]
+    }
+  },
+  "haven": {
+    "name": "Тихая Гавань",
+    "map_color": [0.95, 0.72, 0.8],
+    "level": 1,
+    "enemy_power": 1.0,
+    "peaceful": true,
+    "waystone": [860, 380],
+    "map_pos": [0.1, 0.84],
+    "npcs": [
+      {
+        "id": "haven_warden",
+        "name": "Агата, смотрительница Гавани",
+        "position": [630, 478]
+      },
+      {
+        "id": "haven_baker",
+        "name": "Пекарь Тимофей",
+        "position": [1200, 545]
+      },
+      {
+        "id": "haven_gardener",
+        "name": "Садовница Ива",
+        "position": [250, 610],
+        "wander": [
+          [250, 610],
+          [330, 610],
+          [200, 750],
+          [120, 600]
+        ]
+      },
+      {
+        "id": "haven_child",
+        "name": "Тиша",
+        "position": [740, 700],
+        "wander": [
+          [740, 700],
+          [860, 700],
+          [880, 520],
+          [720, 520],
+          [620, 640]
+        ]
+      },
+      {
+        "id": "haven_bard",
+        "name": "Бард Лель",
+        "position": [1040, 790]
+      },
+      {
+        "id": "haven_anchor",
+        "name": "Сол, хранитель якоря",
+        "position": [870, 1020]
+      },
+      {
+        "id": "haven_fisher",
+        "name": "Рыбак Ольгерд",
+        "look": "settler_fisher",
+        "position": [1265, 905]
+      },
+      {
+        "id": "haven_storyteller",
+        "name": "Сказительница Веста",
+        "look": "librarian",
+        "position": [570, 800]
+      },
+      {
+        "id": "haven_villager_a",
+        "name": "Прачка Дана",
+        "position": [1180, 690],
+        "wander": [
+          [1180, 690],
+          [960, 600],
+          [860, 700],
+          [1110, 890],
+          [1300, 690]
+        ]
+      },
+      {
+        "id": "haven_villager_b",
+        "name": "Плотник Яр",
+        "position": [420, 600],
+        "wander": [
+          [420, 600],
+          [560, 600],
+          [540, 420],
+          [330, 340],
+          [300, 600]
+        ]
+      }
+    ],
+    "chests": [
+      {
+        "id": "haven_attic",
+        "position": [1545, 160],
+        "gold": 60,
+        "item": "berry_pie",
+        "amount": 2
+      }
+    ],
+    "herbs": [
+      {
+        "id": "lost_letter",
+        "name": "Потерянное письмо",
+        "quest": "haven_letters",
+        "position": [300, 395]
+      },
+      {
+        "id": "lost_letter",
+        "name": "Потерянное письмо",
+        "quest": "haven_letters",
+        "position": [1430, 470]
+      },
+      {
+        "id": "lost_letter",
+        "name": "Потерянное письмо",
+        "quest": "haven_letters",
+        "position": [985, 975]
+      },
+      {
+        "id": "lost_letter",
+        "name": "Потерянное письмо",
+        "quest": "haven_letters",
+        "position": [95, 820]
+      },
+      {
+        "id": "flour_sack",
+        "name": "Мешок муки",
+        "quest": "haven_flour",
+        "position": [110, 560]
+      },
+      {
+        "id": "flour_sack",
+        "name": "Мешок муки",
+        "quest": "haven_flour",
+        "position": [1500, 700]
+      },
+      {
+        "id": "flour_sack",
+        "name": "Мешок муки",
+        "quest": "haven_flour",
+        "position": [690, 300]
+      },
+      {
+        "id": "sky_seed",
+        "name": "Небесное семечко",
+        "quest": "haven_seeds",
+        "position": [1460, 230]
+      },
+      {
+        "id": "sky_seed",
+        "name": "Небесное семечко",
+        "quest": "haven_seeds",
+        "position": [1060, 240]
+      },
+      {
+        "id": "sky_seed",
+        "name": "Небесное семечко",
+        "quest": "haven_seeds",
+        "position": [420, 880]
+      },
+      {
+        "id": "sky_seed",
+        "name": "Небесное семечко",
+        "quest": "haven_seeds",
+        "position": [1520, 1010]
+      },
+      {
+        "id": "sky_seed",
+        "name": "Небесное семечко",
+        "quest": "haven_seeds",
+        "position": [200, 980]
+      },
+      {
+        "id": "song_scroll",
+        "name": "Листок со старой песней",
+        "quest": "haven_songs",
+        "position": [630, 240]
+      },
+      {
+        "id": "song_scroll",
+        "name": "Листок со старой песней",
+        "quest": "haven_songs",
+        "position": [1290, 780]
+      },
+      {
+        "id": "song_scroll",
+        "name": "Листок со старой песней",
+        "quest": "haven_songs",
+        "position": [1480, 560]
+      },
+      {
+        "id": "lost_kitten",
+        "name": "Котёнок Пушок",
+        "quest": "haven_kitten",
+        "position": [1540, 870]
+      }
+    ],
+    "enemies": [],
+    "gates": [
+      {
+        "target": "greenreach",
+        "position": [800, 36],
+        "arrival": [200, 1180],
+        "label": "Мост в Зелёные Пределы"
+      }
+    ],
+    "secrets": {},
+    "gather": [
+      {
+        "kind": "fish",
+        "position": [1290, 860]
+      },
+      {
+        "kind": "fish",
+        "position": [1380, 830]
+      },
+      {
+        "kind": "fish",
+        "position": [1470, 930]
+      },
+      {
+        "kind": "healroot",
+        "position": [1000, 300]
+      },
+      {
+        "kind": "bluebell",
+        "position": [620, 920]
+      },
+      {
+        "kind": "bluebell",
+        "position": [1500, 300]
+      },
+      {
+        "kind": "wood",
+        "position": [1520, 420]
+      },
+      {
+        "kind": "stone",
+        "position": [140, 300]
+      },
+      {
+        "kind": "healroot",
+        "position": [380, 960]
+      }
+    ],
+    "lore": [
+      {
+        "id": "haven_founding",
+        "position": [860, 120]
+      },
+      {
+        "id": "haven_anchor_stone",
+        "position": [720, 1020]
+      },
+      {
+        "id": "haven_fallen_isles",
+        "position": [1500, 140]
+      },
+      {
+        "id": "haven_windmill",
+        "position": [100, 470]
+      },
+      {
+        "id": "haven_pond",
+        "position": [1490, 840]
+      }
+    ],
+    "story_objects": [],
+    "terrain": {
+      "size": [1600, 1088],
+      "style": "haven",
+      "trails": [
+        [
+          [800, 0],
+          [800, 200],
+          [800, 470]
+        ],
+        [
+          [710, 575],
+          [560, 580],
+          [420, 565],
+          [300, 580],
+          [180, 560]
+        ],
+        [
+          [890, 575],
+          [1050, 585],
+          [1200, 575],
+          [1350, 575],
+          [1600, 560]
+        ],
+        [
+          [800, 660],
+          [800, 800],
+          [800, 930]
+        ],
+        [
+          [800, 800],
+          [960, 830],
+          [1120, 880],
+          [1260, 930]
+        ],
+        [
+          [560, 580],
+          [540, 420],
+          [440, 360],
+          [320, 320]
+        ],
+        [
+          [1050, 585],
+          [1080, 420],
+          [1150, 360],
+          [1330, 370]
+        ]
+      ],
+      "ponds": [
+        {
+          "circle": [1380, 930, 92]
+        }
+      ],
+      "plazas": [
+        {
+          "circle": [800, 572, 96]
+        },
+        {
+          "circle": [800, 1000, 62]
+        },
+        {
+          "rect": [1090, 604, 320, 60]
+        }
+      ],
+      "props": [
+        {
+          "kind": "village_hall",
+          "position": [630, 450]
+        },
+        {
+          "kind": "village_house_moss",
+          "position": [975, 450]
+        },
+        {
+          "kind": "village_tavern_2",
+          "position": [1040, 760]
+        },
+        {
+          "kind": "village_library_2",
+          "position": [570, 770]
+        },
+        {
+          "kind": "village_house_long",
+          "position": [1200, 515]
+        },
+        {
+          "kind": "village_house_wine",
+          "position": [450, 520]
+        },
+        {
+          "kind": "village_house_small",
+          "position": [335, 520]
+        },
+        {
+          "kind": "village_windmill",
+          "position": [175, 520]
+        },
+        {
+          "kind": "village_house_blue",
+          "position": [470, 330]
+        },
+        {
+          "kind": "village_house_slate",
+          "position": [320, 290]
+        },
+        {
+          "kind": "village_home_2",
+          "position": [1150, 330]
+        },
+        {
+          "kind": "village_house_large",
+          "position": [1330, 350]
+        },
+        {
+          "kind": "village_anchor",
+          "position": [800, 1010]
+        },
+        {
+          "kind": "village_fountain",
+          "position": [800, 585]
+        },
+        {
+          "kind": "village_market_red",
+          "position": [1140, 650]
+        },
+        {
+          "kind": "village_market_green",
+          "position": [1250, 650]
+        },
+        {
+          "kind": "decor_stall_white",
+          "position": [1350, 650]
+        },
+        {
+          "kind": "village_bench",
+          "position": [712, 640]
+        },
+        {
+          "kind": "village_bench",
+          "position": [888, 640]
+        },
+        {
+          "kind": "village_bench",
+          "position": [760, 960]
+        },
+        {
+          "kind": "village_bench",
+          "position": [1240, 980]
+        },
+        {
+          "kind": "village_flowers_a",
+          "position": [700, 505]
+        },
+        {
+          "kind": "village_flowers_b",
+          "position": [900, 505]
+        },
+        {
+          "kind": "village_flowers_c",
+          "position": [700, 680]
+        },
+        {
+          "kind": "village_flowers_a",
+          "position": [900, 680]
+        },
+        {
+          "kind": "village_flowers_b",
+          "position": [760, 210]
+        },
+        {
+          "kind": "village_flowers_c",
+          "position": [840, 210]
+        },
+        {
+          "kind": "village_flowers_a",
+          "position": [450, 545]
+        },
+        {
+          "kind": "village_flowers_c",
+          "position": [1200, 540]
+        },
+        {
+          "kind": "village_flowers_b",
+          "position": [975, 475]
+        },
+        {
+          "kind": "village_flowers_a",
+          "position": [1330, 375]
+        },
+        {
+          "kind": "village_flowers_c",
+          "position": [300, 940]
+        },
+        {
+          "kind": "village_flowers_b",
+          "position": [640, 950]
+        },
+        {
+          "kind": "village_arch",
+          "position": [800, 190]
+        },
+        {
+          "kind": "village_well",
+          "position": [1110, 860]
+        },
+        {
+          "kind": "village_field",
+          "position": [130, 680]
+        },
+        {
+          "kind": "village_field",
+          "position": [210, 680]
+        },
+        {
+          "kind": "village_field",
+          "position": [290, 680]
+        },
+        {
+          "kind": "village_hay",
+          "position": [360, 660]
+        },
+        {
+          "kind": "village_hay",
+          "position": [70, 610]
+        },
+        {
+          "kind": "village_lamp",
+          "position": [680, 545]
+        },
+        {
+          "kind": "village_lamp",
+          "position": [920, 545]
+        },
+        {
+          "kind": "village_lamp",
+          "position": [680, 625]
+        },
+        {
+          "kind": "village_lamp",
+          "position": [920, 625]
+        },
+        {
+          "kind": "village_lamp",
+          "position": [772, 340]
+        },
+        {
+          "kind": "village_lamp",
+          "position": [828, 120]
+        },
+        {
+          "kind": "village_lamp",
+          "position": [560, 575]
+        },
+        {
+          "kind": "village_lamp",
+          "position": [1040, 575]
+        },
+        {
+          "kind": "village_lamp",
+          "position": [772, 820]
+        },
+        {
+          "kind": "village_lamp",
+          "position": [1320, 575]
+        },
+        {
+          "kind": "village_lamp",
+          "position": [290, 575]
+        },
+        {
+          "kind": "village_sign",
+          "position": [850, 300]
+        },
+        {
+          "kind": "village_board",
+          "position": [700, 455]
+        },
+        {
+          "kind": "decor_wagon",
+          "position": [1440, 600]
+        },
+        {
+          "kind": "decor_potted_plant",
+          "position": [1000, 780]
+        },
+        {
+          "kind": "decor_potted_plant",
+          "position": [1080, 780]
+        },
+        {
+          "kind": "village_fence_h",
+          "position": [105, 720]
+        },
+        {
+          "kind": "village_fence_h",
+          "position": [139, 720]
+        },
+        {
+          "kind": "village_fence_h",
+          "position": [173, 720]
+        },
+        {
+          "kind": "village_fence_h",
+          "position": [207, 720]
+        },
+        {
+          "kind": "village_fence_h",
+          "position": [241, 720]
+        },
+        {
+          "kind": "village_fence_h",
+          "position": [275, 720]
+        },
+        {
+          "kind": "village_fence_h",
+          "position": [309, 720]
+        }
+      ],
+      "blockers": [
+        {
+          "center": [630, 437],
+          "size": [91, 26]
+        },
+        {
+          "center": [975, 437],
+          "size": [67, 26]
+        },
+        {
+          "center": [1040, 747],
+          "size": [86, 26]
+        },
+        {
+          "center": [570, 757],
+          "size": [70, 26]
+        },
+        {
+          "center": [1200, 502],
+          "size": [86, 26]
+        },
+        {
+          "center": [450, 507],
+          "size": [57, 26]
+        },
+        {
+          "center": [335, 507],
+          "size": [54, 26]
+        },
+        {
+          "center": [175, 510],
+          "size": [40, 20]
+        },
+        {
+          "center": [470, 317],
+          "size": [51, 26]
+        },
+        {
+          "center": [320, 277],
+          "size": [60, 26]
+        },
+        {
+          "center": [1150, 317],
+          "size": [70, 26]
+        },
+        {
+          "center": [1330, 337],
+          "size": [76, 26]
+        },
+        {
+          "center": [800, 1002],
+          "size": [42, 16]
+        },
+        {
+          "center": [800, 573],
+          "size": [52, 18]
+        },
+        {
+          "center": [1140, 644],
+          "size": [44, 10]
+        },
+        {
+          "center": [1250, 644],
+          "size": [44, 10]
+        },
+        {
+          "center": [1350, 644],
+          "size": [58, 10]
+        },
+        {
+          "center": [712, 636],
+          "size": [24, 6]
+        },
+        {
+          "center": [888, 636],
+          "size": [24, 6]
+        },
+        {
+          "center": [760, 956],
+          "size": [24, 6]
+        },
+        {
+          "center": [1240, 976],
+          "size": [24, 6]
+        },
+        {
+          "center": [700, 501],
+          "size": [28, 6]
+        },
+        {
+          "center": [900, 501],
+          "size": [28, 6]
+        },
+        {
+          "center": [700, 676],
+          "size": [28, 6]
+        },
+        {
+          "center": [900, 676],
+          "size": [28, 6]
+        },
+        {
+          "center": [760, 206],
+          "size": [28, 6]
+        },
+        {
+          "center": [840, 206],
+          "size": [28, 6]
+        },
+        {
+          "center": [450, 541],
+          "size": [28, 6]
+        },
+        {
+          "center": [1200, 536],
+          "size": [28, 6]
+        },
+        {
+          "center": [975, 471],
+          "size": [28, 6]
+        },
+        {
+          "center": [1330, 371],
+          "size": [28, 6]
+        },
+        {
+          "center": [300, 936],
+          "size": [28, 6]
+        },
+        {
+          "center": [640, 946],
+          "size": [28, 6]
+        },
+        {
+          "center": [780, 187],
+          "size": [5, 6]
+        },
+        {
+          "center": [820, 187],
+          "size": [5, 6]
+        },
+        {
+          "center": [1110, 854],
+          "size": [26, 12]
+        },
+        {
+          "center": [130, 665],
+          "size": [64, 30]
+        },
+        {
+          "center": [210, 665],
+          "size": [64, 30]
+        },
+        {
+          "center": [290, 665],
+          "size": [64, 30]
+        },
+        {
+          "center": [360, 656],
+          "size": [10, 8]
+        },
+        {
+          "center": [70, 606],
+          "size": [10, 8]
+        },
+        {
+          "center": [680, 543],
+          "size": [4, 4]
+        },
+        {
+          "center": [920, 543],
+          "size": [4, 4]
+        },
+        {
+          "center": [680, 623],
+          "size": [4, 4]
+        },
+        {
+          "center": [920, 623],
+          "size": [4, 4]
+        },
+        {
+          "center": [772, 338],
+          "size": [4, 4]
+        },
+        {
+          "center": [828, 118],
+          "size": [4, 4]
+        },
+        {
+          "center": [560, 573],
+          "size": [4, 4]
+        },
+        {
+          "center": [1040, 573],
+          "size": [4, 4]
+        },
+        {
+          "center": [772, 818],
+          "size": [4, 4]
+        },
+        {
+          "center": [1320, 573],
+          "size": [4, 4]
+        },
+        {
+          "center": [290, 573],
+          "size": [4, 4]
+        },
+        {
+          "center": [850, 298],
+          "size": [4, 4]
+        },
+        {
+          "center": [700, 451],
+          "size": [22, 8]
+        },
+        {
+          "center": [1440, 596],
+          "size": [34, 8]
+        },
+        {
+          "center": [1000, 776],
+          "size": [8, 8]
+        },
+        {
+          "center": [1080, 776],
+          "size": [8, 8]
+        },
+        {
+          "center": [105, 716],
+          "size": [34, 6]
+        },
+        {
+          "center": [139, 716],
+          "size": [34, 6]
+        },
+        {
+          "center": [173, 716],
+          "size": [34, 6]
+        },
+        {
+          "center": [207, 716],
+          "size": [34, 6]
+        },
+        {
+          "center": [241, 716],
+          "size": [34, 6]
+        },
+        {
+          "center": [275, 716],
+          "size": [34, 6]
+        },
+        {
+          "center": [309, 716],
+          "size": [34, 6]
+        }
+      ],
+      "trees": [
+        [945, 1021],
+        [310, 40],
+        [947, 1065],
+        [149, 151],
+        [1462, 91],
+        [1505, 508],
+        [1573, 621],
+        [94, 250],
+        [74, 31],
+        [383, 415],
+        [258, 838],
+        [60, 461],
+        [74, 329],
+        [620, 1051],
+        [1165, 997],
+        [1563, 63],
+        [530, 1057],
+        [1107, 53],
+        [697, 1060],
+        [88, 73],
+        [99, 167],
+        [114, 957],
+        [719, 750],
+        [179, 1061],
+        [1193, 59],
+        [49, 215],
+        [143, 209],
+        [85, 1025],
+        [1493, 377],
+        [689, 858],
+        [449, 64],
+        [251, 952],
+        [1454, 813],
+        [91, 114],
+        [1349, 64],
+        [179, 81],
+        [1125, 1054],
+        [1568, 356],
+        [969, 82],
+        [41, 1063],
+        [1147, 100],
+        [374, 716],
+        [307, 993],
+        [1028, 1012],
+        [1512, 95],
+        [1285, 1002],
+        [679, 92],
+        [234, 1053],
+        [1104, 1016],
+        [1113, 477],
+        [1534, 741],
+        [44, 824],
+        [759, 266],
+        [1319, 733],
+        [1561, 976],
+        [900, 125],
+        [850, 72],
+        [123, 357],
+        [1123, 140],
+        [32, 758],
+        [711, 133],
+        [1580, 839],
+        [718, 55],
+        [1340, 186],
+        [56, 989],
+        [522, 265],
+        [1059, 100],
+        [1519, 600],
+        [1570, 431],
+        [46, 107],
+        [1011, 120],
+        [1032, 49],
+        [615, 139],
+        [1209, 228],
+        [1441, 701],
+        [1497, 762],
+        [596, 75],
+        [1385, 745],
+        [127, 893],
+        [523, 362],
+        [141, 995],
+        [465, 150],
+        [1303, 96],
+        [506, 52],
+        [342, 881],
+        [20, 395],
+        [1221, 1066],
+        [71, 416],
+        [935, 53],
+        [719, 904],
+        [1266, 67],
+        [1468, 658],
+        [439, 993],
+        [1071, 320],
+        [425, 200]
+      ],
+      "bushes": [
+        [998, 885],
+        [694, 217],
+        [946, 307],
+        [508, 160],
+        [1251, 328],
+        [271, 37],
+        [513, 773],
+        [359, 410],
+        [1243, 186],
+        [650, 811],
+        [344, 438],
+        [1084, 299],
+        [129, 107],
+        [1248, 239],
+        [862, 863],
+        [908, 270],
+        [1095, 915],
+        [880, 79],
+        [676, 141],
+        [1519, 801],
+        [1559, 654],
+        [1097, 519],
+        [474, 893],
+        [166, 231],
+        [21, 636],
+        [519, 642],
+        [68, 695],
+        [372, 158],
+        [922, 951],
+        [83, 961],
+        [420, 676],
+        [52, 382],
+        [1321, 443],
+        [412, 132],
+        [1351, 247],
+        [646, 670],
+        [580, 890],
+        [705, 941],
+        [1475, 432],
+        [1046, 635],
+        [1386, 492],
+        [586, 301],
+        [1330, 214],
+        [967, 186],
+        [921, 181],
+        [1107, 122],
+        [1120, 543],
+        [887, 208],
+        [356, 613],
+        [1557, 817],
+        [143, 398],
+        [151, 766],
+        [677, 1020],
+        [1055, 386],
+        [249, 922],
+        [501, 932],
+        [551, 1031],
+        [555, 102],
+        [1192, 948],
+        [388, 695],
+        [330, 66],
+        [1266, 1046],
+        [910, 1061],
+        [254, 394],
+        [1444, 673],
+        [201, 381],
+        [1037, 960],
+        [1461, 116],
+        [282, 1032],
+        [1567, 305]
       ]
     }
   }

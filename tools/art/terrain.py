@@ -64,6 +64,32 @@ def render_ground(terrain: dict, pal: dict, seed: int) -> Canvas:
     img[top_edge] = dirt[0]
     img[rim] = grass[1]
 
+    # 2b. Paved plazas: cobblestones with a dark rim ({"circle": [x, y, r]} or {"rect": [x, y, w, h]}).
+    plazas = terrain.get("plazas", [])
+    if plazas:
+        ys, xs = np.mgrid[0:h, 0:w]
+        stone = pal["stone"]
+        for plaza in plazas:
+            if "circle" in plaza:
+                cx, cy, r = plaza["circle"]
+                dist = np.sqrt((xs - cx) ** 2 + ((ys - cy) * 1.15) ** 2)
+                mask = dist < r
+                edge = (dist >= r - 3) & mask
+            else:
+                rx, ry, rw, rh = plaza["rect"]
+                mask = (xs >= rx) & (xs < rx + rw) & (ys >= ry) & (ys < ry + rh)
+                edge = mask & ~((xs >= rx + 3) & (xs < rx + rw - 3) & (ys >= ry + 3) & (ys < ry + rh - 3))
+            row = ys // 6
+            col = (xs + (row % 2) * 4) // 8
+            seam = (ys % 6 == 0) | ((xs + (row % 2) * 4) % 8 == 0)
+            shade = (col * 7 + row * 13) % 3
+            # Warm sandstone cobbles from the dirt ramp, stone seams.
+            tiles = np.array([dirt[4], dirt[5], dirt[4]])[shade]
+            img[mask] = tiles[mask]
+            img[mask & seam] = dirt[3]
+            img[edge] = dirt[1]
+            path |= mask
+
     # 3. Ponds.
     water_mask = np.zeros((h, w), dtype=bool)
     for index, pond in enumerate(terrain.get("ponds", [])):

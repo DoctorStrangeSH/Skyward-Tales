@@ -265,6 +265,20 @@
       "stat": "guild_rank",
       "goal": 4,
       "gold": 800
+    },
+    "chronicler": {
+      "title": "Летописец",
+      "description": "Прочитайте 10 рунических камней с историей мира.",
+      "stat": "lore",
+      "goal": 10,
+      "gold": 150
+    },
+    "haven_friend": {
+      "title": "Друг Гавани",
+      "description": "Помогите пятерым жителям Тихой Гавани.",
+      "stat": "haven",
+      "goal": 5,
+      "gold": 120
     }
   }
 }
