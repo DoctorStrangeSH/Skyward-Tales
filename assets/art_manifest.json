@@ -5,6 +5,12 @@
    128
   ]
  },
+ "icons/altar_heart.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/ancient_relic.png": {
   "size": [
    16,
@@ -41,6 +47,12 @@
    16
   ]
  },
+ "icons/berry_pie.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/bluebell.png": {
   "size": [
    16,
@@ -54,6 +66,12 @@
   ]
  },
  "icons/bone_amulet.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/bread.png": {
   "size": [
    16,
    16
@@ -96,6 +114,12 @@
   ]
  },
  "icons/earth_star.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/echo_crystal.png": {
   "size": [
    16,
    16
@@ -144,6 +168,12 @@
   ]
  },
  "icons/flame_heart.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/forge_key.png": {
   "size": [
    16,
    16
@@ -233,6 +263,30 @@
    16
   ]
  },
+ "icons/keeper_echo_coast.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/keeper_echo_marsh.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/keeper_echo_pass.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/lamp_oil.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/leather_armor.png": {
   "size": [
    16,
@@ -257,7 +311,37 @@
    16
   ]
  },
+ "icons/map_fragments.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/marsh_catfish.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/marsh_lantern.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/memory_crystal.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/meteor_iron.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/moonleaf.png": {
   "size": [
    16,
    16
@@ -276,6 +360,12 @@
   ]
  },
  "icons/old_boot.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/pattern_core.png": {
   "size": [
    16,
    16
@@ -359,7 +449,37 @@
    16
   ]
  },
+ "icons/ruins_key.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/sea_bass.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/seed_bluebell.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/seed_healroot.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/seed_sunberry.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/seed_wheat.png": {
   "size": [
    16,
    16
@@ -509,6 +629,12 @@
    16
   ]
  },
+ "icons/sky_shard.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/sky_thread.png": {
   "size": [
    16,
@@ -516,6 +642,12 @@
   ]
  },
  "icons/skyclaw_blade.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skyfire_blade.png": {
   "size": [
    16,
    16
@@ -546,6 +678,12 @@
   ]
  },
  "icons/spark_collar.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/spirit_blossom.png": {
   "size": [
    16,
    16
@@ -599,7 +737,25 @@
    16
   ]
  },
+ "icons/storm_heart.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/sun_tuna.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/sunberry.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/supply_crates.png": {
   "size": [
    16,
    16
@@ -641,6 +797,12 @@
    16
   ]
  },
+ "icons/wheat.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/whetstone.png": {
   "size": [
    16,
@@ -654,6 +816,12 @@
   ]
  },
  "icons/wind_essence.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/wind_rune.png": {
   "size": [
    16,
    16

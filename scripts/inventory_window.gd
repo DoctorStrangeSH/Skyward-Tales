@@ -17,7 +17,7 @@ signal craft_requested
 signal assign_requested(slot_index: int, skill_id: String)
 
 const SLOT_POSITIONS := {"blade": Vector2(2, 6), "weapon": Vector2(2, 58), "armor": Vector2(150, 6), "amulet": Vector2(150, 58), "relic": Vector2(150, 110)}
-const GRID_COLUMNS := 9
+const GRID_COLUMNS := 10
 const HINT := "Перетащите вещь из сумки на слот героя — надеть; из слота в сумку — снять. Клик по зелью — выпить."
 
 var tab: String = "gear"
@@ -35,6 +35,10 @@ var filter_button: OptionButton
 var sort_button: OptionButton
 var detail: Label
 var bag_caption: Label
+## Category tabs over the bag: all, equipment, consumables, resources.
+var category_tabs: Array = []
+const CATEGORIES := [["Всё", "ui/menu_bag.png"], ["Снаряжение", "icons/iron_sword.png"], ["Расходники", "icons/health_potion.png"], ["Ресурсы", "icons/wood.png"]]
+const MIN_ROWS := 6
 var _portrait: AtlasTexture
 var _portrait_rect: TextureRect
 var _frame := 0
@@ -148,9 +152,33 @@ func _build_gear_page(contents: VBoxContainer) -> void:
 	controls.add_theme_constant_override("separation", 4)
 	right.add_child(controls)
 	bag_caption = _label("СУМКА", 11, UiStyle.TITLE)
-	bag_caption.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bag_caption.custom_minimum_size = Vector2(150, 0)
+	bag_caption.clip_text = true
 	controls.add_child(bag_caption)
+	for index in CATEGORIES.size():
+		var tab_button := Button.new()
+		tab_button.toggle_mode = true
+		tab_button.focus_mode = Control.FOCUS_NONE
+		tab_button.custom_minimum_size = Vector2(0, 18)
+		tab_button.tooltip_text = str(CATEGORIES[index][0])
+		var icon_path := str(CATEGORIES[index][1])
+		if ResourceLoader.exists("res://assets/" + icon_path):
+			tab_button.icon = WorldArt.texture(icon_path)
+		tab_button.expand_icon = false
+		tab_button.add_theme_font_size_override("font_size", UiFont.px(8))
+		tab_button.add_theme_constant_override("h_separation", 2)
+		UiStyle.small_toggle(tab_button)
+		var category_index: int = index
+		tab_button.pressed.connect(func() -> void:
+			filter_button.select(category_index)
+			filter_selected.emit(category_index))
+		controls.add_child(tab_button)
+		category_tabs.append(tab_button)
+	var grow := Control.new()
+	grow.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	controls.add_child(grow)
 	filter_button = OptionButton.new()
+	filter_button.visible = false
 	filter_button.add_theme_font_size_override("font_size", UiFont.px(9))
 	filter_button.custom_minimum_size = Vector2(104, 18)
 	filter_button.focus_mode = Control.FOCUS_NONE
@@ -162,12 +190,12 @@ func _build_gear_page(contents: VBoxContainer) -> void:
 	filter_button.item_selected.connect(func(index: int) -> void: filter_selected.emit(index))
 	controls.add_child(filter_button)
 	sort_button = OptionButton.new()
+	sort_button.custom_minimum_size = Vector2(70, 18)
 	sort_button.add_theme_font_size_override("font_size", UiFont.px(9))
-	sort_button.custom_minimum_size = Vector2(98, 18)
 	sort_button.focus_mode = Control.FOCUS_NONE
-	sort_button.add_item("Порядок", 0)
-	sort_button.add_item("По названию", 1)
-	sort_button.add_item("По редкости", 2)
+	sort_button.add_item("Обычно", 0)
+	sort_button.add_item("А–Я", 1)
+	sort_button.add_item("Редкость", 2)
 	sort_button.tooltip_text = "Порядок отображения предметов"
 	sort_button.item_selected.connect(func(index: int) -> void: sort_selected.emit(index))
 	controls.add_child(sort_button)
@@ -240,6 +268,13 @@ func populate(player: PlayerCharacter, filter_index: int, sort_index: int, prefe
 	additional_item_ids.sort()
 	available_item_ids.append_array(additional_item_ids)
 	var item_ids: Array[String] = []
+	var counts := [available_item_ids.size(), 0, 0, 0]
+	for item_id in available_item_ids:
+		counts[{"equipment": 1, "consumable": 2}.get(InventoryItemOrder.category(player, item_id, consumable_ids), 3)] += 1
+	for index in category_tabs.size():
+		var tab_button: Button = category_tabs[index]
+		tab_button.button_pressed = index == filter_index
+		tab_button.text = str(counts[index])
 	for item_id in available_item_ids:
 		var category_name: String = InventoryItemOrder.category(player, item_id, consumable_ids)
 		if filter_index == 1 and category_name != "equipment":
@@ -250,10 +285,18 @@ func populate(player: PlayerCharacter, filter_index: int, sort_index: int, prefe
 			continue
 		item_ids.append(item_id)
 	InventoryItemOrder.sort_items(player, item_ids, sort_index, fallback_names)
-	bag_caption.text = "СУМКА · %d" % available_item_ids.size()
+	if sort_index == 0:
+		# "Обычно": gear first, then consumables, then resources.
+		var rank := {"equipment": 0, "consumable": 1, "other": 2}
+		var grouped: Array[String] = []
+		for wanted in [0, 1, 2]:
+			for item_id in item_ids:
+				if int(rank.get(InventoryItemOrder.category(player, item_id, consumable_ids), 2)) == wanted:
+					grouped.append(item_id)
+		item_ids = grouped
+	bag_caption.text = "СУМКА · %s" % str(CATEGORIES[clampi(filter_index, 0, CATEGORIES.size() - 1)][0]).to_upper()
 	if item_ids.is_empty():
-		var empty_message: String = "Сумка пуста." if available_item_ids.is_empty() else "Нет предметов в этой категории."
-		item_list.add_child(_label(empty_message, 10, Color(0.78, 0.82, 0.85)))
+		bag_caption.text += "  — пусто" if available_item_ids.is_empty() else ""
 	for item_id in item_ids:
 		var button := InventoryItemButton.new()
 		button.configure(player, item_id, fallback_names, fallback_descriptions, rarity_names, consumable_ids)
@@ -266,6 +309,11 @@ func populate(player: PlayerCharacter, filter_index: int, sort_index: int, prefe
 		button.hovered.connect(func(_id: String) -> void: detail.text = line + "   ·   " + hint)
 		button.unhovered.connect(func() -> void: compare_cleared.emit())
 		item_list.add_child(button)
+	# Empty cells make the bag read as a bag.
+	var shown := item_list.get_child_count()
+	var cells := maxi(MIN_ROWS * GRID_COLUMNS, int(ceil(float(shown) / GRID_COLUMNS)) * GRID_COLUMNS)
+	for index in cells - shown:
+		item_list.add_child(EmptyBagCell.new())
 
 func _populate_doll(player: PlayerCharacter) -> void:
 	for child in equipment_list.get_children():

@@ -215,6 +215,7 @@ def build() -> dict[str, Canvas]:
         "recipe_hearty_stew": scroll_icon(), "recipe_power_elixir": scroll_icon(), "recipe_swift_tonic": scroll_icon(),
         **build_combat(),
         **build_materials(),
+        **build_misc(),
         **build_fish(),
         **build_ash(),
     }
@@ -762,3 +763,99 @@ def _star_icon() -> Canvas:
     c.put(8, 8, gold[0])
     c.put(7, 7, gold[0])
     return _finish(c)
+
+
+# --- Quest items, farm goods and keys --------------------------------------
+
+def seed_pouch(seed) -> Canvas:
+    c = Canvas(16, 16)
+    cloth = ramp("#e8d4a8", "#c09a68", "#7a5a3a")
+    c.ellipse(8, 10, 4.5, 4, cloth[1])
+    c.ellipse(7, 9, 2.5, 2.2, cloth[0])
+    c.hline(6, 10, 5, cloth[2])
+    c.rect(7, 3, 3, 2, cloth[1])
+    for x, y in ((6, 10), (9, 11), (8, 9), (10, 9)):
+        c.put(x, y, hex_color(seed))
+    return _finish(c)
+
+
+def wheat_icon() -> Canvas:
+    c = Canvas(16, 16)
+    gold = ramp("#fff2b0", "#f0c860", "#b8862e")
+    for x0 in (5, 8, 11):
+        c.vline(x0, 8, 14, hex_color("#9a8a40"))
+        for y in range(3, 9):
+            c.put(x0 - (y % 2), y, gold[0 if y % 3 == 0 else 1])
+            c.put(x0 + 1 - (y % 2), y, gold[2])
+    return _finish(c)
+
+
+def berries(colors) -> Canvas:
+    c = Canvas(16, 16)
+    c.line(8, 2, 8, 6, hex_color("#5a8a40"))
+    c.put(9, 3, hex_color("#7ab050"))
+    c.put(10, 3, hex_color("#7ab050"))
+    for cx, cy in ((6, 9), (10, 9), (8, 12)):
+        c.ellipse(cx, cy, 2.4, 2.4, colors[1])
+        c.put(cx - 1, cy - 1, colors[0])
+    return _finish(c)
+
+
+def bread_icon() -> Canvas:
+    c = Canvas(16, 16)
+    crust = ramp("#ffe0a0", "#d89850", "#9a5a2a")
+    c.ellipse(8, 9, 6, 3.6, crust[1])
+    c.ellipse(7, 8, 4, 2, crust[0])
+    for x in (5, 8, 11):
+        c.line(x - 1, 9, x + 1, 7, crust[2])
+    return _finish(c)
+
+
+def key_icon(metal) -> Canvas:
+    c = Canvas(16, 16)
+    c.ellipse(5, 5, 3, 3, metal[1])
+    c.ellipse(5, 5, 1.2, 1.2, OUT)
+    c.line(7, 7, 13, 13, metal[1])
+    c.line(7, 8, 12, 13, metal[2])
+    c.put(11, 13, metal[1])
+    c.put(12, 11, metal[1])
+    c.put(4, 4, metal[0])
+    return _finish(c)
+
+
+def crate_icon() -> Canvas:
+    c = Canvas(16, 16)
+    c.rect(3, 4, 10, 9, WOOD[1])
+    c.hline(3, 12, 4, WOOD[0])
+    c.line(3, 4, 12, 12, WOOD[2])
+    c.vline(3, 4, 12, WOOD[2])
+    c.vline(12, 4, 12, WOOD[2])
+    return _finish(c)
+
+
+def build_misc() -> dict[str, Canvas]:
+    return {
+        "moonleaf": flower_icon(ramp("#f0fff8", "#a8e0d0", "#4a9a8a")),
+        "spirit_blossom": flower_icon(ramp("#fff0ff", "#f0a0e0", "#a04a9a")),
+        "echo_crystal": gem(ramp("#f0f8ff", "#a0c8ff", "#5a6ad0")),
+        "memory_crystal": gem(ramp("#fff0f8", "#e8a0d8", "#8a4aa0")),
+        "sky_shard": gem(ramp("#ffffff", "#b8f0ff", "#4a9ad8")),
+        "storm_heart": gem(ramp("#f8f0ff", "#c0a0ff", "#5a3ab0")),
+        "altar_heart": gem(ramp("#fff8e0", "#ffd080", "#c0702a")),
+        "pattern_core": gem(ramp("#ffffff", "#ffe8a0", "#e0a030")),
+        "wind_rune": essence(),
+        "keeper_echo_coast": essence(), "keeper_echo_marsh": essence(), "keeper_echo_pass": essence(),
+        "marsh_lantern": lens(),
+        "lamp_oil": potion(ramp("#fff0b0", "#f0b840", "#a06a20")),
+        "ruins_key": key_icon(IRON), "forge_key": key_icon(GOLD),
+        "skyfire_blade": sword(ramp("#fff6c8", "#ffb050", "#c8502a"), gem_color="#9cf0ff"),
+        "seed_healroot": seed_pouch("#e05a4a"), "seed_bluebell": seed_pouch("#5a8ae0"),
+        "seed_wheat": seed_pouch("#f0c860"), "seed_sunberry": seed_pouch("#ff8a3a"),
+        "wheat": wheat_icon(),
+        "sunberry": berries(ramp("#ffe0a0", "#ff8a3a", "#c04a20")),
+        "bread": bread_icon(),
+        "berry_pie": bowl_icon(ramp("#e0a0ff", "#a04ac0", "#602a80")),
+        "meteor_iron": ore(),
+        "supply_crates": crate_icon(),
+        "map_fragments": scroll_icon(),
+    }

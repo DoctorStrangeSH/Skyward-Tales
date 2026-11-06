@@ -11,7 +11,7 @@ func _require(ok: bool, message: String) -> bool:
 	return true
 
 func _item_button_text(hud: GameHud, index: int) -> String:
-	if index < 0 or index >= hud.inventory_list.get_child_count():
+	if index < 0 or index >= _item_count(hud.inventory_list):
 		return ""
 	var button: Button = hud.inventory_list.get_child(index) as Button
 	return button.summary if button is InventoryItemButton else (button.text if button != null else "")
@@ -46,21 +46,21 @@ func _run() -> void:
 	player.add_item("mana_potion")
 	var hud: GameHud = game.hud
 	hud.toggle_inventory(player)
-	if not _require(hud.inventory_list.get_child_count() == 5, "all filter should show every owned item"):
+	if not _require(_item_count(hud.inventory_list) == 5, "all filter should show every owned item"):
 		return
 
 	hud.inventory_filter.select(1)
 	hud.inventory_filter.item_selected.emit(1)
-	if not _require(hud.inventory_list.get_child_count() == 3, "equipment filter should show only gear"):
+	if not _require(_item_count(hud.inventory_list) == 3, "equipment filter should show only gear"):
 		return
-	for index in range(hud.inventory_list.get_child_count()):
+	for index in range(_item_count(hud.inventory_list)):
 		var text: String = _item_button_text(hud, index)
 		if not _require(not text.contains("Зелье здоровья") and not text.contains("Зелье маны"), "consumable leaked into equipment filter"):
 			return
 
 	hud.inventory_filter.select(2)
 	hud.inventory_filter.item_selected.emit(2)
-	if not _require(hud.inventory_list.get_child_count() == 2, "consumables filter should show both potion stacks"):
+	if not _require(_item_count(hud.inventory_list) == 2, "consumables filter should show both potion stacks"):
 		return
 	if not _require(_item_button_text(hud, 0).contains("Зелье здоровья") and _item_button_text(hud, 1).contains("Зелье маны"), "consumables filter returned unexpected items"):
 		return
@@ -84,3 +84,11 @@ func _run() -> void:
 		return
 	print("INVENTORY FILTER/SORT TEST OK: categories, localized name order and rarity priority")
 	quit(0)
+
+## Item cells only (the bag also draws empty cells).
+func _item_count(list: Control) -> int:
+	var count := 0
+	for child in list.get_children():
+		if child is InventoryItemButton:
+			count += 1
+	return count

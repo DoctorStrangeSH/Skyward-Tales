@@ -274,6 +274,7 @@ func _ready() -> void:
 	hud.skills_reset_requested.connect(reset_skills)
 	hud.dialogue_dismissed.connect(func() -> void: player.set_physics_process(true))
 	hud.can_dismiss_dialogue = func() -> bool: return not story.active
+	hud.menu_key_requested.connect(func(keycode: int) -> void: _handle_key(keycode as Key))
 	hud.skills_view.combos = combos
 	hud.dialogue_choice_selected.connect(_on_dialogue_choice_selected)
 	hud.world_map_view.travel_requested.connect(fast_travel)
@@ -455,6 +456,11 @@ func _input(event: InputEvent) -> void:
 		if _handle_key(event.keycode):
 			get_viewport().set_input_as_handled()
 			return
+	# Mouse wheel: the next / previous spell.
+	if event is InputEventMouseButton and event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
+		if get_viewport().gui_get_hovered_control() == null and not get_tree().paused and not hud.dialogue_visible and not hud.inventory_open and not hud.overlay_visible() and not hud.crafting_visible:
+			cycle_spell(1 if event.button_index == MOUSE_BUTTON_WHEEL_DOWN else -1)
+		return
 	# _input receives mouse clicks even when a Control overlays the world.
 	if event.is_action_pressed("interact"):
 		if story.active:
@@ -492,6 +498,11 @@ func _input(event: InputEvent) -> void:
 ## Returns true when the key was consumed and must not reach other handlers.
 func _handle_key(keycode: Key) -> bool:
 	var world_blocked: bool = get_tree().paused or hud.dialogue_visible
+	if hud.crafting_visible and keycode != KEY_B:
+		if keycode == KEY_E:
+			crafting.close()
+			return true
+		return keycode in [KEY_SPACE, KEY_F, KEY_1, KEY_2, KEY_3, KEY_4, KEY_Q, KEY_R, KEY_I, KEY_C, KEY_J, KEY_M, KEY_T, KEY_K]
 	match keycode:
 		KEY_M when not world_blocked:
 			if hud.inventory_open:
@@ -550,7 +561,7 @@ func _handle_key(keycode: Key) -> bool:
 			if player.start_guard():
 				player.visual.play_named("charge", 0.3)
 			return true
-		KEY_I when not world_blocked:
+		KEY_I, KEY_TAB when not world_blocked:
 			hud.toggle_inventory(player)
 			return true
 		KEY_B when not world_blocked:
@@ -1699,6 +1710,9 @@ func _on_enemy_defeated(xp_reward: int, death_position: Vector2, kind: String = 
 ## Field crafting from the bag (B): potions, whetstones and gear from
 ## monster materials, no station needed.
 func open_handcraft() -> void:
+	if crafting.is_open():
+		crafting.close()
+		return
 	if hud.inventory_open:
 		hud.toggle_inventory(player)
 	crafting.open("hand")
@@ -1881,6 +1895,7 @@ func _grant_sky_seal() -> void:
 # --- Magic ---------------------------------------------------------------
 
 func _update_spell_hud() -> void:
+	_update_mouse_slots()
 	if player.has_bow() and hud.spell_label != null:
 		var ready := cast_cooldown_remaining <= 0.0
 		hud.spell_label.text = "Лук · ПКМ · удерживать — прицельный" + (" · ГОТОВО" if ready else "")
@@ -1895,6 +1910,40 @@ func _update_spell_hud() -> void:
 		return
 	var spell: Dictionary = spell_definitions.get(selected_spell_id, {})
 	hud.update_spell(str(spell.get("name", selected_spell_id)), int(spell.get("mana_cost", 0)), player.mana, cast_cooldown_remaining, cast_cooldown_total)
+
+## ЛКМ / ПКМ squares on the action bar.
+func _update_mouse_slots() -> void:
+	var weapon := str(player.equipment.get("blade", ""))
+	var left := {"key": "ЛКМ", "icon": ("icons/%s.png" % weapon) if not weapon.is_empty() and ResourceLoader.exists("res://assets/icons/%s.png" % weapon) else "icons/skill_slash.png",
+		"name": "Меч", "tooltip": "Меч — ЛКМ, удерживать — вихрь", "cooldown": clampf(attack_cooldown / SLASH_COOLDOWN, 0.0, 1.0)}
+	var right := {}
+	if player.has_bow():
+		var bow := str(player.equipment.get("weapon", ""))
+		right = {"key": "ПКМ", "icon": "icons/%s.png" % bow, "name": "Лук", "tooltip": "Лук — ПКМ, удерживать — прицельный выстрел",
+			"cooldown": cast_cooldown_remaining / cast_cooldown_total if cast_cooldown_total > 0.0 else 0.0}
+	elif not magic_unlocked():
+		right = {"key": "ПКМ", "icon": "icons/skill_fireball.png", "name": "Магия", "tooltip": "Магия откроется по сюжету", "locked": "✦"}
+	else:
+		var spell: Dictionary = spell_definitions.get(selected_spell_id, {})
+		var cost := int(spell.get("mana_cost", 0))
+		right = {"key": "ПКМ", "icon": CombatSkills.icon_path(selected_spell_id), "name": str(spell.get("name", selected_spell_id)),
+			"tooltip": "%s — ПКМ · %d MP · колесо мыши — сменить" % [str(spell.get("name", selected_spell_id)), cost],
+			"cooldown": cast_cooldown_remaining / cast_cooldown_total if cast_cooldown_total > 0.0 else 0.0,
+			"note": str(cost), "count": 0 if player.mana < cost else -1}
+	hud.set_mouse_slots(left, right)
+
+## Wheel / Tab-free spell switching: walks the spells the hero can cast.
+func cycle_spell(step: int) -> void:
+	if not magic_unlocked() or player.has_bow():
+		return
+	var known: Array = []
+	for spell_id in spell_definitions:
+		if CombatSkills.definition(str(spell_id)).is_empty() or skills.lock_reason(str(spell_id)).is_empty():
+			known.append(str(spell_id))
+	if known.size() < 2:
+		return
+	var at := known.find(selected_spell_id)
+	select_spell(str(known[posmod(at + step, known.size())]))
 
 func select_spell(spell_id: String) -> void:
 	if not spell_definitions.has(spell_id):
