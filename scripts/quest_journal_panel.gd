@@ -11,9 +11,10 @@ var tab_buttons: Dictionary = {}
 var selected_id: String = ""
 var _quests: QuestManager
 var _player: PlayerCharacter
-const TABS := [["main", "Сюжет"], ["side", "Побочные"], ["done", "Выполненные"], ["fish", "Рыбалка"], ["ach", "Достижения"]]
+const TABS := [["main", "Сюжет"], ["side", "Побочные"], ["done", "Выполненные"], ["fish", "Рыбалка"], ["ach", "Достижения"], ["lore", "Летопись"]]
 ## The game's Achievements node (duck-typed to keep class references simple).
 var achievements: Object
+var lore_book: Object
 
 func _ready() -> void:
 	position = Vector2(30, 18)
@@ -116,6 +117,9 @@ func populate(quests: QuestManager, player: PlayerCharacter = null) -> void:
 	if tab == "fish":
 		_populate_fishing()
 		return
+	if tab == "lore":
+		_populate_lore()
+		return
 	var entries := build_entries(quests)
 	var list: Array = entries["completed"] if tab == "done" else (entries["active"] as Array).filter(func(e: Dictionary) -> bool: return e["main"] == (tab == "main"))
 	if list.is_empty():
@@ -215,6 +219,24 @@ func _populate_achievements() -> void:
 		text.add_child(_label(str(row["description"]), 8, Color(0.72, 0.76, 0.82)))
 		line.add_child(text)
 		list.add_child(line)
+
+func _populate_lore() -> void:
+	var rows: Array = lore_book.call("entries") if lore_book != null else []
+	var total: int = int(lore_book.call("total")) if lore_book != null else 0
+	entry_list.add_child(_wrapped("Летопись: %d из %d записей." % [rows.size(), total], UiStyle.TITLE))
+	entry_list.add_child(_wrapped("Рунические камни с историей мира стоят у дорог. Светящийся камень ещё не прочитан.", Color(0.7, 0.75, 0.8)))
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(330, 248)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	detail_box.add_child(scroll)
+	var list := VBoxContainer.new()
+	list.add_theme_constant_override("separation", 6)
+	scroll.add_child(list)
+	if rows.is_empty():
+		list.add_child(_wrapped("Пока пусто.", UiStyle.MUTED, 320.0))
+	for row in rows:
+		list.add_child(_label("%s · %s" % [row["title"], RegionCatalog.display_name(str(row["region"]))], 9, Color(1.0, 0.9, 0.6)))
+		list.add_child(_wrapped(str(row["text"]), Color(0.82, 0.85, 0.9), 320.0))
 
 func _populate_fishing() -> void:
 	var species: Dictionary = {}

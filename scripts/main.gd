@@ -98,6 +98,7 @@ var farm: Farm
 var buildings: VillageBuildings
 var guild: AdventurersGuild
 var achievements: Achievements
+var lore: LoreBook = LoreBook.new()
 var cast_cooldown_total: float = 0.0
 var defeated_enemies: int = 0
 var save_path: String = SAVE_SCRIPT.SAVE_PATH
@@ -147,6 +148,8 @@ func _ready() -> void:
 			hud.show_message("Илара пробудила в вас магию неба! Огненный шар — на панели навыков, ПКМ — заклинание. C — навыки.", 5.0)
 			_update_spell_hud()
 		request_autosave()
+		if quest_id.begins_with("haven_") and achievements != null:
+			achievements.add("haven")
 		if director != null:
 			director.on_quest_completed(quest_id))
 	relationships = RELATIONSHIP_SCRIPT.new()
@@ -255,6 +258,7 @@ func _ready() -> void:
 	hud.inventory_use_requested.connect(_on_inventory_use)
 	hud.inventory_view.set_skills(skills)
 	hud.journal_view.achievements = achievements
+	hud.journal_view.lore_book = lore
 	hud.inventory_unequip_requested.connect(_on_inventory_unequip)
 	hud.handcraft_requested.connect(open_handcraft)
 	hud.hero_unequip_requested.connect(func(slot: String) -> void:
@@ -432,6 +436,8 @@ func _interaction_prompt(target: Node2D) -> String:
 		return "E — %s: %s · ур. %d" % [verb, RegionCatalog.display_name(target.target_region), RegionCatalog.level(target.target_region)]
 	if target is WorldLoot:
 		return "E — подобрать"
+	if target is LoreStone:
+		return "E — прочитать руны"
 	if target is TreasureChest:
 		return "E — открыть"
 	return "E — собрать"
@@ -606,6 +612,8 @@ func state_on(state_id: String) -> bool:
 
 func _populate_region() -> void:
 	var layout := _layout()
+	for lore_data in layout.get("lore", []):
+		_spawn_lore(lore_data)
 	for npc_data in layout.get("npcs", []):
 		_spawn_npc(npc_data)
 	for npc_data in settlement.npcs_for(current_region):
@@ -1341,6 +1349,7 @@ func _spawn_npc(npc_data: Dictionary) -> void:
 		return  # Mira travels with the hero instead of waiting at camp
 	var npc := NPC_SCRIPT.new() as WorldNpc
 	npc.npc_id = npc_id
+	npc.look_id = str(npc_data.get("look", ""))
 	npc.display_name = str(npc_data.get("name", "Путник"))
 	var color: Variant = npc_data.get("outfit_color")
 	if color is Array and color.size() == 3:
@@ -1356,6 +1365,11 @@ func _spawn_npc(npc_data: Dictionary) -> void:
 		npc.interacted.connect(func(_source: Node2D) -> void: givers.talk(npc_id))
 	else:
 		push_warning("У NPC нет обработчика диалога: " + npc_id)
+	var wander: Variant = npc_data.get("wander", [])
+	if wander is Array and not (wander as Array).is_empty():
+		var walker := NpcWander.new()
+		walker.setup(self, npc, wander)
+		npc.add_child(walker)
 	if npc_id == "elder":
 		elder = npc
 
@@ -1418,6 +1432,31 @@ func _spawn_herb(spawn_position: Vector2, item_id: String = "moonleaf", label: S
 	add_child(herb)
 	herb.global_position = spawn_position
 	herb.interacted.connect(_on_herb_interacted)
+
+func _spawn_lore(lore_data: Dictionary) -> void:
+	var lore_id := str(lore_data.get("id", ""))
+	if lore.entry(lore_id).is_empty():
+		return
+	var stone := LoreStone.new()
+	stone.lore_id = lore_id
+	stone.fresh = not lore.read.has(lore_id)
+	add_child(stone)
+	stone.global_position = _vec(lore_data.get("position"))
+	stone.interacted.connect(func(_source: Node2D) -> void: read_lore(stone))
+
+## Reads a rune stone: its text in the dialogue box, the first time also an
+## entry in the Chronicle and a little experience.
+func read_lore(stone: LoreStone) -> void:
+	var data := lore.entry(stone.lore_id)
+	_show_dialogue(str(data.get("title", "Руны")), str(data.get("text", "")))
+	if lore.mark(stone.lore_id, current_region):
+		stone.fresh = false
+		stone.queue_redraw()
+		player.add_experience(15)
+		hud.show_message("Новая запись в Летописи (%d из %d) · +15 опыта" % [lore.read.size(), lore.total()], 3.0)
+		GameAudio.play("pickup", -6.0, 0.05)
+		if achievements != null:
+			achievements.add("lore")
 
 func _spawn_chest(id: String, at_position: Vector2, gold: int, item: String, amount: int, tier: String = "wood") -> void:
 	var chest := CHEST_SCRIPT.new() as TreasureChest

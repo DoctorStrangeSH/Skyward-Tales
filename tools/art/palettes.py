@@ -185,5 +185,14 @@ MAGMA = {
     "flowers": [ramp("#ffb040", "#e0601e"), ramp("#ff7a2a", "#a83a14"), ramp("#d0c0b0", "#8a7a70")],
 }
 
-STYLES = {"magma": MAGMA, "ash": ASH, "crypt": CRYPT, "mountain": MOUNTAIN, "coast": COAST, "day": DAY, "night": NIGHT, "cave": CAVE, "sky": SKY, "spires": SPIRES, "rift": RIFT, "marsh": MARSH}
+# Тихая Гавань: lush meadow, blossoming trees, lots of flowers.
+HAVEN = dict(
+    DAY,
+    grass=ramp("#1d4436", "#275c40", "#33764a", "#4c9450", "#72b45a", "#a4d468", "#d6ee8a"),
+    leaf=ramp("#4a2238", "#6e3050", "#9a4a6a", "#c86c8a", "#e898ae", "#f6bccc", "#ffe2ea"),
+    flowers=[ramp("#f4f1de", "#c9c3b0"), ramp("#f6d55c", "#c99a2e"), ramp("#f28fb1", "#b45a80"),
+             ramp("#93bcff", "#5a78c8"), ramp("#ff9a6a", "#c85a3a"), ramp("#c9a2ff", "#7b5bc4")],
+)
+
+STYLES = {"magma": MAGMA, "ash": ASH, "crypt": CRYPT, "mountain": MOUNTAIN, "coast": COAST, "day": DAY, "night": NIGHT, "cave": CAVE, "sky": SKY, "spires": SPIRES, "rift": RIFT, "marsh": MARSH, "haven": HAVEN}
 ISLAND_STYLES = ("sky", "spires", "rift")

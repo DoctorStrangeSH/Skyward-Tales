@@ -9,6 +9,15 @@ const NOTES_QUEST := "lost_cartographer_notes"
 
 var game: SkywardGame
 
+## What the hero says when picking up a quest item (default: "<name> собран.").
+const PICK_LINES := {
+	"lost_letter": "Письмо с красной печатью. Адрес размыт, но имя читается.",
+	"flour_sack": "Тяжёлый мешок муки. Пахнет праздником.",
+	"sky_seed": "Небесное семечко тёплое и чуть светится.",
+	"song_scroll": "Листок с нотами. Кто-то пел это очень давно.",
+	"lost_kitten": "Пушок мурлычет у вас на руках и ни капли не раскаивается.",
+}
+
 func _init(owner_game: SkywardGame) -> void:
 	game = owner_game
 
@@ -111,6 +120,6 @@ func _collect_quest_herb(herb: WorldCollectible) -> void:
 		return
 	quests.add_progress(required_quest, 1)
 	_collect(herb)
-	game.hud.show_message(herb.display_name + " собран.", 1.5)
+	game.hud.show_message(str(PICK_LINES.get(herb.item_id, herb.display_name + " собран.")), 2.0)
 	if quests.is_ready_to_complete(required_quest):
 		game.hud.show_message("Все предметы собраны! Вернитесь к хранителю.", 3.0)

@@ -48,6 +48,10 @@ const UNDERGROUND := ["cave", "crypt", "magma"]
 const DUNGEONS := ["crypt", "magma"]
 
 ## Caves and dungeons: no sky, no weather events.
+## Peaceful lands (the Haven): no monsters, no raids.
+static func is_peaceful(region_id: String) -> bool:
+	return bool(get_region(region_id).get("peaceful", false))
+
 static func is_underground(style_id: String) -> bool:
 	return style_id in UNDERGROUND
 
