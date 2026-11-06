@@ -95,20 +95,63 @@ func open(station_id: String) -> void:
 		game._show_dialogue(name, str(info.get("locked", "Пока здесь некому работать.")))
 		return
 	_open_station = station_id
-	var choices: Array[Dictionary] = []
-	for recipe_id in recipes_for(station_id):
-		var recipe: Dictionary = game.crafting_service.recipes[recipe_id]
-		var ok := bool(game.crafting_service.get_recipe_status(game.player, recipe_id).get("success", false))
-		choices.append({"id": "craft:" + recipe_id, "label": "%s%s — %s" % ["✓ " if ok else "", str(recipe.get("name", recipe_id)), _ingredients_text(recipe)]})
-	choices.append({"id": "craft_close", "label": "Закрыть"})
-	var hint := "Выберите, что приготовить." if station_id == "kitchen" else "Выберите, что изготовить."
+	var hint := "Что приготовить?" if station_id == "kitchen" else "Что изготовить?"
 	if station_id == "hand":
 		hint = "Ремесло в пути: из добычи с монстров и собранного."
-	game._show_dialogue_choices(name, hint + " Новые рецепты находят в сундуках и получают в награду.", choices)
+	_connect_window()
+	game.player.set_physics_process(false)
+	game.hud.crafting_view.open(game, station_id, name, hint + " Новые рецепты — в сундуках и в награду.", recipes_for(station_id))
+
+var _window_connected := false
+
+func _connect_window() -> void:
+	if _window_connected:
+		return
+	_window_connected = true
+	var window := game.hud.crafting_view
+	window.craft_requested.connect(func(recipe_id: String, times: int) -> void: craft_many(recipe_id, times))
+	window.closed.connect(close)
+
+func close() -> void:
+	_open_station = ""
+	game.hud.crafting_view.visible = false
+	game.player.set_physics_process(true)
+
+func is_open() -> bool:
+	return not _open_station.is_empty() and game.hud.crafting_view.visible
+
+## Makes the recipe up to `times` times at the open station.
+func craft_many(recipe_id: String, times: int) -> int:
+	if _open_station.is_empty() or not recipes_for(_open_station).has(recipe_id):
+		return 0
+	var made := 0
+	var last := {}
+	for i in maxi(1, times):
+		last = game.crafting_service.craft(game.player, recipe_id)
+		if not bool(last.get("success", false)):
+			break
+		made += 1
+		if game.achievements != null:
+			game.achievements.add("crafts")
+	if made > 0:
+		GameAudio.play("chest", -6.0, 0.05)
+		var output := str(last.get("item_id", ""))
+		var amount := int(last.get("amount", 1)) * made
+		var text := "Изготовлено: %s ×%d" % [game.player.get_item_name(output), amount] if not output.is_empty() else str(last.get("message", ""))
+		game.hud.show_message(text, 2.2)
+	else:
+		game.hud.show_message(str(last.get("message", "")), 2.2)
+	if game.hud.crafting_view.visible:
+		game.hud.crafting_view.open(game, _open_station, game.hud.crafting_view.title_label.text, game.hud.crafting_view.hint_label.text, recipes_for(_open_station))
+		game.hud.crafting_view.set_status(game.hud.message_label.text)
+	return made
 
 func handle_choice(choice_id: String) -> bool:
 	if choice_id == "craft_close":
-		_open_station = ""
+		if is_open():
+			close()
+		else:
+			_open_station = ""
 		game.dialogues._close()
 		return true
 	if not choice_id.begins_with("craft:"):
@@ -117,17 +160,7 @@ func handle_choice(choice_id: String) -> bool:
 	# Only what the open station offers can be made.
 	if _open_station.is_empty() or not recipes_for(_open_station).has(recipe_id):
 		return true
-	var result := game.crafting_service.craft(game.player, recipe_id)
-	game.hud.show_message(str(result.get("message", "")), 2.2)
-	if bool(result.get("success", false)):
-		GameAudio.play("chest", -6.0, 0.05)
-		if game.achievements != null:
-			game.achievements.add("crafts")
-	# Stay at the station so several things can be made in a row.
-	var station_id := _open_station
-	game.dialogues._close()
-	if not station_id.is_empty():
-		open(station_id)
+	craft_many(recipe_id, 1)
 	return true
 
 func make_snapshot() -> Dictionary:

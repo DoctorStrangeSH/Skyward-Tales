@@ -59,7 +59,7 @@ func _run() -> void:
 	game._on_dialogue_choice_selected("craft:brew_health")
 	if not _verify(int(hero.inventory.get("health_potion", 0)) == potions + 2 and not hero.inventory.has("healroot"), "the table brews potions"):
 		return
-	if not _verify(game.hud.dialogue_visible, "the station stays open for more crafting"):
+	if not _verify(game.hud.crafting_visible, "the station stays open for more crafting"):
 		return
 	game._on_dialogue_choice_selected("craft_close")
 

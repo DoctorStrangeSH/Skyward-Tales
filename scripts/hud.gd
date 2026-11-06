@@ -77,7 +77,13 @@ var skills_visible: bool = false
 var hero_visible: bool:
 	get: return inventory_open
 var fishing_view: FishingPanel
-var hotbar: HBoxContainer
+var hotbar: ActionBar
+var action_bar: ActionBar
+var crafting_view: CraftingWindow
+var crafting_visible: bool:
+	get:
+		return crafting_view != null and crafting_view.visible
+signal menu_key_requested(keycode: int)
 var hotbar_slots: Array = []
 signal hero_unequip_requested(slot: String)
 signal handcraft_requested
@@ -144,6 +150,8 @@ func _ready() -> void:
 	spell_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	spell_panel.add_theme_stylebox_override("panel", UiStyle.small_panel())
 	root.add_child(spell_panel)
+	# The action bar shows the attacks now; the panel stays for its labels.
+	spell_panel.visible = false
 	var spell_box := VBoxContainer.new()
 	spell_box.add_theme_constant_override("separation", 1)
 	spell_box.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -174,20 +182,14 @@ func _ready() -> void:
 	# The skill bar replaces the old dodge box and potion line.
 	dodge_panel.visible = false
 	inventory_label.visible = false
-	hotbar = HBoxContainer.new()
-	hotbar.add_theme_constant_override("separation", 2)
-	hotbar.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	hotbar.position = Vector2(232, 330)
-	root.add_child(hotbar)
-	for index in 7:
-		if index == 4:
-			var gap := Control.new()
-			gap.custom_minimum_size = Vector2(4, 0)
-			gap.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			hotbar.add_child(gap)
-		var slot := HotbarSlot.new()
-		hotbar.add_child(slot)
-		hotbar_slots.append(slot)
+	action_bar = ActionBar.new()
+	root.add_child(action_bar)
+	crafting_view = CraftingWindow.new()
+	root.add_child(crafting_view)
+	hotbar = action_bar
+	hotbar_slots = action_bar.slots
+	action_bar.skill_dropped.connect(func(index: int, skill_id: String) -> void: hero_assign_requested.emit(index, skill_id))
+	action_bar.menu_requested.connect(func(keycode: int) -> void: menu_key_requested.emit(keycode))
 
 	# message_label keeps the latest message (used by code and tests); the
 	# player sees the ToastStack instead.
@@ -328,6 +330,9 @@ func _process(delta: float) -> void:
 		message_time -= delta
 		if message_time <= 0.0:
 			message_label.text = ""
+	# Toasts hide under big windows (the windows show their own status).
+	if toasts != null:
+		toasts.visible = not (inventory_open or crafting_visible or journal_visible or skills_visible or bestiary_visible or world_map_visible)
 	# Big title cards hide while a window (journal, bag...) covers the screen.
 	if title_card != null and is_instance_valid(title_card):
 		title_card.visible = not (journal_view.visible or inventory_open or world_map_visible or overlay_visible())
@@ -359,6 +364,9 @@ func close_top_window() -> bool:
 			return true
 		close_dialogue()
 		dialogue_dismissed.emit()
+		return true
+	if crafting_visible:
+		crafting_view.closed.emit()
 		return true
 	if inventory_open:
 		inventory_open = false
@@ -472,6 +480,8 @@ func update_status(player: PlayerCharacter, quests: QuestManager) -> void:
 	]
 	if vitals != null:
 		vitals.set_values(player)
+	if action_bar != null:
+		action_bar.set_experience(player.level, player.experience, player.experience_to_next)
 	quest_label.text = "◆ " + quests.get_active_summary()
 	quest_tracker.refresh(quests)
 	var effects: Array[String] = []
@@ -522,6 +532,13 @@ func update_fishing(_fishing: Fishing) -> void:
 
 func hide_fishing() -> void:
 	fishing_view.visible = false
+
+## The two mouse slots: {"icon", "key", "name", "cooldown", "locked", "note"}.
+func set_mouse_slots(left: Dictionary, right: Dictionary) -> void:
+	if action_bar == null:
+		return
+	(action_bar.mouse_slots[0] as HotbarSlot).apply(left)
+	(action_bar.mouse_slots[1] as HotbarSlot).apply(right)
 
 func update_hotbar(entries: Array) -> void:
 	for index in mini(entries.size(), hotbar_slots.size()):

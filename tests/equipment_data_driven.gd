@@ -24,7 +24,7 @@ func _run() -> void:
 	}
 	hero.add_item("test_focus")
 	game.hud.toggle_inventory(hero)
-	if not _require(game.hud.inventory_list.get_child_count() == 1, "unknown catalog item is not listed"):
+	if not _require(_item_count(game.hud.inventory_list) == 1, "unknown catalog item is not listed"):
 		return
 	var item_button: Button = game.hud.inventory_list.get_child(0) as Button
 	if not _require(item_button is InventoryItemButton and item_button.summary.contains("Фокус испытания"), "catalog name is not shown"):
@@ -36,8 +36,7 @@ func _run() -> void:
 		return
 	if not _require(hero.get_spell_bonus("fireball") == 2, "new catalog item bonus was not applied"):
 		return
-	var empty_label: Label = game.hud.inventory_list.get_child(0) as Label
-	if not _require(game.hud.inventory_list.get_child_count() == 1 and empty_label != null and empty_label.text == "Сумка пуста.", "inventory did not refresh after equip"):
+	if not _require(_item_count(game.hud.inventory_list) == 0 and game.hud.inventory_view.bag_caption.text.contains("пусто"), "inventory did not refresh after equip"):
 		return
 	game._on_inventory_unequip("relic")
 	if not _require(str(hero.equipment.get("relic", "")).is_empty(), "new catalog item was not unequipped"):
@@ -45,7 +44,15 @@ func _run() -> void:
 	if not _require(int(hero.inventory.get("test_focus", 0)) == 1, "unequipped item was not returned"):
 		return
 	var returned_item_button: Button = game.hud.inventory_list.get_child(0) as Button
-	if not _require(game.hud.inventory_list.get_child_count() == 1 and returned_item_button is InventoryItemButton and returned_item_button.summary.contains("Фокус испытания"), "inventory did not refresh after unequip"):
+	if not _require(_item_count(game.hud.inventory_list) == 1 and returned_item_button is InventoryItemButton and returned_item_button.summary.contains("Фокус испытания"), "inventory did not refresh after unequip"):
 		return
 	print("DATA-DRIVEN EQUIPMENT TEST OK: catalog discovery, equip, effect, unequip and UI refresh")
 	quit(0)
+
+## Item cells only (the bag also draws empty cells).
+func _item_count(list: Control) -> int:
+	var count := 0
+	for child in list.get_children():
+		if child is InventoryItemButton:
+			count += 1
+	return count

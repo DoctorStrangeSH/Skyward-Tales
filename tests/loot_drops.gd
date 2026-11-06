@@ -83,7 +83,7 @@ func _run() -> void:
 	hero.add_item("healroot", 1)
 	var potions := int(hero.inventory.get("health_potion", 0))
 	game._handle_key(KEY_B)
-	if not game.hud.dialogue_visible:
+	if not game.hud.crafting_visible:
 		return _fail("B opens field crafting")
 	game.crafting.handle_choice("craft:hand_gel_potion")
 	if int(hero.inventory.get("health_potion", 0)) != potions + 1 or hero.inventory.has("slime_gel"):

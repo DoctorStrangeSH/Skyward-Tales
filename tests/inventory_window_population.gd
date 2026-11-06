@@ -19,7 +19,7 @@ func _run() -> void:
 	hero.add_item("health_potion", 2)
 	hero.add_item("leather_armor")
 	hud.toggle_inventory(hero)
-	if not _check(hud.inventory_list.get_child_count() == 2, "items were not rendered"):
+	if not _check(_item_count(hud.inventory_list) == 2, "items were not rendered"):
 		return
 	if not _check(hud.equipment_list.get_child_count() == 5, "equipment slots were not rendered"):
 		return
@@ -33,9 +33,17 @@ func _run() -> void:
 	if not _check(hud.comparison_panel.visible, "comparison signal not forwarded"):
 		return
 	hud.inventory_filter.item_selected.emit(2)
-	if not _check(hud.inventory_list.get_child_count() == 1, "filter not reflected in rendered items"):
+	if not _check(_item_count(hud.inventory_list) == 1, "filter not reflected in rendered items"):
 		return
 	if not _check(hud.inventory_list.get_child(0) is InventoryItemButton and hud.inventory_list.get_child(0).item_id == "health_potion", "wrong filtered item"):
 		return
 	print("INVENTORY POPULATE OK: slots, items, hover and filtering")
 	quit(0)
+
+## Item cells only (the bag also draws empty cells).
+func _item_count(list: Control) -> int:
+	var count := 0
+	for child in list.get_children():
+		if child is InventoryItemButton:
+			count += 1
+	return count
