@@ -79,7 +79,8 @@ func marker_for(npc_id: String) -> String:
 			return "ready"
 		var started: bool = bool(quests.states.get(quest_id, {}).get("started", false))
 		var unlocked: bool = npc_id in ["elder", "grove_warden", "miner"] or village_helped
-		var can_take: bool = free or (npc_id in ["grove_warden", "miner"] and quests.active_quest_id == quest_id)
+		# Side quests (Mira, Toren, Bran) can be taken alongside the story.
+		var can_take: bool = free or quests.is_side(quest_id) or (npc_id in ["grove_warden", "miner"] and quests.active_quest_id == quest_id)
 		if not started and not quests.is_completed(quest_id) and unlocked and can_take:
 			return "quest"
 	if npc_id == "hunter" and quests.is_completed("toren_wolf_hunt") and _can_craft_mantle():
@@ -255,8 +256,6 @@ func on_cartographer() -> void:
 			_say("Мира, картограф", "%s. Спасибо за дневник. Монеты — малая плата, я знаю. Но картографы богаты только бумагой." % game.relationships.get_reaction("mira"))
 	elif not quests.is_completed("moonleaf_gathering"):
 		_say("Мира, картограф", "Я ищу страницы своего дневника, но это подождёт. Сначала помоги Элиану — над окраиной туман, и людям он нужнее моих карт.")
-	elif not quests.active_quest_id.is_empty() and quests.active_quest_id != quest_id:
-		_say("Мира, картограф", "У тебя уже есть важное дело — вижу по лицу. Найди меня, когда освободишься. Я никуда не денусь: у меня тут сохнет северо-восток.")
 	elif not bool(quests.states[quest_id]["started"]):
 		quests.start_quest(quest_id)
 		_say("Мира, картограф", [{"text": "Мира сидела на земле посреди разбросанных листов и складывала их, как мозаику. Двух не хватало — это было видно с первого взгляда."}, {"speaker": "self", "text": "Ветер разметал страницы моего полевого дневника возле старого лагеря. Две самые важные — с безопасными тропами через лес."}, {"speaker": "self", "text": "Найдёшь их на поляне? Они исписаны мелко-мелко и пахнут чернилами. Ну и немного мной."}])
@@ -377,8 +376,6 @@ func on_hunter() -> void:
 		_say("Торен, охотник", "В Зачарованном лесу ещё рыщут волки. Победи трёх и возвращайся — сейчас %d из 3. Бей быстро: раненый волк страшнее здорового." % int(quests.states[quest_id].get("progress", 0)))
 	elif not quests.is_completed("moonleaf_gathering"):
 		_say("Торен, охотник", "Сначала помоги старейшине Элиану. Туман важнее волков — волки хотя бы кусаются честно.")
-	elif not quests.active_quest_id.is_empty():
-		_say("Торен, охотник", "Закончи текущее дело, тогда расскажу об охоте. Охота не любит, когда о ней думают вполглаза.")
 	else:
 		_ask("Торен, охотник", [{"text": "Торен сидел у костра на краю поселения и точил стрелы. Лук у него был старый, потёртый, но тетива — новая, тугая."}, {"speaker": "self", "text": "Я Торен, охотник. Волки спустились из леса — пыль сводит их с ума. Нападают на путников у самой дороги."}, {"speaker": "self", "text": "Поможешь проредить стаю? Трёх хватит — остальные уйдут сами."}], [
 			{"id": "hunter_quest_start", "label": "Взяться за охоту"}
@@ -386,7 +383,7 @@ func on_hunter() -> void:
 	game._refresh_hud()
 
 func _start_hunter_quest() -> void:
-	if not game.quests.is_completed("moonleaf_gathering") or not game.quests.active_quest_id.is_empty():
+	if not game.quests.is_completed("moonleaf_gathering"):
 		return
 	if game.quests.start_quest("toren_wolf_hunt"):
 		_say("Торен, охотник", "Ищи волков в Зачарованном лесу. Трёх. Они ходят парами — где один, там жди второго.")
@@ -519,7 +516,7 @@ func on_merchant() -> void:
 		choices.append({"id": "merchant_supply:clinic", "label": "Передать часть лечебнице — 15 золота"})
 	elif bool(quests.states[quest_id].get("started", false)):
 		message = "Осталось найти ящики с припасами: %d из 3. Они тяжёлые и пахнут травами — не пропустишь." % int(quests.states[quest_id].get("progress", 0))
-	elif quests.is_completed("moonleaf_gathering") and quests.active_quest_id.is_empty():
+	elif quests.is_completed("moonleaf_gathering"):
 		choices.append({"id": "merchant_quest_start", "label": "Помочь вернуть потерянные поставки"})
 	if route_open:
 		message += "\nКараван дошёл — заморские товары и скидка 10%% ещё %d дн.!" % game.world_state.days_left("trade_route")
@@ -569,8 +566,8 @@ func _sell_to_merchant(item_id: String) -> void:
 
 func _start_merchant_supply_quest() -> void:
 	const quest_id := "bran_supply_run"
-	if not game.quests.is_completed("moonleaf_gathering") or not game.quests.active_quest_id.is_empty():
-		_say("Торговец Бран", "Сначала помоги старейшине и закончи текущее дело. Тогда поговорим о поставках — я подожду, я терпеливый. Почти.")
+	if not game.quests.is_completed("moonleaf_gathering"):
+		_say("Торговец Бран", "Сначала помоги старейшине — туман важнее моих ящиков. Потом поговорим о поставках: я подожду, я терпеливый. Почти.")
 		return
 	if game.quests.start_quest(quest_id):
 		game.spawn_supply_crates()

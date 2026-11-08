@@ -296,6 +296,14 @@ func _add_hd_layer(file: String, layer_z: int) -> void:
 const SWAY_SHADER := "res://assets/shaders/foliage_sway.gdshader"
 static var _sway_materials: Dictionary = {}
 
+static var _sway_clock: float = 0.0
+
+func _process(delta: float) -> void:
+	# Pauses with the tree: the foliage stands still in the pause menu.
+	_sway_clock += delta
+	for material in _sway_materials.values():
+		(material as ShaderMaterial).set_shader_parameter("clock", _sway_clock)
+
 static func sway_material(strength: float) -> ShaderMaterial:
 	if not _sway_materials.has(strength):
 		var material := ShaderMaterial.new()

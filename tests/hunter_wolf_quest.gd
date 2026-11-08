@@ -22,7 +22,7 @@ func _run() -> void:
 	if not _verify(game.hud.dialogue_speaker_label.text.contains("Торен"), "hunter dialogue opens"):
 		return
 	game._on_dialogue_choice_selected("hunter_quest_start")
-	if not _verify(game.quests.active_quest_id == "toren_wolf_hunt", "wolf hunt starts"):
+	if not _verify(game.quests.is_active("toren_wolf_hunt"), "wolf hunt starts"):
 		return
 	game._on_enemy_defeated(5, Vector2.ZERO)
 	if not _verify(int(game.quests.states["toren_wolf_hunt"].get("progress", 0)) == 0, "non-wolf kills do not count"):

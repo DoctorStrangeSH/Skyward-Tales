@@ -36,7 +36,7 @@ func _interaction_prompt(target: Node2D) -> String:
 		var verb: String = {"cave_mouth": "войти в пещеру", "cave_exit": "выйти", "stairs_down": "спуститься", "stairs_up": "подняться"}.get(target.kind, "по мосту")
 		return "E — %s: %s · ур. %d" % [verb, RegionCatalog.display_name(target.target_region), RegionCatalog.level(target.target_region)]
 	if target is WorldLoot:
-		return "E — подобрать"
+		return "E — подобрать: %s" % (("%d золота" % target.amount) if target.item_id == "gold" else game.player.get_item_name(target.item_id) + ((" ×%d" % target.amount) if target.amount > 1 else ""))
 	if target is LoreStone:
 		return "E — прочитать руны"
 	if target is TreasureChest:
@@ -160,6 +160,8 @@ func _handle_key(keycode: Key) -> bool:
 			game.load_game()
 			return true
 		KEY_SPACE when not world_blocked and not game.hud.inventory_open:
+			if game._charging or game._bow_holding:
+				game.combat.cancel_charge()
 			if game.player.start_dodge():
 				GameAudio.play("dash", -6.0)
 				game.gear.on_dodge()

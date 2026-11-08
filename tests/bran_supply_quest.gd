@@ -27,7 +27,7 @@ func _run() -> void:
 	if not _verify(game.hud.dialogue_choices_container.get_child_count() >= 2, "merchant offers the supply quest"):
 		return
 	game._on_dialogue_choice_selected("merchant_quest_start")
-	if not _verify(game.quests.active_quest_id == "bran_supply_run", "supply quest starts"):
+	if not _verify(game.quests.is_active("bran_supply_run"), "supply quest starts"):
 		return
 	var crates: Array[Node] = []
 	for node in game.get_children():
@@ -52,7 +52,7 @@ func _run() -> void:
 	await process_frame
 	if not _verify(restored.restore_save_snapshot(snapshot), "active supply quest snapshot restores"):
 		return
-	if not _verify(restored.quests.active_quest_id == "bran_supply_run", "active quest survives restore"):
+	if not _verify(restored.quests.is_active("bran_supply_run"), "active quest survives restore"):
 		return
 	if not _verify(int(restored.quests.states["bran_supply_run"].get("progress", 0)) == 1, "collected crate progress survives save/load"):
 		return

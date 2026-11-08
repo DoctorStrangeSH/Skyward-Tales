@@ -78,7 +78,7 @@ func _inspect_story_object(herb: WorldCollectible) -> void:
 
 func _collect_supply_crate(herb: WorldCollectible) -> void:
 	var quests := game.quests
-	if quests.active_quest_id != SUPPLY_QUEST or quests.is_completed(SUPPLY_QUEST):
+	if not quests.is_active(SUPPLY_QUEST):
 		game.hud.show_message("Потерянный ящик с припасами. Бран наверняка знает, кому он принадлежит.", 2.5)
 		return
 	var crate_index := int(herb.item_id.trim_prefix("supply_crate_"))
@@ -103,7 +103,7 @@ func _mine_ore(herb: WorldCollectible) -> void:
 
 func _collect_map_fragment(herb: WorldCollectible) -> void:
 	var quests := game.quests
-	if quests.active_quest_id != NOTES_QUEST or quests.is_completed(NOTES_QUEST):
+	if not quests.is_active(NOTES_QUEST):
 		game.hud.show_message("Обрывок полевого дневника. Возможно, Мира знает, кому он принадлежит.", 2.5)
 		return
 	quests.add_progress(NOTES_QUEST, 1)

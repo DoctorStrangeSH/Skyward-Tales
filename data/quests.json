@@ -99,7 +99,8 @@
           "elder_trust": 10
         }
       }
-    }
+    },
+    "side": true
   },
   {
     "id": "lost_cartographer_notes",
@@ -131,7 +132,8 @@
           ]
         }
       }
-    }
+    },
+    "side": true
   },
   {
     "id": "toren_wolf_hunt",
@@ -165,7 +167,8 @@
           "toren_trust": 15
         }
       }
-    }
+    },
+    "side": true
   },
   {
     "id": "crystal_heart",

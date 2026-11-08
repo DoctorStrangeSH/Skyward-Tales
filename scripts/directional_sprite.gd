@@ -161,6 +161,15 @@ func play_action(texture_path: String, duration: float, frames: int = -1) -> voi
 	_action_time_left = _action_duration
 	_apply_frame()
 
+## Cuts a running action (e.g. a cancelled charge) back to the base pose.
+func stop_action() -> void:
+	if _action_time_left <= 0.0:
+		return
+	_action_time_left = 0.0
+	texture = _base_texture
+	hframes = _base_frames
+	_apply_frame()
+
 func is_playing_action() -> bool:
 	return _action_time_left > 0.0
 

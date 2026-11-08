@@ -28,6 +28,9 @@ func _ready() -> void:
 	side.offset_left = 28
 	side.offset_right = 268
 	side.add_theme_constant_override("margin_top", 54)
+	# The left column only holds the menu frame; its empty area must let
+	# clicks through to the hero creation cards underneath.
+	side.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(side)
 	var version := Label.new()
 	version.text = "v" + str(ProjectSettings.get_setting("application/config/version", "dev"))
@@ -100,6 +103,9 @@ func _set_menu_background() -> void:
 	sky.stretch_mode = TextureRect.STRETCH_SCALE
 	sky.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	sky.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# Decoration only: it must never swallow clicks meant for the menu (the
+	# boy card of the hero creation used to be unclickable — owner's list №34).
+	sky.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(sky)
 	var holder := SubViewportContainer.new()
 	holder.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)

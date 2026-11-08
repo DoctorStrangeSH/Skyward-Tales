@@ -2,8 +2,9 @@ extends Node2D
 class_name WorldLoot
 
 ## A drop on the ground. Shows the item's icon over a glow in its rarity
-## colour (rare and better also get a light beam), bobs, and flies into the
-## hero once she walks close — no button needed. "gold" is a coin pile.
+## colour (rare and better also get a light beam) and bobs. Items wait on the
+## ground until the hero picks them up with E (owner's list №10); only coins
+## ("gold") still fly into the purse when she walks close.
 
 signal collected(item_id: String, amount: int)
 
@@ -63,7 +64,7 @@ func _process(delta: float) -> void:
 	var player := _player()
 	if player != null and player.health > 0 and settle_time <= 0.0:
 		var offset := player.global_position + Vector2(0, -4) - global_position
-		if _flying or offset.length() < MAGNET_RADIUS:
+		if item_id == "gold" and (_flying or offset.length() < MAGNET_RADIUS):
 			_flying = true
 			if offset.length() < PICKUP_RADIUS:
 				interact()

@@ -4,6 +4,8 @@ class_name PlayerCharacter
 signal stats_changed
 signal level_up(new_level: int)
 signal died
+## Sprint or a roll while a charged attack is held cancels it.
+signal charge_cancelled
 
 const DIRECTIONAL_SPRITE_SCRIPT := preload("res://scripts/directional_sprite.gd")
 const HERO_SHEET := "res://assets/sprites/characters/hero_8dir_walk.png"
@@ -16,6 +18,8 @@ const EQUIPMENT_DATA_PATH := "res://data/equipment.json"
 @export var dodge_duration: float = 0.20
 @export var dodge_cooldown: float = 0.85
 
+## True while a charged sword whirl / aimed shot is held: the hero stands still.
+var charge_rooted: bool = false
 var health: int = 100
 var mana: int = 60
 var level: int = 1
@@ -151,6 +155,14 @@ func _physics_process(_delta: float) -> void:
 	else:
 		mana_regen_accumulator = 0.0
 	var direction := Input.get_vector("move_left", "move_right", "move_up", "move_down")
+	# A charged attack roots the hero (owner's list №20); sprinting breaks it.
+	if charge_rooted:
+		if Input.is_action_pressed("sprint") and direction.length_squared() > 0.01:
+			charge_cancelled.emit()
+		else:
+			velocity = Vector2.ZERO
+			visual.set_moving(false)
+			return
 	var moving := direction.length_squared() > 0.01
 	if moving:
 		facing = direction.normalized()

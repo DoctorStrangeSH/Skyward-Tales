@@ -153,6 +153,7 @@ func _ready() -> void:
 	quests.quest_completed.connect(func(quest_id: String) -> void:
 		GameAudio.play("quest", -2.0, 0.0)
 		_refresh_dynamic_props.call_deferred()
+		_clear_quest_items(quest_id)
 		if quest_id == "main_guardian" and director != null and director.story_mode() and not director.has_flag("magic_unlocked"):
 			director.set_flag("magic_unlocked")
 			_place_spell_on_hotbar("fireball")
@@ -262,6 +263,7 @@ func _ready() -> void:
 	player.stats_changed.connect(_refresh_hud)
 	player.level_up.connect(_on_level_up)
 	player.died.connect(_on_player_died)
+	player.charge_cancelled.connect(func() -> void: combat.cancel_charge())
 	player.recipe_learned.connect(func(recipe_item: String) -> void:
 		hud.show_message("Выучен рецепт: " + player.get_item_name(recipe_item).trim_prefix("Рецепт: "), 3.0)
 		GameAudio.play("quest", -4.0, 0.0))
@@ -734,6 +736,24 @@ func _herb_quest(herb_data: Dictionary) -> String:
 	var own := str(herb_data.get("quest", ""))
 	return own if not own.is_empty() else RegionCatalog.herb_quest(current_region)
 
+## A finished quest takes its leftovers off the ground (owner's list №16):
+## spare herbs, pages, crates and other pickups that belong to it.
+const QUEST_PICKUP_IDS := {"lost_cartographer_notes": "map_fragment", "bran_supply_run": "supply_crate_"}
+
+func _clear_quest_items(quest_id: String) -> void:
+	for node in get_children():
+		if not node is WorldCollectible or node.is_queued_for_deletion():
+			continue
+		var belongs: bool = node.quest_id == quest_id
+		if node.quest_id.is_empty() and RegionCatalog.herb_quest(current_region) == quest_id and not node.item_id.begins_with("iron_ore_node_") and node.item_id != "meteor_iron":
+			belongs = true
+		var prefix := str(QUEST_PICKUP_IDS.get(quest_id, ""))
+		if not prefix.is_empty() and node.item_id.begins_with(prefix):
+			belongs = true
+		if belongs and story_object(node.item_id).is_empty():
+			Vfx.sparkle(self, node.global_position)
+			node.queue_free()
+
 ## A quest just started: its herbs and enemies in this region appear now.
 func _on_quest_started(quest_id: String) -> void:
 	request_autosave()
@@ -1094,7 +1114,38 @@ func _on_miner_interacted(_source: Node2D) -> void:
 		dialogues.on_miner()
 
 func _on_dialogue_choice_selected(choice_id: String) -> void:
+	if choice_id == "knock_wait":
+		hud.close_dialogue()
+		player.set_physics_process(true)
+		wait_until_morning()
+		return
+	if choice_id == "knock_leave":
+		hud.close_dialogue()
+		player.set_physics_process(true)
+		return
 	dialogues.handle_choice(choice_id)
+
+## Sleeping villagers do not talk (owner's list №8): a knock gets a sleepy
+## mumble, and the hero may wait for the morning.
+const KNOCK_LINES := [
+	"Из-за двери доносится сонное бормотание: «Утром… всё утром…» — и снова тишина.",
+	"Ты стучишь. Где-то внутри скрипит кровать, кто-то вздыхает — и поворачивается на другой бок.",
+	"За дверью темно и тихо. Только мерно, спокойно, кто-то похрапывает.",
+]
+
+func knock_on_door(npc: WorldNpc) -> void:
+	player.set_physics_process(false)
+	_show_dialogue_choices(npc.display_name + " (спит)", str(KNOCK_LINES[randi() % KNOCK_LINES.size()]), [
+		{"id": "knock_wait", "label": "Подождать до утра"},
+		{"id": "knock_leave", "label": "Не будить"}])
+
+## Skips the night: the sky fades and it is morning.
+func wait_until_morning() -> void:
+	hud.flash_screen(Color(0.02, 0.02, 0.06, 1.0), 1.2)
+	if day_night.time >= 0.25:
+		day_night.day += 1
+	day_night.time = 0.28
+	hud.show_message("Ты дожидаешься утра. Деревня просыпается.", 3.0)
 
 func _on_herb_interacted(source: Node2D) -> void:
 	pickups.handle(source as WorldCollectible)
@@ -1281,7 +1332,7 @@ func _on_story_boss_defeated(kind: String, xp: int, death_position: Vector2) -> 
 	request_autosave()
 
 func _on_wolf_defeated(xp_reward: int, death_position: Vector2, elite: bool = false) -> void:
-	if quests.active_quest_id == "toren_wolf_hunt" and not quests.is_completed("toren_wolf_hunt"):
+	if quests.is_active("toren_wolf_hunt"):
 		quests.add_progress("toren_wolf_hunt", 1)
 		var progress: int = int(quests.states["toren_wolf_hunt"].get("progress", 0))
 		hud.show_message("Волк побеждён! Охота: %d/3." % progress, 2.0)

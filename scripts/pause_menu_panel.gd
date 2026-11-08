@@ -84,10 +84,26 @@ func _ready() -> void:
 		resolutions.append(GameSettings.resolution_label(index))
 	resolution_picker = _picker(settings_page, "Разрешение", resolutions, GameSettings.resolution_index())
 	window_picker = _picker(settings_page, "Режим", GameSettings.WINDOW_MODES, GameSettings.window_mode_index())
+	# Resolution sizes the window; full screen and borderless always use the
+	# monitor's own resolution, so the picker is off there (owner's list №37).
+	var display_hint := _label("", 8, Color(0.75, 0.78, 0.85))
+	display_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	display_hint.custom_minimum_size = Vector2(180, 0)
+	settings_page.add_child(display_hint)
+	var refresh_hint := func() -> void:
+		var windowed := window_picker.selected == 0
+		resolution_picker.disabled = not windowed
+		if windowed:
+			var size: Vector2i = DisplayServer.window_get_size() if DisplayServer.get_name() != "headless" else GameSettings.RESOLUTIONS[resolution_picker.selected]
+			display_hint.text = "Окно: %d × %d" % [size.x, size.y]
+		else:
+			display_hint.text = "Полный экран — родное разрешение монитора."
 	var apply := func(_index: int) -> void:
 		GameSettings.set_display(resolution_picker.selected, window_picker.selected)
+		refresh_hint.call_deferred()
 	resolution_picker.item_selected.connect(apply)
 	window_picker.item_selected.connect(apply)
+	refresh_hint.call()
 	_button(settings_page, "Показать советы заново", func() -> void: GameSettings.reset_tips())
 	_button(settings_page, "Назад", func() -> void: show_page(main_page))
 	show_page(main_page)

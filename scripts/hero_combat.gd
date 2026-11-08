@@ -84,6 +84,7 @@ func _attack_pressed() -> void:
 
 func _attack_released() -> void:
 	game._attack_holding = false
+	game.player.charge_rooted = false
 	if game._charging:
 		game._charging = false
 		game.sword_spin()
@@ -97,6 +98,7 @@ func _update_sword(delta: float) -> void:
 		game._attack_held += delta
 		if game._attack_held >= SkywardGame.CHARGE_TIME - 0.15 * float(game.player.talents.get("whirl_master", 0)) and game.player.health > 0:
 			game._charging = true
+			game.player.charge_rooted = true
 			game.player.visual.play_named("charge", 30.0)
 			Vfx.sparkle(game, game.player.global_position + Vector2(0, -8))
 
@@ -265,12 +267,14 @@ func _update_bow(delta: float) -> void:
 	var before := game._bow_held
 	game._bow_held += delta
 	if before < SkywardGame.AIM_TIME and game._bow_held >= SkywardGame.AIM_TIME:
+		game.player.charge_rooted = true
 		Vfx.sparkle(game, game.player.global_position + Vector2(0, -10))
 
 func _bow_release() -> void:
 	if not game._bow_holding:
 		return
 	game._bow_holding = false
+	game.player.charge_rooted = false
 	var aimed := game._bow_held >= SkywardGame.AIM_TIME
 	var damage := game.player.get_ranged_damage() * (2 if aimed else 1)
 	var pierce := (99 if game.player.wears_base("wind_bow") else 2) if aimed else 0
@@ -328,3 +332,15 @@ func _cast_spell() -> void:
 	game.cast_cooldown_total = float(spell.get("cooldown", 0.25)) * game.player.get_cooldown_multiplier()
 	game.cast_cooldown_remaining = game.cast_cooldown_total
 	game._update_spell_hud()
+
+## Sprint or a roll while charged: the charge is lost, nothing fires.
+func cancel_charge() -> void:
+	var was := game._charging or game._bow_holding
+	game._charging = false
+	game._attack_holding = false
+	game._bow_holding = false
+	game._bow_held = 0.0
+	game._attack_held = 0.0
+	game.player.charge_rooted = false
+	if was and game.player.visual != null:
+		game.player.visual.stop_action()

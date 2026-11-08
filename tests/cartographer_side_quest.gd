@@ -44,7 +44,7 @@ func _run() -> void:
 	game.quests.add_progress("moonleaf_gathering", 3)
 	game.quests.complete_quest("moonleaf_gathering")
 	cartographer.interact()
-	if not _verify(game.quests.active_quest_id == "lost_cartographer_notes", "cartographer quest starts after main quest"):
+	if not _verify(game.quests.is_active("lost_cartographer_notes"), "cartographer quest starts after main quest"):
 		return
 	game.story.advance()
 	if not _verify(game.hud.dialogue_label.text.contains("страницы моего полевого дневника"), "quest introduction dialogue"):

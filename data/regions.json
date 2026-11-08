@@ -1129,9 +1129,9 @@
     "gates": [
       {
         "target": "greenreach",
-        "position": [1120, 205],
+        "position": [40, 430],
         "arrival": [1840, 470],
-        "label": "Возврат к Зелёным Пределам"
+        "label": "Тропа к Зелёным Пределам"
       },
       {
         "target": "crystal_caves",

@@ -40,7 +40,8 @@ func _run() -> void:
 			return
 
 	game.quests.start_quest("toren_wolf_hunt")
-	if not _verify(d.marker_for("cartographer") == "" and d.marker_for("merchant") == "", "others wait while a quest is active"):
+	# Side quests run side by side (owner's list №12): the others still offer theirs.
+	if not _verify(d.marker_for("cartographer") == "quest" and d.marker_for("merchant") == "quest", "side quests run side by side"):
 		return
 	game.quests.add_progress("toren_wolf_hunt", 3)
 	if not _verify(d.marker_for("hunter") == "ready", "hunter shows ? when wolves are done"):

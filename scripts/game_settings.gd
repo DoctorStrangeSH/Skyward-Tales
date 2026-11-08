@@ -87,6 +87,9 @@ static func apply_display() -> void:
 		_:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 			DisplayServer.window_set_flag(DisplayServer.WINDOW_FLAG_BORDERLESS, false)
+			# A maximized window ignores resizing: restore it first.
+			if DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_MAXIMIZED:
+				DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 			var size: Vector2i = RESOLUTIONS[resolution_index()]
 			var screen := DisplayServer.window_get_current_screen()
 			var usable := DisplayServer.screen_get_usable_rect(screen)

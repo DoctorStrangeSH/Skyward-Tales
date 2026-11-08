@@ -49,6 +49,10 @@ func _ready() -> void:
 	queue_redraw()
 
 func interact() -> void:
+	# Asleep behind a door: no conversation, only a sleepy answer to a knock.
+	if asleep and get_parent() != null and get_parent().has_method("knock_on_door"):
+		get_parent().knock_on_door(self)
+		return
 	interacted.emit(self)
 
 ## A short line in a bubble above the head.

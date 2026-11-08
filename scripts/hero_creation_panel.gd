@@ -43,6 +43,15 @@ func _ready() -> void:
 	box.add_child(name_label)
 	name_edit = LineEdit.new()
 	name_edit.max_length = 14
+	# Typing replaces the default name instead of appending to it.
+	name_edit.select_all_on_focus = true
+	name_edit.focus_entered.connect(func() -> void:
+		if not _name_touched:
+			name_edit.select_all.call_deferred())
+	name_edit.gui_input.connect(func(event: InputEvent) -> void:
+		if event is InputEventMouseButton and not event.pressed and not _name_touched:
+			name_edit.select_all.call_deferred())
+	name_edit.placeholder_text = "Введите имя"
 	name_edit.text_changed.connect(func(_t: String) -> void: _name_touched = true)
 	box.add_child(name_edit)
 	var start := Button.new()
