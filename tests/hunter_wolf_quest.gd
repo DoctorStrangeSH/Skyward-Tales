@@ -18,6 +18,7 @@ func _run() -> void:
 	game.quests.add_progress("moonleaf_gathering", 3)
 	game.quests.complete_quest("moonleaf_gathering")
 	game._on_hunter_interacted(null)
+	game.story.skip()
 	if not _verify(game.hud.dialogue_speaker_label.text.contains("Торен"), "hunter dialogue opens"):
 		return
 	game._on_dialogue_choice_selected("hunter_quest_start")

@@ -54,7 +54,7 @@ func _run() -> void:
 	if not _verify(player.gold == gold + 8 and not player.inventory.has("wolf_pelt"), "selling via dialogue works"):
 		return
 	game._on_dialogue_choice_selected("merchant_sell:back")
-	if not _verify(game.hud.dialogue_visible and game.hud.dialogue_label.text.contains("Чем могу помочь"), "back returns to the shop"):
+	if not _verify(game.hud.dialogue_visible and game.hud.dialogue_label.text.contains("лавку Брана"), "back returns to the shop"):
 		return
 	print("MERCHANT SELLING OK: offers, prices, equipped protection, trust bonus, dialogue")
 	quit(0)

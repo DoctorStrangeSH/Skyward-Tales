@@ -46,7 +46,8 @@ func _run() -> void:
 	cartographer.interact()
 	if not _verify(game.quests.active_quest_id == "lost_cartographer_notes", "cartographer quest starts after main quest"):
 		return
-	if not _verify(game.hud.dialogue_label.text.contains("два обрывка"), "quest introduction dialogue"):
+	game.story.advance()
+	if not _verify(game.hud.dialogue_label.text.contains("страницы моего полевого дневника"), "quest introduction dialogue"):
 		return
 	_close_dialogue(game)
 	var fragments := _find_fragments(game)
@@ -72,6 +73,7 @@ func _run() -> void:
 	var old_mana_potions: int = int(game.player.inventory.get("mana_potion", 0))
 	cartographer = _find_cartographer(game)
 	cartographer.interact()
+	game.story.skip()
 	if not _verify(game.hud.dialogue_visible and game.hud.dialogue_choices_container.get_child_count() == 2, "two reward choices are shown"):
 		return
 	if not _verify(not game.quests.is_completed("lost_cartographer_notes"), "quest waits for player choice"):

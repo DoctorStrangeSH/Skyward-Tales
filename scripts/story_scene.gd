@@ -40,6 +40,23 @@ func _init(owner_game: SkywardGame) -> void:
 func has_scene(id: String) -> bool:
 	return scenes.has(id)
 
+## A conversation with an NPC told like a scene (several windows, a
+## narrator): steps may name the speaker "self" — the NPC being talked to.
+func play_steps(steps: Array, self_id: String, self_name: String, on_finished: Callable = Callable()) -> bool:
+	var resolved: Array = []
+	for step in steps:
+		if step is String:
+			resolved.append({"speaker": self_id, "text": step})
+			continue
+		var copy: Dictionary = (step as Dictionary).duplicate(true)
+		if str(copy.get("speaker", "")) == "self":
+			copy["speaker"] = self_id
+		resolved.append(copy)
+	if not self_id.is_empty() and not speakers.has(self_id):
+		speakers[self_id] = self_name
+	scenes["_talk"] = {"steps": resolved}
+	return play("_talk", on_finished)
+
 func play(id: String, on_finished: Callable = Callable()) -> bool:
 	if not scenes.has(id):
 		push_warning("Неизвестная сцена: " + id)

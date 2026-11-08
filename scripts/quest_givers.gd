@@ -28,6 +28,10 @@ func _speaker(npc_id: String) -> String:
 func _line(npc_id: String, quest_id: String, key: String) -> String:
 	return StoryText.format(str(givers[npc_id].get("lines", {}).get(quest_id, {}).get(key, "")))
 
+## The line as written in the data: a String, variants or scene steps.
+func _raw(npc_id: String, quest_id: String, key: String) -> Variant:
+	return givers[npc_id].get("lines", {}).get(quest_id, {}).get(key, "")
+
 ## The quest this giver is about right now, or "" when everything is done.
 func current_quest(npc_id: String) -> String:
 	for quest_id in givers[npc_id].get("quests", []):
@@ -79,28 +83,29 @@ func talk(npc_id: String) -> void:
 	var speaker := _speaker(npc_id)
 	var quest_id := current_quest(npc_id)
 	if quest_id.is_empty():
-		game._show_dialogue(speaker, StoryText.format(str(givers[npc_id].get("idle", "Спасибо тебе за всё."))))
+		game.talk_line(npc_id, speaker, givers[npc_id].get("idle", "Спасибо тебе за всё."))
 		return
 	if quests.is_ready_to_complete(quest_id):
 		quests.complete_quest(quest_id)
 		var summary := game.dialogues._grant_reward(quests.get_reward(quest_id))
 		var reward: Dictionary = quests.get_reward(quest_id)
-		game._show_dialogue(speaker, _line(npc_id, quest_id, "done"))
+		game.talk_line(npc_id, speaker, _raw(npc_id, quest_id, "done"))
 		game.hud.show_message("Задание выполнено: %s · +%d опыта, +%d золота%s" % [quests.definitions[quest_id].get("title", ""), int(reward.get("experience", 0)), int(reward.get("gold", 0)), summary], 3.5)
 		game._refresh_hud()
 		game.update_npc_markers()
 		return
 	if bool(quests.states[quest_id]["started"]):
-		game._show_dialogue(speaker, _line(npc_id, quest_id, "progress"))
+		game.talk_line(npc_id, speaker, _raw(npc_id, quest_id, "progress"))
 		return
 	if not _unlocked(quest_id):
-		game._show_dialogue(speaker, StoryText.format(str(givers[npc_id].get("busy", "Приходи позже — сейчас мне нечем тебя занять."))))
+		game.talk_line(npc_id, speaker, givers[npc_id].get("busy", "Приходи позже — сейчас мне нечем тебя занять."))
 		return
 	var choices: Array[Dictionary] = [
 		{"id": "giver_accept:" + quest_id, "label": "Взяться за дело"},
 		{"id": "giver_later", "label": "Не сейчас"},
 	]
-	game._show_dialogue_choices(speaker, _line(npc_id, quest_id, "offer"), choices)
+	var lines: Dictionary = givers[npc_id].get("lines", {}).get(quest_id, {})
+	game.talk_line(npc_id, speaker, _raw(npc_id, quest_id, "offer"), choices, str(lines.get("ask", "")))
 
 func handle_choice(choice_id: String) -> bool:
 	if choice_id == "giver_later":

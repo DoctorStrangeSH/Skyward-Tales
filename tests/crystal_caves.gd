@@ -58,6 +58,7 @@ func _run() -> void:
 	if not _verify(game.dialogues.marker_for("miner") == "ready", "Dorn shows a ? marker"):
 		return
 	game._on_miner_interacted(null)
+	game.story.skip()
 	if not _verify(game.hud.dialogue_choices_container.get_child_count() == 2, "Dorn offers two rewards"):
 		return
 	game._on_dialogue_choice_selected("miner_reward:lens")

@@ -1143,6 +1143,36 @@ func _vary_line(speaker: String, message: String) -> String:
 	_last_said[key] = line
 	return line
 
+## Book-style talk (8 ноября 2026): `line` is a String (one window), an
+## Array of Strings (one of them, at random — everyday variety) or an Array of
+## steps (a small scene with a narrator; speaker "self" is this NPC). With
+## `choices`, the answers come after the last window, asking `prompt`.
+func talk_line(npc_id: String, speaker: String, line: Variant, choices: Array[Dictionary] = [], prompt: String = "") -> void:
+	if line is Array and not (line as Array).is_empty() and (line as Array)[0] is Dictionary:
+		var steps: Array = line
+		if choices.is_empty():
+			story.play_steps(steps, npc_id, speaker)
+			return
+		var ask := prompt
+		if ask.is_empty():
+			# The last speech becomes the question.
+			ask = str(steps[-1].get("text", "")) if steps[-1] is Dictionary else str(steps[-1])
+			steps = steps.slice(0, steps.size() - 1)
+		story.play_steps(steps, npc_id, speaker, func() -> void: _show_dialogue_choices(speaker, ask, choices))
+		return
+	if line is Array:
+		# Everyday variety: one variant (itself a line or a small scene).
+		var variants: Array = line
+		if variants.is_empty():
+			return
+		talk_line(npc_id, speaker, variants[randi() % variants.size()], choices, prompt)
+		return
+	var text := str(line)
+	if choices.is_empty():
+		_show_dialogue(speaker, text)
+	else:
+		_show_dialogue_choices(speaker, text if prompt.is_empty() else prompt, choices)
+
 func _show_dialogue_choices(speaker: String, message: String, choices: Array[Dictionary]) -> void:
 	player.set_physics_process(false)
 	var formatted: Array[Dictionary] = []

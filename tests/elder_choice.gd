@@ -17,6 +17,7 @@ func _run() -> void:
 	game.quests.start_quest("moonleaf_gathering")
 	game.quests.add_progress("moonleaf_gathering", 3)
 	game._on_elder_interacted(null)
+	game.story.skip()
 	if not _verify(game.hud.dialogue_visible, "elder offers a dialogue choice after collecting leaves"):
 		return
 	if not _verify(game.hud.dialogue_label.text.contains("поселению"), "elder explains the village dilemma"):

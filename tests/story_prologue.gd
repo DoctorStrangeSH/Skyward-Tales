@@ -92,6 +92,7 @@ func _run() -> void:
 	game.quests.add_progress("moonleaf_gathering", 3)
 	game.hud.close_dialogue()
 	game._on_elder_interacted(null)
+	game.story.skip()
 	if not _verify(game.hud.dialogue_label.text.contains("спасла"), "gendered verb in Elian's reward line"):
 		return
 
