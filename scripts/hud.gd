@@ -629,7 +629,7 @@ func set_prompt(message: String) -> void:
 const PORTRAITS := {"Элиан": "elder", "Мира": "cartographer", "Бран": "merchant", "Торен": "hunter", "Борин": "blacksmith", "Илара": "grove_warden", "Дорн": "miner", "Ориэн": "archivist", "Вейл": "vail", "Ведана": "herbalist", "Лира": "alchemist", "Ярош": "settler_woodcutter", "Марта": "settler_cook", "Ульф": "settler_fisher", "Морен": "keeper", "Гунхильд": "smith_master", "Игнат": "ash_hermit", "Аэлла": "aella"}
 
 func _set_speaker(speaker: String) -> void:
-	dialogue_speaker_label.text = speaker
+	dialogue_speaker_label.text = "" if speaker == StoryScene.NARRATOR else speaker
 	var portrait: Texture2D = null
 	for key in PORTRAITS:
 		if speaker.contains(key):
@@ -667,6 +667,12 @@ func show_scene_line(speaker: String, message: String, portrait_path: String) ->
 	dialogue_speaker_label.text = speaker
 	_set_portrait(portrait_path)
 	dialogue_label.text = message
+	# The narrator reads like the author's text in a book: no name, softer
+	# and cooler than the characters' lines.
+	var narrator := speaker == StoryScene.NARRATOR
+	dialogue_label.self_modulate = Color(0.8, 0.88, 1.05) if narrator else Color.WHITE
+	if narrator:
+		dialogue_speaker_label.text = ""
 	dialogue_hint_label.text = "E — дальше"
 	dialogue_panel.visible = true
 	dialogue_visible = true
@@ -747,6 +753,7 @@ func show_dialogue(speaker: String, message: String) -> void:
 	dialogue_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_clear_dialogue_choices()
 	_set_speaker(speaker)
+	dialogue_label.self_modulate = Color.WHITE
 	dialogue_label.text = message
 	dialogue_hint_label.text = "E — продолжить"
 	dialogue_panel.visible = true
@@ -757,6 +764,7 @@ func show_dialogue_choices(speaker: String, message: String, choices: Array[Dict
 	dialogue_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	_clear_dialogue_choices()
 	_set_speaker(speaker)
+	dialogue_label.self_modulate = Color.WHITE
 	dialogue_label.text = message
 	dialogue_hint_label.text = "Выберите ответ · E — закрыть"
 	for choice in choices:

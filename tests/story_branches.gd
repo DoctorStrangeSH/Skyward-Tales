@@ -63,7 +63,8 @@ func _run() -> void:
 	if not game.director.has_flag("vail_pity"):
 		return _fail("pity remembered")
 	story.play("elder_truth")
-	story.advance()
+	for i in 3:
+		story.advance()
 	if not _texts(story).any(func(t: String) -> bool: return t.contains("пожалел")):
 		return _fail("Elian remembers the hero's pity")
 	story.skip()
