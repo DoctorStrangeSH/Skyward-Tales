@@ -111,6 +111,8 @@ func _marker_quest(npc_id: String) -> String:
 # --- Choice routing ------------------------------------------------------
 
 func handle_choice(choice_id: String) -> void:
+	if game.story != null and game.story.handle_choice(choice_id):
+		return
 	if game.givers != null and game.givers.handle_choice(choice_id):
 		return
 	if game.borin != null and game.borin.handle_choice(choice_id):

@@ -398,9 +398,93 @@ MUSIC = {
 }
 
 
+# --- ambience (looping beds, Этап 18 tech debt) --------------------------------
+
+AMB_LEN = 16.0
+
+
+def _loopable(x: np.ndarray, fade: float = 1.0) -> np.ndarray:
+    """Crossfades the tail into the head so the loop has no seam."""
+    n = int(SR * fade)
+    head, body, tail = x[:n], x[n:-n], x[-n:]
+    ramp = np.linspace(0.0, 1.0, n)
+    mixed = tail * (1.0 - ramp) + head * ramp
+    return np.concatenate([body, mixed])
+
+
+def amb_wind():
+    n = noise(AMB_LEN + 2, 101)
+    slow = 0.55 + 0.45 * np.sin(2 * np.pi * t_axis(AMB_LEN + 2) / 7.0) * np.sin(2 * np.pi * t_axis(AMB_LEN + 2) / 3.1 + 1.0)
+    x = sweep_lowpass(n, 280, 900, 40) * slow
+    return _loopable(lowpass(x, 1200), 1.0)
+
+
+def amb_waves():
+    t = t_axis(AMB_LEN + 2)
+    n = noise(AMB_LEN + 2, 202)
+    swell = np.clip(np.sin(2 * np.pi * t / 4.0), 0, 1) ** 2 + 0.25 * np.clip(np.sin(2 * np.pi * t / 2.7 + 2), 0, 1) ** 3
+    x = bandpass(n, 200, 2600) * (0.15 + swell)
+    return _loopable(x, 1.0)
+
+
+def amb_birds():
+    base = 0.25 * lowpass(noise(AMB_LEN + 2, 303), 500)
+    rng = random.Random(7)
+    t = 0.4
+    while t < AMB_LEN:
+        f0 = rng.uniform(2200, 3800)
+        for k in range(rng.randint(2, 5)):
+            dur = rng.uniform(0.05, 0.12)
+            tt = t_axis(dur)
+            chirp = np.sin(2 * np.pi * (f0 + rng.uniform(-400, 600) * tt / dur) * tt) * env(len(tt), 0.005, 0.05)
+            place(base, 0.35 * chirp, t + k * 0.13)
+        t += rng.uniform(0.9, 2.6)
+    return _loopable(base, 1.0)
+
+
+def amb_night():
+    base = 0.2 * lowpass(noise(AMB_LEN + 2, 404), 400)
+    rng = random.Random(9)
+    t = 0.2
+    while t < AMB_LEN:
+        dur = 0.35
+        tt = t_axis(dur)
+        trill = np.sin(2 * np.pi * 4300 * tt) * (0.5 + 0.5 * np.sign(np.sin(2 * np.pi * 38 * tt))) * env(len(tt), 0.02, 0.1)
+        place(base, 0.12 * trill, t)
+        t += rng.uniform(0.5, 1.1)
+    return _loopable(base, 1.0)
+
+
+def amb_cave():
+    base = 0.35 * lowpass(noise(AMB_LEN + 2, 505), 160)
+    rng = random.Random(11)
+    t = 0.5
+    while t < AMB_LEN:
+        f = rng.uniform(900, 1700)
+        tt = t_axis(0.25)
+        drip = np.sin(2 * np.pi * f * (1 + 0.6 * np.exp(-tt * 30)) * tt) * np.exp(-tt * 22)
+        place(base, 0.4 * drip, t)
+        t += rng.uniform(1.2, 3.4)
+    return _loopable(echo(base, 0.18, 0.3, 3)[:int(SR * (AMB_LEN + 2))], 1.0)
+
+
+def amb_fire():
+    base = 0.4 * lowpass(noise(AMB_LEN + 2, 606), 700)
+    rng = random.Random(13)
+    t = 0.1
+    while t < AMB_LEN:
+        crack = highpass(noise(0.03, rng.randint(0, 9999)), 1500) * env(int(SR * 0.03), 0.001, 0.02)
+        place(base, 0.5 * crack, t)
+        t += rng.uniform(0.08, 0.6)
+    return _loopable(base, 1.0)
+
+
+AMBIENCE = {"wind": amb_wind, "waves": amb_waves, "birds": amb_birds, "night": amb_night, "cave": amb_cave, "fire": amb_fire}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--only", choices=["sfx", "music"])
+    parser.add_argument("--only", choices=["sfx", "music", "ambience"])
     args = parser.parse_args()
     if args.only in (None, "sfx"):
         for name, fn in SFX.items():
@@ -410,6 +494,10 @@ def main() -> int:
         for name, (bpm, prog, scale, seed, style) in MUSIC.items():
             write_ogg(OUT / "music" / f"{name}.ogg", build_track(name, bpm, prog, scale, seed, style))
             print(f"  music/{name}.ogg")
+    if args.only in (None, "ambience"):
+        for name, fn in AMBIENCE.items():
+            write_ogg(OUT / "ambience" / f"{name}.ogg", normalize(fn(), 0.6))
+            print(f"  ambience/{name}.ogg")
     return 0
 
 

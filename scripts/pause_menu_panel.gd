@@ -78,6 +78,7 @@ func _ready() -> void:
 	shake_toggle = _toggle(settings_page, "Тряска экрана", "screen_shake")
 	music_slider = _slider(settings_page, "Музыка", "music_volume")
 	sfx_slider = _slider(settings_page, "Звуки", "sfx_volume")
+	_slider(settings_page, "Окружение", "ambience_volume")
 	var resolutions: Array = []
 	for index in GameSettings.RESOLUTIONS.size():
 		resolutions.append(GameSettings.resolution_label(index))

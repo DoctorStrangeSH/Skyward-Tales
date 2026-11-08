@@ -130,6 +130,34 @@ func _has_world_obstacle(direction: Vector2, distance: float) -> bool:
 	query.exclude = [get_rid()]
 	return not get_world_2d().direct_space_state.intersect_ray(query).is_empty()
 
+## Pathfinding (tech debt): when a wall stands between the foe and its goal,
+## it follows the navigation mesh of the land; otherwise it goes straight.
+const NAV_REFRESH := 0.4
+var _nav_path: PackedVector2Array = PackedVector2Array()
+var _nav_clock: float = 0.0
+var _nav_goal: Vector2 = Vector2.INF
+
+func _line_blocked(target: Vector2) -> bool:
+	var query := PhysicsRayQueryParameters2D.create(global_position, target, 4)
+	query.exclude = [get_rid()]
+	return not get_world_2d().direct_space_state.intersect_ray(query).is_empty()
+
+func _nav_direction(target: Vector2, fallback: Vector2, delta: float) -> Vector2:
+	_nav_clock -= delta
+	if _nav_clock <= 0.0 or target.distance_to(_nav_goal) > 24.0:
+		_nav_clock = NAV_REFRESH
+		_nav_goal = target
+		_nav_path = PackedVector2Array()
+		if _line_blocked(target):
+			var nav_map := get_world_2d().navigation_map
+			if NavigationServer2D.map_get_iteration_id(nav_map) > 0:
+				_nav_path = NavigationServer2D.map_get_path(nav_map, global_position, target, true)
+	while _nav_path.size() > 0 and global_position.distance_to(_nav_path[0]) < 8.0:
+		_nav_path.remove_at(0)
+	if _nav_path.is_empty():
+		return fallback
+	return (_nav_path[0] - global_position).normalized()
+
 func _avoid_world_obstacles(desired: Vector2, delta: float = 0.016) -> Vector2:
 	if desired.length_squared() < 0.0001:
 		steering_detour_time = 0.0
@@ -182,7 +210,7 @@ func _physics_process(delta: float) -> void:
 	match brain_state:
 		BrainState.CHASE:
 			if distance_to_player > attack_range:
-				desired = _shape_chase(offset.normalized(), delta)
+				desired = _shape_chase(_nav_direction(player.global_position, offset.normalized(), delta), delta)
 			elif attack_cooldown <= 0.0 and blind_time_left <= 0.0 and player.has_method("take_damage"):
 				if attack_windup_duration > 0.0 or attack_lunge_duration > 0.0:
 					_start_special_attack(offset.normalized())
@@ -196,7 +224,7 @@ func _physics_process(delta: float) -> void:
 			if home_offset.length() <= return_tolerance:
 				brain_state = BrainState.IDLE
 			else:
-				desired = home_offset.normalized()
+				desired = _nav_direction(home_position, home_offset.normalized(), delta)
 	if desired.length_squared() > 0.001:
 		var steered: Vector2 = _avoid_world_obstacles(desired, delta)
 		velocity = steered * move_speed * slow_factor

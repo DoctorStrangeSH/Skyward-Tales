@@ -99,6 +99,11 @@ var buildings: VillageBuildings
 var guild: AdventurersGuild
 var expeditions: Expeditions
 var ship: SkyShip
+## Modules split out of this file (tech debt): hero combat, input, region building.
+var combat: HeroCombat = HeroCombat.new(self)
+var builder: WorldBuilder = WorldBuilder.new(self)
+var maps: MapTracker = MapTracker.new(self)
+var input_handler: GameInput = GameInput.new(self)
 var factions: Factions
 var fates: IslandFates
 var party: Party
@@ -368,7 +373,28 @@ func update_music() -> void:
 			GameAudio.music("boss")
 			return
 	var style := RegionCatalog.style(current_region)
+	update_ambience()
 	GameAudio.music({"night": "night", "cave": "caves", "sky": "sky", "spires": "sky", "rift": "night", "marsh": "night", "coast": "sky", "mountain": "caves", "crypt": "caves", "ash": "night", "magma": "boss"}.get(style, "meadow"))
+
+## The background bed of the land: wind on the islands, waves on the coast,
+## birds by day and crickets by night, drips in caves, crackling in ash.
+func ambience_for(region_id: String, night: bool) -> String:
+	match RegionCatalog.style(region_id):
+		"cave", "crypt":
+			return "cave"
+		"ash", "magma":
+			return "fire"
+		"coast":
+			return "waves"
+		"sky", "spires", "rift", "mountain":
+			return "wind"
+	return "night" if night else "birds"
+
+var _ambience_clock: float = 0.0
+
+func update_ambience() -> void:
+	var night := day_night != null and day_night.night_here()
+	GameAudio.ambience(ambience_for(current_region, night))
 
 func shake(strength: float, duration: float) -> void:
 	if not GameSettings.get_bool("screen_shake"):
@@ -399,6 +425,10 @@ func _process(delta: float) -> void:
 	if player == null or hud == null or game_over:
 		return
 	_process_respawns(delta)
+	_ambience_clock -= delta
+	if _ambience_clock <= 0.0:
+		_ambience_clock = 2.0
+		update_ambience()
 	if fates != null:
 		fates.tick(delta)
 	_tick_autosave(delta)
@@ -440,185 +470,16 @@ func _process(delta: float) -> void:
 		interact_prompt.show_for(nearby_interactable, text.trim_prefix("E — "))
 
 func _interaction_prompt(target: Node2D) -> String:
-	if target is GatherNode:
-		return "E — " + target.verb if target.available else "E — пусто"
-	if target is CraftStation:
-		return "E — " + ("готовить" if target.station_id == "kitchen" else "мастерить")
-	if target is DungeonDoor:
-		return "E — печать" if not target.levers.is_empty() else "E — открыть"
-	if target is ContractBoard:
-		return "E — доска заказов"
-	if target is DigSpot:
-		return "E — копать"
-	if target is PatternRift:
-		return "E — закрыть разлом"
-	if target is FarmBed:
-		return farm.prompt(target.index)
-	if target is SettlementObject and target.kind == "door":
-		return target.label
-	if target is DungeonLever:
-		return "E — опустить рычаг"
-	if target is SettlementObject:
-		return "E — доска поселения"
-	if target is WorldNpc:
-		return "E — постучать" if target.asleep else "E — поговорить"
-	if target is RegionGate:
-		var verb: String = {"cave_mouth": "войти в пещеру", "cave_exit": "выйти", "stairs_down": "спуститься", "stairs_up": "подняться"}.get(target.kind, "по мосту")
-		return "E — %s: %s · ур. %d" % [verb, RegionCatalog.display_name(target.target_region), RegionCatalog.level(target.target_region)]
-	if target is WorldLoot:
-		return "E — подобрать"
-	if target is LoreStone:
-		return "E — прочитать руны"
-	if target is TreasureChest:
-		return "E — открыть"
-	if "prompt" in target:
-		return "E — " + str(target.get("prompt"))
-	return "E — собрать"
+	return input_handler._interaction_prompt(target)
 
 # --- Input ---------------------------------------------------------------
 
 func _input(event: InputEvent) -> void:
-	if game_over or (hud != null and (hud.talent_visible or hud.defeat_visible)):
-		return
-	if fishing != null and fishing.active():
-		# While fishing only E / LMB (hook and reel) and cancel keys matter.
-		if event.is_action_pressed("interact") or event.is_action_pressed("attack"):
-			fishing.press()
-			get_viewport().set_input_as_handled()
-		elif event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_ESCAPE, KEY_W, KEY_A, KEY_S, KEY_D, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT]:
-			fishing.cancel()
-			get_viewport().set_input_as_handled()
-		return
-	if event is InputEventKey and not event.pressed and event.keycode == KEY_F:
-		player.end_guard()
-	if event is InputEventKey and event.pressed and not event.echo:
-		if _handle_key(event.keycode):
-			get_viewport().set_input_as_handled()
-			return
-	# Mouse wheel: the next / previous spell.
-	if event is InputEventMouseButton and event.pressed and event.button_index in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN]:
-		if get_viewport().gui_get_hovered_control() == null and not get_tree().paused and not hud.dialogue_visible and not hud.inventory_open and not hud.overlay_visible() and not hud.crafting_visible:
-			cycle_spell(1 if event.button_index == MOUSE_BUTTON_WHEEL_DOWN else -1)
-		return
-	# _input receives mouse clicks even when a Control overlays the world.
-	if event.is_action_pressed("interact"):
-		if story.active:
-			story.advance()
-		elif hud.dialogue_visible:
-			hud.close_dialogue()
-			player.set_physics_process(true)
-		else:
-			_try_interact()
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("attack") or event.is_action_released("attack"):
-		if get_viewport().gui_get_hovered_control() != null:
-			return
-		if not get_tree().paused and not hud.dialogue_visible and not hud.inventory_open and not hud.overlay_visible():
-			if event.is_pressed():
-				_attack_pressed()
-			else:
-				_attack_released()
-			get_viewport().set_input_as_handled()
-	elif event.is_action_released("cast_spell") and _bow_holding:
-		_bow_release()
-		get_viewport().set_input_as_handled()
-	elif event.is_action_pressed("cast_spell"):
-		# Clicks on buttons (dialogue choices, menus) must reach the GUI, so the
-		# click is consumed only when it really casts a spell.
-		if get_viewport().gui_get_hovered_control() != null:
-			return
-		if not get_tree().paused and not hud.dialogue_visible and not hud.inventory_open and not hud.overlay_visible():
-			if player.has_bow():
-				_bow_press()
-			else:
-				_cast_spell()
-			get_viewport().set_input_as_handled()
+	input_handler._input(event)
 
 ## Returns true when the key was consumed and must not reach other handlers.
 func _handle_key(keycode: Key) -> bool:
-	var world_blocked: bool = get_tree().paused or hud.dialogue_visible
-	if hud.crafting_visible and keycode != KEY_B:
-		if keycode == KEY_E:
-			crafting.close()
-			return true
-		return keycode in [KEY_SPACE, KEY_F, KEY_1, KEY_2, KEY_3, KEY_4, KEY_Q, KEY_R, KEY_I, KEY_C, KEY_J, KEY_M, KEY_T, KEY_K]
-	match keycode:
-		KEY_M when not world_blocked:
-			if hud.inventory_open:
-				hud.toggle_inventory(player)
-			_close_books()
-			_update_minimap()
-			open_map()
-			return true
-		KEY_K when not world_blocked:
-			if hud.skills_visible:
-				hud.toggle_skill_tree(player)
-			if hud.inventory_open:
-				hud.toggle_inventory(player)
-			if hud.journal_visible:
-				hud.toggle_journal(quests, player)
-			hud.toggle_bestiary(bestiary_entries, discovered_enemies)
-			return true
-		KEY_C when not world_blocked:
-			if not hud.inventory_open:
-				_close_books()
-			hud.toggle_hero_panel(player, skills)
-			return true
-		KEY_T when not world_blocked:
-			if hud.inventory_open:
-				hud.toggle_inventory(player)
-			if hud.bestiary_visible:
-				hud.toggle_bestiary(bestiary_entries, discovered_enemies)
-			if hud.journal_visible:
-				hud.toggle_journal(quests, player)
-			hud.toggle_skill_tree(player)
-			return true
-		KEY_J when not world_blocked:
-			if hud.skills_visible:
-				hud.toggle_skill_tree(player)
-			if hud.inventory_open:
-				hud.toggle_inventory(player)
-			if hud.bestiary_visible:
-				hud.toggle_bestiary(bestiary_entries, discovered_enemies)
-			hud.toggle_journal(quests, player)
-			return true
-	if hud.overlay_visible():
-		return false
-	match keycode:
-		KEY_F6 when not world_blocked:
-			save_game()
-			return true
-		KEY_F9 when not world_blocked:
-			load_game()
-			return true
-		KEY_SPACE when not world_blocked and not hud.inventory_open:
-			if player.start_dodge():
-				GameAudio.play("dash", -6.0)
-				gear.on_dodge()
-			return true
-		KEY_F when not world_blocked and not hud.inventory_open:
-			if player.start_guard():
-				player.visual.play_named("charge", 0.3)
-			return true
-		KEY_I, KEY_TAB when not world_blocked:
-			hud.toggle_inventory(player)
-			return true
-		KEY_B when not world_blocked:
-			open_handcraft()
-			return true
-	if hud.inventory_open:
-		return false
-	match keycode:
-		KEY_Q:
-			_use_consumable("health_potion")
-		KEY_R:
-			_use_consumable("mana_potion")
-		KEY_1, KEY_2, KEY_3, KEY_4:
-			if not world_blocked:
-				skills.use_slot(keycode - KEY_1)
-				hud.update_hotbar(skills.hotbar_entries())
-			return true
-	return false
+	return input_handler._handle_key(keycode)
 
 # --- Regions -------------------------------------------------------------
 
@@ -644,64 +505,7 @@ func state_on(state_id: String) -> bool:
 	return (world_state != null and world_state.has(state_id)) or director.has_flag(state_id)
 
 func _populate_region() -> void:
-	var layout := _layout()
-	for lore_data in layout.get("lore", []):
-		_spawn_lore(lore_data)
-	for npc_data in layout.get("npcs", []):
-		_spawn_npc(npc_data)
-	for npc_data in settlement.npcs_for(current_region):
-		_spawn_npc(npc_data)
-	_spawn_settlement()
-	for spot in layout.get("contract_boards", []):
-		var board := ContractBoard.new()
-		add_child(board)
-		board.global_position = _vec(spot)
-		board.used.connect(func(_b: ContractBoard) -> void: contracts.open_board())
-	treasure.spawn_mark()
-	epilogue.spawn_rift()
-	village.on_region_ready()
-	for node_data in layout.get("resource_nodes", []):
-		var node_id := str(node_data.get("id", ""))
-		if not bool(gathered_resource_nodes.get(node_id, false)):
-			_spawn_herb(_vec(node_data.get("position")), node_id, str(node_data.get("name", node_id)))
-	_spawn_pending_supply_crates(layout)
-	spawn_story_objects()
-	_spawn_pending_map_fragments(layout)
-	for chest_data in layout.get("chests", []):
-		_spawn_chest(str(chest_data.get("id", "")), _vec(chest_data.get("position")), int(chest_data.get("gold", 0)), str(chest_data.get("item", "")), int(chest_data.get("amount", 0)), str(chest_data.get("tier", "wood")))
-	for herb_data in layout.get("herbs", []):
-		# Quest items only appear once their quest is taken.
-		if not quests.is_active(_herb_quest(herb_data)):
-			continue
-		_spawn_herb(_vec(herb_data.get("position")), str(herb_data.get("id", "moonleaf")), str(herb_data.get("name", "Лунный лист")), str(herb_data.get("quest", "")))
-	for enemy_data in layout.get("enemies", []):
-		# "quest": only while that quest is open (unique side bosses).
-		var needs := str(enemy_data.get("quest", ""))
-		if not needs.is_empty() and not quests.is_active(needs):
-			continue
-		if not layout_allows(enemy_data):
-			continue
-		_spawn_layout_enemy(enemy_data)
-	_spawn_waystone(layout)
-	_spawn_gathering(layout)
-	_spawn_dynamic_props(layout)
-	_spawn_dungeon(layout)
-	var boss: Dictionary = layout.get("boss", {})
-	if not boss.is_empty() and quests.is_completed(str(boss.get("after_quest", ""))):
-		spawn_region_boss()
-	for gate_data in layout.get("gates", []):
-		_spawn_gate(str(gate_data.get("target", "")), _vec(gate_data.get("position")), _vec(gate_data.get("arrival")), str(gate_data.get("label", "")))
-	buildings.spawn_mercenary()
-	buildings.reveal_chests()
-	guild.spawn_target()
-	if current_region == Expeditions.REGION:
-		expeditions.populate()
-	legends.on_region_ready()
-	ship.populate()
-	fates.populate()
-	deep_rifts.populate()
-	party.ensure_follower()
-	party.apply_mira()
+	builder._populate_region()
 
 ## Ordinary monsters come back a while after they fall (bosses, quest foes,
 ## legends and event foes do not).
@@ -710,16 +514,7 @@ var _respawns: Array = []
 var _play_clock: float = 0.0
 
 func _spawn_layout_enemy(enemy_data: Dictionary) -> SlimeEnemy:
-	var kind := str(enemy_data.get("kind", "slime"))
-	var enemy := spawn_enemy(kind, _vec(enemy_data.get("position")), str(enemy_data.get("elite", "?")))
-	if kind == "ore_golem" and enemy != null:
-		enemy.defeated.connect(func(_xp: int) -> void: mine.on_leader_defeated())
-	if enemy == null or enemy_data.has("quest") or kind in STORY_BOSSES or kind in ["guardian", "ore_golem"]:
-		return enemy
-	var region_id := current_region
-	enemy.defeated.connect(func(_xp: int) -> void:
-		_respawns.append({"region": region_id, "data": enemy_data, "at": _play_clock + ENEMY_RESPAWN}))
-	return enemy
+	return builder._spawn_layout_enemy(enemy_data)
 
 func _process_respawns(delta: float) -> void:
 	_play_clock += delta
@@ -745,76 +540,25 @@ func _process_respawns(delta: float) -> void:
 			enemy.create_tween().tween_property(enemy, "modulate:a", 1.0, 0.8)
 
 func _spawn_pending_supply_crates(layout: Dictionary) -> void:
-	var state: Dictionary = quests.states.get("bran_supply_run", {})
-	if not bool(state.get("started", false)) or quests.is_completed("bran_supply_run"):
-		return
-	var collected: Array = state.get("collected_crates", [])
-	var positions: Array = layout.get("supply_crates", [])
-	for index in range(positions.size()):
-		if not collected.has(index):
-			_spawn_herb(_vec(positions[index]), "supply_crate_%d" % index, "Потерянный ящик с припасами")
+	builder._spawn_pending_supply_crates(layout)
 
 func spawn_supply_crates() -> void:
-	var positions: Array = _layout("greenreach").get("supply_crates", [])
-	for index in range(positions.size()):
-		_spawn_herb(_vec(positions[index]), "supply_crate_%d" % index, "Потерянный ящик с припасами")
+	builder.spawn_supply_crates()
 
 func _spawn_pending_map_fragments(layout: Dictionary) -> void:
-	var positions: Array = layout.get("map_fragments", [])
-	if positions.is_empty() or quests.is_completed("lost_cartographer_notes"):
-		return
-	var state: Dictionary = quests.states.get("lost_cartographer_notes", {})
-	var target: int = int(quests.definitions.get("lost_cartographer_notes", {}).get("target", 2))
-	var remaining: int = target - (int(state.get("progress", 0)) if bool(state.get("started", false)) else 0)
-	for index in range(clampi(remaining, 0, positions.size())):
-		_spawn_herb(_vec(positions[index]), "map_fragment", "Обрывок полевого дневника")
+	builder._spawn_pending_map_fragments(layout)
 
 func spawn_region_boss() -> void:
-	var boss: Dictionary = _layout().get("boss", {})
-	if not boss.is_empty():
-		spawn_enemy(str(boss.get("kind", "guardian")), _vec(boss.get("position")))
+	builder.spawn_region_boss()
 
 func reveal_secret(region_id: String, marker_id: String) -> void:
-	var markers: Dictionary = discovered_landmarks.get(region_id, {})
-	if markers.has(marker_id):
-		return
-	var position_data: Variant = _layout(region_id).get("secrets", {}).get(marker_id)
-	if position_data == null:
-		push_warning("Неизвестная секретная отметка: " + marker_id)
-		return
-	var pos := _vec(position_data)
-	markers[marker_id] = {"position": [pos.x, pos.y], "kind": "secret"}
-	discovered_landmarks[region_id] = markers
-	if current_region == region_id:
-		_update_minimap()
+	builder.reveal_secret(region_id, marker_id)
 
 func _clear_region_actors() -> void:
-	for node in get_children():
-		if node is WorldNpc and node.is_companion:
-			continue
-		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is SettlementObject or node is GatherNode or node is CraftStation or node is DungeonDoor or node is SpikeTrap or node is FlameVent or node is DungeonLever or node is ContractBoard or node is DigSpot or node is PatternRift or node is Caravan or node is Arrow or node is SnareTrap or node is SpiritAlly or node is CrystalTotem or node is FarmBed or node is FarmPatch or node is MagicBolt or node is EnemyMagicOrb or node.is_in_group("region_actor"):
-			remove_child(node)
-			node.queue_free()
-	elder = null
-	nearby_interactable = null
-	_respawns.clear()
+	builder._clear_region_actors()
 
 func _set_region(region_id: String, arrival: Vector2, notify: bool = true) -> void:
-	current_region = RegionCatalog.resolve(region_id)
-	visited_regions[current_region] = true
-	if achievements != null:
-		achievements.set_max("regions", visited_regions.size())
-	_clear_region_actors()
-	if world != null and world.has_method("configure_region"):
-		world.set("allows", layout_allows)
-		world.configure_region(current_region)
-	_populate_region()
-	update_music.call_deferred()
-	player.global_position = arrival
-	_place_companion()
-	if notify and hud != null:
-		hud.show_message("Локация: " + RegionCatalog.display_name(current_region), 2.5)
-	_refresh_hud()
+	builder._set_region(region_id, arrival, notify)
 
 ## New adventure: identity from character creation, then the prologue.
 ## Этап 18: «Новая игра+» — the story starts over, the hero keeps level,
@@ -862,19 +606,7 @@ func start_new_story(hero_name: String, gender: String) -> void:
 
 ## Places story objects whose quest is active (skips ones already present).
 func spawn_story_objects() -> void:
-	for object_data in _layout().get("story_objects", []):
-		if not layout_allows(object_data):
-			continue
-		var object_id := str(object_data.get("id", ""))
-		var quest_id := str(object_data.get("quest", ""))
-		if not bool(quests.states.get(quest_id, {}).get("started", false)) or quests.is_completed(quest_id):
-			continue
-		var present := false
-		for actor in get_children():
-			if actor is WorldCollectible and actor.item_id == object_id and not actor.is_queued_for_deletion():
-				present = true
-		if not present:
-			_spawn_herb(_vec(object_data.get("position")), object_id, str(object_data.get("name", "")))
+	builder.spawn_story_objects()
 
 ## Finale of Act III: after the Voice of the Pattern falls, the hero decides.
 func offer_finale() -> void:
@@ -930,16 +662,7 @@ func story_object(item_id: String) -> Dictionary:
 	return {}
 
 func _apply_camera_limits() -> void:
-	var camera := player.get_node_or_null("Camera2D") as Camera2D
-	if camera == null or world == null or not world.has_method("map_size"):
-		return
-	var size: Vector2 = world.map_size()
-	# On floating islands the camera may look past the rim into the sky.
-	var view := 110 if world.has_method("has_apron") and world.has_apron() else 0
-	camera.limit_left = -view
-	camera.limit_top = -view
-	camera.limit_right = int(size.x) + view
-	camera.limit_bottom = int(size.y) + view
+	builder._apply_camera_limits()
 
 func _on_region_travel(target_region: String, arrival: Vector2) -> void:
 	var gate_data := RegionCatalog.gate(current_region, target_region)
@@ -1030,169 +753,47 @@ func spawn_quest_enemies(quest_id: String) -> void:
 			spawn_enemy(str(enemy_data.get("kind", "slime")), _vec(enemy_data.get("position")), str(enemy_data.get("elite", "")))
 
 func _spawn_waystone(layout: Dictionary) -> void:
-	var spot: Variant = layout.get("waystone", null)
-	if not spot is Array:
-		return
-	var stone := WAYSTONE_SCRIPT.new() as Waystone
-	stone.region_id = current_region
-	add_child(stone)
-	stone.global_position = _vec(spot)
-	stone.set_awake(waystone_awake(current_region))
-	stone.used.connect(_on_waystone_used)
+	builder._spawn_waystone(layout)
 
 # --- Dungeons: locked doors and spike traps ----------------------------------
 
 func _spawn_dungeon(layout: Dictionary) -> void:
-	for entry in layout.get("doors", []):
-		var door := DUNGEON_DOOR_SCRIPT.new() as DungeonDoor
-		door.door_id = str(entry.get("id", ""))
-		door.key_item = str(entry.get("key", ""))
-		for lever_id in entry.get("levers", []):
-			door.levers.append(str(lever_id))
-		door.is_open = bool(opened_doors.get(door.door_id, false))
-		add_child(door)
-		door.global_position = _vec(entry.get("position"))
-		door.used.connect(_on_door_used)
-	for spot in layout.get("traps", []):
-		var trap: Node2D
-		if spot is Dictionary and str(spot.get("kind", "")) == "vent":
-			trap = FlameVent.new()
-			spot = spot.get("position")
-		else:
-			trap = SPIKE_TRAP_SCRIPT.new() as SpikeTrap
-		add_child(trap)
-		trap.global_position = _vec(spot)
-	for entry in layout.get("levers", []):
-		var lever := DungeonLever.new()
-		lever.lever_id = str(entry.get("id", ""))
-		lever.pulled = bool(opened_doors.get(lever.lever_id, false))
-		add_child(lever)
-		lever.global_position = _vec(entry.get("position"))
-		lever.used.connect(_on_lever_used)
+	builder._spawn_dungeon(layout)
 
 ## Pulling a lever; seals open once all their levers are down.
 func _on_lever_used(lever: DungeonLever) -> void:
-	if lever.pulled:
-		return
-	opened_doors[lever.lever_id] = true
-	lever.set_pulled(true)
-	GameAudio.play("chest", -4.0, 0.1)
-	shake(1.5, 0.15)
-	for node in get_children():
-		if node is DungeonDoor and not node.is_open and not node.levers.is_empty():
-			var done: int = node.levers.filter(func(id: String) -> bool: return bool(opened_doors.get(id, false))).size()
-			if done >= node.levers.size():
-				opened_doors[node.door_id] = true
-				node.set_open(true)
-				shake(3.0, 0.3)
-				hud.show_message("Где-то с грохотом открылась печать!", 3.0)
-			else:
-				hud.show_message("Рычаг опущен. Печать: %d из %d." % [done, node.levers.size()], 2.5)
-	request_autosave()
+	builder._on_lever_used(lever)
 
 func _on_door_used(door: DungeonDoor) -> void:
-	if door.is_open:
-		return
-	if not door.levers.is_empty():
-		var done: int = door.levers.filter(func(id: String) -> bool: return bool(opened_doors.get(id, false))).size()
-		hud.show_message("Печать держат рычаги: опущено %d из %d. Найдите остальные." % [done, door.levers.size()], 3.0)
-		return
-	if not player.remove_item(door.key_item, 1):
-		hud.show_message("Заперто. Нужен ключ: %s." % player.get_item_name(door.key_item), 2.5)
-		return
-	opened_doors[door.door_id] = true
-	door.set_open(true)
-	GameAudio.play("chest", -2.0, 0.0)
-	shake(2.0, 0.2)
-	hud.show_message("Решётка поднимается!", 2.0)
-	request_autosave()
+	builder._on_door_used(door)
 
 ## Landmarks that change with quests (the lighthouse lights up).
 func _spawn_dynamic_props(layout: Dictionary) -> void:
-	for entry in layout.get("dynamic_props", []):
-		var lit := quests.is_completed(str(entry.get("lit_quest", "")))
-		var object := SETTLEMENT_OBJECT_SCRIPT.new() as SettlementObject
-		object.kind = "house"
-		object.art = str(entry.get("lit_art", "")) if lit else str(entry.get("art", ""))
-		object.set_meta("dynamic", true)
-		add_child(object)
-		object.global_position = _vec(entry.get("position"))
+	builder._spawn_dynamic_props(layout)
 
 func _refresh_dynamic_props() -> void:
-	for node in get_children():
-		if node is SettlementObject and node.has_meta("dynamic"):
-			remove_child(node)
-			node.queue_free()
-	_spawn_dynamic_props(_layout())
+	builder._refresh_dynamic_props()
 
 # --- Gathering and crafting stations -----------------------------------------
 
 func _spawn_gathering(layout: Dictionary) -> void:
-	_spawn_gathering_entries(layout.get("gather", []))
-	_spawn_craft_stations()
+	builder._spawn_gathering(layout)
 
 ## only_state: spawn just the entries that need this world state (they appear
 ## mid-visit, e.g. the rich veins of a freed mine).
 func _spawn_gathering_entries(entries: Array, only_state: String = "") -> void:
-	for index in range(entries.size()):
-		var entry: Dictionary = entries[index]
-		if not layout_allows(entry):
-			continue
-		if not only_state.is_empty() and str(entry.get("requires_state", "")) != only_state:
-			continue
-		var info := crafting.kind(str(entry.get("kind", "")))
-		if info.is_empty():
-			continue
-		var node := GATHER_NODE_SCRIPT.new() as GatherNode
-		node.key = "%s:%d" % [current_region, index]
-		node.kind = str(entry.get("kind", ""))
-		node.display_name = str(info.get("name", node.kind))
-		node.art = str(info.get("art", "gather_wood"))
-		node.verb = str(info.get("verb", "собрать"))
-		add_child(node)
-		node.global_position = _vec(entry.get("position"))
-		node.set_ready(crafting.is_ready(node.key))
-		node.used.connect(crafting.gather)
+	builder._spawn_gathering_entries(entries, only_state)
 
 func _spawn_craft_stations() -> void:
-	var stations: Dictionary = crafting.data.get("placements", {}).get(current_region, {})
-	for station_id in stations:
-		var info := crafting.station(str(station_id))
-		var station := CRAFT_STATION_SCRIPT.new() as CraftStation
-		station.station_id = str(station_id)
-		station.display_name = str(info.get("name", station_id))
-		station.art = str(info.get("art", ""))
-		add_child(station)
-		station.global_position = _vec(stations[station_id])
-		station.used.connect(func(s: CraftStation) -> void: crafting.open(s.station_id))
+	builder._spawn_craft_stations()
 
 # --- Settlement: board, plots and houses in the village ----------------------
 
 func _spawn_settlement() -> void:
-	if current_region != settlement.village_region():
-		return
-	var board_pos: Array = settlement.data.get("board", {}).get("position", [0, 0])
-	_spawn_settlement_object("board", "village_board", Vector2(float(board_pos[0]), float(board_pos[1])))
-	for entry in settlement.data.get("plots", []):
-		var p: Array = entry.get("position", [0, 0])
-		var plot_id := str(entry.get("id", ""))
-		var art := "village_plot"
-		var kind := "plot"
-		if settlement.homes.has(plot_id):
-			art = str(settlement.settler(str(settlement.homes[plot_id])).get("house", "village_house_small"))
-			kind = "house"
-		_spawn_settlement_object(kind, art, Vector2(float(p[0]), float(p[1])))
-	farm.spawn()
-	buildings.spawn()
+	builder._spawn_settlement()
 
 func _spawn_settlement_object(kind: String, art: String, at: Vector2) -> void:
-	var object := SETTLEMENT_OBJECT_SCRIPT.new() as SettlementObject
-	object.kind = kind
-	object.art = art
-	add_child(object)
-	object.global_position = at
-	if kind == "board":
-		object.used.connect(func(_o: SettlementObject) -> void: settlement.open_board())
+	builder._spawn_settlement_object(kind, art, at)
 
 ## A village building grew a level (settlement.upgrade).
 func on_building_upgraded(building_id: String) -> void:
@@ -1236,20 +837,7 @@ func _on_waystone_used(stone: Waystone) -> void:
 
 ## The map (M). From a sky stone it opens on the world tab, ready to travel.
 func open_map(world_tab: bool = false) -> void:
-	quest_nav.refresh()
-	hud.open_world_map(current_region, player.global_position, discovered_landmarks.get(current_region, {}), quests.get_active_summary())
-	var live := minimap_markers()
-	live.append_array(treasure.minimap_marker())
-	live.append_array(epilogue.minimap_marker())
-	live.append_array(deep_rifts.minimap_marker())
-	live.append_array(quest_nav.minimap_markers())
-	hud.world_map.set_live(live, player.facing)
-	var destinations := travel_destinations()
-	hud.world_map_view.set_destinations(current_region, destinations)
-	var goal := quest_nav.main_region()
-	hud.world_map_view.set_world(current_region, visited_regions, destinations, quest_nav.region_badges(), QuestNav.route(current_region, goal) if not goal.is_empty() else [])
-	if world_tab:
-		hud.world_map_view.show_world(true)
+	maps.open_map(world_tab)
 
 ## Fast travel to an awakened stone. Refused during a boss fight.
 func fast_travel(region_id: String) -> bool:
@@ -1267,93 +855,25 @@ const MINIMAP_DISCOVER := 160.0
 var _minimap_clock: float = 0.0
 
 func _update_minimap() -> void:
-	_discover_landmarks()
-	quest_nav.refresh()
-	_draw_minimap()
+	maps._update_minimap()
 
 func _discover_landmarks() -> void:
-	var region_markers: Dictionary = discovered_landmarks.get(current_region, {})
-	for actor in get_children():
-		var kind := _landmark_kind(actor)
-		if kind.is_empty():
-			continue
-		if player.global_position.distance_squared_to(actor.global_position) > MINIMAP_DISCOVER * MINIMAP_DISCOVER:
-			continue
-		var marker_id: String = "%s_%d_%d" % [kind, int(actor.global_position.x), int(actor.global_position.y)]
-		if not region_markers.has(marker_id):
-			region_markers[marker_id] = {"position": [actor.global_position.x, actor.global_position.y], "kind": kind}
-	discovered_landmarks[current_region] = region_markers
+	maps._discover_landmarks()
 
 func _draw_minimap() -> void:
-	hud.minimap.update_map(current_region, player.global_position, discovered_landmarks.get(current_region, {}))
-	var live := minimap_markers()
-	live.append_array(treasure.minimap_marker())
-	live.append_array(epilogue.minimap_marker())
-	live.append_array(deep_rifts.minimap_marker())
-	live.append_array(quest_nav.minimap_markers())
-	hud.minimap.day_time = day_night.time if day_night.cycles_here() else -1.0
-	hud.minimap.set_live(live, player.facing)
-	if hud.world_map_visible:
-		hud.world_map.set_live(live, player.facing)
+	maps._draw_minimap()
 
 ## Kind of a saved landmark for a world object ("" if it is not one).
 func _landmark_kind(actor: Node) -> String:
-	if actor is WorldNpc:
-		return "npc"
-	if actor is RegionGate:
-		return "gate"
-	if actor is TreasureChest:
-		return "chest"
-	if actor is Waystone:
-		return "waystone"
-	if actor is CraftStation:
-		return "station"
-	if actor is GatherNode and actor.kind == "fish":
-		return "fish"
-	return ""
+	return maps._landmark_kind(actor)
 
 ## Icons that reflect the present: quest givers, unopened chests, exits,
 ## quest items and enemies near the hero.
 func minimap_markers() -> Array:
-	var known: Dictionary = discovered_landmarks.get(current_region, {})
-	var result: Array = []
-	for actor in get_children():
-		if not actor is Node2D or actor.is_queued_for_deletion():
-			continue
-		var at: Vector2 = actor.global_position
-		var id := "%s_%d_%d" % [_landmark_kind(actor), int(at.x), int(at.y)]
-		if actor is RegionGate:
-			result.append({"kind": "gate", "position": at, "label": RegionCatalog.display_name(actor.target_region)})
-		elif actor is WorldNpc and known.has(id):
-			var marker := str(actor.marker)
-			result.append({"kind": marker if marker in ["quest", "ready", "service"] else "npc", "position": at})
-		elif actor is TreasureChest and known.has(id) and not actor.is_opened:
-			result.append({"kind": "chest", "position": at})
-		elif actor is WorldCollectible and not str(actor.quest_id).is_empty() and quests.is_active(str(actor.quest_id)):
-			if player.global_position.distance_squared_to(at) < 400.0 * 400.0:
-				result.append({"kind": "item", "position": at})
-		elif actor is SlimeEnemy and actor.health > 0 and player.global_position.distance_squared_to(at) < 260.0 * 260.0:
-			var kind := "enemy"
-			if enemy_kind(actor) in STORY_BOSSES:
-				kind = "boss"
-			elif actor.has_meta("legend"):
-				kind = "boss"
-			elif not actor.elite_id.is_empty() or actor is LootImp:
-				kind = "elite"
-			result.append({"kind": kind, "position": at})
-	return result
+	return maps.minimap_markers()
 
 func _discover_nearby_enemies() -> void:
-	for enemy in get_tree().get_nodes_in_group("enemies"):
-		if not enemy is SlimeEnemy or enemy.is_queued_for_deletion():
-			continue
-		if player.global_position.distance_squared_to(enemy.global_position) > 180.0 * 180.0:
-			continue
-		var kind: String = enemy_kind(enemy)
-		if not discovered_enemies.has(kind):
-			discovered_enemies[kind] = true
-			hud.show_message("Новая запись в бестиарии: %s" % str(bestiary_entries.get(kind, {}).get("name", kind)), 2.5)
-			hud.show_tip("bestiary", "Совет: K — бестиарий со слабостями врагов.")
+	maps._discover_nearby_enemies()
 
 static func enemy_kind(enemy: SlimeEnemy) -> String:
 	if enemy is LootImp:
@@ -1418,44 +938,7 @@ func _enemy_kind(enemy: SlimeEnemy) -> String:
 # --- Spawning ------------------------------------------------------------
 
 func _spawn_npc(npc_data: Dictionary) -> void:
-	var npc_id := str(npc_data.get("id", ""))
-	# "requires_flag": "ending" — only after the finale choice.
-	var needs_flag := str(npc_data.get("requires_flag", ""))
-	if needs_flag == "ending" and epilogue.ending().is_empty():
-		return
-	if not layout_allows(npc_data):
-		return
-	if not needs_flag.is_empty() and needs_flag != "ending" and not director.has_flag(needs_flag):
-		return
-	if npc_id == "cartographer" and companion != null:
-		return  # Mira travels with the hero instead of waiting at camp
-	if party != null and party.extra == npc_id:
-		return  # this one travels with the hero too
-	var npc := NPC_SCRIPT.new() as WorldNpc
-	npc.npc_id = npc_id
-	npc.look_id = str(npc_data.get("look", ""))
-	npc.display_name = str(npc_data.get("name", "Путник"))
-	var color: Variant = npc_data.get("outfit_color")
-	if color is Array and color.size() == 3:
-		npc.outfit_color = Color(float(color[0]), float(color[1]), float(color[2]))
-	add_child(npc)
-	npc.global_position = _vec(npc_data.get("position"))
-	var handler := Callable(self, "_on_%s_interacted" % npc_id)
-	if handler.is_valid():
-		npc.interacted.connect(handler)
-	elif settlement.has_settler_npc(npc_id):
-		npc.interacted.connect(func(_source: Node2D) -> void: settlement.talk(npc_id))
-	elif givers.has_giver(npc_id):
-		npc.interacted.connect(func(_source: Node2D) -> void: givers.talk(npc_id))
-	else:
-		push_warning("У NPC нет обработчика диалога: " + npc_id)
-	var wander: Variant = npc_data.get("wander", [])
-	if wander is Array and not (wander as Array).is_empty():
-		var walker := NpcWander.new()
-		walker.setup(self, npc, wander)
-		npc.add_child(walker)
-	if npc_id == "elder":
-		elder = npc
+	builder._spawn_npc(npc_data)
 
 ## Spawns an enemy of the given kind and returns it, or null if it must not
 ## appear (unknown kind, defeated or already present boss).
@@ -1509,24 +992,10 @@ func _spawn_guardian(spawn_position: Vector2) -> void:
 	spawn_enemy("guardian", spawn_position)
 
 func _spawn_herb(spawn_position: Vector2, item_id: String = "moonleaf", label: String = "Лунный лист", quest_id: String = "") -> void:
-	var herb := COLLECTIBLE_SCRIPT.new() as WorldCollectible
-	herb.item_id = item_id
-	herb.quest_id = quest_id
-	herb.display_name = label
-	add_child(herb)
-	herb.global_position = spawn_position
-	herb.interacted.connect(_on_herb_interacted)
+	builder._spawn_herb(spawn_position, item_id, label, quest_id)
 
 func _spawn_lore(lore_data: Dictionary) -> void:
-	var lore_id := str(lore_data.get("id", ""))
-	if lore.entry(lore_id).is_empty():
-		return
-	var stone := LoreStone.new()
-	stone.lore_id = lore_id
-	stone.fresh = not lore.read.has(lore_id)
-	add_child(stone)
-	stone.global_position = _vec(lore_data.get("position"))
-	stone.interacted.connect(func(_source: Node2D) -> void: read_lore(stone))
+	builder._spawn_lore(lore_data)
 
 ## Reads a rune stone: its text in the dialogue box, the first time also an
 ## entry in the Chronicle and a little experience.
@@ -1543,38 +1012,10 @@ func read_lore(stone: LoreStone) -> void:
 			achievements.add("lore")
 
 func _spawn_chest(id: String, at_position: Vector2, gold: int, item: String, amount: int, tier: String = "wood") -> void:
-	var chest := CHEST_SCRIPT.new() as TreasureChest
-	chest.tier = tier
-	chest.chest_id = id
-	chest.gold_reward = gold
-	chest.item_reward = item
-	chest.item_amount = amount
-	chest.is_opened = bool(opened_chests.get(id, false))
-	chest.position = at_position
-	add_child(chest)
-	if chest.is_opened:
-		chest.remove_from_group("interactables")
-	chest.opened.connect(_on_chest_opened)
-	chest.opened.connect(func(_id: String, _gold: int, _item: String, _amount: int) -> void: chest_tier_reward(chest.tier, chest.global_position))
-	chest.bonus_found.connect(_on_chest_bonus)
+	builder._spawn_chest(id, at_position, gold, item, amount, tier)
 
 func _spawn_gate(target_region: String, gate_position: Vector2, arrival: Vector2, label: String) -> void:
-	var gate := GATE_SCRIPT.new() as RegionGate
-	gate.target_region = target_region
-	gate.arrival_position = arrival
-	gate.display_name = label
-	gate.art_style = RegionCatalog.style(current_region)
-	var size: Vector2 = world.map_size() if world != null and world.has_method("map_size") else Vector2(1280, 864)
-	var look := RegionGate.pick_kind(gate.art_style, RegionCatalog.style(target_region), gate_position, size)
-	gate.kind = str(look["kind"])
-	gate.outward = look["outward"]
-	gate.edge_distance = float(look["edge_distance"])
-	# HD ground has the walkway to the rim painted in.
-	if ResourceLoader.exists("res://assets/world_hd/%s_ground.webp" % current_region):
-		gate.edge_distance = 0.0
-	add_child(gate)
-	gate.global_position = gate_position
-	gate.travel_requested.connect(_on_region_travel)
+	builder._spawn_gate(target_region, gate_position, arrival, label)
 
 func _spawn_loot(drop_position: Vector2, item_id: String) -> WorldLoot:
 	var loot := LOOT_SCRIPT.new() as WorldLoot
@@ -2029,62 +1470,18 @@ func _grant_sky_seal() -> void:
 # --- Magic ---------------------------------------------------------------
 
 func _update_spell_hud() -> void:
-	_update_mouse_slots()
-	if player.has_bow() and hud.spell_label != null:
-		var ready := cast_cooldown_remaining <= 0.0
-		hud.spell_label.text = "Лук · ПКМ · удерживать — прицельный" + (" · ГОТОВО" if ready else "")
-		hud.spell_label.modulate = Color.WHITE
-		hud.spell_cooldown_bar.value = 1.0 - (cast_cooldown_remaining / cast_cooldown_total if cast_cooldown_total > 0.0 else 0.0)
-		return
-	if not magic_unlocked():
-		if hud.spell_label != null:
-			hud.spell_label.text = "Меч · ЛКМ · удерживать — вихрь"
-			hud.spell_label.modulate = Color.WHITE
-			hud.spell_cooldown_bar.value = 1.0 - attack_cooldown / (SLASH_COOLDOWN * 2.0)
-		return
-	var spell: Dictionary = spell_definitions.get(selected_spell_id, {})
-	hud.update_spell(str(spell.get("name", selected_spell_id)), int(spell.get("mana_cost", 0)), player.mana, cast_cooldown_remaining, cast_cooldown_total)
+	combat._update_spell_hud()
 
 ## ЛКМ / ПКМ squares on the action bar.
 func _update_mouse_slots() -> void:
-	var weapon := str(player.equipment.get("blade", ""))
-	var left := {"key": "ЛКМ", "icon": ("icons/%s.png" % weapon) if not weapon.is_empty() and ResourceLoader.exists("res://assets/icons/%s.png" % weapon) else "icons/skill_slash.png",
-		"name": str(weapon_profile()["name"]), "tooltip": "%s — ЛКМ, удерживать — вихрь" % str(weapon_profile()["name"]), "cooldown": clampf(attack_cooldown / (SLASH_COOLDOWN * float(weapon_profile()["cooldown"])), 0.0, 1.0)}
-	var right := {}
-	if player.has_bow():
-		var bow := str(player.equipment.get("weapon", ""))
-		right = {"key": "ПКМ", "icon": "icons/%s.png" % bow, "name": "Лук", "tooltip": "Лук — ПКМ, удерживать — прицельный выстрел",
-			"cooldown": cast_cooldown_remaining / cast_cooldown_total if cast_cooldown_total > 0.0 else 0.0}
-	elif not magic_unlocked():
-		right = {"key": "ПКМ", "icon": "icons/skill_fireball.png", "name": "Магия", "tooltip": "Магия откроется по сюжету", "locked": "✦"}
-	else:
-		var spell: Dictionary = spell_definitions.get(selected_spell_id, {})
-		var cost := int(spell.get("mana_cost", 0))
-		right = {"key": "ПКМ", "icon": CombatSkills.icon_path(selected_spell_id), "name": str(spell.get("name", selected_spell_id)),
-			"tooltip": "%s — ПКМ · %d MP · колесо мыши — сменить" % [str(spell.get("name", selected_spell_id)), cost],
-			"cooldown": cast_cooldown_remaining / cast_cooldown_total if cast_cooldown_total > 0.0 else 0.0,
-			"note": str(cost), "count": 0 if player.mana < cost else -1}
-	hud.set_mouse_slots(left, right)
+	combat._update_mouse_slots()
 
 ## Wheel / Tab-free spell switching: walks the spells the hero can cast.
 func cycle_spell(step: int) -> void:
-	if not magic_unlocked() or player.has_bow():
-		return
-	var known: Array = []
-	for spell_id in spell_definitions:
-		if CombatSkills.definition(str(spell_id)).is_empty() or skills.lock_reason(str(spell_id)).is_empty():
-			known.append(str(spell_id))
-	if known.size() < 2:
-		return
-	var at := known.find(selected_spell_id)
-	select_spell(str(known[posmod(at + step, known.size())]))
+	combat.cycle_spell(step)
 
 func select_spell(spell_id: String) -> void:
-	if not spell_definitions.has(spell_id):
-		return
-	selected_spell_id = spell_id
-	hud.show_message("Магия: " + str(spell_definitions[spell_id].get("name", spell_id)), 1.5)
-	_update_spell_hud()
+	combat.select_spell(spell_id)
 
 # --- Sword -------------------------------------------------------------------
 
@@ -2103,7 +1500,7 @@ const WEAPON_PROFILES := {
 }
 
 func weapon_profile() -> Dictionary:
-	return WEAPON_PROFILES.get(player.weapon_kind(), WEAPON_PROFILES["sword"])
+	return combat.weapon_profile()
 
 var attack_cooldown: float = 0.0
 var _combo_step: int = 0
@@ -2113,81 +1510,24 @@ var _attack_held: float = 0.0
 var _charging: bool = false
 
 func _aim_direction() -> Vector2:
-	# Headless runs (tests) have no mouse: strike where the hero faces.
-	if DisplayServer.get_name() == "headless":
-		return player.facing.normalized()
-	var direction := (get_global_mouse_position() - player.global_position)
-	return direction.normalized() if direction.length_squared() > 1.0 else player.facing
+	return combat._aim_direction()
 
 func _attack_pressed() -> void:
-	_attack_holding = true
-	_attack_held = 0.0
-	sword_slash()
+	combat._attack_pressed()
 
 func _attack_released() -> void:
-	_attack_holding = false
-	if _charging:
-		_charging = false
-		sword_spin()
+	combat._attack_released()
 
 func _update_sword(delta: float) -> void:
-	attack_cooldown = maxf(0.0, attack_cooldown - delta)
-	_combo_timer = maxf(0.0, _combo_timer - delta)
-	if _combo_timer <= 0.0:
-		_combo_step = 0
-	if _attack_holding and not _charging:
-		_attack_held += delta
-		if _attack_held >= CHARGE_TIME - 0.15 * float(player.talents.get("whirl_master", 0)) and player.health > 0:
-			_charging = true
-			player.visual.play_named("charge", 30.0)
-			Vfx.sparkle(self, player.global_position + Vector2(0, -8))
+	combat._update_sword(delta)
 
 ## Two-hit combo in front of the hero (towards the mouse).
 func sword_slash() -> bool:
-	if attack_cooldown > 0.0 or player.health <= 0 or player.dodge_time_left > 0.0:
-		return false
-	var direction := _aim_direction()
-	player.facing = direction
-	player.visual.set_direction_vector(direction)
-	var finisher := _combo_step == 2
-	var anim := "spin" if finisher else ("slash1" if _combo_step == 0 else "slash2")
-	player.visual.play_named(anim, 0.36 if finisher else 0.28)
-	var damage := player.get_melee_damage() + (2 if _combo_step == 1 else 0)
-	var hits := 0
-	if finisher:
-		# Blade Dance: the third swing is a full circle at double damage.
-		hits = _melee_hit(player.global_position, direction, SPIN_REACH, 360.0, damage * 2, 150.0)
-		_ring(player.global_position, SPIN_REACH, Color(1.0, 0.85, 0.5, 0.8))
-	else:
-		var profile := weapon_profile()
-		hits = _melee_hit(player.global_position, direction, SLASH_REACH * float(profile["reach"]), float(profile["arc"]), damage, float(profile["push"]))
-		if player.weapon_kind() == "spear":
-			_streak(player.global_position + direction * 8.0, player.global_position + direction * SLASH_REACH * float(profile["reach"]), Color(1, 1, 1, 0.7), 2.0)
-		elif player.weapon_kind() == "hammer":
-			if hits > 0:
-				shake(2.0, 0.12)
-				for enemy in last_hit_enemies:
-					if is_instance_valid(enemy) and enemy.health > 0 and crit_rng.randf() < 0.3:
-						enemy.apply_slow(0.05, 0.6)
-						enemy.combat_feedback.show_reaction("ОГЛУШЁН!")
-	GameAudio.play("dash" if hits == 0 else "hit", -4.0, 0.1)
-	_combo_step = (_combo_step + 1) % (3 if player.has_skill("blade_dance") else 2)
-	_combo_timer = COMBO_WINDOW
-	attack_cooldown = SLASH_COOLDOWN * float(weapon_profile()["cooldown"])
-	return true
+	return combat.sword_slash()
 
 ## Held attack: a full circle at 1.8x damage.
 func sword_spin() -> bool:
-	if player.health <= 0:
-		return false
-	player.visual.play_named("spin", 0.42)
-	var hits := _melee_hit(player.global_position, Vector2.RIGHT, SPIN_REACH, 360.0, int(round(player.get_melee_damage() * (1.8 + 0.45 * float(player.talents.get("whirl_master", 0))))), 170.0)
-	GameAudio.play("gust", -4.0, 0.05)
-	Vfx.burst(self, player.global_position, [Color(1, 1, 1), Color(0.8, 0.9, 1.0)], 14, 90.0)
-	if hits > 0:
-		shake(2.5, 0.2)
-	attack_cooldown = SLASH_COOLDOWN * 2.0
-	return true
+	return combat.sword_spin()
 
 ## Enemies struck by the latest sword hit (skills add effects to them).
 var last_hit_enemies: Array = []
@@ -2195,111 +1535,38 @@ var last_hit_enemies: Array = []
 var crit_rng := RandomNumberGenerator.new()
 
 func _living_enemies() -> Array:
-	var result: Array = []
-	for candidate in get_tree().get_nodes_in_group("enemies"):
-		var enemy := candidate as SlimeEnemy
-		if enemy != null and not enemy.is_queued_for_deletion() and enemy.health > 0:
-			result.append(enemy)
-	return result
+	return combat._living_enemies()
 
 ## One sword blow: crit roll, lifesteal, knockback.
 func _strike(enemy: SlimeEnemy, damage: int, push_direction: Vector2, push: float) -> void:
-	var crit := crit_rng.randf() < player.get_crit_chance()
-	if crit:
-		damage *= 2
-		Vfx.sparkle(self, enemy.global_position)
-		gear.on_crit(enemy)
-	var shaped := gear.modify_strike(damage)
-	damage = int(shaped["damage"])
-	if bool(shaped["riposte"]):
-		enemy.combat_feedback.show_reaction("КОНТРАТАКА!")
-		Vfx.sparkle(self, enemy.global_position)
-		shake(3.0, 0.15)
-	enemy.take_damage(damage)
-	enemy.apply_knockback(push_direction, push)
-	last_hit_enemies.append(enemy)
-	combos.on_strike(enemy, damage)
-	gear.on_strike(enemy, damage)
-	var heal := player.get_melee_lifesteal()
-	if heal > 0 and player.health < player.max_health:
-		player.health = mini(player.max_health, player.health + heal)
-		player.stats_changed.emit()
+	combat._strike(enemy, damage, push_direction, push)
 
 ## Damages enemies within reach and the arc (degrees); returns how many.
 func _melee_hit(origin: Vector2, direction: Vector2, reach: float, arc: float, damage: int, push: float) -> int:
-	last_hit_enemies.clear()
-	for enemy in _living_enemies():
-		var offset: Vector2 = enemy.global_position - origin
-		if offset.length() > reach + 8.0:
-			continue
-		if arc < 360.0 and offset.length() > 4.0 and rad_to_deg(absf(direction.angle_to(offset))) > arc * 0.5:
-			continue
-		_strike(enemy, damage, offset.normalized() if offset.length() > 0.1 else direction, push)
-	return last_hit_enemies.size()
+	return combat._melee_hit(origin, direction, reach, arc, damage, push)
 
 ## Damages enemies in a strip in front of origin (lunge, blade wave).
 func _line_hit(origin: Vector2, direction: Vector2, length: float, width: float, damage: int, push: float) -> int:
-	last_hit_enemies.clear()
-	for enemy in _living_enemies():
-		var offset: Vector2 = enemy.global_position - origin
-		var along := offset.dot(direction)
-		if along < -6.0 or along > length:
-			continue
-		if absf(offset.cross(direction)) > width * 0.5 + 8.0:
-			continue
-		_strike(enemy, damage, direction, push)
-	return last_hit_enemies.size()
+	return combat._line_hit(origin, direction, length, width, damage, push)
 
 ## Short-lived white streak (lunge path, blade wave).
 func _streak(from: Vector2, to: Vector2, color: Color, width: float) -> void:
-	var line := Line2D.new()
-	line.points = PackedVector2Array([from, to])
-	line.width = width
-	line.default_color = color
-	line.z_index = 30
-	line.begin_cap_mode = Line2D.LINE_CAP_ROUND
-	line.end_cap_mode = Line2D.LINE_CAP_ROUND
-	add_child(line)
-	var tween := line.create_tween()
-	tween.tween_property(line, "modulate:a", 0.0, 0.25)
-	tween.tween_callback(line.queue_free)
+	combat._streak(from, to, color, width)
 
 ## Expanding ring (shockwave, war cry, blade dance).
 func _ring(at: Vector2, radius: float, color: Color) -> void:
-	var line := Line2D.new()
-	var points := PackedVector2Array()
-	for index in 25:
-		points.append(Vector2.RIGHT.rotated(TAU * index / 24.0) * radius)
-	line.points = points
-	line.width = 2.0
-	line.default_color = color
-	line.z_index = 30
-	line.position = at
-	line.scale = Vector2(0.3, 0.3 * 0.6)
-	add_child(line)
-	var tween := line.create_tween()
-	tween.set_parallel(true)
-	tween.tween_property(line, "scale", Vector2(1.0, 0.6), 0.25)
-	tween.tween_property(line, "modulate:a", 0.0, 0.3)
-	tween.chain().tween_callback(line.queue_free)
+	combat._ring(at, radius, color)
 
 ## Puts a newly awakened spell into an empty or still-locked hotbar slot.
 func _place_spell_on_hotbar(spell_id: String) -> void:
-	if player.skill_slots.has(spell_id):
-		return
-	for index in player.skill_slots.size():
-		var current := str(player.skill_slots[index])
-		if current.is_empty() or not skills.lock_reason(current).is_empty():
-			player.assign_skill(index, spell_id)
-			return
-	player.assign_skill(PlayerCharacter.SKILL_SLOT_COUNT - 1, spell_id)
+	combat._place_spell_on_hotbar(spell_id)
 
 # --- Magic -------------------------------------------------------------------
 
 ## Story mode: the heroine starts with the sword; Ilara awakens her magic
 ## once the grove guardian falls. Free play (tests) has magic from the start.
 func magic_unlocked() -> bool:
-	return not director.story_mode() or director.has_flag("magic_unlocked")
+	return combat.magic_unlocked()
 
 # --- Bow (ranger) ----------------------------------------------------------
 
@@ -2309,81 +1576,19 @@ var _bow_holding: bool = false
 var _bow_held: float = 0.0
 
 func _bow_press() -> void:
-	if cast_cooldown_remaining > 0.0 or player.health <= 0:
-		return
-	_bow_holding = true
-	_bow_held = 0.0
-	player.visual.play_named("charge", 30.0)
+	combat._bow_press()
 
 func _update_bow(delta: float) -> void:
-	if not _bow_holding:
-		return
-	var before := _bow_held
-	_bow_held += delta
-	if before < AIM_TIME and _bow_held >= AIM_TIME:
-		Vfx.sparkle(self, player.global_position + Vector2(0, -10))
+	combat._update_bow(delta)
 
 func _bow_release() -> void:
-	if not _bow_holding:
-		return
-	_bow_holding = false
-	var aimed := _bow_held >= AIM_TIME
-	var damage := player.get_ranged_damage() * (2 if aimed else 1)
-	var pierce := (99 if player.wears_base("wind_bow") else 2) if aimed else 0
-	shoot_arrow(_aim_direction(), damage, aimed, pierce)
-	player.play_cast(_aim_direction())
-	GameAudio.play("dash", -6.0 if not aimed else -2.0, 0.2)
-	cast_cooldown_total = BOW_COOLDOWN * (1.6 if aimed else 1.0)
-	cast_cooldown_remaining = cast_cooldown_total
-	_update_spell_hud()
+	combat._bow_release()
 
 func shoot_arrow(direction: Vector2, damage: int, aimed: bool, pierce: int = 0) -> Arrow:
-	var arrow := Arrow.new()
-	arrow.setup(self, direction, damage, pierce, aimed)
-	add_child(arrow)
-	arrow.global_position = player.global_position + direction.normalized() * 10.0
-	return arrow
+	return combat.shoot_arrow(direction, damage, aimed, pierce)
 
 func _cast_spell() -> void:
-	if not magic_unlocked():
-		hud.show_message("Магия ещё спит. Пока — меч: ЛКМ, удерживать — круговой удар.", 2.5)
-		return
-	if cast_cooldown_remaining > 0.0:
-		return
-	var spell: Dictionary = spell_definitions.get(selected_spell_id, {})
-	var mana_cost := int(spell.get("mana_cost", 8))
-	var spell_damage := roundi((int(spell.get("damage", 18)) + player.get_spell_bonus(selected_spell_id)) * player.get_spell_power_multiplier())
-	if not player.spend_mana(mana_cost):
-		hud.show_message("Недостаточно маны.", 1.2)
-		return
-	var direction := (get_global_mouse_position() - player.global_position).normalized()
-	if direction.length_squared() < 0.01:
-		direction = player.facing
-	var bolt := BOLT_SCENE.instantiate() as MagicBolt
-	if bolt == null:
-		push_error("Не удалось создать снаряд заклинания")
-		return
-	bolt.speed = float(spell.get("projectile_speed", 255))
-	bolt.setup(direction, spell_damage)
-	bolt.configure_effect(selected_spell_id, float(spell.get("slow_multiplier", 1.0)), float(spell.get("slow_duration", 0.0)) + player.get_slow_duration_bonus())
-	bolt.configure_burning(int(spell.get("burn_damage", 0)) + player.get_burn_damage_bonus(), float(spell.get("burn_duration", 0.0)))
-	bolt.chain_targets = int(spell.get("chain_targets", 0)) + player.get_chain_targets_bonus()
-	bolt.chain_radius = float(spell.get("chain_radius", 0.0))
-	bolt.chain_damage_factor = float(spell.get("chain_damage_factor", 0.65))
-	if selected_spell_id == "fireball" and player.has_skill("fire_ultimate"):
-		bolt.explode_radius = 48.0
-	if selected_spell_id == "frostbolt" and player.has_skill("ice_ultimate"):
-		bolt.pierce_left = 2
-		bolt.freeze_on_hit = true
-	if selected_spell_id == "chain_lightning" and player.has_skill("storm_ultimate"):
-		bolt.chain_damage_factor = 1.0
-	add_child(bolt)
-	bolt.global_position = player.global_position + direction * 12.0
-	player.play_cast(direction)
-	GameAudio.play({"fireball": "cast_fire", "frostbolt": "cast_ice", "chain_lightning": "cast_lightning"}.get(selected_spell_id, "cast_fire"), -5.0)
-	cast_cooldown_total = float(spell.get("cooldown", 0.25)) * player.get_cooldown_multiplier()
-	cast_cooldown_remaining = cast_cooldown_total
-	_update_spell_hud()
+	combat._cast_spell()
 
 func _refresh_hud() -> void:
 	if borin != null:

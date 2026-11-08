@@ -5,6 +5,11 @@ class_name StoryScene
 ## shown in the dialogue box (E advances). Steps:
 ##   {"speaker": "elder"|"hero"|"" (narrator), "text": "…"}
 ##   {"effect": "meteor", "to": [x, y]} / {"effect": "flash"}
+##   {"set_flag": "id"} — remembers a story flag;
+##   {"if_flag": "id", "then": [steps], "else": [steps]} — branches (also
+##     "if_quest_done": "quest_id");
+##   {"speaker", "text", "choice": [{"label", "flag"?, "steps": [...]}]} — the
+##     hero answers; the chosen branch plays next (E picks the first answer).
 ## A scene may have a "title" shown as a title card when it starts.
 
 const DATA_PATH := "res://data/dialogues.json"
@@ -18,6 +23,8 @@ var scene_id: String = ""
 var _steps: Array = []
 var _index: int = -1
 var _on_finished: Callable
+## The answers of the line on screen ([] when it is a plain line).
+var _choices: Array = []
 
 func _init(owner_game: SkywardGame) -> void:
 	game = owner_game
@@ -55,6 +62,9 @@ func play(id: String, on_finished: Callable = Callable()) -> bool:
 func advance() -> void:
 	if not active:
 		return
+	if not _choices.is_empty():
+		choose(0)
+		return
 	_index += 1
 	while _index < _steps.size():
 		var step: Dictionary = _steps[_index]
@@ -62,16 +72,52 @@ func advance() -> void:
 			_run_effect(step)
 			_index += 1
 			continue
+		if step.has("set_flag"):
+			game.director.set_flag(str(step["set_flag"]))
+			_index += 1
+			continue
+		if step.has("if_flag") or step.has("if_quest_done"):
+			var passed := game.director.has_flag(str(step["if_flag"])) if step.has("if_flag") else game.quests.is_completed(str(step["if_quest_done"]))
+			var branch: Array = step.get("then" if passed else "else", [])
+			_steps = _steps.slice(0, _index + 1) + branch + _steps.slice(_index + 1)
+			_index += 1
+			continue
 		var speaker_id := str(step.get("speaker", ""))
+		if step.get("choice", []) is Array and not (step.get("choice", []) as Array).is_empty():
+			_choices = step["choice"]
+			var options: Array[Dictionary] = []
+			for i in _choices.size():
+				options.append({"id": "scene_choice:%d" % i, "label": StoryText.format(str(_choices[i].get("label", "…")))})
+			game.hud.show_dialogue_choices(_speaker_name(speaker_id), StoryText.format(str(step.get("text", ""))), options)
+			return
 		game.hud.show_scene_line(_speaker_name(speaker_id), StoryText.format(str(step.get("text", ""))), _portrait(speaker_id))
 		return
 	_finish()
+
+## The hero's answer to a choice line: its branch plays next.
+func choose(index: int) -> void:
+	if _choices.is_empty():
+		return
+	var picked: Dictionary = _choices[clampi(index, 0, _choices.size() - 1)]
+	_choices = []
+	if picked.has("flag"):
+		game.director.set_flag(str(picked["flag"]))
+	var branch: Array = picked.get("steps", [])
+	_steps = _steps.slice(0, _index + 1) + branch + _steps.slice(_index + 1)
+	advance()
+
+func handle_choice(choice_id: String) -> bool:
+	if not active or not choice_id.begins_with("scene_choice:"):
+		return false
+	choose(int(choice_id.trim_prefix("scene_choice:")))
+	return true
 
 func skip() -> void:
 	while active:
 		advance()
 
 func _finish() -> void:
+	_choices = []
 	active = false
 	scene_id = ""
 	game.hud.close_dialogue()

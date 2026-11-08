@@ -5,7 +5,7 @@ class_name GameSettings
 ## (separate from save games so they survive a new adventure).
 
 const PATH := "user://settings.cfg"
-const DEFAULTS := {"hints": true, "damage_numbers": true, "screen_shake": true, "music_volume": 0.6, "sfx_volume": 0.8}
+const DEFAULTS := {"hints": true, "damage_numbers": true, "screen_shake": true, "music_volume": 0.6, "sfx_volume": 0.8, "ambience_volume": 0.5}
 
 static var _config: ConfigFile
 

@@ -27,6 +27,7 @@ func _ready() -> void:
 
 func configure_region(new_region_id: String) -> void:
 	region_id = RegionCatalog.resolve(new_region_id)
+	_wall_rects.clear()
 	for child in get_children():
 		remove_child(child)
 		child.queue_free()
@@ -58,7 +59,7 @@ func _build() -> void:
 		var pos := _vec(trees[index])
 		# Trunk base sits 10 px below the stored canopy position.
 		var variant: int = absi(int(pos.x) * 7 + int(pos.y) * 13) % tree_kinds
-		_add_sprite("%s_tree_%d.png" % [style, variant], pos + Vector2(0, 10))
+		_add_sprite("%s_tree_%d.png" % [style, variant], pos + Vector2(0, 10), 5.0)
 		_add_wall(pos + Vector2(0.0, 5.0), Vector2(10.0, 11.0))
 	for prop in terrain.get("props", []):
 		if allows.is_valid() and not allows.call(prop):
@@ -73,6 +74,7 @@ func _build() -> void:
 	_add_decor_bushes(style)
 	_add_ambient()
 	_create_world_collisions()
+	_bake_navigation()
 
 ## Bushes are pure decoration (no collision), placed deterministically away
 ## from trails, water and gameplay objects.
@@ -80,7 +82,7 @@ func _add_decor_bushes(style: String) -> void:
 	var spots: Array = terrain.get("bushes", [])
 	var kinds := _variants(style + "_bush_", 2)
 	for index in range(spots.size()):
-		_add_sprite("%s_bush_%d.png" % [style, index % kinds], _vec(spots[index]))
+		_add_sprite("%s_bush_%d.png" % [style, index % kinds], _vec(spots[index]), 3.0)
 
 ## How many numbered variants exist (HD art may bring more than the old 2–3).
 func _variants(prefix: String, fallback: int) -> int:
@@ -289,7 +291,20 @@ func _add_hd_layer(file: String, layer_z: int) -> void:
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	add_child(sprite)
 
-func _add_sprite(file: String, base: Vector2) -> void:
+## Foliage sways in the wind (assets/shaders/foliage_sway.gdshader); one
+## material per strength is shared by every sprite.
+const SWAY_SHADER := "res://assets/shaders/foliage_sway.gdshader"
+static var _sway_materials: Dictionary = {}
+
+static func sway_material(strength: float) -> ShaderMaterial:
+	if not _sway_materials.has(strength):
+		var material := ShaderMaterial.new()
+		material.shader = load(SWAY_SHADER)
+		material.set_shader_parameter("strength", strength)
+		_sway_materials[strength] = material
+	return _sway_materials[strength]
+
+func _add_sprite(file: String, base: Vector2, sway: float = 0.0) -> void:
 	var hd := ResourceLoader.exists(HD_DIR + file)
 	var texture: Texture2D = (load(HD_DIR + file) as Texture2D) if hd else _texture(file)
 	if texture == null:
@@ -304,6 +319,8 @@ func _add_sprite(file: String, base: Vector2) -> void:
 	var origin: Variant = art_manifest.get(key, {}).get("origin", [texture.get_width() / 2, texture.get_height()])
 	sprite.offset = -Vector2(float(origin[0]), float(origin[1]))
 	sprite.position = base
+	if sway > 0.0 and RegionCatalog.style(region_id) not in ["cave", "crypt", "magma"]:
+		sprite.material = sway_material(sway)
 	add_child(sprite)
 
 ## Lamps and torches cast warm light (seen at night and underground).
@@ -356,7 +373,30 @@ func _create_world_collisions() -> void:
 	for blocker in terrain.get("blockers", []):
 		_add_wall(_vec(blocker.get("center")), _vec(blocker.get("size"), Vector2(16, 16)))
 
+## Every solid rectangle, kept for the navigation mesh.
+var _wall_rects: Array[Rect2] = []
+var navigation: NavigationRegion2D
+
+## Enemies find their way around trees and walls (tech debt from Этап 5):
+## the walkable area is the map (inside the island edge) minus every wall.
+func _bake_navigation() -> void:
+	var size := map_size()
+	var margin := float(terrain.get("edge_margin", 0))
+	var source := NavigationMeshSourceGeometryData2D.new()
+	source.add_traversable_outline(PackedVector2Array([Vector2(margin, margin), Vector2(size.x - margin, margin), Vector2(size.x - margin, size.y - margin), Vector2(margin, size.y - margin)]))
+	for rect in _wall_rects:
+		source.add_obstruction_outline(PackedVector2Array([rect.position, Vector2(rect.end.x, rect.position.y), rect.end, Vector2(rect.position.x, rect.end.y)]))
+	var polygon := NavigationPolygon.new()
+	polygon.agent_radius = 7.0
+	polygon.parsed_geometry_type = NavigationPolygon.PARSED_GEOMETRY_STATIC_COLLIDERS
+	NavigationServer2D.bake_from_source_geometry_data(polygon, source)
+	navigation = NavigationRegion2D.new()
+	navigation.name = "Navigation"
+	navigation.navigation_polygon = polygon
+	add_child(navigation)
+
 func _add_wall(center: Vector2, size: Vector2) -> void:
+	_wall_rects.append(Rect2(center - size * 0.5, size))
 	var body := StaticBody2D.new()
 	body.collision_layer = COLLISION_WORLD
 	body.collision_mask = 0

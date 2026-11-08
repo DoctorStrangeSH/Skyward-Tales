@@ -7,6 +7,7 @@ class_name GameAudio
 
 const SFX_DIR := "res://assets/audio/sfx/"
 const MUSIC_DIR := "res://assets/audio/music/"
+const AMBIENCE_DIR := "res://assets/audio/ambience/"
 const VOICES := 12
 const MIN_REPEAT := 0.045
 const FADE := 1.2
@@ -20,6 +21,9 @@ var _last_played: Dictionary = {}
 var _music_a: AudioStreamPlayer
 var _music_b: AudioStreamPlayer
 var current_track: String = ""
+## Looping background bed (wind, waves, birds…), its own volume setting.
+var _ambience: AudioStreamPlayer
+var current_ambience: String = ""
 
 static func instance() -> GameAudio:
 	if _instance != null and is_instance_valid(_instance):
@@ -45,6 +49,12 @@ static func music(track: String) -> void:
 	if audio != null:
 		audio._music(track)
 
+## Crossfades the ambience bed ("" — silence).
+static func ambience(bed: String) -> void:
+	var audio := instance()
+	if audio != null:
+		audio._set_ambience(bed)
+
 static func apply_volumes() -> void:
 	var audio := instance()
 	if audio != null:
@@ -52,7 +62,7 @@ static func apply_volumes() -> void:
 
 func _setup() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	for bus in ["Music", "SFX"]:
+	for bus in ["Music", "SFX", "Ambience"]:
 		if AudioServer.get_bus_index(bus) == -1:
 			AudioServer.add_bus()
 			var index := AudioServer.bus_count - 1
@@ -69,11 +79,24 @@ func _setup() -> void:
 		player.bus = "Music"
 		player.volume_db = -80.0
 		add_child(player)
+	_ambience = AudioStreamPlayer.new()
+	_ambience.bus = "Ambience"
+	_ambience.volume_db = -80.0
+	add_child(_ambience)
 	_apply_volumes()
+	# Every button in the game clicks (UI sounds, tech debt from Этап 6).
+	var tree := Engine.get_main_loop() as SceneTree
+	if tree != null and not tree.node_added.is_connected(_on_node_added):
+		tree.node_added.connect(_on_node_added)
+
+func _on_node_added(node: Node) -> void:
+	if node is BaseButton and not node.has_meta("silent"):
+		(node as BaseButton).pressed.connect(func() -> void: _play("ui", -14.0, 0.05))
 
 func _apply_volumes() -> void:
 	_set_bus_volume("Music", GameSettings.get_float("music_volume"))
 	_set_bus_volume("SFX", GameSettings.get_float("sfx_volume"))
+	_set_bus_volume("Ambience", GameSettings.get_float("ambience_volume"))
 
 func _set_bus_volume(bus: String, value: float) -> void:
 	var index := AudioServer.get_bus_index(bus)
@@ -131,6 +154,28 @@ func _music(track: String) -> void:
 	incoming.play()
 	var fade_in := create_tween()
 	fade_in.tween_property(incoming, "volume_db", 0.0, FADE)
+
+func _set_ambience(bed: String) -> void:
+	if bed == current_ambience or _ambience == null:
+		return
+	current_ambience = bed
+	if not is_inside_tree():
+		current_ambience = ""
+		_set_ambience.call_deferred(bed)
+		return
+	var tween := create_tween()
+	tween.tween_property(_ambience, "volume_db", -40.0, 0.8)
+	tween.tween_callback(func() -> void:
+		var stream := _stream(AMBIENCE_DIR + bed + ".ogg") if not bed.is_empty() else null
+		if stream == null:
+			_ambience.stop()
+			return
+		if stream is AudioStreamOggVorbis:
+			(stream as AudioStreamOggVorbis).loop = true
+		_ambience.stream = stream
+		_ambience.play()
+		var fade_in := create_tween()
+		fade_in.tween_property(_ambience, "volume_db", -6.0, 1.5))
 
 func _exit_tree() -> void:
 	for player in [_music_a, _music_b]:
