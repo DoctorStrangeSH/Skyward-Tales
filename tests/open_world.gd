@@ -39,6 +39,7 @@ func _herbs(item_id: String) -> Array:
 
 func _run() -> void:
 	game = load("res://scenes/main.tscn").instantiate()
+	game.classic_balance = true
 	root.add_child(game)
 	await process_frame
 	game.autosave_enabled = false
@@ -47,7 +48,7 @@ func _run() -> void:
 	for region_id in RegionCatalog.all():
 		if not _verify(RegionCatalog.level(region_id) >= 1, "region has a level: " + str(region_id)):
 			return
-	if not _verify(RegionCatalog.level("misty_marsh") == 6 and RegionCatalog.level("sky_rift") == 11, "levels rise with the world"):
+	if not _verify(RegionCatalog.level("misty_marsh") == 9 and RegionCatalog.level("sky_rift") == 14, "levels rise with the world"):
 		return
 	game._set_region("moonlit_grove", Vector2(640, 760), false)
 	await _settle()
@@ -155,6 +156,7 @@ func _run() -> void:
 	# Stones and side progress survive saving.
 	var snapshot := game.make_save_snapshot()
 	var restored: SkywardGame = load("res://scenes/main.tscn").instantiate()
+	restored.classic_balance = true
 	root.add_child(restored)
 	await process_frame
 	if not _verify(restored.restore_save_snapshot(snapshot), "save restores"):

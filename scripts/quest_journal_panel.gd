@@ -16,6 +16,8 @@ const TABS := [["main", "Сюжет"], ["side", "Побочные"], ["done", "�
 var achievements: Object
 var lore_book: Object
 var factions_ref: Object
+## A quest was switched on or off for the tracker and the map.
+signal tracking_changed
 
 func _ready() -> void:
 	position = Vector2(30, 18)
@@ -91,7 +93,8 @@ static func build_entries(quests: QuestManager) -> Dictionary:
 			"progress": int(state.get("progress", 0)),
 			"target": int(definition.get("target", 1)),
 			"decision": "",
-			"main": bool(definition.get("main", false))
+			"main": bool(definition.get("main", false)),
+			"tracked": bool(state.get("tracked", true))
 		}
 		var choice_id := str(state.get("choice", ""))
 		var choices: Variant = definition.get("choices", {})
@@ -134,7 +137,7 @@ func populate(quests: QuestManager, player: PlayerCharacter = null) -> void:
 	for entry in list:
 		var button := Button.new()
 		var ready: bool = entry["progress"] >= entry["target"] and tab != "done"
-		button.text = "%s %s%s" % ["✓" if tab == "done" else ("★" if entry["main"] else "◆"), entry["title"], "  ✓" if ready else ""]
+		button.text = "%s %s%s" % ["✓" if tab == "done" else (("★" if entry["main"] else "◆") if entry["tracked"] else "○"), entry["title"], "  ✓" if ready else ""]
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.toggle_mode = true
 		button.button_pressed = entry["id"] == selected_id
@@ -171,6 +174,22 @@ func _show_detail(entry: Dictionary, quests: QuestManager) -> void:
 		bar.max_value = target
 		bar.value = int(entry["progress"])
 		detail_box.add_child(bar)
+		var track := Button.new()
+		var tracked: bool = bool(entry.get("tracked", true))
+		track.text = "◉ Отслеживается — на карте и в трекере" if tracked else "○ Не отслеживается — нажмите, чтобы следить"
+		track.focus_mode = Control.FOCUS_NONE
+		track.custom_minimum_size = Vector2(330, 20)
+		track.add_theme_font_size_override("font_size", UiFont.px(9))
+		UiStyle.small_toggle(track)
+		track.toggle_mode = true
+		track.button_pressed = tracked
+		track.tooltip_text = "Снимите отметку, чтобы задание не мешало: оно пропадёт из трекера и с карты, но останется в журнале."
+		var quest_id := str(entry["id"])
+		track.pressed.connect(func() -> void:
+			quests.set_tracked(quest_id, not quests.is_tracked(quest_id))
+			tracking_changed.emit()
+			populate(_quests, _player))
+		detail_box.add_child(track)
 	var reward: Dictionary = quests.definitions.get(entry["id"], {}).get("reward", {})
 	var parts: Array[String] = []
 	if int(reward.get("experience", 0)) > 0:

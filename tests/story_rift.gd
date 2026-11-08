@@ -52,6 +52,8 @@ func _run() -> void:
 	set_meta("skyward_new_hero", {"name": "Арина", "gender": "f"})
 	game = load("res://scenes/main.tscn").instantiate()
 	root.add_child(game)
+	game.director.auto_chapters = true
+	game.classic_balance = true
 	await process_frame
 	game.autosave_enabled = false
 	await _finish_scenes()
@@ -79,7 +81,7 @@ func _run() -> void:
 	if not _verify(game.current_region == "sky_rift" and game.story.scene_id == "rift_arrival", "arrival on the Shattered Isle"):
 		return
 	await _finish_scenes()
-	if not _verify(_count("shade") == 4, "four shades haunt the isle"):
+	if not _verify(_count("shade") == 8, "eight shades haunt the isle"):
 		return
 	if not _verify(_all("rift_throne").is_empty(), "the throne waits for its chapter"):
 		return

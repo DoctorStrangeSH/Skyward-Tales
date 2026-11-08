@@ -5,6 +5,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	var game: Node2D = load("res://scenes/main.tscn").instantiate()
+	game.set("classic_balance", true)
 	root.add_child(game)
 	await process_frame
 	game.quests.start_quest("grove_spirits")

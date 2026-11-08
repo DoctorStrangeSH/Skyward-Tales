@@ -26,7 +26,9 @@ var summary: String = ""
 var slot: String = ""
 var can_use: bool = false
 var equipped: bool = false
+var quest_item: bool = false
 var rarity_color := Color(0.6, 0.5, 0.4)
+const QUEST_COLOR := Color(1.0, 0.82, 0.25)
 
 func configure(player: PlayerCharacter, id: String, fallback_names: Dictionary, fallback_descriptions: Dictionary, rarity_names: Dictionary, consumable_ids: Array) -> void:
 	item_id = id
@@ -44,13 +46,16 @@ func configure(player: PlayerCharacter, id: String, fallback_names: Dictionary, 
 	var can_equip: bool = not slot.is_empty()
 	var can_consume: bool = consumable_ids.has(item_id) or definition.has("use")
 	can_use = count > 0 and (can_equip or can_consume)
-	var action_hint: String = "Клик или перетащите в слот героя — надеть" if can_equip else ("Клик — использовать" if can_consume else "Материал: для ремесла или продажи.")
+	quest_item = player.is_quest_item(item_id)
+	var action_hint: String = "Предмет задания: хранится всегда, не продаётся." if quest_item else "Клик или перетащите в слот героя — надеть" if can_equip else ("Клик — использовать" if can_consume else "Материал: для ремесла или продажи.")
 	summary = "%s ×%d — %s%s%s" % [item_name, count, description, rarity_label, " [НАДЕТО]" if equipped else ""]
 	text = str(count) if count > 1 else ""
 	tooltip_text = (description + "\n" if not description.is_empty() else "") + action_hint
 	if can_equip:
 		tooltip_text += "\nНаведение: сравнить характеристики"
 	rarity_color = RARITY_COLORS.get(rarity, Color(0.6, 0.5, 0.4)) if not rarity.is_empty() else Color(0.55, 0.45, 0.35)
+	if quest_item:
+		rarity_color = QUEST_COLOR
 	add_theme_font_size_override("font_size", UiFont.px(8))
 	add_theme_color_override("font_color", Color.WHITE)
 	add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.95))
@@ -70,7 +75,9 @@ func _apply_style() -> void:
 		var box := StyleBoxFlat.new()
 		box.bg_color = Color(0.11, 0.08, 0.07, 0.95) if state != "hover" else Color(0.22, 0.16, 0.12, 0.98)
 		box.border_color = rarity_color if state != "hover" else rarity_color.lightened(0.3)
-		box.set_border_width_all(1 if state != "hover" else 2)
+		box.set_border_width_all(2 if state == "hover" or quest_item else 1)
+		if quest_item:
+			box.bg_color = box.bg_color.lerp(Color(0.35, 0.27, 0.06), 0.45)
 		box.set_corner_radius_all(3)
 		box.content_margin_right = 3
 		box.content_margin_bottom = 1
@@ -83,6 +90,9 @@ func _ready() -> void:
 	mouse_exited.connect(func() -> void: unhovered.emit())
 
 func _draw() -> void:
+	if quest_item:
+		var star := PackedVector2Array([Vector2(size.x - 8, 2), Vector2(size.x - 5, 5), Vector2(size.x - 8, 8), Vector2(size.x - 11, 5)])
+		draw_colored_polygon(star, QUEST_COLOR)
 	if equipped:
 		draw_rect(Rect2(Vector2(2, 2), Vector2(6, 6)), Color(0.5, 1.0, 0.5))
 

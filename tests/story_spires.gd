@@ -52,6 +52,8 @@ func _run() -> void:
 	set_meta("skyward_new_hero", {"name": "Арен", "gender": "m"})
 	game = load("res://scenes/main.tscn").instantiate()
 	root.add_child(game)
+	game.director.auto_chapters = true
+	game.classic_balance = true
 	await process_frame
 	game.autosave_enabled = false
 	await _finish_scenes()
@@ -79,7 +81,7 @@ func _run() -> void:
 	if not _verify(game.current_region == "wind_spires" and game.story.scene_id == "spires_arrival", "arrival at the Wind Spires"):
 		return
 	await _finish_scenes()
-	if not _verify(_count("wisp") == 4 and _count("sentinel") == 1, "wisps and a sentinel guard the spires"):
+	if not _verify(_count("wisp") == 8 and _count("sentinel") == 3, "wisps and sentinels guard the spires"):
 		return
 	if not _verify(_all("storm_heart").is_empty(), "the storm heart waits for its chapter"):
 		return

@@ -20,6 +20,7 @@ func _run() -> void:
 	GameSettings.reload()
 	GameSettings.set_bool("screen_shake", true)
 	game = load("res://scenes/main.tscn").instantiate()
+	game.set("classic_balance", true)
 	root.add_child(game)
 	await process_frame
 	game.autosave_enabled = false
@@ -104,6 +105,7 @@ func _run() -> void:
 	var stone := game.spawn_enemy("slime", Vector2(400, 400), "stone")
 	var snapshot := game.make_save_snapshot()
 	var restored: SkywardGame = load("res://scenes/main.tscn").instantiate()
+	restored.classic_balance = true
 	root.add_child(restored)
 	await process_frame
 	restored.restore_save_snapshot(snapshot)

@@ -39,7 +39,7 @@ SMALL = [
 FREE_PORT = {
     "name": "Вольная пристань",
     "map_color": [0.62, 0.55, 0.42],
-    "level": 8,
+    "level": 10,
     "enemy_power": 1.0,
     "hidden": True,
     "peaceful": True,

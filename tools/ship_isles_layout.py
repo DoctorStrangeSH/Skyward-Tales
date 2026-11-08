@@ -23,7 +23,7 @@ import jsonfmt  # noqa: E402
 STORM = {
     "name": "Грозовой остров",
     "map_color": [0.42, 0.46, 0.62],
-    "level": 12,
+    "level": 16,
     "enemy_power": 1.25,
     "hidden": True,
     "dock": [230, 680],
@@ -74,7 +74,7 @@ STORM = {
 MIRAGE = {
     "name": "Остров-мираж",
     "map_color": [0.72, 0.78, 0.9],
-    "level": 10,
+    "level": 13,
     "enemy_power": 1.15,
     "hidden": True,
     "dock": [1050, 680],

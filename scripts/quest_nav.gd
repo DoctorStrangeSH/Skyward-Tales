@@ -40,7 +40,9 @@ func _collect() -> Array:
 				at = _live_npc(npc_id, at)
 			if marker == "ready":
 				_add(result, region_id, at, "turnin", str(npc.get("name", "")), story_quest)
-			elif marker == "quest":
+			elif marker == "quest" and story_quest:
+				# Owner's list №14: a side quest nobody has offered yet gets no
+				# map pin — only the "!" over the villager's head.
 				_add(result, region_id, at, "offer", str(npc.get("name", "")), story_quest)
 	result.append_array(game.guild.targets())
 	result.append_array(game.expeditions.targets())
@@ -53,7 +55,7 @@ func _collect() -> Array:
 	if game.mine.overrun() and not quests.is_active(BorinStory.DREAM) and game.visited_regions.has(PassMine.REGION):
 		_add(result, PassMine.REGION, PassMine.ENTRANCE + Vector2(0, 50), "side", "Шахта захвачена")
 	for quest_id in quests.definitions:
-		if not quests.is_active(quest_id) or quests.is_ready_to_complete(quest_id):
+		if not quests.is_active(quest_id) or quests.is_ready_to_complete(quest_id) or not quests.is_tracked(quest_id):
 			continue
 		var definition: Dictionary = quests.definitions[quest_id]
 		var kind := "main" if bool(definition.get("main", false)) else "side"

@@ -12,6 +12,7 @@ func verify(ok: bool, detail: String) -> bool:
 
 func _run() -> void:
 	var game: Node2D = load("res://scenes/main.tscn").instantiate()
+	game.set("classic_balance", true)
 	root.add_child(game)
 	await process_frame
 	if not verify(game.current_region == "greenreach", "initial region"):
@@ -56,7 +57,7 @@ func _run() -> void:
 	for node in game.get_children():
 		if node is ForestWolf:
 			wolves += 1
-	if not verify(wolves == 2, "two forest wolves spawned"):
+	if not verify(wolves == 5, "five forest wolves spawned"):
 		return
 	var snapshot: Dictionary = game.make_save_snapshot()
 	if not verify(snapshot["world"]["region"] == "moonlit_grove", "region save data"):

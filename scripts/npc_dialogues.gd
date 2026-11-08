@@ -59,6 +59,9 @@ func _grant_reward(reward: Dictionary) -> String:
 ## Mirrors the conditions used by the conversations below.
 func marker_for(npc_id: String) -> String:
 	var quests := game.quests
+	# A story chapter waiting for this NPC decides the marker (open or not yet).
+	if game.director != null and not game.director.chapter_quest(npc_id).is_empty():
+		return game.director.chapter_marker(npc_id)
 	if game.givers != null and game.givers.has_giver(npc_id):
 		return game.givers.marker_for(npc_id)
 	if game.settlement != null and game.settlement.has_settler_npc(npc_id):
@@ -106,6 +109,8 @@ func _is_main(quest_id: String) -> bool:
 
 ## Which quest an NPC's marker is about ("" when unknown).
 func _marker_quest(npc_id: String) -> String:
+	if game.director != null and not game.director.chapter_quest(npc_id).is_empty():
+		return game.director.chapter_quest(npc_id)
 	if game.givers != null and game.givers.has_giver(npc_id):
 		return game.givers.current_quest(npc_id)
 	if game.director != null and game.director.talk_target() == npc_id:

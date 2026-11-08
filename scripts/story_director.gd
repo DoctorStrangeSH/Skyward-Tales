@@ -49,11 +49,164 @@ func update() -> void:
 	var next: Dictionary = _queue.pop_front()
 	game.story.play(str(next["scene"]), next["done"])
 
+# --- Chapter gates (owner's list №7) -------------------------------------------
+# A chain link with "giver" does not start by itself: the next chapter is
+# taken from that NPC, and only once "requires" is met — {"level": N,
+# "quests": [...], "count": K, "why": "…"}. Until then the giver says what is
+# missing and where to get it; the tracker shows the same hint.
+
+## Tests of the story beats (and a debug switch) run the chain without gates:
+## every chapter starts right after the previous one, as before the gates.
+var auto_chapters: bool = false
+
+## Links whose chapter waits for its giver right now.
+func pending_links() -> Array:
+	var result: Array = []
+	if not story_mode() or auto_chapters:
+		return result
+	for link in chain:
+		if not link.has("giver"):
+			continue
+		var start := str(link.get("start", ""))
+		if game.quests.is_completed(str(link.get("after", ""))) and not bool(game.quests.states.get(start, {}).get("started", false)) and not game.quests.is_completed(start):
+			result.append(link)
+	return result
+
+func _done_count(link: Dictionary) -> int:
+	var done := 0
+	for quest_id in link.get("requires", {}).get("quests", []):
+		if game.quests.is_completed(str(quest_id)):
+			done += 1
+	return done
+
+func link_ready(link: Dictionary) -> bool:
+	var req: Dictionary = link.get("requires", {})
+	if game.player.level < int(req.get("level", 0)):
+		return false
+	var quests: Array = req.get("quests", [])
+	return quests.is_empty() or _done_count(link) >= int(req.get("count", quests.size()))
+
+## Lines saying what is still missing, with hints where to get it.
+func missing(link: Dictionary) -> Array[String]:
+	var lines: Array[String] = []
+	var req: Dictionary = link.get("requires", {})
+	var level := int(req.get("level", 0))
+	if game.player.level < level:
+		lines.append("• Уровень %d (сейчас %d) — сражайтесь, выполняйте поручения." % [level, game.player.level])
+	var quests: Array = req.get("quests", [])
+	var need := int(req.get("count", quests.size()))
+	var have := _done_count(link)
+	if not quests.is_empty() and have < need:
+		lines.append("• %s (%d из %d):" % [str(req.get("why", "Выполните задания")), have, need])
+		var shown := 0
+		for quest_id in quests:
+			if game.quests.is_completed(str(quest_id)) or shown >= 4:
+				continue
+			shown += 1
+			var title := str(game.quests.definitions.get(quest_id, {}).get("title", quest_id))
+			var source := quest_source(str(quest_id))
+			var state := " — уже взято" if game.quests.is_active(str(quest_id)) else ""
+			lines.append("   – «%s»: %s%s" % [title, source, state])
+	return lines
+
+## Who gives a quest and where: "Мира, Зелёные Пределы".
+func quest_source(quest_id: String) -> String:
+	const HANDMADE := {"lost_cartographer_notes": "cartographer", "toren_wolf_hunt": "hunter", "bran_supply_run": "merchant", "borin_dream": "blacksmith", "borin_temper": "blacksmith", "ship_wreck": "haven_anchor"}
+	var npc_id := str(HANDMADE.get(quest_id, ""))
+	if npc_id.is_empty() and game.givers != null:
+		for giver_id in game.givers.givers:
+			if quest_id in game.givers.givers[giver_id].get("quests", []):
+				npc_id = str(giver_id)
+	for region_id in RegionCatalog.all_ids():
+		for npc in RegionCatalog.get_region(str(region_id)).get("npcs", []):
+			if str(npc.get("id", "")) == npc_id:
+				return "%s, %s" % [str(npc.get("name", npc_id)), RegionCatalog.display_name(str(region_id))]
+	return "спросите у жителей"
+
+func _giver_name(link: Dictionary) -> String:
+	var npc_id := str(link.get("giver", ""))
+	if npc_id == "cartographer":
+		return "Мира"
+	for region_id in RegionCatalog.all_ids():
+		for npc in RegionCatalog.get_region(str(region_id)).get("npcs", []):
+			if str(npc.get("id", "")) == npc_id:
+				return str(npc.get("name", npc_id))
+	return npc_id
+
+## "quest" over a giver whose chapter is open; "" otherwise.
+func chapter_marker(npc_id: String) -> String:
+	for link in pending_links():
+		if str(link.get("giver", "")) == npc_id:
+			return "quest" if link_ready(link) else ""
+	return ""
+
+func chapter_quest(npc_id: String) -> String:
+	for link in pending_links():
+		if str(link.get("giver", "")) == npc_id:
+			return str(link.get("start", ""))
+	return ""
+
+## The tracker's line about the next chapter.
+func tracker_entries() -> Array:
+	var result: Array = []
+	for link in pending_links():
+		var title := str(game.quests.definitions.get(str(link.get("start", "")), {}).get("title", "Следующая глава"))
+		if link_ready(link):
+			result.append({"title": "Глава «%s»: поговорите — %s" % [title, _giver_name(link)], "main": true, "progress": 0, "target": 1})
+		else:
+			var req: Dictionary = link.get("requires", {})
+			var parts: Array[String] = []
+			if game.player.level < int(req.get("level", 0)):
+				parts.append("ур. %d" % int(req.get("level", 0)))
+			var quests: Array = req.get("quests", [])
+			if not quests.is_empty() and _done_count(link) < int(req.get("count", quests.size())):
+				parts.append("поручения %d/%d" % [_done_count(link), int(req.get("count", quests.size()))])
+			result.append({"title": "Сюжет закрыт: нужно %s" % ", ".join(parts), "main": true, "progress": 0, "target": 1})
+	return result
+
+## The giver's answer: open the chapter, or say what is missing.
+func _offer_chapter(link: Dictionary) -> bool:
+	if link_ready(link):
+		if bool(link.get("npc_starts", false)):
+			return false
+		_begin_link(link)
+		return true
+	var lines := missing(link)
+	var text := str(link.get("locked", "Ещё рано, {hero}. Сначала —")) + "\n" + "\n".join(lines)
+	game._show_dialogue(_giver_name(link), text)
+	return true
+
+func _begin_link(link: Dictionary) -> void:
+	var next_quest := str(link.get("start", ""))
+	var scene := str(link.get("scene", ""))
+	var title := str(link.get("title", ""))
+	var begin := func() -> void:
+		if not title.is_empty():
+			game.hud.show_title_card(title, 4.0)
+		if not next_quest.is_empty() and game.quests.start_quest(next_quest):
+			game.hud.show_message("Новая глава: " + str(game.quests.definitions[next_quest].get("title", "")), 3.0)
+			game.spawn_story_objects()
+		game.update_npc_markers()
+		game._refresh_hud()
+	if scene.is_empty() or not game.story.has_scene(scene):
+		begin.call()
+	else:
+		game.story.play(scene, begin)
+
 func on_quest_completed(quest_id: String) -> void:
 	if not story_mode():
 		return
 	for link in chain:
 		if str(link.get("after", "")) != quest_id:
+			continue
+		if link.has("giver") and not auto_chapters:
+			# The next chapter waits for its giver.
+			var who := _giver_name(link)
+			if link_ready(link):
+				game.hud.show_message("Следующая глава: поговорите — %s." % who, 4.0)
+			else:
+				game.hud.show_message("Сюжет пока закрыт. %s подскажет, что нужно сделать." % who, 4.5)
+			game.update_npc_markers.call_deferred()
 			continue
 		var next_quest := str(link.get("start", ""))
 		var scene := str(link.get("scene", ""))
@@ -75,6 +228,9 @@ func on_quest_completed(quest_id: String) -> void:
 func try_talk(npc_id: String) -> bool:
 	if not story_mode() or game.story.active:
 		return false
+	for link in pending_links():
+		if str(link.get("giver", "")) == npc_id:
+			return _offer_chapter(link)
 	var quest_id := game.quests.active_quest_id
 	var definition: Dictionary = game.quests.definitions.get(quest_id, {})
 	if str(definition.get("talk_to", "")) != npc_id:

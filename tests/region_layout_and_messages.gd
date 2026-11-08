@@ -26,11 +26,11 @@ func _run() -> void:
 	await process_frame
 
 	# Greenreach layout from data.
-	if not _verify(_count(game, func(n: Node) -> bool: return n is WorldNpc) == 6, "greenreach has six NPCs (with Lira the alchemist)"):
+	if not _verify(_count(game, func(n: Node) -> bool: return n is WorldNpc) == 7, "greenreach has seven NPCs (with Lira and farmer Gavrila)"):
 		return
 	if not _verify(_count(game, func(n: Node) -> bool: return n is TreasureChest) == 7, "greenreach has seven chests"):
 		return
-	if not _verify(_count(game, func(n: Node) -> bool: return n is SlimeEnemy) == 3, "greenreach has three slimes"):
+	if not _verify(_count(game, func(n: Node) -> bool: return n is SlimeEnemy) == 10, "greenreach has ten monsters (more after the pacing pass): %d" % _count(game, func(n: Node) -> bool: return n is SlimeEnemy)):
 		return
 	if not _verify(game.elder != null and game.elder.display_name == "Старейшина Элиан", "elder reference is set"):
 		return
@@ -39,7 +39,7 @@ func _run() -> void:
 	game.quests.states["moonleaf_gathering"]["completed"] = true
 	game._set_region("moonlit_grove", Vector2(140, 430), false)
 	await process_frame
-	if not _verify(_count(game, func(n: Node) -> bool: return n is ForestWolf and not n.has_meta("legend")) == 2, "grove has two wolves"):
+	if not _verify(_count(game, func(n: Node) -> bool: return n is ForestWolf and not n.has_meta("legend")) == 5, "grove has five wolves"):
 		return
 	if not _verify(_count(game, func(n: Node) -> bool: return n is GroveGuardian) == 0, "guardian is hidden before grove quest"):
 		return

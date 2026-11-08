@@ -26,7 +26,7 @@ func _ready() -> void:
 
 func refresh(quests: QuestManager) -> void:
 	var data := QuestJournalPanel.build_entries(quests)
-	var active: Array = data["active"]
+	var active: Array = (data["active"] as Array).filter(func(e: Dictionary) -> bool: return e["tracked"])
 	var main := active.filter(func(e: Dictionary) -> bool: return e["main"])
 	var side := active.filter(func(e: Dictionary) -> bool: return not e["main"])
 	var next: Array = (main + side + extra).slice(0, MAX_ROWS)

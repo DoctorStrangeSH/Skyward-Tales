@@ -814,5 +814,115 @@
       "experience": 1500,
       "gold": 300
     }
+  },
+  {
+    "id": "farm_slimes",
+    "title": "Слизь в капусте",
+    "description": "Слизни облюбовали огороды Гаврилы на юго-востоке Пределов. Прогоните восьмерых.",
+    "target": 8,
+    "side": true,
+    "kill_kind": "slime",
+    "requires_quest": "moonleaf_gathering",
+    "reward": {
+      "experience": 90,
+      "gold": 40,
+      "items": [
+        {
+          "id": "bread",
+          "amount": 3
+        }
+      ]
+    }
+  },
+  {
+    "id": "grove_shamans",
+    "title": "Шёпот шаманов",
+    "description": "Лесные шаманы сбились с ума от пыли и путают грибникам тропы. Успокойте четырёх.",
+    "target": 4,
+    "side": true,
+    "kill_kind": "shaman",
+    "reward": {
+      "experience": 180,
+      "gold": 60,
+      "items": [
+        {
+          "id": "mana_potion",
+          "amount": 2
+        }
+      ]
+    }
+  },
+  {
+    "id": "caves_bats",
+    "title": "Тьма под крыльями",
+    "description": "Летучие мыши гасят фонари рудокопов. Прогоните восемь, чтобы в штольнях снова стало светло.",
+    "target": 8,
+    "side": true,
+    "kill_kind": "bat",
+    "reward": {
+      "experience": 320,
+      "gold": 90,
+      "items": [
+        {
+          "id": "iron_ore",
+          "amount": 4
+        }
+      ]
+    }
+  },
+  {
+    "id": "island_sentinels",
+    "title": "Сломанные стражи",
+    "description": "Стражи-автоматы города Хранителей сбились и нападают на всех. Остановите шестерых — писарь хочет переписать их приказы.",
+    "target": 6,
+    "side": true,
+    "kill_kind": "sentinel",
+    "requires_quest": "main_bridge",
+    "reward": {
+      "experience": 520,
+      "gold": 140,
+      "items": [
+        {
+          "id": "wind_essence",
+          "amount": 2
+        }
+      ]
+    }
+  },
+  {
+    "id": "spires_wisps",
+    "title": "Блуждающие огни",
+    "description": "Ветряные огоньки сбивают с пути всех, кто поднимается на шпили. Развейте восемь.",
+    "target": 8,
+    "side": true,
+    "kill_kind": "wisp",
+    "reward": {
+      "experience": 700,
+      "gold": 180,
+      "items": [
+        {
+          "id": "wind_essence",
+          "amount": 3
+        }
+      ]
+    }
+  },
+  {
+    "id": "rift_shades",
+    "title": "Тени без имён",
+    "description": "Тени Расколотого острова — это те, кого Узор забыл. Освободите шесть — послушник прочитает над ними имена.",
+    "target": 6,
+    "side": true,
+    "kill_kind": "shade",
+    "reward": {
+      "experience": 1000,
+      "gold": 220,
+      "items": [
+        {
+          "id": "shadow_essence",
+          "amount": 3
+        }
+      ]
+    }
   }
 ]

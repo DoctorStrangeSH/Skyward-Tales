@@ -12,6 +12,7 @@ func check(ok: bool, message: String) -> bool:
 
 func _run() -> void:
 	var game: Node2D = load("res://scenes/main.tscn").instantiate()
+	game.set("classic_balance", true)
 	root.add_child(game)
 	await process_frame
 	game._set_region("moonlit_grove", Vector2(140, 430), false)

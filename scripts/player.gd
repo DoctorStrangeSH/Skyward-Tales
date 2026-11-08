@@ -24,7 +24,7 @@ var health: int = 100
 var mana: int = 60
 var level: int = 1
 var experience: int = 0
-var experience_to_next: int = 40
+var experience_to_next: int = 60
 var gold: int = 0
 var facing: Vector2 = Vector2.DOWN
 var visual: DirectionalSprite
@@ -267,12 +267,17 @@ func spend_mana(amount: int) -> bool:
 	stats_changed.emit()
 	return true
 
+## Experience for the next level (owner's list №27/32: a slower, steadier
+## climb than the old ×1.42 — see tools/balance_sim.py).
+static func xp_for_level(level_now: int) -> int:
+	return int(round(60.0 + 45.0 * pow(float(maxi(1, level_now) - 1), 1.55)))
+
 func add_experience(amount: int) -> void:
 	experience += amount
 	while experience >= experience_to_next:
 		experience -= experience_to_next
 		level += 1
-		experience_to_next = int(round(float(experience_to_next) * 1.42))
+		experience_to_next = xp_for_level(level)
 		max_health += 10
 		max_mana += 5
 		health = max_health
@@ -295,6 +300,10 @@ func _load_equipment_definitions() -> void:
 		gear_sets = parsed.get("sets", {}).duplicate(true)
 	else:
 		push_error("Некорректный каталог экипировки: " + EQUIPMENT_DATA_PATH)
+
+## Owner's list №17: quest keys stay in the bag for good — never sold.
+func is_quest_item(item_id: String) -> bool:
+	return bool(get_item_definition(item_id).get("quest_item", false))
 
 func get_item_definition(item_id: String) -> Dictionary:
 	var definition: Variant = equipment_definitions.get(item_id, generated_items.get(item_id, {}))

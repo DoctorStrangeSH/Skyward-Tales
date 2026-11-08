@@ -1086,7 +1086,26 @@
     {
       "after": "main_guardian",
       "start": "crystal_heart",
-      "scene": ""
+      "scene": "",
+      "giver": "miner",
+      "npc_starts": true,
+      "requires": {
+        "level": 6,
+        "quests": [
+          "grove_shamans",
+          "farm_slimes",
+          "lira_slime",
+          "haven_letters",
+          "haven_flour",
+          "haven_kitten",
+          "haven_seeds",
+          "coast_crabs",
+          "coast_light"
+        ],
+        "count": 1,
+        "why": "Помогите кому-нибудь за пределами леса — в Гавани, на берегу или Лире"
+      },
+      "locked": "Не пущу. Кристаллы внизу трещат так, что новичка разорвёт в клочья. Сначала окрепни:"
     },
     {
       "after": "main_star_map",
@@ -1096,12 +1115,25 @@
     {
       "after": "main_prologue",
       "start": "moonleaf_gathering",
-      "scene": "elder_after_shard"
+      "scene": "elder_after_shard",
+      "giver": "elder",
+      "npc_starts": true
     },
     {
       "after": "moonleaf_gathering",
       "start": "main_star_map",
-      "scene": "elder_star_map"
+      "scene": "elder_star_map",
+      "giver": "elder",
+      "requires": {
+        "quests": [
+          "lost_cartographer_notes",
+          "toren_wolf_hunt",
+          "bran_supply_run"
+        ],
+        "count": 1,
+        "why": "Помогите кому-нибудь в Пределах"
+      },
+      "locked": "Подожди, {hero}. Небо подождёт до завтра — а люди рядом ждут сегодня. Сначала помоги своим:"
     },
     {
       "after": "grove_spirits",
@@ -1126,7 +1158,27 @@
     {
       "after": "main_archive",
       "start": "main_spires",
-      "scene": "spires_departure"
+      "scene": "spires_departure",
+      "giver": "archivist",
+      "requires": {
+        "level": 10,
+        "quests": [
+          "island_sentinels",
+          "caves_bats",
+          "coast_crabs",
+          "coast_light",
+          "coast_king",
+          "marsh_lanterns",
+          "marsh_toads",
+          "marsh_king",
+          "haven_seeds",
+          "haven_songs",
+          "lira_slime"
+        ],
+        "count": 3,
+        "why": "Помогите земле внизу: побережью, топи, Гавани"
+      },
+      "locked": "Шпили убьют неподготовленного Хранителя, а второго у меня нет. Я считал: шансы малы. Сначала —"
     },
     {
       "after": "main_spires",
@@ -1136,7 +1188,25 @@
     {
       "after": "main_tempest",
       "start": "main_rift",
-      "scene": "rift_call"
+      "scene": "rift_call",
+      "giver": "cartographer",
+      "requires": {
+        "level": 12,
+        "quests": [
+          "island_sentinels",
+          "spires_wisps",
+          "pass_golems",
+          "pass_coal",
+          "pass_giant",
+          "marsh_king",
+          "coast_king",
+          "borin_dream",
+          "ship_wreck"
+        ],
+        "count": 2,
+        "why": "Окрепните в землях внизу: Перевал, топь, побережье, Борин"
+      },
+      "locked": "{hero}, я видела тени Расколотого острова на карте — они везде. Мы не готовы. Давай сначала:"
     },
     {
       "after": "main_rift",
@@ -1147,7 +1217,12 @@
       "after": "main_vail",
       "start": "main_elder",
       "scene": "act3_call",
-      "title": "Акт III · Последняя опора"
+      "title": "Акт III · Последняя опора",
+      "giver": "cartographer",
+      "requires": {
+        "level": 13
+      },
+      "locked": "Мне нужно время переварить слова Вейла. И тебе тоже, {hero}. Давай немного поживём обычной жизнью:"
     },
     {
       "after": "main_elder",
@@ -1157,7 +1232,26 @@
     {
       "after": "main_echoes",
       "start": "main_ascent",
-      "scene": "ascent_call"
+      "scene": "ascent_call",
+      "giver": "cartographer",
+      "requires": {
+        "level": 16,
+        "quests": [
+          "spires_wisps",
+          "rift_shades",
+          "ash_hounds",
+          "ash_embers",
+          "ash_lord",
+          "pass_giant",
+          "forge_titan",
+          "borin_temper",
+          "marsh_king",
+          "coast_king"
+        ],
+        "count": 3,
+        "why": "Станьте сильнее перед Сердцем неба: пустошь, горнило, короли земель"
+      },
+      "locked": "Сердце неба — это не остров, это приговор, если прийти туда слабыми. Я не пущу тебя одн{ого|у}. Сначала:"
     },
     {
       "after": "main_ascent",

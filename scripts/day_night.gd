@@ -1,13 +1,13 @@
 extends Node
 class_name DayNight
 
-## Day and night on the surface: a full day takes 12 minutes. Dawn and dusk
+## Day and night on the surface: a full day takes 30 minutes (owner's list №9). Dawn and dusk
 ## tint the world warm, night turns it blue and lights fireflies. At night
 ## enemies hit harder and have more health, but give more experience and
 ## gold. Lands that are always night (the grove) and the underground keep
 ## their own light.
 
-const CYCLE := 720.0
+const CYCLE := 1800.0
 const KEYS := [
 	[0.0, Color(0.3, 0.36, 0.64)],
 	[0.18, Color(0.34, 0.4, 0.68)],

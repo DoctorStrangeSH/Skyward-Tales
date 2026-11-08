@@ -25,6 +25,7 @@ func _all(script_name: String) -> Array:
 
 func _run() -> void:
 	game = load("res://scenes/main.tscn").instantiate()
+	game.set("classic_balance", true)
 	root.add_child(game)
 	await process_frame
 	game.autosave_enabled = false

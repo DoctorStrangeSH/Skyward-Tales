@@ -58,6 +58,8 @@ func get_sell_price(item_id: String, bran_trust: int = 0, player: PlayerCharacte
 
 ## Copies the player can sell: equipped items keep one copy on the hero.
 func sellable_count(player: PlayerCharacter, item_id: String) -> int:
+	if player.is_quest_item(item_id):
+		return 0
 	var count := int(player.inventory.get(item_id, 0))
 	if item_id in player.equipment.values():
 		count -= 1
@@ -80,6 +82,8 @@ func sell(player: PlayerCharacter, item_id: String, bran_trust: int = 0) -> Dict
 	var price := get_sell_price(item_id, bran_trust, player)
 	if price < 0:
 		return {"success": false, "message": "Бран такое не покупает."}
+	if player.is_quest_item(item_id):
+		return {"success": false, "message": "Предмет задания не продаётся."}
 	if sellable_count(player, item_id) <= 0 or not player.remove_item(item_id, 1):
 		return {"success": false, "message": "Нечего продать: надетые вещи не продаются."}
 	player.add_gold(price)

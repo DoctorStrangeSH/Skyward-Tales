@@ -46,6 +46,8 @@ func _run() -> void:
 	set_meta("skyward_new_hero", {"name": "Арина", "gender": "f"})
 	game = load("res://scenes/main.tscn").instantiate()
 	root.add_child(game)
+	game.director.auto_chapters = true
+	game.classic_balance = true
 	await process_frame
 	game.autosave_enabled = false
 	await _finish_scenes()
@@ -113,7 +115,7 @@ func _run() -> void:
 			sentinels += 1
 			if not _verify(SkywardGame.enemy_kind(node) == "sentinel", "sentinels are their own kind"):
 				return
-	if not _verify(sentinels == 4, "four sentinels guard the island"):
+	if not _verify(sentinels == 8, "eight sentinels guard the island"):
 		return
 
 	# Talking to the archivist early does not finish the chapter.

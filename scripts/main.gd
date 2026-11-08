@@ -291,6 +291,9 @@ func _ready() -> void:
 	hud.journal_view.achievements = achievements
 	hud.journal_view.lore_book = lore
 	hud.journal_view.factions_ref = factions
+	hud.journal_view.tracking_changed.connect(func() -> void:
+		quest_nav.refresh()
+		_refresh_hud())
 	hud.inventory_unequip_requested.connect(_on_inventory_unequip)
 	hud.handcraft_requested.connect(open_handcraft)
 	hud.hero_unequip_requested.connect(func(slot: String) -> void:
@@ -436,7 +439,7 @@ func _process(delta: float) -> void:
 	_tick_autosave(delta)
 	_update_spell_hud()
 	hud.update_hotbar(skills.hotbar_entries())
-	hud.quest_tracker.extra = contracts.tracker_entries()
+	hud.quest_tracker.extra = director.tracker_entries() + contracts.tracker_entries()
 	director.update()
 	# The finale choice comes back until the hero makes it.
 	if quests.is_completed("main_heart") and not director.has_flag("ending_restore") and not director.has_flag("ending_lower"):
@@ -705,13 +708,46 @@ func _scale_to_region(enemy: SlimeEnemy) -> void:
 	power *= ng_power(current_region)
 	if ng_plus > 0:
 		enemy.xp_reward = int(round(enemy.xp_reward * ng_mult_xp()))
-	if is_equal_approx(power, 1.0) or enemy is GroveGuardian:
-		return
-	enemy.max_health = int(round(enemy.max_health * power))
+	if not is_equal_approx(power, 1.0) and not enemy is GroveGuardian:
+		enemy.max_health = int(round(enemy.max_health * power))
+		enemy.attack_damage = int(round(enemy.attack_damage * power))
+		enemy.xp_reward = int(round(enemy.xp_reward * power))
+	_apply_toughness(enemy)
 	enemy.health = enemy.max_health
-	enemy.attack_damage = int(round(enemy.attack_damage * power))
-	enemy.xp_reward = int(round(enemy.xp_reward * power))
 	enemy.combat_feedback.set_health(enemy.health, enemy.max_health)
+
+## Balance (owner's list №27): every foe is tougher than before, bosses much
+## tougher, and a land above the hero's level hits hard — level up first.
+## Farming lands far below the hero gives little experience.
+const TOUGH_HEALTH := 1.35
+const TOUGH_DAMAGE := 1.15
+const BOSS_HEALTH := 1.6
+const GAP_HEALTH := 0.15
+const GAP_DAMAGE := 0.1
+
+func level_gap(region_id: String = current_region) -> int:
+	return RegionCatalog.level(region_id) - (player.level if player != null else 1)
+
+static func gap_xp_mult(gap: int) -> float:
+	var over := -gap - 3
+	return 1.0 if over <= 0 else maxf(0.2, 1.0 - 0.15 * over)
+
+## Tests of the older mechanics switch the balance pass off to check base stats.
+var classic_balance: bool = false
+
+func _apply_toughness(enemy: SlimeEnemy) -> void:
+	if classic_balance:
+		return
+	var health := TOUGH_HEALTH
+	var damage := TOUGH_DAMAGE
+	if enemy is GroveGuardian or enemy_kind(enemy) in STORY_BOSSES:
+		health *= BOSS_HEALTH
+	var gap := clampi(level_gap(), 0, 8)
+	health *= 1.0 + GAP_HEALTH * gap
+	damage *= 1.0 + GAP_DAMAGE * gap
+	enemy.max_health = int(round(enemy.max_health * health))
+	enemy.attack_damage = int(round(enemy.attack_damage * damage))
+	enemy.xp_reward = maxi(1, int(round(enemy.xp_reward * gap_xp_mult(level_gap()))))
 
 ## The camera shows the world at 2x (320x180 world pixels on screen): enemies
 ## notice and shoot from about two-thirds of their old ranges, so nothing
@@ -1421,7 +1457,7 @@ func roll_drops(kind: String, at: Vector2, elite: bool = false) -> Array:
 const LOOT_RATE := 0.6
 const KEEPER_SET := ["keeper_staff", "keeper_robe", "keeper_sigil"]
 const GEAR_RATE := 0.45
-const XP_RATE := 0.7
+const XP_RATE := 0.6
 
 var _drop_tables: Dictionary = {}
 

@@ -54,7 +54,7 @@ func _run() -> void:
 	hud.show_message("Исчезну", 0.1)
 	for _i in range(20):
 		await process_frame
-	if not _verify(hud.toasts.visible_texts().is_empty(), "toasts expire"):
+	if not _verify(hud.toasts.visible_texts().is_empty(), "toasts expire: " + str(hud.toasts.visible_texts())):
 		return
 
 	# No permanent key hint when nothing is nearby.

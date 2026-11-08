@@ -24,6 +24,7 @@ func _run() -> void:
 		return
 	var before_gold: int = game.player.gold
 	var before_level: int = game.player.level
+	game.player.experience = game.player.experience_to_next - 20
 	var before_xp: int = game.player.experience
 	var xp_to_next: int = game.player.experience_to_next
 	game._on_dialogue_choice_selected("village")

@@ -22,6 +22,7 @@ func _count(game: Node, kind: Script) -> int:
 
 func _run() -> void:
 	var game: SkywardGame = load("res://scenes/main.tscn").instantiate()
+	game.set("classic_balance", true)
 	root.add_child(game)
 	await process_frame
 	game.autosave_enabled = false
@@ -35,7 +36,7 @@ func _run() -> void:
 	if not _verify(game.current_region == "crystal_caves", "defeating the guardian opens the caves"):
 		return
 	await process_frame
-	if not _verify(_count(game, load("res://scripts/cave_bat.gd")) == 5, "five crystal bats spawn"):
+	if not _verify(_count(game, load("res://scripts/cave_bat.gd")) == 9, "nine crystal bats spawn"):
 		return
 	for node in game.get_children():
 		if not _verify(not (node is WorldCollectible and node.item_id == "echo_crystal"), "echo crystals wait for Dorn's quest"):

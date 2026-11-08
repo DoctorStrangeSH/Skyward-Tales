@@ -40,6 +40,15 @@ func start_quest(quest_id: String) -> bool:
 func is_side(quest_id: String) -> bool:
 	return bool(definitions.get(quest_id, {}).get("side", false))
 
+## Owner's list №13: the player picks which quests the tracker and the map
+## follow. Everything is followed until switched off in the journal.
+func is_tracked(quest_id: String) -> bool:
+	return bool(states.get(quest_id, {}).get("tracked", true))
+
+func set_tracked(quest_id: String, on: bool) -> void:
+	if states.has(quest_id):
+		states[quest_id]["tracked"] = on
+
 ## Started and not yet completed.
 func is_active(quest_id: String) -> bool:
 	return states.has(quest_id) and bool(states[quest_id]["started"]) and not bool(states[quest_id]["completed"])

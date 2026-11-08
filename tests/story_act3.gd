@@ -44,6 +44,8 @@ func _run() -> void:
 	set_meta("skyward_new_hero", {"name": "Арина", "gender": "f"})
 	game = load("res://scenes/main.tscn").instantiate()
 	root.add_child(game)
+	game.director.auto_chapters = true
+	game.classic_balance = true
 	await process_frame
 	game.autosave_enabled = false
 	game.player.max_health = 99999
