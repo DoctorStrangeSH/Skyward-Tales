@@ -98,6 +98,7 @@ var farm: Farm
 var buildings: VillageBuildings
 var guild: AdventurersGuild
 var expeditions: Expeditions
+var ship: SkyShip
 var achievements: Achievements
 var lore: LoreBook = LoreBook.new()
 var cast_cooldown_total: float = 0.0
@@ -198,6 +199,10 @@ func _ready() -> void:
 	expeditions.name = "Expeditions"
 	expeditions.game = self
 	add_child(expeditions)
+	ship = SkyShip.new()
+	ship.name = "SkyShip"
+	ship.game = self
+	add_child(ship)
 	farm = Farm.new()
 	farm.name = "Farm"
 	farm.game = self
@@ -448,6 +453,8 @@ func _interaction_prompt(target: Node2D) -> String:
 		return "E — прочитать руны"
 	if target is TreasureChest:
 		return "E — открыть"
+	if "prompt" in target:
+		return "E — " + str(target.get("prompt"))
 	return "E — собрать"
 
 # --- Input ---------------------------------------------------------------
@@ -672,6 +679,7 @@ func _populate_region() -> void:
 	if current_region == Expeditions.REGION:
 		expeditions.populate()
 	legends.on_region_ready()
+	ship.populate()
 
 ## Ordinary monsters come back a while after they fall (bosses, quest foes,
 ## legends and event foes do not).
@@ -2315,6 +2323,8 @@ func _cast_spell() -> void:
 func _refresh_hud() -> void:
 	if borin != null:
 		borin.sync_progress()
+	if ship != null:
+		ship.sync_progress()
 	if hud != null and player != null and quests != null:
 		hud.update_status(player, quests)
 

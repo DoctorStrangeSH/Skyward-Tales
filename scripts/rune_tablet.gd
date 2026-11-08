@@ -5,6 +5,8 @@ class_name RuneTablet
 
 signal used
 
+var prompt: String = "прочитать скрижаль"
+
 func _ready() -> void:
 	add_to_group("interactables")
 	add_to_group("region_actor")

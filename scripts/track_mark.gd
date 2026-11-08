@@ -6,6 +6,7 @@ class_name TrackMark
 signal used(mark: TrackMark)
 
 var index: int = 0
+var prompt: String = "изучить следы"
 var _clock: float = 0.0
 
 func _ready() -> void:

@@ -328,6 +328,34 @@
       "stat": "legend_hunts",
       "goal": 1,
       "gold": 120
+    },
+    "sky_captain": {
+      "title": "Капитан неба",
+      "description": "Почините «Ветрокрыл» и поднимите его в небо.",
+      "stat": "ship_flights",
+      "goal": 1,
+      "gold": 100
+    },
+    "sky_voyager": {
+      "title": "Небесный странник",
+      "description": "Совершите 10 полётов на «Ветрокрыле».",
+      "stat": "ship_flights",
+      "goal": 10,
+      "gold": 200
+    },
+    "storm_rider": {
+      "title": "Укротитель грозы",
+      "description": "Одолейте Грозового стража.",
+      "stat": "storm_warden",
+      "goal": 1,
+      "gold": 200
+    },
+    "mirage_finder": {
+      "title": "Сквозь туман",
+      "description": "Найдите Остров-мираж.",
+      "stat": "mirage_found",
+      "goal": 1,
+      "gold": 150
     }
   }
 }

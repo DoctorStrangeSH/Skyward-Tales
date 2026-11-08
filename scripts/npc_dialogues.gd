@@ -117,6 +117,8 @@ func handle_choice(choice_id: String) -> void:
 		return
 	if game.guild != null and game.guild.handle_choice(choice_id):
 		return
+	if game.ship != null and game.ship.handle_choice(choice_id):
+		return
 	if game.buildings != null and game.buildings.handle_choice(choice_id):
 		return
 	if game.farm != null and game.farm.handle_choice(choice_id):

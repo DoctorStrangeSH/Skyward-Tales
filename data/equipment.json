@@ -1044,6 +1044,30 @@
       "ranged": 12,
       "lifesteal": 1,
       "value": 210
+    },
+    "storm_crown": {
+      "name": "Венец бури",
+      "description": "+4 к силе магии, +3 к ловкости, +6 к урону молнией. Снят с Грозового стража.",
+      "slot": "relic",
+      "rarity": "epic",
+      "power": 4,
+      "agility": 3,
+      "spell_bonus": {
+        "chain_lightning": 6
+      },
+      "icon": "echo_crystal",
+      "value": 520
+    },
+    "mirage_cloak": {
+      "name": "Плащ миража",
+      "description": "+7 к броне, +4 к ловкости, +20 к здоровью. Соткан из тумана Острова-миража.",
+      "slot": "armor",
+      "rarity": "epic",
+      "armor": 7,
+      "agility": 4,
+      "max_health": 20,
+      "icon": "keeper_robe",
+      "value": 480
     }
   },
   "sets": {

@@ -8,6 +8,8 @@ const WARN := 1.1
 const RADIUS := 18.0
 
 var damage: int = 8
+## A lightning bolt instead of a falling crystal (Грозовой остров).
+var lightning: bool = false
 var _clock: float = 0.0
 var _landed: bool = false
 
@@ -28,6 +30,9 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _draw() -> void:
+	if lightning:
+		_draw_lightning()
+		return
 	if not _landed:
 		var t := _clock / WARN
 		draw_circle(Vector2.ZERO, RADIUS, Color(0.55, 0.85, 1.0, 0.22 + 0.25 * t))
@@ -47,3 +52,21 @@ func _draw_crystal(at: Vector2, alpha: float) -> void:
 	var shape := PackedVector2Array([at + Vector2(0, -9), at + Vector2(4, 0), at + Vector2(0, 6), at + Vector2(-4, 0)])
 	draw_colored_polygon(shape, Color(0.65, 0.9, 1.0, alpha))
 	draw_polyline(shape + PackedVector2Array([shape[0]]), Color(1, 1, 1, alpha), 1.0)
+
+func _draw_lightning() -> void:
+	if not _landed:
+		var t := _clock / WARN
+		draw_circle(Vector2.ZERO, RADIUS, Color(1.0, 0.95, 0.5, 0.15 + 0.25 * t))
+		draw_arc(Vector2.ZERO, RADIUS, 0.0, TAU, 24, Color(1.0, 0.95, 0.6, 0.5 + 0.4 * t), 1.5)
+		draw_arc(Vector2.ZERO, RADIUS * (1.0 - t), 0.0, TAU, 24, Color(1.0, 1.0, 0.8, 0.9), 1.5)
+		return
+	var fade := 1.0 - (_clock - WARN) / 0.5
+	var rng := RandomNumberGenerator.new()
+	rng.seed = int(global_position.x * 13.0 + global_position.y)
+	var points := PackedVector2Array([Vector2(0, -160)])
+	for i in 7:
+		points.append(Vector2(rng.randf_range(-10, 10), -160.0 + 160.0 * (i + 1) / 7.0))
+	points.append(Vector2.ZERO)
+	draw_polyline(points, Color(0.8, 0.85, 1.0, fade * 0.5), 5.0)
+	draw_polyline(points, Color(1, 1, 1, fade), 2.0)
+	draw_circle(Vector2.ZERO, RADIUS * 0.8, Color(1.0, 0.95, 0.7, fade * 0.45))

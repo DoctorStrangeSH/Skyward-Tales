@@ -44,6 +44,10 @@ func _unlocked(quest_id: String) -> bool:
 
 ## "quest" (!) when an offer is waiting, "ready" (?) when a reward is due.
 func marker_for(npc_id: String) -> String:
+	if game.ship != null:
+		var ship_marker := game.ship.marker(npc_id)
+		if not ship_marker.is_empty():
+			return ship_marker
 	var quest_id := current_quest(npc_id)
 	if quest_id.is_empty():
 		return ""
@@ -54,6 +58,8 @@ func marker_for(npc_id: String) -> String:
 	return ""
 
 func talk(npc_id: String) -> void:
+	if game.ship != null and game.ship.talk(npc_id):
+		return
 	var quests := game.quests
 	var speaker := _speaker(npc_id)
 	var quest_id := current_quest(npc_id)
