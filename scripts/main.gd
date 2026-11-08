@@ -97,6 +97,7 @@ var gear: GearEffects
 var farm: Farm
 var buildings: VillageBuildings
 var guild: AdventurersGuild
+var expeditions: Expeditions
 var achievements: Achievements
 var lore: LoreBook = LoreBook.new()
 var cast_cooldown_total: float = 0.0
@@ -193,6 +194,10 @@ func _ready() -> void:
 	borin = BorinStory.new(self)
 	buildings = VillageBuildings.new(self)
 	guild = AdventurersGuild.new(self)
+	expeditions = Expeditions.new()
+	expeditions.name = "Expeditions"
+	expeditions.game = self
+	add_child(expeditions)
 	farm = Farm.new()
 	farm.name = "Farm"
 	farm.game = self
@@ -664,6 +669,9 @@ func _populate_region() -> void:
 	buildings.spawn_mercenary()
 	buildings.reveal_chests()
 	guild.spawn_target()
+	if current_region == Expeditions.REGION:
+		expeditions.populate()
+	legends.on_region_ready()
 
 ## Ordinary monsters come back a while after they fall (bosses, quest foes,
 ## legends and event foes do not).
@@ -754,7 +762,7 @@ func _clear_region_actors() -> void:
 	for node in get_children():
 		if node is WorldNpc and node.is_companion:
 			continue
-		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is SettlementObject or node is GatherNode or node is CraftStation or node is DungeonDoor or node is SpikeTrap or node is FlameVent or node is DungeonLever or node is ContractBoard or node is DigSpot or node is PatternRift or node is Caravan or node is Arrow or node is SnareTrap or node is SpiritAlly or node is CrystalTotem or node is FarmBed or node is FarmPatch or node is MagicBolt or node is EnemyMagicOrb:
+		if node is WorldNpc or node is WorldCollectible or node is SlimeEnemy or node is WorldLoot or node is TreasureChest or node is RegionGate or node is Waystone or node is SettlementObject or node is GatherNode or node is CraftStation or node is DungeonDoor or node is SpikeTrap or node is FlameVent or node is DungeonLever or node is ContractBoard or node is DigSpot or node is PatternRift or node is Caravan or node is Arrow or node is SnareTrap or node is SpiritAlly or node is CrystalTotem or node is FarmBed or node is FarmPatch or node is MagicBolt or node is EnemyMagicOrb or node.is_in_group("region_actor"):
 			remove_child(node)
 			node.queue_free()
 	elder = null

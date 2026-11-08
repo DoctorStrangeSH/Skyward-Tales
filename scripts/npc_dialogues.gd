@@ -158,6 +158,9 @@ func handle_choice(choice_id: String) -> void:
 				_complete_miner_quest(choice_id.trim_prefix("miner_reward:"))
 			elif choice_id.begins_with("merchant_sell:"):
 				_sell_to_merchant(choice_id.trim_prefix("merchant_sell:"))
+			elif choice_id.begins_with("legend_hunt:"):
+				_close()
+				game.legends.handle_choice(choice_id)
 			elif choice_id.begins_with("merchant_buy:"):
 				_purchase_merchant_item(choice_id.trim_prefix("merchant_buy:"))
 			elif game.quests.is_ready_to_complete("moonleaf_gathering"):
@@ -338,6 +341,12 @@ func on_hunter() -> void:
 		])
 	elif quests.is_completed(quest_id):
 		var choices := _toren_bow_choices()
+		var prey := game.legends.huntable()
+		var hunt: Dictionary = game.legends.hunt
+		if hunt.is_empty() and not prey.is_empty():
+			choices.push_front({"id": "legend_hunt:" + prey, "label": "Выследить легенду: " + game.legends.legend_name(prey)})
+		elif not hunt.is_empty():
+			choices.push_front({"id": "hunter_craft:later", "label": "Как идёт охота? (%s)" % game.legends.legend_name(str(hunt["id"]))})
 		choices.append({"id": "hunter_craft:later", "label": "Просто поболтать"})
 		_ask("Торен, охотник", "Шкуры уже высушены, а тропы снова безопасны. %s. Хочешь лук? Делаю сам." % game.relationships.get_reaction("toren"), choices)
 	elif quests.is_ready_to_complete(quest_id):

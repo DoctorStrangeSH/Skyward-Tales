@@ -300,6 +300,34 @@
       "stat": "full_set",
       "goal": 1,
       "gold": 120
+    },
+    "vault_runner": {
+      "title": "Искатель хранилищ",
+      "description": "Пройдите экспедицию в хранилище Узора.",
+      "stat": "expeditions",
+      "goal": 1,
+      "gold": 80
+    },
+    "vault_veteran": {
+      "title": "Ветеран экспедиций",
+      "description": "Пройдите 5 экспедиций в хранилище Узора.",
+      "stat": "expeditions",
+      "goal": 5,
+      "gold": 250
+    },
+    "rune_reader": {
+      "title": "Чтец рун",
+      "description": "Откройте печать рун в хранилище Узора.",
+      "stat": "rune_puzzles",
+      "goal": 1,
+      "gold": 40
+    },
+    "legend_tracker": {
+      "title": "Следопыт легенд",
+      "description": "Выследите легенду вместе с Тореном и победите её.",
+      "stat": "legend_hunts",
+      "goal": 1,
+      "gold": 120
     }
   }
 }

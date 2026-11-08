@@ -21,8 +21,16 @@ static func all() -> Dictionary:
 			push_warning("Каталог регионов не найден: " + PATH)
 	return _regions
 
+## Lands on the world map. Hidden lands (the Pattern Vault, reached only by
+## expedition) are left out; all_ids() lists them too.
 static func ids() -> Array:
+	return all().keys().filter(func(region_id: Variant) -> bool: return not is_hidden(str(region_id)))
+
+static func all_ids() -> Array:
 	return all().keys()
+
+static func is_hidden(region_id: String) -> bool:
+	return bool(get_region(str(region_id)).get("hidden", false))
 
 static func has(region_id: String) -> bool:
 	return all().has(region_id)

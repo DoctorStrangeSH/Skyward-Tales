@@ -103,6 +103,9 @@ func talk() -> void:
 		for index in offers.size():
 			var offer: Dictionary = offers[index]
 			choices.append({"id": "guild_take:%d" % index, "label": "%s%s — %s · %d золота" % ["☠ ГРОЗА: " if bool(offer["mighty"]) else "", offer["name"], RegionCatalog.display_name(str(offer["region"])), roundi(offer["gold"] * reward_mult())]})
+	if game.expeditions != null:
+		lines += "\nЭкспедиций в хранилище Узора: %d." % game.expeditions.completed
+		choices.append({"id": "guild_expedition", "label": "Экспедиция в хранилище Узора (тайная тропа, ур. %d)" % maxi(1, game.player.level)})
 	choices.append({"id": "guild_close", "label": "Уйти"})
 	game._show_dialogue_choices("Рагна, глава гильдии", lines, choices)
 
@@ -192,6 +195,10 @@ func handle_choice(choice_id: String) -> bool:
 	if choice_id.begins_with("guild_take:"):
 		game.dialogues._close()
 		take(int(choice_id.trim_prefix("guild_take:")))
+		return true
+	if choice_id == "guild_expedition":
+		game.dialogues._close()
+		game.expeditions.start()
 		return true
 	if choice_id == "guild_turnin":
 		game.dialogues._close()
