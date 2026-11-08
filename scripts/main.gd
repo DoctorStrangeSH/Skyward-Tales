@@ -99,6 +99,9 @@ var buildings: VillageBuildings
 var guild: AdventurersGuild
 var expeditions: Expeditions
 var ship: SkyShip
+var factions: Factions
+var fates: IslandFates
+var party: Party
 var achievements: Achievements
 var lore: LoreBook = LoreBook.new()
 var cast_cooldown_total: float = 0.0
@@ -193,6 +196,9 @@ func _ready() -> void:
 	world_state.game = self
 	add_child(world_state)
 	borin = BorinStory.new(self)
+	factions = Factions.new(self)
+	fates = IslandFates.new(self)
+	party = Party.new(self)
 	buildings = VillageBuildings.new(self)
 	guild = AdventurersGuild.new(self)
 	expeditions = Expeditions.new()
@@ -272,6 +278,7 @@ func _ready() -> void:
 	hud.inventory_view.set_skills(skills)
 	hud.journal_view.achievements = achievements
 	hud.journal_view.lore_book = lore
+	hud.journal_view.factions_ref = factions
 	hud.inventory_unequip_requested.connect(_on_inventory_unequip)
 	hud.handcraft_requested.connect(open_handcraft)
 	hud.hero_unequip_requested.connect(func(slot: String) -> void:
@@ -383,6 +390,8 @@ func _process(delta: float) -> void:
 	if player == null or hud == null or game_over:
 		return
 	_process_respawns(delta)
+	if fates != null:
+		fates.tick(delta)
 	_tick_autosave(delta)
 	_update_spell_hud()
 	hud.update_hotbar(skills.hotbar_entries())
@@ -680,6 +689,9 @@ func _populate_region() -> void:
 		expeditions.populate()
 	legends.on_region_ready()
 	ship.populate()
+	fates.populate()
+	party.ensure_follower()
+	party.apply_mira()
 
 ## Ordinary monsters come back a while after they fall (bosses, quest foes,
 ## legends and event foes do not).
@@ -919,6 +931,8 @@ func _scale_to_region(enemy: SlimeEnemy) -> void:
 	if epilogue != null:
 		enemy.xp_reward = int(round(enemy.xp_reward * epilogue.xp_mult()))
 	var power := RegionCatalog.enemy_power(current_region)
+	if fates != null:
+		power *= fates.power_mult(current_region)
 	if is_equal_approx(power, 1.0) or enemy is GroveGuardian:
 		return
 	enemy.max_health = int(round(enemy.max_health * power))
@@ -1366,6 +1380,8 @@ func _spawn_npc(npc_data: Dictionary) -> void:
 		return
 	if npc_id == "cartographer" and companion != null:
 		return  # Mira travels with the hero instead of waiting at camp
+	if party != null and party.extra == npc_id:
+		return  # this one travels with the hero too
 	var npc := NPC_SCRIPT.new() as WorldNpc
 	npc.npc_id = npc_id
 	npc.look_id = str(npc_data.get("look", ""))
@@ -1527,7 +1543,7 @@ func _on_elder_interacted(_source: Node2D) -> void:
 		dialogues.on_elder()
 
 func _on_cartographer_interacted(_source: Node2D) -> void:
-	if not director.try_talk("cartographer"):
+	if not director.try_talk("cartographer") and not party.talk("cartographer"):
 		dialogues.on_cartographer()
 
 func _on_grove_warden_interacted(_source: Node2D) -> void:

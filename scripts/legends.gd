@@ -135,7 +135,7 @@ func restore_snapshot(value: Variant) -> void:
 		defeated = (value["defeated"] as Dictionary).duplicate()
 	hunt = {}
 	if value is Dictionary and value.get("hunt", {}) is Dictionary:
-		hunt = (value["hunt"] as Dictionary).duplicate(true)
+		hunt = (value.get("hunt", {}) as Dictionary).duplicate(true)
 	if value is Dictionary:
 		hunts_done = int(value.get("hunts_done", 0))
 

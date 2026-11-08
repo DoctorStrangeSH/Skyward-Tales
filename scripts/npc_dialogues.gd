@@ -119,6 +119,12 @@ func handle_choice(choice_id: String) -> void:
 		return
 	if game.ship != null and game.ship.handle_choice(choice_id):
 		return
+	if game.factions != null and game.factions.handle_choice(choice_id):
+		return
+	if game.fates != null and game.fates.handle_choice(choice_id):
+		return
+	if game.party != null and game.party.handle_choice(choice_id):
+		return
 	if game.buildings != null and game.buildings.handle_choice(choice_id):
 		return
 	if game.farm != null and game.farm.handle_choice(choice_id):
@@ -349,6 +355,8 @@ func on_hunter() -> void:
 			choices.push_front({"id": "legend_hunt:" + prey, "label": "Выследить легенду: " + game.legends.legend_name(prey)})
 		elif not hunt.is_empty():
 			choices.push_front({"id": "hunter_craft:later", "label": "Как идёт охота? (%s)" % game.legends.legend_name(str(hunt["id"]))})
+		if game.party.can_recruit("hunter"):
+			choices.push_front({"id": "party_join:hunter", "label": "Пойдём со мной, Торен"})
 		choices.append({"id": "hunter_craft:later", "label": "Просто поболтать"})
 		_ask("Торен, охотник", "Шкуры уже высушены, а тропы снова безопасны. %s. Хочешь лук? Делаю сам." % game.relationships.get_reaction("toren"), choices)
 	elif quests.is_ready_to_complete(quest_id):

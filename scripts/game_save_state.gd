@@ -82,7 +82,7 @@ static func capture(game: SkywardGame) -> Dictionary:
 			"visited": game.visited_regions.duplicate(),
 			"doors": game.opened_doors.duplicate(),
 			"day": game.day_night.make_snapshot(), "treasure": game.treasure.make_snapshot(), "contracts": game.contracts.make_snapshot(),
-			"legends": game.legends.make_snapshot(), "achievements": game.achievements.make_snapshot(), "lore": game.lore.make_snapshot(), "epilogue": game.epilogue.make_snapshot(), "world_state": game.world_state.make_snapshot(), "mine": game.mine.make_snapshot(), "combos": game.combos.make_snapshot(), "farm": game.farm.make_snapshot(), "buildings": game.buildings.make_snapshot(), "guild": game.guild.make_snapshot(), "expeditions": game.expeditions.make_snapshot(), "ship": game.ship.make_snapshot()
+			"legends": game.legends.make_snapshot(), "achievements": game.achievements.make_snapshot(), "lore": game.lore.make_snapshot(), "epilogue": game.epilogue.make_snapshot(), "world_state": game.world_state.make_snapshot(), "mine": game.mine.make_snapshot(), "combos": game.combos.make_snapshot(), "farm": game.farm.make_snapshot(), "buildings": game.buildings.make_snapshot(), "guild": game.guild.make_snapshot(), "expeditions": game.expeditions.make_snapshot(), "ship": game.ship.make_snapshot(), "factions": game.factions.make_snapshot(), "fates": game.fates.make_snapshot(), "party": game.party.make_snapshot()
 		},
 		"magic": game.selected_spell_id
 	}
@@ -124,6 +124,11 @@ static func apply(game: SkywardGame, data: Dictionary) -> bool:
 	game.guild.restore_snapshot(world_data.get("guild", {}))
 	game.expeditions.restore_snapshot(world_data.get("expeditions", {}))
 	game.ship.restore_snapshot(world_data.get("ship", {}))
+	game.factions.restore_snapshot(world_data.get("factions", {}))
+	game.fates.restore_snapshot(world_data.get("fates", {}))
+	game.party.restore_snapshot(world_data.get("party", {}))
+	game.party.ensure_follower()
+	game.party.apply_mira()
 	var visited: Variant = world_data.get("visited", {})
 	game.visited_regions = visited.duplicate() if visited is Dictionary else {}
 	var doors: Variant = world_data.get("doors", {})

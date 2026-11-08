@@ -356,6 +356,41 @@
       "stat": "mirage_found",
       "goal": 1,
       "gold": 150
+    },
+    "errand_runner": {
+      "title": "Посланник",
+      "description": "Выполните 5 поручений фракций.",
+      "stat": "faction_errands",
+      "goal": 5,
+      "gold": 120
+    },
+    "faction_ally": {
+      "title": "Свой среди своих",
+      "description": "Станьте союзником одной из фракций.",
+      "stat": "faction_allies",
+      "goal": 1,
+      "gold": 200
+    },
+    "fate_maker": {
+      "title": "Судьба островов",
+      "description": "Решите судьбу трёх кристаллов-опор.",
+      "stat": "island_fates",
+      "goal": 3,
+      "gold": 250
+    },
+    "company": {
+      "title": "Отряд",
+      "description": "Возьмите в отряд нового спутника.",
+      "stat": "companions",
+      "goal": 1,
+      "gold": 100
+    },
+    "last_page": {
+      "title": "Последняя страница",
+      "description": "Найдите журнал матери Миры.",
+      "stat": "mira_logbook",
+      "goal": 1,
+      "gold": 150
     }
   }
 }

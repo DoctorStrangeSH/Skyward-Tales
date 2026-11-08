@@ -11,10 +11,11 @@ var tab_buttons: Dictionary = {}
 var selected_id: String = ""
 var _quests: QuestManager
 var _player: PlayerCharacter
-const TABS := [["main", "Сюжет"], ["side", "Побочные"], ["done", "Выполненные"], ["fish", "Рыбалка"], ["ach", "Достижения"], ["lore", "Летопись"]]
+const TABS := [["main", "Сюжет"], ["side", "Побочные"], ["done", "Выполненные"], ["fish", "Рыбалка"], ["ach", "Достижения"], ["lore", "Летопись"], ["fac", "Фракции"]]
 ## The game's Achievements node (duck-typed to keep class references simple).
 var achievements: Object
 var lore_book: Object
+var factions_ref: Object
 
 func _ready() -> void:
 	position = Vector2(30, 18)
@@ -119,6 +120,9 @@ func populate(quests: QuestManager, player: PlayerCharacter = null) -> void:
 		return
 	if tab == "lore":
 		_populate_lore()
+		return
+	if tab == "fac":
+		_populate_factions()
 		return
 	var entries := build_entries(quests)
 	var list: Array = entries["completed"] if tab == "done" else (entries["active"] as Array).filter(func(e: Dictionary) -> bool: return e["main"] == (tab == "main"))
@@ -237,6 +241,30 @@ func _populate_lore() -> void:
 	for row in rows:
 		list.add_child(_label("%s · %s" % [row["title"], RegionCatalog.display_name(str(row["region"]))], 9, Color(1.0, 0.9, 0.6)))
 		list.add_child(_wrapped(str(row["text"]), Color(0.82, 0.85, 0.9), 320.0))
+
+func _populate_factions() -> void:
+	entry_list.add_child(_wrapped("Фракции неба", UiStyle.TITLE))
+	entry_list.add_child(_wrapped("Поручения посланников поднимают репутацию, но соперники это замечают. С ранга «Друзья» открывается лавка, «Союзникам» — дар.", Color(0.7, 0.75, 0.8)))
+	if factions_ref == null:
+		return
+	for faction_id in factions_ref.call("ids"):
+		var value: int = int(factions_ref.call("value", faction_id))
+		detail_box.add_child(_label("%s — %s (%d)" % [factions_ref.call("name_of", faction_id), factions_ref.call("rank", faction_id), value], 11, Color(1.0, 0.9, 0.6) if value >= 25 else (Color(1.0, 0.55, 0.5) if value < 0 else UiStyle.TEXT)))
+		var bar := ProgressBar.new()
+		bar.custom_minimum_size = Vector2(330, 6)
+		bar.show_percentage = false
+		bar.min_value = -100
+		bar.max_value = 100
+		bar.value = value
+		detail_box.add_child(bar)
+		var info: Dictionary = (factions_ref.get("data") as Dictionary).get(faction_id, {})
+		detail_box.add_child(_wrapped("Посланник: %s" % str(info.get("speaker", "")), UiStyle.MUTED, 330.0))
+	var fates: Object = factions_ref.get("game").get("fates") if factions_ref.get("game") != null else null
+	if fates != null:
+		detail_box.add_child(_label("Судьба островов", 11, UiStyle.TITLE))
+		for region_id in IslandFates.ISLANDS:
+			var fate := str(fates.call("fate", region_id))
+			detail_box.add_child(_wrapped("%s — %s" % [RegionCatalog.display_name(region_id), {"": "не решена", "restore": "кристалл восстановлен", "take": "сила забрана", "harmony": "третий путь"}.get(fate, fate)], Color(0.82, 0.85, 0.9), 330.0))
 
 func _populate_fishing() -> void:
 	var species: Dictionary = {}

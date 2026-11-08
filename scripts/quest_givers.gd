@@ -48,6 +48,14 @@ func marker_for(npc_id: String) -> String:
 		var ship_marker := game.ship.marker(npc_id)
 		if not ship_marker.is_empty():
 			return ship_marker
+	if game.party != null:
+		var party_marker := game.party.marker(npc_id)
+		if not party_marker.is_empty():
+			return party_marker
+	if game.factions != null:
+		var faction_marker := game.factions.marker(npc_id)
+		if not faction_marker.is_empty():
+			return faction_marker
 	var quest_id := current_quest(npc_id)
 	if quest_id.is_empty():
 		return ""
@@ -59,6 +67,10 @@ func marker_for(npc_id: String) -> String:
 
 func talk(npc_id: String) -> void:
 	if game.ship != null and game.ship.talk(npc_id):
+		return
+	if game.party != null and game.party.talk(npc_id):
+		return
+	if game.factions != null and game.factions.talk(npc_id):
 		return
 	var quests := game.quests
 	var speaker := _speaker(npc_id)

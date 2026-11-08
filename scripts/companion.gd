@@ -12,6 +12,13 @@ const ATTACK_COOLDOWN := 2.4
 const HEAL_COOLDOWN := 25.0
 
 var hero: PlayerCharacter
+## "mira" — frost vials and first aid; "hunter" (Toren) — arrows that hit
+## hard; "captain" (Raina) — thunder pistol shots (Этап 17).
+var role: String = "mira"
+var follow_offset: Vector2 = FOLLOW_OFFSET
+## Mira patches up more (and sooner) after her mother's logbook is found.
+var heal_amount: int = 25
+var heal_cooldown: float = HEAL_COOLDOWN
 var attack_ready_in: float = 1.0
 var heal_ready_in: float = 0.0
 var _last_position: Vector2
@@ -27,7 +34,7 @@ func _process(delta: float) -> void:
 	super._process(delta)
 	if hero == null or not is_instance_valid(hero):
 		return
-	var target := hero.global_position + FOLLOW_OFFSET
+	var target := hero.global_position + follow_offset
 	var distance := global_position.distance_to(target)
 	if distance > 320.0:
 		global_position = target
@@ -49,7 +56,7 @@ func _process(delta: float) -> void:
 		var enemy := _nearest_enemy()
 		if enemy != null:
 			throw_vial(enemy)
-	if heal_ready_in <= 0.0 and hero.health > 0 and hero.health < hero.max_health * 0.35:
+	if role == "mira" and heal_ready_in <= 0.0 and hero.health > 0 and hero.health < hero.max_health * 0.35:
 		heal_hero()
 
 func _nearest_enemy() -> Node2D:
@@ -66,6 +73,12 @@ func _nearest_enemy() -> Node2D:
 	return best
 
 func throw_vial(enemy: Node2D) -> void:
+	if role == "hunter":
+		_shoot_arrow(enemy)
+		return
+	if role == "captain":
+		_fire_pistol(enemy)
+		return
 	attack_ready_in = ATTACK_COOLDOWN
 	if visual != null:
 		visual.set_direction_vector(enemy.global_position - global_position)
@@ -77,11 +90,35 @@ func throw_vial(enemy: Node2D) -> void:
 	get_parent().add_child(bolt)
 	bolt.global_position = global_position
 
+func _shoot_arrow(enemy: Node2D) -> void:
+	attack_ready_in = 1.8
+	var game := get_parent() as SkywardGame
+	if game == null:
+		return
+	var arrow := Arrow.new()
+	arrow.setup(game, (enemy.global_position - global_position).normalized(), 9 + hero.level, 0, false)
+	game.add_child(arrow)
+	arrow.global_position = global_position + Vector2(0, -8)
+	if visual != null:
+		visual.set_direction_vector(enemy.global_position - global_position)
+
+func _fire_pistol(enemy: Node2D) -> void:
+	attack_ready_in = 2.6
+	var bolt := BOLT_SCENE.instantiate() as MagicBolt
+	bolt.speed = 260.0
+	bolt.setup(enemy.global_position - global_position, 12 + hero.level)
+	bolt.configure_effect("chain_lightning", 1.0, 0.0)
+	get_parent().add_child(bolt)
+	bolt.global_position = global_position + Vector2(0, -8)
+	if visual != null:
+		visual.set_direction_vector(enemy.global_position - global_position)
+	GameAudio.play("cast_lightning", -12.0, 0.1)
+
 func heal_hero() -> void:
-	heal_ready_in = HEAL_COOLDOWN
-	hero.health = mini(hero.max_health, hero.health + 25)
+	heal_ready_in = heal_cooldown
+	hero.health = mini(hero.max_health, hero.health + heal_amount)
 	hero.stats_changed.emit()
 	Vfx.sparkle(get_parent(), hero.global_position)
 	var game := get_parent()
 	if game != null and game.get("hud") != null:
-		game.hud.show_message("Мира перевязывает рану: +25 HP", 2.0)
+		game.hud.show_message("Мира перевязывает рану: +%d HP" % heal_amount, 2.0)

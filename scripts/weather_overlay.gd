@@ -42,6 +42,16 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _draw() -> void:
+	if mode == "bloom":
+		draw_rect(Rect2(0, 0, 640, 360), Color(1.0, 0.9, 0.55, 0.07))
+		for i in 14:
+			var b: Vector3 = _drops[i]
+			var p := Vector2(fmod(b.x + _clock * 6.0 * b.z, 660.0), fmod(b.y - _clock * 14.0 * b.z + 400.0, 380.0))
+			draw_circle(p, 1.6 * b.z, Color(1.0, 0.92, 0.6, 0.55))
+		return
+	if mode == "dim":
+		draw_rect(Rect2(0, 0, 640, 360), Color(0.12, 0.05, 0.18, 0.26))
+		return
 	if mode == "storm":
 		draw_rect(Rect2(0, 0, 640, 360), Color(0.05, 0.07, 0.2, 0.42))
 		for d in _drops:

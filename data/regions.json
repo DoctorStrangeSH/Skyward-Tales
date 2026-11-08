@@ -1064,6 +1064,12 @@
         "id": "grove_warden",
         "name": "Хранительница Илара",
         "position": [250, 420]
+      },
+      {
+        "id": "root_keeper",
+        "name": "Корина из Круга корней",
+        "look": "herbalist",
+        "position": [720, 500]
       }
     ],
     "chests": [
@@ -1567,6 +1573,12 @@
         "id": "archivist",
         "name": "Ориэн, архивариус",
         "position": [600, 330]
+      },
+      {
+        "id": "order_novice",
+        "name": "Лиара, послушница ордена",
+        "look": "herald",
+        "position": [504, 524]
       }
     ],
     "chests": [
@@ -1732,7 +1744,8 @@
         "position": [910, 476]
       }
     ],
-    "dock": [410, 720]
+    "dock": [410, 720],
+    "fate_crystal": [500, 730]
   },
   "wind_spires": {
     "name": "Ветреные шпили",
@@ -1898,7 +1911,8 @@
         "position": [200, 510]
       }
     ],
-    "dock": [370, 700]
+    "dock": [370, 700],
+    "fate_crystal": [704, 604]
   },
   "sky_rift": {
     "name": "Расколотый остров",
@@ -2038,7 +2052,8 @@
     "level": 11,
     "waystone": [330, 480],
     "map_pos": [0.9, 0.42],
-    "dock": [230, 700]
+    "dock": [230, 700],
+    "fate_crystal": [644, 604]
   },
   "misty_marsh": {
     "name": "Туманная топь",
@@ -2294,6 +2309,12 @@
         "id": "keeper",
         "name": "Морен",
         "position": [470, 800]
+      },
+      {
+        "id": "captain_raina",
+        "name": "Рейна Штормовая",
+        "look": "mercenary",
+        "position": [510, 800]
       }
     ],
     "chests": [
@@ -7877,6 +7898,216 @@
         {
           "center": [420, 260],
           "size": [44, 40]
+        }
+      ],
+      "bushes": []
+    }
+  },
+  "free_port": {
+    "name": "Вольная пристань",
+    "map_color": [0.62, 0.55, 0.42],
+    "level": 8,
+    "enemy_power": 1.0,
+    "hidden": true,
+    "peaceful": true,
+    "dock": [1060, 720],
+    "npcs": [
+      {
+        "id": "port_quartermaster",
+        "name": "Бруно, квартирмейстер",
+        "look": "tavern_keeper",
+        "position": [640, 350]
+      },
+      {
+        "id": "port_captain_vorn",
+        "name": "Старый капитан Ворн",
+        "look": "caravaner",
+        "position": [470, 600]
+      },
+      {
+        "id": "port_lookout",
+        "name": "Дозорная Ника",
+        "look": "guard",
+        "position": [980, 760]
+      }
+    ],
+    "chests": [],
+    "herbs": [],
+    "story_objects": [],
+    "enemies": [],
+    "gates": [],
+    "secrets": {},
+    "lore": [
+      {
+        "id": "lore_free_port",
+        "position": [820, 640]
+      }
+    ],
+    "terrain": {
+      "size": [1280, 864],
+      "style": "sky",
+      "edge_margin": 64,
+      "trails": [
+        [
+          [1060, 720],
+          [900, 680],
+          [760, 600],
+          [640, 500],
+          [640, 330]
+        ],
+        [
+          [640, 500],
+          [420, 460],
+          [300, 600]
+        ],
+        [
+          [640, 500],
+          [860, 440],
+          [1000, 540]
+        ]
+      ],
+      "ponds": [],
+      "trees": [
+        [160, 180],
+        [300, 140],
+        [960, 150],
+        [1160, 300],
+        [150, 420],
+        [1180, 520],
+        [560, 780],
+        [760, 780],
+        [180, 760]
+      ],
+      "props": [
+        {
+          "kind": "village_tavern_2",
+          "position": [640, 300]
+        },
+        {
+          "kind": "village_house_slate",
+          "position": [380, 340]
+        },
+        {
+          "kind": "village_house_blue",
+          "position": [900, 340]
+        },
+        {
+          "kind": "village_house_small",
+          "position": [250, 560]
+        },
+        {
+          "kind": "village_market_red",
+          "position": [500, 520]
+        },
+        {
+          "kind": "village_market_green",
+          "position": [780, 520]
+        },
+        {
+          "kind": "decor_stall_orange",
+          "position": [640, 620]
+        },
+        {
+          "kind": "village_well",
+          "position": [640, 450]
+        },
+        {
+          "kind": "village_lamp",
+          "position": [560, 420]
+        },
+        {
+          "kind": "village_lamp",
+          "position": [720, 420]
+        },
+        {
+          "kind": "village_lamp",
+          "position": [900, 640]
+        },
+        {
+          "kind": "village_lamp",
+          "position": [420, 640]
+        },
+        {
+          "kind": "village_board",
+          "position": [760, 380]
+        },
+        {
+          "kind": "decor_wagon",
+          "position": [1000, 520]
+        },
+        {
+          "kind": "village_hay",
+          "position": [300, 680]
+        },
+        {
+          "kind": "village_sign",
+          "position": [960, 700]
+        }
+      ],
+      "blockers": [
+        {
+          "center": [640, 287],
+          "size": [86, 26]
+        },
+        {
+          "center": [380, 327],
+          "size": [60, 26]
+        },
+        {
+          "center": [900, 327],
+          "size": [51, 26]
+        },
+        {
+          "center": [250, 547],
+          "size": [54, 26]
+        },
+        {
+          "center": [500, 514],
+          "size": [44, 10]
+        },
+        {
+          "center": [780, 514],
+          "size": [44, 10]
+        },
+        {
+          "center": [640, 614],
+          "size": [54, 10]
+        },
+        {
+          "center": [640, 444],
+          "size": [26, 12]
+        },
+        {
+          "center": [560, 418],
+          "size": [4, 4]
+        },
+        {
+          "center": [720, 418],
+          "size": [4, 4]
+        },
+        {
+          "center": [900, 638],
+          "size": [4, 4]
+        },
+        {
+          "center": [420, 638],
+          "size": [4, 4]
+        },
+        {
+          "center": [760, 376],
+          "size": [22, 8]
+        },
+        {
+          "center": [1000, 516],
+          "size": [34, 8]
+        },
+        {
+          "center": [300, 676],
+          "size": [10, 8]
+        },
+        {
+          "center": [960, 698],
+          "size": [4, 4]
         }
       ],
       "bushes": []

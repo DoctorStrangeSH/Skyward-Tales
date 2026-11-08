@@ -1055,7 +1055,7 @@
       "spell_bonus": {
         "chain_lightning": 6
       },
-      "icon": "echo_crystal",
+      "icon": "storm_eye",
       "value": 520
     },
     "mirage_cloak": {
@@ -1068,6 +1068,115 @@
       "max_health": 20,
       "icon": "keeper_robe",
       "value": 480
+    },
+    "order_blade": {
+      "name": "Клинок ордена",
+      "description": "+19 к урону мечом, +2 к силе магии, +2 к воле. Оружие возрождённого ордена Хранителей.",
+      "slot": "blade",
+      "rarity": "epic",
+      "melee": 19,
+      "power": 2,
+      "will": 2,
+      "icon": "skyfire_blade",
+      "value": 300
+    },
+    "order_mantle": {
+      "name": "Мантия ордена",
+      "description": "+6 к броне, +3 к воле, +30 к мане.",
+      "slot": "armor",
+      "rarity": "epic",
+      "armor": 6,
+      "will": 3,
+      "max_mana": 30,
+      "icon": "skysteel_mail",
+      "value": 300
+    },
+    "aella_tear": {
+      "name": "Слеза Аэллы",
+      "description": "+5 к воле, +40 к мане, +5 к урону заклинаний. Дар Хранителей Неба.",
+      "slot": "amulet",
+      "rarity": "legendary",
+      "will": 5,
+      "max_mana": 40,
+      "spell_bonus": {
+        "*": 5
+      },
+      "icon": "pattern_core",
+      "value": 800
+    },
+    "captain_cutlass": {
+      "name": "Абордажная сабля",
+      "description": "+22 к урону мечом, +3 к ловкости. Сабля Союза Свободных Капитанов.",
+      "slot": "blade",
+      "rarity": "epic",
+      "melee": 22,
+      "agility": 3,
+      "icon": "traveler_sword",
+      "value": 320
+    },
+    "storm_coat": {
+      "name": "Штормовой камзол",
+      "description": "+5 к броне, +5 к ловкости, +15 к здоровью.",
+      "slot": "armor",
+      "rarity": "epic",
+      "armor": 5,
+      "agility": 5,
+      "max_health": 15,
+      "icon": "ash_cloak",
+      "value": 300
+    },
+    "sky_compass": {
+      "name": "Компас Союза",
+      "description": "+6 к ловкости, +30 к здоровью. Особое: умения на 10% быстрее. Дар Свободных Капитанов.",
+      "slot": "relic",
+      "rarity": "legendary",
+      "agility": 6,
+      "max_health": 30,
+      "haste": 10,
+      "icon": "cog_charm",
+      "value": 800
+    },
+    "rootwood_bow": {
+      "name": "Лук из корня",
+      "description": "Лук: +15 к урону стрел, +2 HP за попадание. Сделан Кругом Земных Корней.",
+      "slot": "weapon",
+      "bow": true,
+      "rarity": "epic",
+      "ranged": 15,
+      "lifesteal": 2,
+      "icon": "elm_longbow",
+      "value": 300
+    },
+    "moss_mail": {
+      "name": "Моховая кольчуга",
+      "description": "+9 к броне, +30 к здоровью.",
+      "slot": "armor",
+      "rarity": "epic",
+      "armor": 9,
+      "max_health": 30,
+      "icon": "ranger_jerkin",
+      "value": 320
+    },
+    "heartwood_seed": {
+      "name": "Семя Сердцедрева",
+      "description": "+60 к здоровью, +5 к броне. Дар Круга Земных Корней.",
+      "slot": "relic",
+      "rarity": "legendary",
+      "max_health": 60,
+      "armor": 5,
+      "icon": "sky_seed",
+      "value": 800
+    },
+    "mira_compass": {
+      "name": "Компас картографа",
+      "description": "+3 к ловкости, +3 к воле, +20 к мане. Компас матери Миры — стрелка всегда указывает на неоткрытое.",
+      "slot": "relic",
+      "rarity": "epic",
+      "agility": 3,
+      "will": 3,
+      "max_mana": 20,
+      "icon": "crystal_lens",
+      "value": 400
     }
   },
   "sets": {

@@ -25,7 +25,7 @@ const REQUIRES := "main_echo"
 const REPAIR_MATERIALS := {"wood": 15, "iron_ore": 8, "wind_essence": 3}
 const ENGINE_COST := {"gold": 700, "materials": {"iron_ore": 10, "wind_essence": 5}}
 const RADAR_COST := {"gold": 600, "materials": {"gear_cog": 4, "shadow_essence": 3}}
-const ROUTE := ["salt_coast", "haven", "sky_island", "wind_spires", "sky_rift", "sky_heart", "storm_isle", "mirage_isle"]
+const ROUTE := ["salt_coast", "haven", "sky_island", "wind_spires", "sky_rift", "sky_heart", "free_port", "storm_isle", "mirage_isle"]
 const WEATHER := {"clear": "Ясно", "storm": "Гроза", "fog": "Туман"}
 const MIRA := {
 	"salt_coast": "Солёный берег! Отсюда «Ветрокрыл» ушёл в последний рейс. Теперь — в первый.",
@@ -36,6 +36,7 @@ const MIRA := {
 	"sky_heart": "Сердце неба. Отсюда видно все острова сразу — я дорисую карту!",
 	"storm_isle": "Двигатель держит! {hero}, мы прошли сквозь грозу. Смотри под ноги — молнии бьют без предупреждения… почти.",
 	"mirage_isle": "Его нет ни на одной карте… кроме моей. Значит, я не выдумала этот остров!",
+	"free_port": "Вольная пристань… Мама рассказывала про неё на ночь. Я думала, это сказка.",
 }
 
 var game: SkywardGame
@@ -85,6 +86,9 @@ func blocked(region_id: String) -> String:
 				return "нужен двигатель бурь"
 			if weather() != "storm":
 				return "ждите грозы"
+		"free_port":
+			if game.factions.value("captains") < Factions.FRIENDS and not game.party.port_known():
+				return "координаты неизвестны"
 		"mirage_isle":
 			if not has_upgrade(RADAR):
 				return "нужен радар"
@@ -290,8 +294,8 @@ func open_menu() -> void:
 		if dock(region_id) == null or region_id == game.current_region:
 			continue
 		var reason := blocked(region_id)
-		if region_id in ["storm_isle", "mirage_isle"] and reason == "нужен радар" and not has_upgrade(RADAR):
-			continue  # the hidden island is unknown until the radar hears it
+		if reason in ["нужен радар", "координаты неизвестны"]:
+			continue  # hidden places stay unknown until found
 		var title := RegionCatalog.display_name(region_id)
 		choices.append({"id": "ship_fly:" + region_id if reason.is_empty() else "ship_later", "label": ("➤ " + title) if reason.is_empty() else "%s — %s" % [title, reason]})
 	choices.append({"id": "ship_later", "label": "Остаться на земле"})
