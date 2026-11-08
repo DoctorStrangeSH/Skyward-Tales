@@ -102,6 +102,7 @@ var ship: SkyShip
 var factions: Factions
 var fates: IslandFates
 var party: Party
+var deep_rifts: DeepRifts
 var achievements: Achievements
 var lore: LoreBook = LoreBook.new()
 var cast_cooldown_total: float = 0.0
@@ -209,6 +210,10 @@ func _ready() -> void:
 	ship.name = "SkyShip"
 	ship.game = self
 	add_child(ship)
+	deep_rifts = DeepRifts.new()
+	deep_rifts.name = "DeepRifts"
+	deep_rifts.game = self
+	add_child(deep_rifts)
 	farm = Farm.new()
 	farm.name = "Farm"
 	farm.game = self
@@ -309,6 +314,10 @@ func _ready() -> void:
 	if get_tree().has_meta("skyward_continue") and bool(get_tree().get_meta("skyward_continue")):
 		get_tree().remove_meta("skyward_continue")
 		load_game(true)
+	elif get_tree().has_meta("skyward_ng_plus"):
+		var seed: Dictionary = get_tree().get_meta("skyward_ng_plus")
+		get_tree().remove_meta("skyward_ng_plus")
+		start_ng_plus(seed)
 	elif get_tree().has_meta("skyward_new_hero"):
 		var hero: Dictionary = get_tree().get_meta("skyward_new_hero")
 		get_tree().remove_meta("skyward_new_hero")
@@ -690,6 +699,7 @@ func _populate_region() -> void:
 	legends.on_region_ready()
 	ship.populate()
 	fates.populate()
+	deep_rifts.populate()
 	party.ensure_follower()
 	party.apply_mira()
 
@@ -807,6 +817,40 @@ func _set_region(region_id: String, arrival: Vector2, notify: bool = true) -> vo
 	_refresh_hud()
 
 ## New adventure: identity from character creation, then the prologue.
+## Этап 18: «Новая игра+» — the story starts over, the hero keeps level,
+## skills, gear, gold and achievements; enemies are tougher (and catch up
+## with the hero's level), experience is richer.
+var ng_plus: int = 0
+
+func start_ng_plus(seed: Dictionary) -> void:
+	var character: Dictionary = seed.get("player", {})
+	if character.is_empty() or not character.has("inventory") or not character.has("equipment"):
+		start_new_story("", "m")
+		return
+	ng_plus = int(seed.get("ng", 0)) + 1
+	start_new_story(str(character.get("hero_name", "")), str(character.get("hero_gender", "m")))
+	GameSaveState._apply_player(player, character)
+	player.health = player.max_health
+	player.mana = player.max_mana
+	achievements.restore_snapshot(seed.get("achievements", {}))
+	lore.restore_snapshot(seed.get("lore", {}))
+	var known: Variant = seed.get("discovered", {})
+	if known is Dictionary:
+		discovered_enemies = (known as Dictionary).duplicate(true)
+	achievements.set_max("ng_plus", ng_plus)
+	hud.show_message("Новая игра+ · круг %d: враги сильнее, опыта больше на %d%%." % [ng_plus, roundi(ng_mult_xp() * 100.0) - 100], 6.0)
+	_refresh_hud()
+
+func ng_mult_xp() -> float:
+	return 1.0 + 0.25 * ng_plus
+
+## Enemy toughness in New Game+: grows with the round and with how far the
+## hero outlevels the land.
+func ng_power(region_id: String) -> float:
+	if ng_plus <= 0 or player == null:
+		return 1.0
+	return 1.0 + 0.4 * ng_plus + 0.05 * maxi(0, player.level - RegionCatalog.level(region_id))
+
 func start_new_story(hero_name: String, gender: String) -> void:
 	player.set_identity(hero_name, gender)
 	quests.start_quest("main_prologue")
@@ -933,6 +977,9 @@ func _scale_to_region(enemy: SlimeEnemy) -> void:
 	var power := RegionCatalog.enemy_power(current_region)
 	if fates != null:
 		power *= fates.power_mult(current_region)
+	power *= ng_power(current_region)
+	if ng_plus > 0:
+		enemy.xp_reward = int(round(enemy.xp_reward * ng_mult_xp()))
 	if is_equal_approx(power, 1.0) or enemy is GroveGuardian:
 		return
 	enemy.max_health = int(round(enemy.max_health * power))
@@ -1194,6 +1241,7 @@ func open_map(world_tab: bool = false) -> void:
 	var live := minimap_markers()
 	live.append_array(treasure.minimap_marker())
 	live.append_array(epilogue.minimap_marker())
+	live.append_array(deep_rifts.minimap_marker())
 	live.append_array(quest_nav.minimap_markers())
 	hud.world_map.set_live(live, player.facing)
 	var destinations := travel_destinations()
@@ -1241,6 +1289,7 @@ func _draw_minimap() -> void:
 	var live := minimap_markers()
 	live.append_array(treasure.minimap_marker())
 	live.append_array(epilogue.minimap_marker())
+	live.append_array(deep_rifts.minimap_marker())
 	live.append_array(quest_nav.minimap_markers())
 	hud.minimap.day_time = day_night.time if day_night.cycles_here() else -1.0
 	hud.minimap.set_live(live, player.facing)

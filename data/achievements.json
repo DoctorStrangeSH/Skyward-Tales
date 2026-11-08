@@ -391,6 +391,41 @@
       "stat": "mira_logbook",
       "goal": 1,
       "gold": 150
+    },
+    "deep_diver": {
+      "title": "Глубже Узора",
+      "description": "Запечатайте глубокий разлом 5-й глубины.",
+      "stat": "deep_rift",
+      "goal": 5,
+      "gold": 300
+    },
+    "abyss_walker": {
+      "title": "На дне Узора",
+      "description": "Запечатайте глубокий разлом 15-й глубины.",
+      "stat": "deep_rift",
+      "goal": 15,
+      "gold": 800
+    },
+    "devourer_slayer": {
+      "title": "Пожиратель повержен",
+      "description": "Одолейте Пожирателя Узора.",
+      "stat": "devourer",
+      "goal": 1,
+      "gold": 400
+    },
+    "abyss_keeper": {
+      "title": "Хранитель Бездны",
+      "description": "Пройдите легендарную экспедицию.",
+      "stat": "abyss",
+      "goal": 1,
+      "gold": 500
+    },
+    "second_round": {
+      "title": "Ещё один круг",
+      "description": "Начните Новую игру+.",
+      "stat": "ng_plus",
+      "goal": 1,
+      "gold": 300
     }
   }
 }

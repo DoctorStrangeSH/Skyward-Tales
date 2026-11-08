@@ -47,6 +47,7 @@ func _collect() -> Array:
 	result.append_array(game.ship.targets())
 	result.append_array(game.fates.targets())
 	result.append_array(game.party.targets())
+	result.append_array(game.deep_rifts.targets())
 	result.append_array(game.legends.hunt_targets())
 	# A lost mine is a job for anyone passing by.
 	if game.mine.overrun() and not quests.is_active(BorinStory.DREAM) and game.visited_regions.has(PassMine.REGION):

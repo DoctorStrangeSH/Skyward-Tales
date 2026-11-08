@@ -72,6 +72,9 @@ func talk(npc_id: String) -> void:
 		return
 	if game.factions != null and game.factions.talk(npc_id):
 		return
+	if npc_id == "herald" and game.deep_rifts != null and game.deep_rifts.unlocked():
+		game._show_dialogue(_speaker(npc_id), game.deep_rifts.herald_line())
+		return
 	var quests := game.quests
 	var speaker := _speaker(npc_id)
 	var quest_id := current_quest(npc_id)

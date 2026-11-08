@@ -106,6 +106,9 @@ func talk() -> void:
 	if game.expeditions != null:
 		lines += "\nЭкспедиций в хранилище Узора: %d." % game.expeditions.completed
 		choices.append({"id": "guild_expedition", "label": "Экспедиция в хранилище Узора (тайная тропа, ур. %d)" % maxi(1, game.player.level)})
+		for tier in range(1, game.expeditions.unlocked_difficulty() + 1):
+			var info: Dictionary = Expeditions.DIFFICULTY[tier]
+			choices.append({"id": "guild_expedition:%d" % tier, "label": "Экспедиция · %s (враги ×%.1f, награда ×%d)" % [str(info["name"]), float(info["power"]), int(info["reward"])]})
 	choices.append({"id": "guild_close", "label": "Уйти"})
 	game._show_dialogue_choices("Рагна, глава гильдии", lines, choices)
 
@@ -199,6 +202,10 @@ func handle_choice(choice_id: String) -> bool:
 	if choice_id == "guild_expedition":
 		game.dialogues._close()
 		game.expeditions.start()
+		return true
+	if choice_id.begins_with("guild_expedition:"):
+		game.dialogues._close()
+		game.expeditions.start(int(choice_id.trim_prefix("guild_expedition:")))
 		return true
 	if choice_id == "guild_turnin":
 		game.dialogues._close()

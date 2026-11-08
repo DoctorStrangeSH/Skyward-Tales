@@ -47,6 +47,16 @@ var solved: bool = false
 var warden_spawned: bool = false
 var warden_down: bool = false
 var completed: int = 0
+## Этап 18: difficulty — 0 обычная, 1 героическая (after 3 runs), 2 легендарная
+## (after 3 heroic runs; the warden becomes the Keeper of the Abyss).
+const DIFFICULTY := [
+	{"name": "Обычная", "power": 1.0, "reward": 1.0},
+	{"name": "Героическая", "power": 1.5, "reward": 2.0},
+	{"name": "Легендарная", "power": 2.2, "reward": 3.0},
+]
+var difficulty: int = 0
+var heroic_done: int = 0
+var legendary_done: int = 0
 var rng := RandomNumberGenerator.new()
 var _storm_clock: float = 0.0
 var _dark: ColorRect
@@ -57,8 +67,17 @@ func _ready() -> void:
 static func hall_rect(cell: Vector2i) -> Rect2:
 	return Rect2(Vector2(COLS[cell.x], ROWS[cell.y]), HALL)
 
+func unlocked_difficulty() -> int:
+	if heroic_done >= 3:
+		return 2
+	return 1 if completed >= 3 else 0
+
+func reward_mult() -> float:
+	return float(MODIFIERS[modifier]["reward"]) * float(DIFFICULTY[difficulty]["reward"])
+
 ## Ragna's offer: a new run into the vault.
-func start() -> void:
+func start(tier: int = 0) -> void:
+	difficulty = clampi(tier, 0, unlocked_difficulty())
 	run += 1
 	active = true
 	level = maxi(1, game.player.level)
@@ -77,7 +96,7 @@ func start() -> void:
 	game.opened_doors.erase(SEAL)
 	game._travel(REGION, START)
 	var info: Dictionary = MODIFIERS[modifier]
-	game.hud.show_title_card("Хранилище Узора · %s" % str(info["name"]), 3.0)
+	game.hud.show_title_card("Хранилище Узора · %s%s" % [str(info["name"]), "" if difficulty == 0 else " · " + str(DIFFICULTY[difficulty]["name"])], 3.0)
 	game.hud.show_message(str(info["text"]), 5.0)
 
 func leave() -> void:
@@ -86,7 +105,7 @@ func leave() -> void:
 		_dark.queue_free()
 
 func power() -> float:
-	return 0.7 + 0.07 * float(level)
+	return (0.7 + 0.07 * float(level)) * float(DIFFICULTY[difficulty]["power"])
 
 func _tier() -> Array:
 	var pick: Array = TIERS[0]
@@ -198,7 +217,7 @@ func _spawn_foe(kind: String, at: Vector2, boss: bool = false) -> SlimeEnemy:
 	return enemy
 
 func _chest(serial: int, at: Vector2, tier: String) -> void:
-	var gold := roundi((30 + 12 * level) * (3 if tier == "gold" else 1) * float(MODIFIERS[modifier]["reward"]))
+	var gold := roundi((30 + 12 * level) * (3 if tier == "gold" else 1) * reward_mult())
 	var item := "health_potion" if tier != "gold" else "starlight_essence"
 	game._spawn_chest("vault_%d_%d" % [run, serial], at, gold, item, 1 if tier == "gold" else 2, tier)
 
@@ -275,6 +294,19 @@ func _spawn_warden() -> void:
 	enemy.base_visual_tint = Color(0.75, 0.85, 1.0)
 	enemy.visual.modulate = enemy.base_visual_tint
 	enemy.defeated.connect(func(_xp: int) -> void: _on_warden_down(enemy.global_position))
+	if difficulty == 2:
+		# Legendary: the Keeper of the Abyss.
+		enemy.max_health = roundi(enemy.max_health * 1.5)
+		enemy.health = enemy.max_health
+		enemy.combat_feedback.elite_name = "♦ Хранитель Бездны"
+		enemy.combat_feedback.elite_color = Color(0.55, 0.6, 1.0)
+		enemy.base_visual_tint = Color(0.8, 0.85, 1.35)
+		enemy.visual.modulate = enemy.base_visual_tint
+		enemy.combat_feedback.set_health(enemy.health, enemy.max_health)
+		BossMechanics.attach(enemy, game, "abyss")
+		game.hud.show_title_card("Хранитель Бездны", 2.5)
+		GameAudio.play("boss_roar", -2.0, 0.0)
+		return
 	game.hud.show_title_card("Страж хранилища", 2.5)
 	GameAudio.play("boss_roar", -4.0, 0.0)
 
@@ -283,7 +315,13 @@ func _on_warden_down(at: Vector2) -> void:
 		return
 	warden_down = true
 	completed += 1
-	var mult := float(MODIFIERS[modifier]["reward"])
+	if difficulty == 1:
+		heroic_done += 1
+	elif difficulty == 2:
+		legendary_done += 1
+		game.achievements.add("abyss")
+		game.spawn_generated_loot(at + Vector2(-20, -16), "legendary")
+	var mult := reward_mult()
 	game._spawn_loot(at + Vector2(-16, 8), "gold").amount = roundi((150 + 30 * level) * mult)
 	game.spawn_generated_loot(at + Vector2(16, 8), "epic" if rng.randf() < 0.25 * mult else "rare")
 	if mult > 1.0:
@@ -308,9 +346,11 @@ func targets() -> Array:
 	return result
 
 func make_snapshot() -> Dictionary:
-	return {"completed": completed, "run": run}
+	return {"completed": completed, "run": run, "heroic": heroic_done, "legendary": legendary_done}
 
 func restore_snapshot(value: Variant) -> void:
 	if value is Dictionary:
 		completed = int(value.get("completed", 0))
 		run = int(value.get("run", 0))
+		heroic_done = int(value.get("heroic", 0))
+		legendary_done = int(value.get("legendary", 0))

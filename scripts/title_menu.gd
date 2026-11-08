@@ -1,4 +1,5 @@
 extends Control
+class_name TitleMenu
 
 const GAME_SCENE: String = "res://scenes/main.tscn"
 
@@ -69,6 +70,9 @@ func _ready() -> void:
 	_add_button(menu_column, "Новая игра", _start_new)
 	continue_button = _add_button(menu_column, "Продолжить", _continue_game)
 	continue_button.disabled = SaveSystem.load_latest().is_empty()
+	var ng := ng_plus_seed(SaveSystem.load_latest())
+	if not ng.is_empty():
+		_add_button(menu_column, "Новая игра+ (круг %d)" % (int(ng["ng"]) + 1), _start_ng_plus)
 	_add_button(menu_column, "Выход", _exit_game)
 	creation = HeroCreationPanel.new()
 	creation.visible = false
@@ -164,6 +168,27 @@ func _start_new() -> void:
 func _begin_adventure(hero_name: String, gender: String) -> void:
 	get_tree().set_meta("skyward_continue", false)
 	get_tree().set_meta("skyward_new_hero", {"name": hero_name, "gender": gender})
+	get_tree().change_scene_to_file(GAME_SCENE)
+
+## Этап 18 «Новая игра+»: after either ending the hero starts the story anew
+## keeping level, skills, gear, gold and achievements; the world is tougher
+## and pays more. Empty when the save has not reached an ending.
+static func ng_plus_seed(save: Dictionary) -> Dictionary:
+	if save.is_empty() or not save.get("world", {}) is Dictionary:
+		return {}
+	var world: Dictionary = save["world"]
+	var flags: Variant = world.get("story_flags", {})
+	if not flags is Dictionary or not ((flags as Dictionary).has("ending_restore") or (flags as Dictionary).has("ending_lower")):
+		return {}
+	return {"player": save.get("player", {}), "ng": int(world.get("ng_plus", 0)), "achievements": world.get("achievements", {}),
+		"lore": world.get("lore", {}), "discovered": world.get("discovered", {})}
+
+func _start_ng_plus() -> void:
+	var seed := ng_plus_seed(SaveSystem.load_latest())
+	if seed.is_empty():
+		return
+	get_tree().set_meta("skyward_continue", false)
+	get_tree().set_meta("skyward_ng_plus", seed)
 	get_tree().change_scene_to_file(GAME_SCENE)
 
 func _continue_game() -> void:

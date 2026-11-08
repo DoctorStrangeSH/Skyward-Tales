@@ -47,6 +47,9 @@ var elite_id: String = ""
 var _pose_tween: Tween
 var combat_feedback: EnemyCombatFeedback
 
+## Shielded bosses ignore damage (Этап 18, BossMechanics).
+var invulnerable: bool = false
+
 func _ready() -> void:
 	add_to_group("enemies")
 	collision_layer = 2
@@ -474,6 +477,11 @@ func apply_slow(multiplier: float, duration: float) -> void:
 
 func take_damage(amount: int) -> void:
 	if health <= 0:
+		return
+	if invulnerable:
+		# A boss shield (BossMechanics): the blow glances off.
+		if combat_feedback != null:
+			combat_feedback.show_damage(0)
 		return
 	health -= amount
 	if combat_feedback != null:

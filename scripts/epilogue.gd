@@ -207,4 +207,4 @@ func make_snapshot() -> Dictionary:
 
 func restore_snapshot(data: Variant) -> void:
 	if data is Dictionary and data.get("closed", {}) is Dictionary:
-		closed = (data["closed"] as Dictionary).duplicate()
+		closed = (data.get("closed", {}) as Dictionary).duplicate()
