@@ -158,7 +158,7 @@ func _on_target_down(at: Vector2) -> void:
 	game.hud.show_title_card("Охота выполнена!", 2.2)
 	game.hud.show_message("%s повержен. Вернитесь к Рагне за наградой." % str(active["name"]), 3.5)
 	if bool(active["mighty"]):
-		game.spawn_generated_loot(at + Vector2(0, 14), "epic")
+		game.spawn_generated_loot(at + Vector2(0, 14), "epic", "elite")
 	GameAudio.play("quest", -4.0, 0.0)
 	game.request_autosave()
 

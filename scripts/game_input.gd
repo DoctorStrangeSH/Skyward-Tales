@@ -82,7 +82,13 @@ func _input(event: InputEvent) -> void:
 		if game.get_viewport().gui_get_hovered_control() != null:
 			return
 		if not game.get_tree().paused and not game.hud.dialogue_visible and not game.hud.inventory_open and not game.hud.overlay_visible():
-			if event.is_pressed():
+			# A bow in hand: the left button shoots too (owner's list №24).
+			if game.player.has_bow():
+				if event.is_pressed():
+					game._bow_press()
+				elif game._bow_holding:
+					game._bow_release()
+			elif event.is_pressed():
 				game._attack_pressed()
 			else:
 				game._attack_released()
@@ -169,6 +175,8 @@ func _handle_key(keycode: Key) -> bool:
 		KEY_F when not world_blocked and not game.hud.inventory_open:
 			if game.player.start_guard():
 				game.player.visual.play_named("charge", 0.3)
+			elif not game.player.has_shield():
+				game.hud.show_message("Блок и парирование — только со щитом в левой руке.", 2.0)
 			return true
 		KEY_I, KEY_TAB when not world_blocked:
 			game.hud.toggle_inventory(game.player)

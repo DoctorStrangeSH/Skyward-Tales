@@ -33,9 +33,10 @@ func _update_mouse_slots() -> void:
 		"name": str(game.weapon_profile()["name"]), "tooltip": "%s — ЛКМ, удерживать — вихрь" % str(game.weapon_profile()["name"]), "cooldown": clampf(game.attack_cooldown / (SkywardGame.SLASH_COOLDOWN * float(game.weapon_profile()["cooldown"])), 0.0, 1.0)}
 	var right := {}
 	if game.player.has_bow():
-		var bow := str(game.player.equipment.get("weapon", ""))
-		right = {"key": "ПКМ", "icon": "icons/%s.png" % bow, "name": "Лук", "tooltip": "Лук — ПКМ, удерживать — прицельный выстрел",
-			"cooldown": game.cast_cooldown_remaining / game.cast_cooldown_total if game.cast_cooldown_total > 0.0 else 0.0}
+		var bow := str(game.player.equipment.get("blade", ""))
+		var shot := game.cast_cooldown_remaining / game.cast_cooldown_total if game.cast_cooldown_total > 0.0 else 0.0
+		left = {"key": "ЛКМ", "icon": "icons/%s.png" % bow, "name": "Лук", "tooltip": "Лук — ЛКМ или ПКМ, удерживать — прицельный выстрел", "cooldown": shot}
+		right = {"key": "ПКМ", "icon": "icons/%s.png" % bow, "name": "Лук", "tooltip": "Лук — ПКМ, удерживать — прицельный выстрел", "cooldown": shot}
 	elif not game.magic_unlocked():
 		right = {"key": "ПКМ", "icon": "icons/skill_fireball.png", "name": "Магия", "tooltip": "Магия откроется по сюжету", "locked": "✦"}
 	else:
@@ -161,7 +162,7 @@ func _living_enemies() -> Array:
 func _strike(enemy: SlimeEnemy, damage: int, push_direction: Vector2, push: float) -> void:
 	var crit := game.crit_rng.randf() < game.player.get_crit_chance()
 	if crit:
-		damage *= 2
+		damage = roundi(float(damage) * game.player.get_crit_multiplier())
 		Vfx.sparkle(game, enemy.global_position)
 		game.gear.on_crit(enemy)
 	var shaped := game.gear.modify_strike(damage)
@@ -300,7 +301,7 @@ func _cast_spell() -> void:
 		return
 	var spell: Dictionary = game.spell_definitions.get(game.selected_spell_id, {})
 	var mana_cost := int(spell.get("mana_cost", 8))
-	var spell_damage := roundi((int(spell.get("damage", 18)) + game.player.get_spell_bonus(game.selected_spell_id)) * game.player.get_spell_power_multiplier())
+	var spell_damage := roundi((int(spell.get("damage", 18)) + game.player.get_spell_bonus(game.selected_spell_id)) * game.player.get_spell_power_multiplier(game.selected_spell_id))
 	if not game.player.spend_mana(mana_cost):
 		game.hud.show_message("Недостаточно маны.", 1.2)
 		return

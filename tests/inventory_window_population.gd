@@ -21,7 +21,7 @@ func _run() -> void:
 	hud.toggle_inventory(hero)
 	if not _check(_item_count(hud.inventory_list) == 2, "items were not rendered"):
 		return
-	if not _check(hud.equipment_list.get_child_count() == 5, "equipment slots were not rendered"):
+	if not _check(hud.equipment_list.get_child_count() == PlayerCharacter.SLOTS.size(), "equipment slots were not rendered"):
 		return
 	var item_button: InventoryItemButton = null
 	for child in hud.inventory_list.get_children():
@@ -30,7 +30,7 @@ func _run() -> void:
 	if not _check(item_button != null, "equipment button missing"):
 		return
 	item_button.mouse_entered.emit()
-	if not _check(hud.comparison_panel.visible, "comparison signal not forwarded"):
+	if not _check(not hud.comparison_panel.visible and item_button._make_custom_tooltip("") != null, "the item card replaces the side comparison panel"):
 		return
 	hud.inventory_filter.item_selected.emit(2)
 	if not _check(_item_count(hud.inventory_list) == 1, "filter not reflected in rendered items"):

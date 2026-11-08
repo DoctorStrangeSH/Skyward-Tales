@@ -1,6 +1,8 @@
 extends Area2D
 class_name EnemyMagicOrb
 
+## Orbs are spells: the hero's magic defence (resist) meets them.
+var magic_attacks: bool = true
 var direction: Vector2 = Vector2.RIGHT
 var speed: float = 150.0
 var damage: int = 9
@@ -46,7 +48,7 @@ func _on_body_entered(body: Node2D) -> void:
 		return
 	if body.is_in_group("player") and body.has_method("take_damage"):
 		consumed = true
-		body.take_damage(damage)
+		body.take_damage(damage, self)
 		queue_free()
 	elif body is StaticBody2D:
 		consumed = true

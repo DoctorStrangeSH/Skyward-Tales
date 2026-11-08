@@ -23,6 +23,8 @@ const MERCHANT_SHOP_SCRIPT := preload("res://scripts/merchant_shop.gd")
 const CRAFTING_SERVICE_SCRIPT := preload("res://scripts/crafting_service.gd")
 const GATE_SCRIPT := preload("res://scripts/region_gate.gd")
 ## Story bosses: defeated once (flag "<kind>_defeated"), never respawn.
+## Foes whose touch is magic (the hero's resist counts, not armour).
+const MAGIC_FOES := ["wisp", "shade", "echo", "tempest", "vail", "pattern_voice", "pattern_shade"]
 const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой колосс", "vail": "Вейл", "bog_king": "Болотный король", "crab_king": "Краб-король", "giant": "Горный великан", "crypt_lord": "Повелитель склепа", "ash_lord": "Владыка Пепла", "forge_titan": "Титан Горнила", "pattern_voice": "Голос Узора", "pattern_shade": "Тень Узора"}
 const ENEMY_SCRIPTS := {
 	"slime": preload("res://scripts/enemy.gd"),
@@ -287,6 +289,7 @@ func _ready() -> void:
 	interact_prompt = InteractPrompt.new()
 	add_child(interact_prompt)
 	hud.inventory_use_requested.connect(_on_inventory_use)
+	hud.inventory_equip_to_requested.connect(equip_from_bag)
 	hud.inventory_view.set_skills(skills)
 	hud.journal_view.achievements = achievements
 	hud.journal_view.lore_book = lore
@@ -332,9 +335,11 @@ func _ready() -> void:
 		var hero: Dictionary = get_tree().get_meta("skyward_new_hero")
 		get_tree().remove_meta("skyward_new_hero")
 		start_new_story(str(hero.get("name", "")), str(hero.get("gender", "m")))
-		# A new adventure starts with a sword in hand; magic comes later.
+		# A new adventure starts with a sword and a plank shield; magic comes later.
 		player.add_item("traveler_sword")
 		player.equip_item("traveler_sword")
+		player.add_item("wooden_shield")
+		player.equip_item("wooden_shield")
 	else:
 		hud.show_message("Добро пожаловать в Skyward Tales! Найдите старейшину.", 5.0)
 		hud.show_tip("controls", "Совет: Esc — пауза, там же управление и настройки.", 6.0)
@@ -1017,6 +1022,7 @@ func spawn_enemy(kind: String, spawn_position: Vector2, elite: String = "") -> S
 				return null
 	var enemy := (ENEMY_SCRIPTS[kind] as GDScript).new() as SlimeEnemy
 	enemy.position = spawn_position
+	enemy.magic_attacks = kind in MAGIC_FOES
 	if elite == "?":
 		elite = EliteModifiers.roll(loot_rng) if director.story_mode() and EliteModifiers.can_be_elite(kind) else ""
 	if not elite.is_empty():
@@ -1340,7 +1346,7 @@ func _on_guardian_defeated(xp: int, death_position: Vector2) -> void:
 	player.add_experience(xp)
 	player.add_gold(100)
 	_spawn_loot(death_position, "ancient_relic")
-	spawn_generated_loot(death_position + Vector2(14, 6), "rare")
+	spawn_generated_loot(death_position + Vector2(14, 6), "rare", "boss")
 	shake(5.0, 0.5)
 	hud.show_message("Хранитель побеждён! +100 золота. Древний артефакт ждёт!", 3.5)
 	_grant_sky_seal()
@@ -1358,7 +1364,7 @@ func _on_story_boss_defeated(kind: String, xp: int, death_position: Vector2) -> 
 		achievements.add("shade")
 	player.add_experience(xp)
 	_spawn_loot(death_position, "ancient_relic")
-	spawn_generated_loot(death_position + Vector2(14, 6), "rare")
+	spawn_generated_loot(death_position + Vector2(14, 6), "rare", "boss")
 	shake(6.0, 0.6)
 	hit_stop(0.2)
 	update_music.call_deferred()
@@ -1482,12 +1488,14 @@ func _on_elite_defeated(enemy: SlimeEnemy) -> void:
 	if enemy.elite_id.is_empty():
 		return
 	achievements.add("elites")
-	spawn_generated_loot(enemy.global_position + Vector2(-10, 6), "uncommon")
+	spawn_generated_loot(enemy.global_position + Vector2(-10, 6), "uncommon", "elite")
 	shake(2.5, 0.25)
 
 ## Drops a rolled piece of equipment (bosses pass a minimum rarity).
-func spawn_generated_loot(at: Vector2, minimum_rarity: String = "common") -> String:
-	var rarity := LootGenerator.roll_rarity(loot_rng, minimum_rarity)
+## source: "" ordinary, "elite" mini-boss, "boss" — only the last two give
+## legendaries with a real chance.
+func spawn_generated_loot(at: Vector2, minimum_rarity: String = "common", source: String = "") -> String:
+	var rarity := minimum_rarity if minimum_rarity == "legendary" else LootGenerator.roll_rarity(loot_rng, minimum_rarity, source)
 	var definition := LootGenerator.generate(loot_rng, player.level, rarity)
 	if definition.is_empty():
 		return ""
@@ -1524,10 +1532,26 @@ func _on_inventory_use(item_id: String) -> void:
 		return
 	var definition: Dictionary = player.get_item_definition(item_id)
 	if not str(definition.get("slot", "")).is_empty():
-		hud.show_message("Предмет экипирован!" if player.equip_item(item_id) else "Невозможно экипировать.", 1.5)
-		hud.refresh_inventory(player)
+		equip_from_bag(item_id)
 		return
 	_use_consumable(item_id)
+
+## Puts a piece on (into `slot` when given — a ring's second slot, say) and
+## says what came off: a shield for a two-handed weapon and back.
+func equip_from_bag(item_id: String, slot: String = "") -> void:
+	var target := player.target_slot(item_id, slot)
+	var pushed: Array[String] = []
+	for other in player.displaced_by(item_id, target):
+		pushed.append(player.get_item_name(str(player.equipment.get(other, ""))))
+	if player.equip_item(item_id, slot):
+		var line := "Надето: %s." % player.get_item_name(item_id)
+		if not pushed.is_empty():
+			line += " Снято: %s — %s." % [", ".join(pushed), "двуручному оружию нужны обе руки" if target == "blade" else "щит не держат с двуручным оружием"]
+		hud.show_message(line, 2.5)
+		_update_spell_hud()
+	else:
+		hud.show_message("Невозможно экипировать.", 1.5)
+	hud.refresh_inventory(player)
 
 func _use_consumable(item_id: String, label: String = "") -> void:
 	if hud == null or hud.dialogue_visible or get_tree().paused:
@@ -1614,6 +1638,8 @@ const WEAPON_PROFILES := {
 	"dagger": {"cooldown": 0.62, "reach": 0.85, "arc": 70.0, "push": 60.0, "name": "Кинжал"},
 	"spear": {"cooldown": 1.15, "reach": 1.65, "arc": 34.0, "push": 150.0, "name": "Копьё"},
 	"hammer": {"cooldown": 1.5, "reach": 1.05, "arc": 120.0, "push": 210.0, "name": "Молот"},
+	"staff": {"cooldown": 1.25, "reach": 1.1, "arc": 90.0, "push": 130.0, "name": "Посох"},
+	"bow": {"cooldown": 1.0, "reach": 0.8, "arc": 70.0, "push": 80.0, "name": "Лук"},
 }
 
 func weapon_profile() -> Dictionary:

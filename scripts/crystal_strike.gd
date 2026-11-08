@@ -7,6 +7,7 @@ class_name CrystalStrike
 const WARN := 1.1
 const RADIUS := 18.0
 
+var magic_attacks: bool = true
 var damage: int = 8
 ## A lightning bolt instead of a falling crystal (Грозовой остров).
 var lightning: bool = false

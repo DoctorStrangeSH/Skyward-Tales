@@ -116,7 +116,7 @@ func _on_defeated(legend_id: String, at: Vector2) -> void:
 		hunts_done += 1
 		game._spawn_loot(at + Vector2(0, 16), VillageBuildings.TOME)
 		game._spawn_loot(at + Vector2(0, -14), "gold").amount = 60 * maxi(1, RegionCatalog.level(game.current_region))
-		game.spawn_generated_loot(at + Vector2(18, -10), "rare")
+		game.spawn_generated_loot(at + Vector2(18, -10), "rare", "elite")
 		game.achievements.add("legend_hunts")
 	game._spawn_loot(at + Vector2(-14, 6), VillageBuildings.TOME)
 	var coins := game._spawn_loot(at + Vector2(14, 6), "gold")

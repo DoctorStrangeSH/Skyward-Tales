@@ -35,9 +35,9 @@ func _run() -> void:
 	if not _verify(game.hud.inventory_list != null, "inventory not ready"):
 		return
 	game.hud.toggle_inventory(hero)
-	if not _verify(game.hud.equipment_list.get_child_count() == 5, "equipment slots missing"):
+	if not _verify(game.hud.equipment_list.get_child_count() == PlayerCharacter.SLOTS.size(), "equipment slots missing"):
 		return
-	game._on_inventory_unequip("weapon")
+	game._on_inventory_unequip("blade")
 	if not _verify(hero.get_spell_bonus() == 0 and int(hero.inventory.get("apprentice_staff", 0)) == 1, "staff unequip"):
 		return
 	game._on_inventory_unequip("armor")

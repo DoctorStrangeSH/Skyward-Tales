@@ -36,7 +36,13 @@ var sprinting: bool = false
 var dodge_cooldown_left: float = 0.0
 var dodge_direction: Vector2 = Vector2.DOWN
 var inventory: Dictionary = {}
-var equipment: Dictionary = {"blade": "", "weapon": "", "armor": "", "amulet": "", "relic": ""}
+## Worn gear by slot (owner's list №11, 23–26): the hand weapon, a shield,
+## armour, cloak, amulet, earrings, two rings and a relic.
+const SLOTS := ["blade", "offhand", "armor", "cloak", "amulet", "earrings", "ring1", "ring2", "relic"]
+var equipment: Dictionary = {"blade": "", "offhand": "", "armor": "", "cloak": "", "amulet": "", "earrings": "", "ring1": "", "ring2": "", "relic": ""}
+## The bag's hand-made order (owner's list №22): item ids, first to last.
+var bag_order: Array = []
+var _hp_regen_clock: float = 0.0
 var talents: Dictionary = {}
 ## Rolled equipment definitions by id ("gen_0001"); saved with the hero.
 var generated_items: Dictionary = {}
@@ -87,7 +93,8 @@ func heal(amount: int) -> void:
 	stats_changed.emit()
 
 func start_guard() -> bool:
-	if guard_cooldown_left > 0.0 or health <= 0 or dodge_time_left > 0.0:
+	# No shield — no block and no parry (owner's list №25).
+	if not has_shield() or guard_cooldown_left > 0.0 or health <= 0 or dodge_time_left > 0.0:
 		return false
 	parry_left = PARRY_WINDOW + (0.1 if wears_base("crab_aegis") else 0.0)
 	blocking = true
@@ -144,6 +151,16 @@ func _physics_process(_delta: float) -> void:
 		if dodge_time_left <= 0.0:
 			visual.modulate = Color.WHITE
 		return
+	# Gear that heals over time (hp_regen: health every 5 seconds).
+	var regen := _equipped_stat("hp_regen")
+	if regen > 0 and health > 0 and health < max_health:
+		_hp_regen_clock += _delta
+		if _hp_regen_clock >= 5.0:
+			_hp_regen_clock -= 5.0
+			health = mini(max_health, health + regen)
+			stats_changed.emit()
+	else:
+		_hp_regen_clock = 0.0
 	# Recover mana slowly so casting remains testable during exploration.
 	if mana < max_mana:
 		mana_regen_accumulator += _delta * get_mana_regen()
@@ -226,7 +243,7 @@ func take_damage(amount: int, source: Node = null) -> void:
 		parried.emit(source)
 		return
 	if blocking:
-		var kept := roundi(amount * BLOCK_SHARE)
+		var kept := roundi(amount * (1.0 - get_block()))
 		blocked.emit(amount - kept)
 		amount = kept
 	if oath_left > 0.0:
@@ -238,7 +255,10 @@ func take_damage(amount: int, source: Node = null) -> void:
 		amount = roundi(amount * 0.5)
 		call_deferred("heal", maxi(1, roundi(max_health * 0.03)))
 	var previous_health: int = health
-	health = maxi(0, health - maxi(1, roundi(float(amount - get_armor()) * (1.0 - get_damage_reduction()))))
+	# Spells and curses meet the magic defence; blows meet the armour.
+	var magic := source != null and is_instance_valid(source) and "magic_attacks" in source and bool(source.get("magic_attacks"))
+	var defence := (get_resist() + get_armor() / 3) if magic else get_armor()
+	health = maxi(0, health - maxi(1, roundi(float(amount - defence) * (1.0 - get_damage_reduction()))))
 	if health < previous_health:
 		hurt.emit(previous_health - health)
 		if visual != null and not visual.is_playing_action():
@@ -325,13 +345,57 @@ func register_generated_item(definition: Dictionary) -> String:
 func get_stat(stat: String) -> int:
 	return maxi(0, level - 1) + _equipped_stat(stat)
 
-## +2% spell damage per point of power.
-func get_spell_power_multiplier() -> float:
-	return (1.0 + 0.02 * float(get_stat("power"))) * (1.0 + buff_value("power"))
+## +2% spell damage per point of power, plus magic damage % from gear;
+## a spell id adds its element's % (fire_pct, frost_pct, storm_pct).
+func get_spell_power_multiplier(spell_id: String = "") -> float:
+	var gear := 1.0 + 0.01 * float(_equipped_stat("spell_pct") + element_pct(spell_id))
+	return (1.0 + 0.02 * float(get_stat("power"))) * gear * (1.0 + buff_value("power"))
 
-## Base 4 mana per second, +0.3 per point of will.
+const ELEMENT_STATS := {"fireball": "fire_pct", "meteor": "fire_pct", "frostbolt": "frost_pct", "chain_lightning": "storm_pct"}
+
+## % bonus of the spell's element from gear.
+func element_pct(spell_id: String) -> int:
+	var stat := str(ELEMENT_STATS.get(spell_id, ""))
+	return _equipped_stat(stat) if not stat.is_empty() else 0
+
+## Base 4 mana per second, +0.3 per point of will, + mp_regen from gear.
 func get_mana_regen() -> float:
-	return 4.0 + 0.3 * float(get_stat("will"))
+	return 4.0 + 0.3 * float(get_stat("will")) + float(_equipped_stat("mp_regen"))
+
+## Magic defence: flat, against spells and curses of enemies.
+func get_resist() -> int:
+	return _equipped_stat("resist")
+
+## ×2 by default; crit_damage on gear adds to it (+20 → ×2.2).
+func get_crit_multiplier() -> float:
+	return 2.0 + 0.01 * float(_equipped_stat("crit_damage"))
+
+## Physical damage % from gear (sword, bow, skills).
+func get_physical_multiplier() -> float:
+	return 1.0 + 0.01 * float(_equipped_stat("melee_pct"))
+
+func has_shield() -> bool:
+	return not str(equipment.get("offhand", "")).is_empty()
+
+## Part of a blow a raised shield stops (0..0.8); 0 without a shield.
+func get_block() -> float:
+	if not has_shield():
+		return 0.0
+	return clampf(0.01 * float(_equipped_stat("block")), 0.0, 0.8)
+
+## 1 or 2: how many hands the weapon takes (staves, bows, spears, mauls — 2).
+func hands(item_id: String) -> int:
+	var definition := get_item_definition(item_id)
+	if definition.has("hands"):
+		return int(definition["hands"])
+	return 2 if str(definition.get("slot", "")) == "weapon" or bool(definition.get("bow", false)) else 1
+
+func two_handed() -> bool:
+	var blade := str(equipment.get("blade", ""))
+	return not blade.is_empty() and hands(blade) >= 2
+
+func has_staff() -> bool:
+	return weapon_kind() == "staff"
 
 ## Agility: −2% dodge cooldown per point (to 50%) and +1% speed (to +25%).
 func get_dodge_cooldown() -> float:
@@ -373,10 +437,18 @@ func wears_base(base_id: String) -> bool:
 			return true
 	return false
 
-## sword | dagger | spear | hammer — how the blade in hand swings.
+## sword | dagger | spear | hammer | staff | bow — the weapon in hand.
 func weapon_kind() -> String:
 	var blade := str(equipment.get("blade", ""))
-	return str(get_item_definition(blade).get("kind", "sword")) if not blade.is_empty() else "sword"
+	return "sword" if blade.is_empty() else weapon_kind_of(blade)
+
+func weapon_kind_of(item_id: String) -> String:
+	var definition := get_item_definition(item_id)
+	if bool(definition.get("bow", false)):
+		return "bow"
+	if definition.has("kind"):
+		return str(definition["kind"])
+	return "staff" if str(definition.get("slot", "")) == "weapon" or definition.has("spell_bonus") and not definition.has("melee") else "sword"
 
 ## Worn pieces per set: {set_id: count}.
 func worn_sets() -> Dictionary:
@@ -425,7 +497,9 @@ func set_description(item_id: String) -> String:
 	return "Комплект «%s» (%d/%d): %s" % [str(data.get("name", set_id)), worn, pieces, "; ".join(parts)]
 
 const STAT_NAMES := {"melee": "урон оружием", "armor": "броня", "crit": "% крита", "power": "сила магии", "agility": "ловкость",
-	"will": "воля", "lifesteal": "вампиризм", "ranged": "урон луком", "max_mana": "мана", "max_health": "здоровье", "haste": "% скорости умений"}
+	"will": "воля", "lifesteal": "вампиризм", "ranged": "урон луком", "max_mana": "мана", "max_health": "здоровье", "haste": "% скорости умений",
+	"melee_pct": "% физ. урона", "spell_pct": "% маг. урона", "fire_pct": "% урона огнём", "frost_pct": "% урона льдом", "storm_pct": "% урона молнией",
+	"crit_damage": "% крит. урона", "resist": "маг. защита", "hp_regen": "здоровья / 5 с", "mp_regen": "маны / с", "block": "% блока"}
 
 static func stat_text(stats: Dictionary) -> String:
 	var parts: Array[String] = []
@@ -436,7 +510,7 @@ static func stat_text(stats: Dictionary) -> String:
 			parts.append("+%d %s" % [int(stats[stat]), STAT_NAMES.get(stat, stat)])
 	return ", ".join(parts)
 
-const UPGRADE_STATS := ["melee", "armor", "crit", "power", "agility", "will", "ranged", "max_mana", "max_health", "lifesteal"]
+const UPGRADE_STATS := ["melee", "armor", "crit", "power", "agility", "will", "ranged", "max_mana", "max_health", "lifesteal", "resist", "melee_pct", "spell_pct", "crit_damage"]
 const RARITY_COST := {"common": 1.0, "uncommon": 1.5, "rare": 2.2, "epic": 3.2, "legendary": 4.5}
 
 ## Forging level of an item (0 for a plain one).
@@ -521,17 +595,21 @@ func get_melee_damage() -> int:
 	damage += float(talents.get("blade_mastery", 0)) * 3.0
 	if has_passive("steady_hand"):
 		damage *= 1.1
+	damage *= get_physical_multiplier()
+	# A staff is a mage's tool: it strikes, but softly.
+	if has_staff():
+		damage *= 0.7
 	return int(round(damage * (1.0 + buff_value("power"))))
 
-## A bow in the weapon slot turns the right hand from spells to arrows.
+## A bow in hand: both mouse buttons shoot.
 func has_bow() -> bool:
-	var weapon := str(equipment.get("weapon", ""))
+	var weapon := str(equipment.get("blade", ""))
 	return not weapon.is_empty() and bool(get_item_definition(weapon).get("bow", false))
 
 ## Arrow damage: base 6, +1.8 per level, the bow's "ranged", +0.6 per agility.
 func get_ranged_damage() -> int:
 	var damage := 6.0 + 1.8 * float(level - 1) + float(_equipped_stat("ranged")) + float(get_stat("agility")) * 0.6
-	return int(round(damage * (1.0 + buff_value("power"))))
+	return int(round(damage * get_physical_multiplier() * (1.0 + buff_value("power"))))
 
 func get_armor() -> int:
 	return _equipped_stat("armor") + int(buff_value("armor")) + 2 * int(talents.get("iron_skin", 0)) + (3 if has_passive("toughness") else 0)
@@ -692,23 +770,35 @@ func _append_equipment_comparison_stat(stats: Array[Dictionary], label: String, 
 		"unit": unit
 	})
 
+## Stats shown when two pieces are compared (stat, label, unit).
+const COMPARE_STATS := [
+	["melee", "Урон оружием", ""], ["ranged", "Урон луком", ""], ["melee_pct", "Физ. урон", "%"],
+	["spell_pct", "Маг. урон", "%"], ["fire_pct", "Урон огнём", "%"], ["frost_pct", "Урон льдом", "%"], ["storm_pct", "Урон молнией", "%"],
+	["crit", "Шанс крита", "%"], ["crit_damage", "Крит. урон", "%"], ["resist", "Маг. защита", ""], ["block", "Блок щитом", "%"],
+	["max_health", "Здоровье", ""], ["hp_regen", "Здоровье / 5 с", ""], ["mp_regen", "Мана / с", ""], ["lifesteal", "Вампиризм", ""],
+]
+
 func get_equipment_comparison(item_id: String) -> Dictionary:
 	var candidate: Dictionary = get_item_definition(item_id)
-	var slot: String = str(candidate.get("slot", ""))
+	var slot: String = target_slot(item_id)
 	if slot.is_empty() or not equipment.has(slot):
 		return {}
 	var current_item_id: String = str(equipment.get(slot, ""))
+	# What comes off: the piece in that slot, and a shield or a two-handed
+	# weapon the new piece pushes off.
+	var removed: Array[String] = []
+	if not current_item_id.is_empty():
+		removed.append(current_item_id)
+	for other in displaced_by(item_id, slot):
+		removed.append(str(equipment[other]))
+	var off := func(stat: String) -> float:
+		var total := 0.0
+		for id in removed:
+			total += float(get_item_definition(id).get(stat, 0))
+		return total
 	var stats: Array[Dictionary] = []
-	var current_definition: Dictionary = get_item_definition(current_item_id)
-
-	_append_equipment_comparison_stat(
-		stats, "Броня", float(get_armor()),
-		float(get_armor() - int(current_definition.get("armor", 0)) + int(candidate.get("armor", 0)))
-	)
-	_append_equipment_comparison_stat(
-		stats, "Максимум маны", float(max_mana),
-		float(max_mana - int(current_definition.get("max_mana", 0)) + int(candidate.get("max_mana", 0)))
-	)
+	_append_equipment_comparison_stat(stats, "Броня", float(get_armor()), float(get_armor()) - off.call("armor") + float(candidate.get("armor", 0)))
+	_append_equipment_comparison_stat(stats, "Максимум маны", float(max_mana), float(max_mana) - off.call("max_mana") + float(candidate.get("max_mana", 0)))
 	for spell_data in [
 		{"id": "fireball", "label": "Огненный шар"},
 		{"id": "frostbolt", "label": "Ледяная стрела"},
@@ -716,26 +806,25 @@ func get_equipment_comparison(item_id: String) -> Dictionary:
 	]:
 		var spell_id: String = str(spell_data["id"])
 		var before_damage: int = get_spell_bonus(spell_id)
-		var after_damage: int = before_damage - _item_spell_bonus(current_item_id, spell_id) + _item_spell_bonus(item_id, spell_id)
+		var after_damage: int = before_damage + _item_spell_bonus(item_id, spell_id)
+		for id in removed:
+			after_damage -= _item_spell_bonus(id, spell_id)
 		_append_equipment_comparison_stat(stats, str(spell_data["label"]), float(before_damage), float(after_damage), " урона")
-	_append_equipment_comparison_stat(
-		stats, "Урон горения", float(get_burn_damage_bonus()),
-		float(get_burn_damage_bonus() - int(current_definition.get("burn_damage_bonus", 0)) + int(candidate.get("burn_damage_bonus", 0))),
-		" за тик"
-	)
-	_append_equipment_comparison_stat(
-		stats, "Длительность замедления", get_slow_duration_bonus(),
-		get_slow_duration_bonus() - float(current_definition.get("slow_duration_bonus", 0.0)) + float(candidate.get("slow_duration_bonus", 0.0)),
-		" с"
-	)
+	_append_equipment_comparison_stat(stats, "Урон горения", float(get_burn_damage_bonus()), float(get_burn_damage_bonus()) - off.call("burn_damage_bonus") + float(candidate.get("burn_damage_bonus", 0)), " за тик")
+	_append_equipment_comparison_stat(stats, "Длительность замедления", get_slow_duration_bonus(), get_slow_duration_bonus() - off.call("slow_duration_bonus") + float(candidate.get("slow_duration_bonus", 0.0)), " с")
 	for stat_data in [["power", "Сила магии"], ["will", "Воля"], ["agility", "Ловкость"]]:
 		var stat: String = stat_data[0]
 		var before_stat := float(get_stat(stat))
-		_append_equipment_comparison_stat(stats, stat_data[1], before_stat, before_stat - float(current_definition.get(stat, 0)) + float(candidate.get(stat, 0)))
-	_append_equipment_comparison_stat(
-		stats, "Прыжки молнии", float(get_chain_targets_bonus()),
-		float(get_chain_targets_bonus() - int(current_definition.get("chain_targets_bonus", 0)) + int(candidate.get("chain_targets_bonus", 0)))
-	)
+		_append_equipment_comparison_stat(stats, stat_data[1], before_stat, before_stat - off.call(stat) + float(candidate.get(stat, 0)))
+	for stat_data in COMPARE_STATS:
+		var stat: String = stat_data[0]
+		var before := float(_equipped_stat(stat))
+		_append_equipment_comparison_stat(stats, stat_data[1], before, before - off.call(stat) + float(candidate.get(stat, 0)), str(stat_data[2]))
+	_append_equipment_comparison_stat(stats, "Прыжки молнии", float(get_chain_targets_bonus()), float(get_chain_targets_bonus()) - off.call("chain_targets_bonus") + float(candidate.get("chain_targets_bonus", 0)))
+	var lost: Array[String] = []
+	for id in removed:
+		if id != current_item_id:
+			lost.append(get_item_name(id))
 	return {
 		"slot": slot,
 		"current_item_id": current_item_id,
@@ -743,7 +832,8 @@ func get_equipment_comparison(item_id: String) -> Dictionary:
 		"current_name": get_item_name(current_item_id) if not current_item_id.is_empty() else "Пусто",
 		"candidate_name": get_item_name(item_id),
 		"description": get_item_description(item_id),
-		"stats": stats
+		"stats": stats,
+		"also_removes": lost
 	}
 
 func get_cooldown_multiplier() -> float:
@@ -765,15 +855,46 @@ func apply_talent(talent_id: String) -> bool:
 	stats_changed.emit()
 	return true
 
+## The kind of slot an item goes to: blade, offhand, armor, cloak, amulet,
+## earrings, ring or relic. Old staves and bows ("weapon") go to the hand.
 func _slot_for_item(item_id: String) -> String:
-	return str(get_item_definition(item_id).get("slot", ""))
+	var slot := str(get_item_definition(item_id).get("slot", ""))
+	return "blade" if slot == "weapon" else slot
 
-func equip_item(item_id: String) -> bool:
-	var slot: String = _slot_for_item(item_id)
+## The equipment key an item would take: a ring goes to a free ring slot.
+func target_slot(item_id: String, wanted: String = "") -> String:
+	var kind := _slot_for_item(item_id)
+	if kind == "ring":
+		if wanted in ["ring1", "ring2"]:
+			return wanted
+		for ring in ["ring1", "ring2"]:
+			if str(equipment.get(ring, "")).is_empty():
+				return ring
+		return "ring1"
+	return kind if equipment.has(kind) else ""
+
+## Which slot kind an equipment key accepts.
+static func slot_kind(slot: String) -> String:
+	return "ring" if slot in ["ring1", "ring2"] else slot
+
+## Items a new piece would push off: the shield for a two-handed weapon,
+## a two-handed weapon for a shield (owner's list №23–25).
+func displaced_by(item_id: String, slot: String) -> Array[String]:
+	var result: Array[String] = []
+	if slot == "blade" and hands(item_id) >= 2 and has_shield():
+		result.append("offhand")
+	elif slot == "offhand" and two_handed():
+		result.append("blade")
+	return result
+
+func equip_item(item_id: String, wanted_slot: String = "") -> bool:
+	var slot: String = target_slot(item_id, wanted_slot)
 	if slot.is_empty() or not equipment.has(slot) or int(inventory.get(item_id, 0)) <= 0:
 		return false
 	if str(equipment.get(slot, "")) == item_id:
 		return false
+	for other in displaced_by(item_id, slot):
+		unequip_slot(other)
 	var previous: String = str(equipment.get(slot, ""))
 	var mana_delta: int = _equipment_stat(item_id, "max_mana") - _equipment_stat(previous, "max_mana")
 	inventory[item_id] = int(inventory[item_id]) - 1
@@ -787,6 +908,8 @@ func equip_item(item_id: String) -> bool:
 	var health_delta: int = _equipment_stat(item_id, "max_health") - _equipment_stat(previous, "max_health")
 	max_health = maxi(1, max_health + health_delta)
 	health = clampi(health + maxi(0, health_delta), 1, max_health)
+	if not has_shield():
+		end_guard()
 	stats_changed.emit()
 	return true
 
@@ -804,8 +927,30 @@ func unequip_slot(slot: String) -> bool:
 	max_health = maxi(1, max_health - health_delta)
 	health = clampi(health, 1, max_health)
 	inventory[item_id] = int(inventory.get(item_id, 0)) + 1
+	if slot == "offhand":
+		end_guard()
 	stats_changed.emit()
 	return true
+
+## Drag in the bag: puts `item_id` where `before_id` is (or last when empty).
+## `shown` is the bag as the player sees it now.
+func move_in_bag(item_id: String, before_id: String, shown: Array) -> void:
+	var order: Array = []
+	for id in shown:
+		if int(inventory.get(str(id), 0)) > 0 and not order.has(str(id)):
+			order.append(str(id))
+	for id in bag_order:
+		if int(inventory.get(str(id), 0)) > 0 and not order.has(str(id)):
+			order.append(str(id))
+	order.erase(item_id)
+	var at := order.find(before_id) if not before_id.is_empty() else -1
+	if at < 0:
+		order.append(item_id)
+	else:
+		order.insert(at, item_id)
+	bag_order = order
+	stats_changed.emit()
+
 func add_item(item_id: String, amount: int = 1) -> void:
 	if amount <= 0:
 		return

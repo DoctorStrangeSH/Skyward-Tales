@@ -55,7 +55,7 @@ func show_item(comparison: Dictionary, item_id: String) -> void:
 		return
 	visible = true
 	title_label.text = "СРАВНЕНИЕ: " + str(comparison.get("candidate_name", item_id))
-	var slot_names: Dictionary = {"weapon": "Оружие", "armor": "Броня", "amulet": "Амулет", "relic": "Реликвия"}
+	var slot_names: Dictionary = {"blade": "Оружие", "weapon": "Оружие", "offhand": "Щит", "armor": "Броня", "cloak": "Плащ", "amulet": "Амулет", "earrings": "Серьги", "ring1": "Кольцо", "ring2": "Кольцо", "relic": "Реликвия"}
 	var current_item_id: String = str(comparison.get("current_item_id", ""))
 	var current_name: String = str(comparison.get("current_name", "Пусто"))
 	subtitle_label.text = "%s  •  Сейчас: %s  →  Новый предмет: %s" % [

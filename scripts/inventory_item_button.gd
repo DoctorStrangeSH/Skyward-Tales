@@ -11,6 +11,8 @@ signal compare_requested(item_id: String)
 signal hovered(item_id: String)
 signal unhovered
 signal unequip_requested(slot: String)
+## Owner's list №22: an item dropped on another moves before it.
+signal reorder_requested(item_id: String, before_id: String)
 
 const CELL := Vector2(34, 34)
 const RARITY_COLORS := {
@@ -28,10 +30,14 @@ var can_use: bool = false
 var equipped: bool = false
 var quest_item: bool = false
 var rarity_color := Color(0.6, 0.5, 0.4)
+var _player: PlayerCharacter
+var _hint: String = ""
+var _drop_hot: bool = false
 const QUEST_COLOR := Color(1.0, 0.82, 0.25)
 
 func configure(player: PlayerCharacter, id: String, fallback_names: Dictionary, fallback_descriptions: Dictionary, rarity_names: Dictionary, consumable_ids: Array) -> void:
 	item_id = id
+	_player = player
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	focus_mode = Control.FOCUS_NONE
 	custom_minimum_size = CELL
@@ -42,7 +48,7 @@ func configure(player: PlayerCharacter, id: String, fallback_names: Dictionary, 
 	var description: String = str(fallback_descriptions.get(item_id, player.get_item_description(item_id)))
 	var rarity: String = str(definition.get("rarity", ""))
 	var rarity_label: String = " • " + str(rarity_names.get(rarity, rarity)).to_lower() if not rarity.is_empty() else ""
-	slot = str(definition.get("slot", ""))
+	slot = player._slot_for_item(item_id)
 	var can_equip: bool = not slot.is_empty()
 	var can_consume: bool = consumable_ids.has(item_id) or definition.has("use")
 	can_use = count > 0 and (can_equip or can_consume)
@@ -51,8 +57,7 @@ func configure(player: PlayerCharacter, id: String, fallback_names: Dictionary, 
 	summary = "%s ×%d — %s%s%s" % [item_name, count, description, rarity_label, " [НАДЕТО]" if equipped else ""]
 	text = str(count) if count > 1 else ""
 	tooltip_text = (description + "\n" if not description.is_empty() else "") + action_hint
-	if can_equip:
-		tooltip_text += "\nНаведение: сравнить характеристики"
+	_hint = "ЛКМ — надеть · перетащите на слот героя" if can_equip else ("ЛКМ — использовать · перетащите — переложить" if can_consume else "Перетащите, чтобы переложить")
 	rarity_color = RARITY_COLORS.get(rarity, Color(0.6, 0.5, 0.4)) if not rarity.is_empty() else Color(0.55, 0.45, 0.35)
 	if quest_item:
 		rarity_color = QUEST_COLOR
@@ -89,7 +94,15 @@ func _ready() -> void:
 	mouse_entered.connect(_on_item_hovered)
 	mouse_exited.connect(func() -> void: unhovered.emit())
 
+## The rich item card (owner's list №1).
+func _make_custom_tooltip(_for_text: String) -> Object:
+	if _player == null or item_id.is_empty():
+		return null
+	return ItemTooltip.make(_player, item_id, _hint)
+
 func _draw() -> void:
+	if _drop_hot:
+		draw_rect(Rect2(Vector2(0, 0), Vector2(3, size.y)), Color(1.0, 0.85, 0.4))
 	if quest_item:
 		var star := PackedVector2Array([Vector2(size.x - 8, 2), Vector2(size.x - 5, 5), Vector2(size.x - 8, 8), Vector2(size.x - 11, 5)])
 		draw_colored_polygon(star, QUEST_COLOR)
@@ -113,8 +126,6 @@ func _on_item_hovered() -> void:
 # --- Drag and drop -------------------------------------------------------------
 
 func _get_drag_data(_at: Vector2) -> Variant:
-	if not can_use:
-		return null
 	var preview := TextureRect.new()
 	preview.texture = icon
 	preview.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -126,9 +137,26 @@ func _get_drag_data(_at: Vector2) -> Variant:
 	set_drag_preview(holder)
 	return {"kind": "item", "item_id": item_id, "slot": slot}
 
-## A worn item dragged back onto the bag comes off.
+## A worn item dragged back onto the bag comes off; a bag item dropped here
+## is moved in front of this one.
 func _can_drop_data(_at: Vector2, data: Variant) -> bool:
-	return data is Dictionary and data.get("kind", "") == "slot"
+	if not data is Dictionary:
+		return false
+	var hot: bool = data.get("kind", "") == "item" and str(data.get("item_id", "")) != item_id
+	if hot != _drop_hot:
+		_drop_hot = hot
+		queue_redraw()
+	return data.get("kind", "") == "slot" or hot
 
 func _drop_data(_at: Vector2, data: Variant) -> void:
-	unequip_requested.emit(str(data.get("slot", "")))
+	_drop_hot = false
+	queue_redraw()
+	if data.get("kind", "") == "slot":
+		unequip_requested.emit(str(data.get("slot", "")))
+	else:
+		reorder_requested.emit(str(data.get("item_id", "")), item_id)
+
+func _notification(what: int) -> void:
+	if (what == NOTIFICATION_DRAG_END or what == NOTIFICATION_MOUSE_EXIT) and _drop_hot:
+		_drop_hot = false
+		queue_redraw()

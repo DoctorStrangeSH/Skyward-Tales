@@ -45,6 +45,7 @@ var inventory_filter_index: int = 0
 var inventory_sort_index: int = 0
 var inventory_open: bool = false
 signal inventory_use_requested(item_id: String)
+signal inventory_equip_to_requested(item_id: String, slot: String)
 signal inventory_unequip_requested(slot: String)
 signal pause_save_requested
 signal pause_load_requested
@@ -220,6 +221,11 @@ func _ready() -> void:
 	inventory_view.filter_selected.connect(_on_inventory_filter_selected)
 	inventory_view.sort_selected.connect(_on_inventory_sort_selected)
 	inventory_view.use_requested.connect(func(id: String) -> void: inventory_use_requested.emit(id))
+	inventory_view.equip_to_requested.connect(func(id: String, slot: String) -> void: inventory_equip_to_requested.emit(id, slot))
+	inventory_view.reordered.connect(func() -> void:
+		inventory_sort_index = 0
+		inventory_sort.select(0)
+		refresh_inventory(inventory_player))
 	inventory_view.compare_requested.connect(func(id: String) -> void: _show_equipment_comparison(inventory_player, id))
 	inventory_view.unequip_requested.connect(func(slot: String) -> void: inventory_unequip_requested.emit(slot))
 	inventory_view.craft_requested.connect(func() -> void: handcraft_requested.emit())

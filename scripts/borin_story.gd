@@ -16,9 +16,13 @@ const FLAG := "borin_forge_2"
 const MIN_LEVEL := 6
 const SHARDS := 3
 const SHOP := {"steel_sword": 220, "steel_mail": 240, "skysteel_blade": 620, "skysteel_mail": 640,
-	"scout_knife": 140, "guard_spear": 140, "smith_hammer": 150}
+	"scout_knife": 140, "guard_spear": 140, "smith_hammer": 150, "iron_shield": 120, "guard_shield": 260,
+	"ember_ring": 160, "frost_ring": 160, "storm_ring": 160}
+## Sold before the forge grows.
+const SHOP_1 := {"scout_knife": 140, "guard_spear": 140, "smith_hammer": 150, "iron_shield": 120}
 ## Sold once the forge is expanded (level 3).
-const SHOP_3 := {"shadow_dagger": 380, "coral_pike": 380, "mountain_maul": 400, "warden_plate": 820, "keeper_hourglass": 900}
+const SHOP_3 := {"shadow_dagger": 380, "coral_pike": 380, "mountain_maul": 400, "warden_plate": 820, "keeper_hourglass": 900,
+	"sky_aegis": 700, "vigor_ring": 340, "duelist_ring": 360, "wind_earrings": 320, "sage_earrings": 340, "hunter_cloak": 180}
 ## Forge level 3: gold and materials.
 const FORGE_3 := "borin_forge_3"
 const EXPAND_COST := {"gold": 900, "materials": {"iron_ore": 12, "obsidian_shard": 4, "wind_essence": 2}}
@@ -162,15 +166,40 @@ func open_forge() -> void:
 		line = "Нечего точить: всё твоё снаряжение уже заточено до предела моей кузницы."
 	game._show_dialogue_choices("Борин, кузнец", line, choices)
 
-func open_shop() -> void:
+## The shop's shelves: weapons, shields and armour, jewellery.
+const SHELVES := [["weapons", "Оружие", ["blade"]], ["armour", "Щиты и доспехи", ["offhand", "armor", "cloak"]], ["jewels", "Украшения и реликвии", ["ring", "earrings", "amulet", "relic"]]]
+var _shelf: String = ""
+
+func open_shop(shelf: String = "") -> void:
+	_shelf = shelf
 	var choices: Array[Dictionary] = []
-	var stock := SHOP.duplicate() if forge_level() >= 2 else {"scout_knife": 140, "guard_spear": 140, "smith_hammer": 150}
+	var stock := SHOP.duplicate() if forge_level() >= 2 else SHOP_1.duplicate()
 	if forge_level() >= 3:
 		stock.merge(SHOP_3)
+	if shelf.is_empty():
+		for entry in SHELVES:
+			var count := 0
+			for item_id in stock:
+				if game.player._slot_for_item(str(item_id)) in entry[2]:
+					count += 1
+			if count > 0:
+				choices.append({"id": "borin_shelf:" + str(entry[0]), "label": "%s (%d)" % [entry[1], count]})
+		choices.append({"id": "borin_later", "label": "Хватит"})
+		game._show_dialogue_choices("Борин, кузнец", "Кинжалы — для быстрых, копья — для осторожных, молоты — для упрямых. А щит — для тех, кто хочет вернуться домой. Что смотрим?", choices)
+		return
+	var slots: Array = []
+	for entry in SHELVES:
+		if entry[0] == shelf:
+			slots = entry[2]
 	for item_id in stock:
-		choices.append({"id": "borin_buy:" + str(item_id), "label": "%s — %d золота" % [game.player.get_item_name(str(item_id)), int(stock[item_id])]})
+		var id := str(item_id)
+		if not game.player._slot_for_item(id) in slots:
+			continue
+		var hands := "  · двуручное" if game.player._slot_for_item(id) == "blade" and game.player.hands(id) >= 2 else ""
+		choices.append({"id": "borin_buy:" + id, "label": "%s — %d золота%s" % [game.player.get_item_name(id), int(stock[item_id]), hands]})
+	choices.append({"id": "borin_shelf:", "label": "← Другая полка"})
 	choices.append({"id": "borin_later", "label": "Хватит"})
-	game._show_dialogue_choices("Борин, кузнец", "Кинжалы — для быстрых, копья — для осторожных, молоты — для упрямых. Выбирай.", choices)
+	game._show_dialogue_choices("Борин, кузнец", "Смотри, примеряй. Наведи на вещь в сумке — увидишь, чем она лучше твоей.", choices)
 
 func expand_forge() -> bool:
 	if forge_level() != 2 or not game.player.can_pay(EXPAND_COST):
@@ -240,7 +269,7 @@ func handle_choice(choice_id: String) -> bool:
 	if choice_id.begins_with("borin_buy:"):
 		var item_id := choice_id.trim_prefix("borin_buy:")
 		var price := int(SHOP.get(item_id, SHOP_3.get(item_id, 0)))
-		if forge_level() < 2 and not item_id in ["scout_knife", "guard_spear", "smith_hammer"] or forge_level() < 3 and SHOP_3.has(item_id):
+		if forge_level() < 2 and not SHOP_1.has(item_id) or forge_level() < 3 and SHOP_3.has(item_id) and not SHOP.has(item_id):
 			return true
 		if price <= 0:
 			return true
@@ -250,7 +279,10 @@ func handle_choice(choice_id: String) -> bool:
 			game.player.add_gold(-price)
 			game.player.add_item(item_id, 1)
 			game.hud.show_message("Куплено: %s." % game.player.get_item_name(item_id), 2.5)
-		open_shop()
+		open_shop(_shelf)
+		return true
+	if choice_id.begins_with("borin_shelf:"):
+		open_shop(choice_id.trim_prefix("borin_shelf:"))
 		return true
 	return false
 

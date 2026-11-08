@@ -3,11 +3,13 @@
     "apprentice_staff": {
       "name": "Посох ученика",
       "description": "+5 урона всем заклинаниям",
-      "slot": "weapon",
+      "slot": "blade",
       "rarity": "common",
       "spell_bonus": {
         "*": 5
-      }
+      },
+      "hands": 2,
+      "kind": "staff"
     },
     "leather_armor": {
       "name": "Кожаная броня",
@@ -82,11 +84,13 @@
     "ironbound_staff": {
       "name": "Железный посох",
       "description": "Посох ученика, усиленный железной оправой. +8 урона всем заклинаниям.",
-      "slot": "weapon",
+      "slot": "blade",
       "rarity": "uncommon",
       "spell_bonus": {
         "*": 8
-      }
+      },
+      "hands": 2,
+      "kind": "staff"
     },
     "health_potion": {
       "name": "Зелье здоровья",
@@ -260,11 +264,13 @@
     "steel_staff": {
       "name": "Стальной посох",
       "description": "Каменный Перевал. +14 урона всем заклинаниям.",
-      "slot": "weapon",
+      "slot": "blade",
       "rarity": "rare",
       "spell_bonus": {
         "*": 14
-      }
+      },
+      "hands": 2,
+      "kind": "staff"
     },
     "steel_mail": {
       "name": "Стальная кольчуга",
@@ -276,13 +282,15 @@
     "skysteel_staff": {
       "name": "Посох небесной стали",
       "description": "+22 урона всем заклинаниям и +4 силы.",
-      "slot": "weapon",
+      "slot": "blade",
       "rarity": "epic",
       "spell_bonus": {
         "*": 22
       },
       "power": 4,
-      "set": "skysteel"
+      "set": "skysteel",
+      "hands": 2,
+      "kind": "staff"
     },
     "skysteel_mail": {
       "name": "Доспех небесной стали",
@@ -316,21 +324,24 @@
       "description": "Простой, но верный клинок. +4 к урону мечом.",
       "slot": "blade",
       "rarity": "common",
-      "melee": 4
+      "melee": 4,
+      "hands": 1
     },
     "iron_sword": {
       "name": "Железный меч",
       "description": "Кованый клинок деревенской кузни. +8 к урону мечом.",
       "slot": "blade",
       "rarity": "uncommon",
-      "melee": 8
+      "melee": 8,
+      "hands": 1
     },
     "steel_sword": {
       "name": "Стальной меч",
       "description": "Сталь Перевала. +14 к урону мечом.",
       "slot": "blade",
       "rarity": "rare",
-      "melee": 14
+      "melee": 14,
+      "hands": 1
     },
     "skysteel_blade": {
       "name": "Клинок небесной стали",
@@ -339,7 +350,8 @@
       "rarity": "epic",
       "melee": 22,
       "agility": 3,
-      "set": "skysteel"
+      "set": "skysteel",
+      "hands": 1
     },
     "slime_gel": {
       "name": "Слизь",
@@ -605,12 +617,13 @@
       "rarity": "epic",
       "melee": 28,
       "crit": 5,
-      "value": 260
+      "value": 260,
+      "hands": 1
     },
     "ash_cloak": {
       "name": "Пепельный плащ",
       "description": "Плащ из пепельных шкур: +9 брони, +2 ловкости.",
-      "slot": "armor",
+      "slot": "cloak",
       "rarity": "rare",
       "armor": 9,
       "agility": 2,
@@ -654,7 +667,8 @@
       "melee": 36,
       "crit": 6,
       "lifesteal": 1,
-      "value": 500
+      "value": 500,
+      "hands": 1
     },
     "treasure_map": {
       "name": "Карта сокровищ",
@@ -668,13 +682,15 @@
     "jelly_staff": {
       "name": "Посох Студня",
       "description": "Трофей короля слизней: +8 урона всем заклинаниям, +15 маны. Особое: Заклинания липнут: поражённые враги замедлены.",
-      "slot": "weapon",
+      "slot": "blade",
       "rarity": "epic",
       "spell_bonus": {
         "*": 8
       },
       "max_mana": 15,
-      "value": 160
+      "value": 160,
+      "hands": 2,
+      "kind": "staff"
     },
     "dusk_fang": {
       "name": "Клык Мрака",
@@ -697,10 +713,11 @@
     "crab_aegis": {
       "name": "Гранитная эгида",
       "description": "Трофей гранитного краба: +14 к броне. Особое: Окно парирования длиннее; парирование лечит 5%.",
-      "slot": "armor",
+      "slot": "offhand",
       "rarity": "epic",
-      "armor": 14,
-      "value": 200
+      "armor": 6,
+      "value": 200,
+      "block": 60
     },
     "golem_heart": {
       "name": "Сердце Скалобоя",
@@ -759,36 +776,43 @@
       "melee": 18,
       "crit": 7,
       "lifesteal": 3,
-      "value": 700
+      "value": 700,
+      "hands": 1
     },
     "hunting_bow": {
       "name": "Охотничий лук",
       "description": "Лук Торена: +6 к урону стрел. Лук в руке заменяет заклинания: ПКМ — выстрел, удерживать — прицельный (пробивает, ×2).",
-      "slot": "weapon",
+      "slot": "blade",
       "bow": true,
       "rarity": "common",
       "ranged": 6,
-      "value": 60
+      "value": 60,
+      "hands": 2,
+      "kind": "bow"
     },
     "elm_longbow": {
       "name": "Вязовый длинный лук",
       "description": "+11 к урону стрел, +3% крит. ПКМ — выстрел, удерживать — прицельный.",
-      "slot": "weapon",
+      "slot": "blade",
       "bow": true,
       "rarity": "rare",
       "ranged": 11,
       "crit": 3,
-      "value": 190
+      "value": 190,
+      "hands": 2,
+      "kind": "bow"
     },
     "wind_bow": {
       "name": "Лук Ветров",
       "description": "Заморский лук: +16 к урону стрел, +5 к ловкости. Особое: прицельный выстрел пробивает всех на пути.",
-      "slot": "weapon",
+      "slot": "blade",
       "bow": true,
       "rarity": "epic",
       "ranged": 16,
       "agility": 5,
-      "value": 320
+      "value": 320,
+      "hands": 2,
+      "kind": "bow"
     },
     "seed_healroot": {
       "name": "Семена целебного корня",
@@ -881,7 +905,8 @@
       "crit": 6,
       "agility": 1,
       "set": "pack",
-      "value": 70
+      "value": 70,
+      "hands": 1
     },
     "shadow_dagger": {
       "name": "Кинжал тени",
@@ -892,7 +917,8 @@
       "melee": 10,
       "crit": 10,
       "agility": 2,
-      "value": 180
+      "value": 180,
+      "hands": 1
     },
     "viper_fang": {
       "name": "Жало гадюки",
@@ -903,7 +929,8 @@
       "melee": 15,
       "crit": 12,
       "agility": 2,
-      "value": 320
+      "value": 320,
+      "hands": 1
     },
     "guard_spear": {
       "name": "Копьё стражника",
@@ -913,7 +940,8 @@
       "rarity": "uncommon",
       "melee": 7,
       "armor": 1,
-      "value": 70
+      "value": 70,
+      "hands": 2
     },
     "coral_pike": {
       "name": "Коралловая пика",
@@ -923,7 +951,8 @@
       "rarity": "rare",
       "melee": 13,
       "agility": 1,
-      "value": 190
+      "value": 190,
+      "hands": 2
     },
     "storm_spear": {
       "name": "Копьё грозы",
@@ -933,7 +962,8 @@
       "rarity": "epic",
       "melee": 21,
       "agility": 2,
-      "value": 340
+      "value": 340,
+      "hands": 2
     },
     "smith_hammer": {
       "name": "Кузнечный молот",
@@ -942,7 +972,8 @@
       "kind": "hammer",
       "rarity": "uncommon",
       "melee": 11,
-      "value": 75
+      "value": 75,
+      "hands": 1
     },
     "mountain_maul": {
       "name": "Молот гор",
@@ -952,7 +983,8 @@
       "rarity": "rare",
       "melee": 20,
       "armor": 2,
-      "value": 200
+      "value": 200,
+      "hands": 2
     },
     "titan_breaker": {
       "name": "Сокрушитель титанов",
@@ -962,7 +994,8 @@
       "rarity": "legendary",
       "melee": 34,
       "max_health": 30,
-      "value": 700
+      "value": 700,
+      "hands": 2
     },
     "ranger_jerkin": {
       "name": "Куртка следопыта",
@@ -998,14 +1031,16 @@
     "keeper_staff": {
       "name": "Посох Хранителя",
       "description": "+18 к урону всех заклинаний, +3 к силе магии.",
-      "slot": "weapon",
+      "slot": "blade",
       "rarity": "epic",
       "spell_bonus": {
         "*": 18
       },
       "power": 3,
       "set": "keeper",
-      "value": 400
+      "value": 400,
+      "hands": 2,
+      "kind": "staff"
     },
     "keeper_sigil": {
       "name": "Печать Хранителя",
@@ -1041,12 +1076,14 @@
     "blossom_bow": {
       "name": "Цветущий лук",
       "description": "Лук: +12 к урону стрел, +1 HP за попадание.",
-      "slot": "weapon",
+      "slot": "blade",
       "bow": true,
       "rarity": "rare",
       "ranged": 12,
       "lifesteal": 1,
-      "value": 210
+      "value": 210,
+      "hands": 2,
+      "kind": "bow"
     },
     "storm_crown": {
       "name": "Венец бури",
@@ -1064,7 +1101,7 @@
     "mirage_cloak": {
       "name": "Плащ миража",
       "description": "+7 к броне, +4 к ловкости, +20 к здоровью. Соткан из тумана Острова-миража.",
-      "slot": "armor",
+      "slot": "cloak",
       "rarity": "epic",
       "armor": 7,
       "agility": 4,
@@ -1081,7 +1118,8 @@
       "power": 2,
       "will": 2,
       "icon": "skyfire_blade",
-      "value": 300
+      "value": 300,
+      "hands": 1
     },
     "order_mantle": {
       "name": "Мантия ордена",
@@ -1115,7 +1153,8 @@
       "melee": 22,
       "agility": 3,
       "icon": "traveler_sword",
-      "value": 320
+      "value": 320,
+      "hands": 1
     },
     "storm_coat": {
       "name": "Штормовой камзол",
@@ -1142,13 +1181,15 @@
     "rootwood_bow": {
       "name": "Лук из корня",
       "description": "Лук: +15 к урону стрел, +2 HP за попадание. Сделан Кругом Земных Корней.",
-      "slot": "weapon",
+      "slot": "blade",
       "bow": true,
       "rarity": "epic",
       "ranged": 15,
       "lifesteal": 2,
       "icon": "elm_longbow",
-      "value": 300
+      "value": 300,
+      "hands": 2,
+      "kind": "bow"
     },
     "moss_mail": {
       "name": "Моховая кольчуга",
@@ -1180,6 +1221,139 @@
       "max_mana": 20,
       "icon": "crystal_lens",
       "value": 400
+    },
+    "wooden_shield": {
+      "name": "Деревянный щит",
+      "description": "Доски, стянутые железом. С ним можно блокировать (F) и парировать.",
+      "slot": "offhand",
+      "rarity": "common",
+      "armor": 1,
+      "block": 30,
+      "value": 30
+    },
+    "iron_shield": {
+      "name": "Окованный щит",
+      "description": "Работа Борина: дуб под железной полосой.",
+      "slot": "offhand",
+      "rarity": "uncommon",
+      "armor": 3,
+      "block": 40,
+      "value": 90
+    },
+    "guard_shield": {
+      "name": "Щит стражника",
+      "description": "Высокий щит гарнизона Гавани. Держит и стрелы, и заклятья.",
+      "slot": "offhand",
+      "rarity": "rare",
+      "armor": 5,
+      "block": 50,
+      "resist": 2,
+      "value": 200
+    },
+    "sky_aegis": {
+      "name": "Небесная эгида",
+      "description": "Щит из небесной стали: лёгкий, как облако, и твёрдый, как утёс.",
+      "slot": "offhand",
+      "rarity": "epic",
+      "armor": 7,
+      "block": 55,
+      "resist": 5,
+      "value": 560
+    },
+    "copper_ring": {
+      "name": "Медное кольцо",
+      "description": "Простое кольцо на удачу.",
+      "slot": "ring",
+      "rarity": "common",
+      "crit": 2,
+      "value": 40
+    },
+    "ember_ring": {
+      "name": "Кольцо углей",
+      "description": "Тёплое даже зимой.",
+      "slot": "ring",
+      "rarity": "uncommon",
+      "fire_pct": 10,
+      "value": 110
+    },
+    "frost_ring": {
+      "name": "Кольцо инея",
+      "description": "На камне никогда не тает иней.",
+      "slot": "ring",
+      "rarity": "uncommon",
+      "frost_pct": 10,
+      "value": 110
+    },
+    "storm_ring": {
+      "name": "Кольцо грозы",
+      "description": "Покалывает палец перед грозой.",
+      "slot": "ring",
+      "rarity": "uncommon",
+      "storm_pct": 10,
+      "value": 110
+    },
+    "vigor_ring": {
+      "name": "Кольцо бодрости",
+      "description": "Раны под ним затягиваются быстрее.",
+      "slot": "ring",
+      "rarity": "rare",
+      "hp_regen": 3,
+      "max_health": 10,
+      "value": 240
+    },
+    "duelist_ring": {
+      "name": "Перстень дуэлянта",
+      "description": "Перстень мастера клинка из Вольной пристани.",
+      "slot": "ring",
+      "rarity": "rare",
+      "crit": 4,
+      "crit_damage": 20,
+      "value": 260
+    },
+    "silver_earrings": {
+      "name": "Серебряные серьги",
+      "description": "Серебро отводит дурной глаз и чужие чары.",
+      "slot": "earrings",
+      "rarity": "uncommon",
+      "resist": 3,
+      "max_mana": 10,
+      "value": 120
+    },
+    "wind_earrings": {
+      "name": "Серьги ветра",
+      "description": "Звенят, как колокольчики на шпилях.",
+      "slot": "earrings",
+      "rarity": "rare",
+      "agility": 3,
+      "mp_regen": 1,
+      "value": 230
+    },
+    "sage_earrings": {
+      "name": "Серьги мудреца",
+      "description": "В них слышно, как думает мир.",
+      "slot": "earrings",
+      "rarity": "rare",
+      "spell_pct": 8,
+      "will": 2,
+      "value": 260
+    },
+    "travel_cloak": {
+      "name": "Дорожный плащ",
+      "description": "Шерстяной плащ странника. Чуть греет и чуть бережёт от чар.",
+      "slot": "cloak",
+      "rarity": "common",
+      "armor": 1,
+      "resist": 1,
+      "value": 35
+    },
+    "hunter_cloak": {
+      "name": "Плащ охотника",
+      "description": "Пятнистый, как лесная тень.",
+      "slot": "cloak",
+      "rarity": "uncommon",
+      "agility": 2,
+      "melee_pct": 5,
+      "value": 120
     }
   },
   "sets": {

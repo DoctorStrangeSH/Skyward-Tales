@@ -101,7 +101,7 @@ func _run() -> void:
 	await process_frame
 	if not _verify(restored.restore_save_snapshot(snapshot), "restore works"):
 		return
-	if not _verify(restored.player.equipment["weapon"] == item_id and restored.player.get_item_name(item_id) == "Жезл силы", "equipped rolled weapon survives save/load"):
+	if not _verify(restored.player.equipment["blade"] == item_id and restored.player.get_item_name(item_id) == "Жезл силы", "equipped rolled weapon survives save/load"):
 		return
 	var restored_drop := false
 	for node in restored.get_children():

@@ -4,20 +4,26 @@ class_name EquipSlot
 ## Equipment slot on the hero doll. Drop a fitting item from the bag to wear
 ## it, click or drag it back to the bag to take it off.
 
-signal equip_requested(item_id: String)
+signal equip_requested(item_id: String, slot: String)
 signal unequip_requested(slot: String)
 signal hovered(slot: String)
 
-const SIZE := Vector2(36, 36)
-const NAMES := {"blade": "Клинок", "weapon": "Посох", "armor": "Броня", "amulet": "Амулет", "relic": "Реликвия"}
+const SIZE := Vector2(30, 30)
+const NAMES := {"blade": "Оружие", "offhand": "Щит", "armor": "Броня", "cloak": "Плащ", "amulet": "Амулет", "earrings": "Серьги",
+	"ring1": "Кольцо", "ring2": "Кольцо", "relic": "Реликвия", "weapon": "Оружие"}
 
 var slot: String = ""
 var item_id: String = ""
 var _accepting: bool = false
+var _player: PlayerCharacter
+## The shield hand is taken by a two-handed weapon.
+var blocked: bool = false
 
 func setup(player: PlayerCharacter, slot_id: String) -> void:
 	slot = slot_id
+	_player = player
 	item_id = str(player.equipment.get(slot, ""))
+	blocked = slot == "offhand" and item_id.is_empty() and player.two_handed()
 	custom_minimum_size = SIZE
 	size = SIZE
 	focus_mode = Control.FOCUS_NONE
@@ -35,20 +41,28 @@ func setup(player: PlayerCharacter, slot_id: String) -> void:
 		add_theme_stylebox_override(state, box)
 	var icon_id := str(definition.get("icon", item_id))
 	icon = WorldArt.texture("icons/%s.png" % icon_id) if not item_id.is_empty() and ResourceLoader.exists("res://assets/icons/%s.png" % icon_id) else null
-	UiStyle.fit_icon(self, 28)
+	UiStyle.fit_icon(self, 24)
 	disabled = item_id.is_empty()
-	tooltip_text = "%s: %s" % [NAMES.get(slot, slot), player.get_item_name(item_id) if not item_id.is_empty() else "пусто — перетащите сюда предмет"]
+	tooltip_text = "%s: %s" % [NAMES.get(slot, slot), player.get_item_name(item_id) if not item_id.is_empty() else ("занята двуручным оружием" if blocked else "пусто — перетащите сюда предмет")]
 	queue_redraw()
 
 func _ready() -> void:
 	pressed.connect(func() -> void: unequip_requested.emit(slot))
 	mouse_entered.connect(func() -> void: hovered.emit(slot))
 
+func _make_custom_tooltip(_for_text: String) -> Object:
+	if _player == null or item_id.is_empty():
+		return null
+	return ItemTooltip.make(_player, item_id, "%s · клик или перетащите в сумку — снять" % NAMES.get(slot, slot))
+
 func _draw() -> void:
-	# Slot name under the frame.
-	var font := UiFont.font()
-	var caption: String = NAMES.get(slot, slot)
-	draw_string(font, Vector2(-10, SIZE.y + 9), caption, HORIZONTAL_ALIGNMENT_CENTER, SIZE.x + 20, UiFont.px(8), Color(0.75, 0.66, 0.52) if not item_id.is_empty() else Color(0.55, 0.48, 0.4))
+	# An empty slot names itself inside the frame.
+	if item_id.is_empty():
+		var font := UiFont.font()
+		var caption: String = "2 руки" if blocked else str(NAMES.get(slot, slot))
+		draw_string(font, Vector2(0, SIZE.y / 2.0 + 3), caption, HORIZONTAL_ALIGNMENT_CENTER, SIZE.x, UiFont.px(6 if caption.length() > 5 else 7), Color(0.6, 0.5, 0.42, 0.9))
+		if blocked:
+			draw_line(Vector2(5, 5), SIZE - Vector2(5, 5), Color(0.6, 0.35, 0.3, 0.6), 1.0)
 	if _accepting:
 		draw_rect(Rect2(Vector2(1, 1), SIZE - Vector2(2, 2)), Color(0.5, 1.0, 0.5, 0.9), false, 2.0)
 
@@ -67,7 +81,10 @@ func _get_drag_data(_at: Vector2) -> Variant:
 	return {"kind": "slot", "slot": slot}
 
 func _can_drop_data(_at: Vector2, data: Variant) -> bool:
-	var ok: bool = data is Dictionary and data.get("kind", "") == "item" and str(data.get("slot", "")) == slot
+	var kind := str(data.get("slot", "")) if data is Dictionary else ""
+	if kind == "weapon":
+		kind = "blade"
+	var ok: bool = data is Dictionary and data.get("kind", "") == "item" and kind == PlayerCharacter.slot_kind(slot)
 	if ok != _accepting:
 		_accepting = ok
 		queue_redraw()
@@ -76,7 +93,7 @@ func _can_drop_data(_at: Vector2, data: Variant) -> bool:
 func _drop_data(_at: Vector2, data: Variant) -> void:
 	_accepting = false
 	queue_redraw()
-	equip_requested.emit(str(data.get("item_id", "")))
+	equip_requested.emit(str(data.get("item_id", "")), slot)
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_DRAG_END or what == NOTIFICATION_MOUSE_EXIT:

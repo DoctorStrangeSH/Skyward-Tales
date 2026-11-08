@@ -57,13 +57,13 @@ func _run() -> void:
 	if game.chest_tier_reward("wood", Vector2.ZERO) != "":
 		return _fail("wooden chests give no extra gear")
 
-	# Rolls include legendary items and swords.
+	# Bosses roll legendaries (owner's list №31); every roll may be a sword.
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 3
 	var legendary := false
 	var blade := false
 	for i in 1500:
-		if LootGenerator.roll_rarity(rng) == "legendary":
+		if LootGenerator.roll_rarity(rng, "rare", "boss") == "legendary":
 			legendary = true
 		var definition := LootGenerator.generate(rng, 5)
 		if definition.get("slot", "") == "blade" and int(definition.get("melee", 0)) > 0:

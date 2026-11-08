@@ -89,6 +89,12 @@
    16
   ]
  },
+ "icons/copper_ring.png": {
+  "size": [
+   32,
+   32
+  ]
+ },
  "icons/crab_aegis.png": {
   "size": [
    16,
@@ -105,6 +111,12 @@
   "size": [
    16,
    16
+  ]
+ },
+ "icons/duelist_ring.png": {
+  "size": [
+   32,
+   32
   ]
  },
  "icons/dusk_fang.png": {
@@ -149,6 +161,12 @@
    16
   ]
  },
+ "icons/ember_ring.png": {
+  "size": [
+   32,
+   32
+  ]
+ },
  "icons/fang_charm.png": {
   "size": [
    16,
@@ -185,6 +203,12 @@
    16
   ]
  },
+ "icons/frost_ring.png": {
+  "size": [
+   32,
+   32
+  ]
+ },
  "icons/gear_cog.png": {
   "size": [
    16,
@@ -207,6 +231,12 @@
   "size": [
    16,
    16
+  ]
+ },
+ "icons/guard_shield.png": {
+  "size": [
+   32,
+   32
   ]
  },
  "icons/healroot.png": {
@@ -233,6 +263,12 @@
    16
   ]
  },
+ "icons/hunter_cloak.png": {
+  "size": [
+   32,
+   32
+  ]
+ },
  "icons/hunting_bow.png": {
   "size": [
    16,
@@ -243,6 +279,12 @@
   "size": [
    16,
    16
+  ]
+ },
+ "icons/iron_shield.png": {
+  "size": [
+   32,
+   32
   ]
  },
  "icons/iron_sword.png": {
@@ -455,6 +497,12 @@
    16
   ]
  },
+ "icons/sage_earrings.png": {
+  "size": [
+   32,
+   32
+  ]
+ },
  "icons/sea_bass.png": {
   "size": [
    16,
@@ -495,6 +543,12 @@
   "size": [
    16,
    16
+  ]
+ },
+ "icons/silver_earrings.png": {
+  "size": [
+   32,
+   32
   ]
  },
  "icons/skill_blade_wave.png": {
@@ -623,6 +677,12 @@
    16
   ]
  },
+ "icons/sky_aegis.png": {
+  "size": [
+   32,
+   32
+  ]
+ },
  "icons/sky_seal.png": {
   "size": [
    16,
@@ -743,6 +803,12 @@
    16
   ]
  },
+ "icons/storm_ring.png": {
+  "size": [
+   32,
+   32
+  ]
+ },
  "icons/sun_tuna.png": {
   "size": [
    16,
@@ -779,6 +845,12 @@
    16
   ]
  },
+ "icons/travel_cloak.png": {
+  "size": [
+   32,
+   32
+  ]
+ },
  "icons/traveler_sword.png": {
   "size": [
    16,
@@ -797,6 +869,12 @@
    16
   ]
  },
+ "icons/vigor_ring.png": {
+  "size": [
+   32,
+   32
+  ]
+ },
  "icons/wheat.png": {
   "size": [
    16,
@@ -813,6 +891,12 @@
   "size": [
    16,
    16
+  ]
+ },
+ "icons/wind_earrings.png": {
+  "size": [
+   32,
+   32
   ]
  },
  "icons/wind_essence.png": {
@@ -849,6 +933,12 @@
   "size": [
    16,
    16
+  ]
+ },
+ "icons/wooden_shield.png": {
+  "size": [
+   32,
+   32
   ]
  },
  "props/altar_heart.png": {

@@ -69,6 +69,27 @@
       "description": "Редкие семена",
       "base_price": 24,
       "required_bran_trust": 10
+    },
+    "wooden_shield": {
+      "name": "Деревянный щит",
+      "description": "Щит для блока и парирования (F)",
+      "base_price": 45
+    },
+    "travel_cloak": {
+      "name": "Дорожный плащ",
+      "description": "+1 к броне, +1 к магической защите",
+      "base_price": 50
+    },
+    "copper_ring": {
+      "name": "Медное кольцо",
+      "description": "+2% к шансу крита",
+      "base_price": 60
+    },
+    "silver_earrings": {
+      "name": "Серебряные серьги",
+      "description": "+3 к магической защите, +10 маны",
+      "base_price": 150,
+      "required_bran_trust": 20
     }
   },
   "sell_prices": {
@@ -86,7 +107,11 @@
     "wheat": 3,
     "sunberry": 7,
     "bread": 6,
-    "berry_pie": 18
+    "berry_pie": 18,
+    "wooden_shield": 12,
+    "travel_cloak": 14,
+    "copper_ring": 18,
+    "silver_earrings": 50
   },
   "sell_trust_bonus": {
     "trust": 20,

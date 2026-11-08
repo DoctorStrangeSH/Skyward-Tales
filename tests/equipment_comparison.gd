@@ -101,14 +101,17 @@ func _run() -> void:
 			break
 	if not _require(frost_button != null, "relic candidate was not shown in inventory"):
 		return
-	frost_button.mouse_entered.emit()
-	if not _require(hud.comparison_panel.visible, "hovering an equipment item did not open comparison panel"):
-		return
+	# The item card on hover carries the comparison (owner's list №1).
+	var card := frost_button._make_custom_tooltip("") as Control
 	var grid_text: String = ""
-	for child in hud.comparison_grid.get_children():
-		if child is Label:
-			grid_text += child.text + " "
-	if not _require(grid_text.contains("Огненный шар") and grid_text.contains("Длительность замедления") and grid_text.contains("-4") and grid_text.contains("+4"), "comparison panel omitted stat names or signed deltas"):
+	var stack: Array = [card]
+	while not stack.is_empty():
+		var node: Node = stack.pop_back()
+		if node is Label:
+			grid_text += (node as Label).text + " "
+		stack.append_array(node.get_children())
+	card.free()
+	if not _require(grid_text.contains("Огненный шар") and grid_text.contains("Длительность замедления") and grid_text.contains("-4") and grid_text.contains("+4"), "item card omitted stat names or signed deltas: " + grid_text):
 		return
 	hud.toggle_inventory(hero)
 	if not _require(not hud.comparison_panel.visible, "comparison panel remained visible after inventory closed"):

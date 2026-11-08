@@ -74,6 +74,9 @@ func _run() -> void:
 	if game.achievements.progress("full_set") < 1:
 		return _fail("full set achievement")
 
+	# The Keeper's staff took both hands: the knife goes back on.
+	hero.equip_item("scout_knife")
+
 	# Forging at Borin's: +1 at the old smithy.
 	hero.gold = 99999
 	hero.add_item("iron_ore", 60)

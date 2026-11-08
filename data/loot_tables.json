@@ -1,37 +1,418 @@
 {
   "drop_chance": 0.07,
-  "rarity_weights": {"common": 55, "uncommon": 30, "rare": 11, "epic": 3.4, "legendary": 0.6},
+  "rarity_weights": {
+    "common": 55,
+    "uncommon": 30,
+    "rare": 11,
+    "epic": 3.4,
+    "legendary": 0.05
+  },
   "rarities": {
-    "common": {"affixes": 1, "mult": 1.0, "value": 12},
-    "uncommon": {"affixes": 2, "mult": 1.2, "value": 25},
-    "rare": {"affixes": 3, "mult": 1.5, "value": 50},
-    "epic": {"affixes": 4, "mult": 1.8, "value": 90},
-    "legendary": {"affixes": 5, "mult": 2.3, "value": 180}
+    "common": {
+      "affixes": 1,
+      "mult": 1.0,
+      "value": 12
+    },
+    "uncommon": {
+      "affixes": 2,
+      "mult": 1.2,
+      "value": 25
+    },
+    "rare": {
+      "affixes": 3,
+      "mult": 1.5,
+      "value": 50
+    },
+    "epic": {
+      "affixes": 4,
+      "mult": 1.8,
+      "value": 90
+    },
+    "legendary": {
+      "affixes": 5,
+      "mult": 2.3,
+      "value": 180
+    }
   },
   "bases": {
-    "blade": {"slot": "blade", "names": ["Меч", "Клинок", "Сабля"], "icon": "iron_sword", "base": {"melee": 3}, "weight": 2},
-    "staff": {"slot": "weapon", "names": ["Посох", "Жезл"], "icon": "apprentice_staff", "base": {"spell_bonus": {"*": 3}}},
-    "robe": {"slot": "armor", "names": ["Мантия", "Накидка"], "icon": "leather_armor", "base": {"armor": 2}},
-    "amulet": {"slot": "amulet", "names": ["Амулет", "Кулон"], "icon": "mana_amulet", "base": {"max_mana": 8}},
-    "relic": {"slot": "relic", "names": ["Талисман", "Оберег"], "icon": "storm_eye", "base": {}},
-    "dagger": {"slot": "blade", "kind": "dagger", "names": ["Кинжал", "Нож", "Стилет"], "icon": "scout_knife", "base": {"melee": 2, "crit": 3}},
-    "spear": {"slot": "blade", "kind": "spear", "names": ["Копьё", "Пика", "Глефа"], "icon": "guard_spear", "base": {"melee": 3}},
-    "hammer": {"slot": "blade", "kind": "hammer", "names": ["Молот", "Булава", "Кистень"], "icon": "smith_hammer", "base": {"melee": 5}},
-    "bow": {"slot": "weapon", "bow": true, "names": ["Лук", "Длинный лук"], "icon": "hunting_bow", "base": {"ranged": 3}, "weight": 0.8}
+    "blade": {
+      "slot": "blade",
+      "names": [
+        "Меч",
+        "Клинок",
+        "Сабля"
+      ],
+      "icon": "iron_sword",
+      "base": {
+        "melee": 3
+      },
+      "weight": 2
+    },
+    "dagger": {
+      "slot": "blade",
+      "kind": "dagger",
+      "names": [
+        "Кинжал",
+        "Нож",
+        "Стилет"
+      ],
+      "icon": "scout_knife",
+      "base": {
+        "melee": 2,
+        "crit": 3
+      }
+    },
+    "mace": {
+      "slot": "blade",
+      "kind": "hammer",
+      "names": [
+        "Булава",
+        "Кистень"
+      ],
+      "icon": "smith_hammer",
+      "base": {
+        "melee": 4
+      }
+    },
+    "spear": {
+      "slot": "blade",
+      "kind": "spear",
+      "hands": 2,
+      "names": [
+        "Копьё",
+        "Пика",
+        "Глефа"
+      ],
+      "icon": "guard_spear",
+      "base": {
+        "melee": 5
+      }
+    },
+    "maul": {
+      "slot": "blade",
+      "kind": "hammer",
+      "hands": 2,
+      "names": [
+        "Молот",
+        "Боевой молот"
+      ],
+      "icon": "mountain_maul",
+      "base": {
+        "melee": 7
+      },
+      "weight": 0.7
+    },
+    "staff": {
+      "slot": "blade",
+      "kind": "staff",
+      "hands": 2,
+      "names": [
+        "Посох",
+        "Жезл"
+      ],
+      "icon": "apprentice_staff",
+      "base": {
+        "spell_bonus": {
+          "*": 4
+        }
+      }
+    },
+    "bow": {
+      "slot": "blade",
+      "kind": "bow",
+      "bow": true,
+      "hands": 2,
+      "names": [
+        "Лук",
+        "Длинный лук"
+      ],
+      "icon": "hunting_bow",
+      "base": {
+        "ranged": 4
+      },
+      "weight": 0.8
+    },
+    "shield": {
+      "slot": "offhand",
+      "names": [
+        "Щит",
+        "Баклер",
+        "Круглый щит"
+      ],
+      "icon": "wooden_shield",
+      "base": {
+        "armor": 2,
+        "block": 30
+      },
+      "weight": 0.9
+    },
+    "robe": {
+      "slot": "armor",
+      "names": [
+        "Мантия",
+        "Куртка",
+        "Кольчуга"
+      ],
+      "icon": "leather_armor",
+      "base": {
+        "armor": 2
+      }
+    },
+    "cloak": {
+      "slot": "cloak",
+      "names": [
+        "Плащ",
+        "Накидка"
+      ],
+      "icon": "travel_cloak",
+      "base": {
+        "armor": 1
+      },
+      "weight": 0.8
+    },
+    "amulet": {
+      "slot": "amulet",
+      "names": [
+        "Амулет",
+        "Кулон"
+      ],
+      "icon": "mana_amulet",
+      "base": {
+        "max_mana": 8
+      }
+    },
+    "ring": {
+      "slot": "ring",
+      "names": [
+        "Кольцо",
+        "Перстень"
+      ],
+      "icon": "copper_ring",
+      "base": {},
+      "weight": 1.2
+    },
+    "earrings": {
+      "slot": "earrings",
+      "names": [
+        "Серьги"
+      ],
+      "icon": "silver_earrings",
+      "base": {},
+      "weight": 0.7
+    },
+    "relic": {
+      "slot": "relic",
+      "names": [
+        "Талисман",
+        "Оберег"
+      ],
+      "icon": "storm_eye",
+      "base": {}
+    }
   },
   "affixes": [
-    {"id": "power", "stat": "power", "min": 1, "max": 3, "suffix": "силы", "label": "+%d к силе магии"},
-    {"id": "will", "stat": "will", "min": 1, "max": 3, "suffix": "воли", "label": "+%d к воле"},
-    {"id": "agility", "stat": "agility", "min": 1, "max": 3, "suffix": "ветра", "label": "+%d к ловкости"},
-    {"id": "fire", "stat": "spell_bonus.fireball", "min": 2, "max": 4, "suffix": "пламени", "label": "+%d к урону огненного шара"},
-    {"id": "ice", "stat": "spell_bonus.frostbolt", "min": 2, "max": 4, "suffix": "инея", "label": "+%d к урону ледяной стрелы"},
-    {"id": "storm", "stat": "spell_bonus.chain_lightning", "min": 2, "max": 4, "suffix": "грозы", "label": "+%d к урону цепной молнии"},
-    {"id": "guard", "stat": "armor", "min": 1, "max": 3, "suffix": "стража", "label": "+%d к броне"},
-    {"id": "spring", "stat": "max_mana", "min": 5, "max": 12, "suffix": "источника", "label": "+%d к максимуму маны"},
-    {"id": "ember", "stat": "burn_damage_bonus", "min": 1, "max": 1, "suffix": "углей", "label": "+%d к урону горения"},
-    {"id": "edge", "stat": "melee", "min": 2, "max": 4, "suffix": "остроты", "label": "+%d к урону мечом"},
-    {"id": "luck", "stat": "crit", "min": 2, "max": 4, "suffix": "удачи", "label": "+%d%% к шансу крита"},
-    {"id": "blood", "stat": "lifesteal", "min": 1, "max": 1, "suffix": "крови", "label": "+%d HP за удар мечом"},
-    {"id": "life", "stat": "max_health", "min": 6, "max": 12, "suffix": "жизни", "label": "+%d к здоровью"}
-  ]
+    {
+      "id": "power",
+      "stat": "power",
+      "min": 1,
+      "max": 3,
+      "suffix": "силы",
+      "label": "+%d к силе магии"
+    },
+    {
+      "id": "will",
+      "stat": "will",
+      "min": 1,
+      "max": 3,
+      "suffix": "воли",
+      "label": "+%d к воле"
+    },
+    {
+      "id": "agility",
+      "stat": "agility",
+      "min": 1,
+      "max": 3,
+      "suffix": "ветра",
+      "label": "+%d к ловкости"
+    },
+    {
+      "id": "fire",
+      "stat": "spell_bonus.fireball",
+      "min": 2,
+      "max": 4,
+      "suffix": "пламени",
+      "label": "+%d к урону огненного шара"
+    },
+    {
+      "id": "ice",
+      "stat": "spell_bonus.frostbolt",
+      "min": 2,
+      "max": 4,
+      "suffix": "инея",
+      "label": "+%d к урону ледяной стрелы"
+    },
+    {
+      "id": "storm",
+      "stat": "spell_bonus.chain_lightning",
+      "min": 2,
+      "max": 4,
+      "suffix": "грозы",
+      "label": "+%d к урону цепной молнии"
+    },
+    {
+      "id": "guard",
+      "stat": "armor",
+      "min": 1,
+      "max": 3,
+      "suffix": "стража",
+      "label": "+%d к броне"
+    },
+    {
+      "id": "spring",
+      "stat": "max_mana",
+      "min": 5,
+      "max": 12,
+      "suffix": "источника",
+      "label": "+%d к максимуму маны"
+    },
+    {
+      "id": "ember",
+      "stat": "burn_damage_bonus",
+      "min": 1,
+      "max": 1,
+      "suffix": "углей",
+      "label": "+%d к урону горения"
+    },
+    {
+      "id": "edge",
+      "stat": "melee",
+      "min": 2,
+      "max": 4,
+      "suffix": "остроты",
+      "label": "+%d к урону оружием"
+    },
+    {
+      "id": "luck",
+      "stat": "crit",
+      "min": 2,
+      "max": 4,
+      "suffix": "удачи",
+      "label": "+%d%% к шансу крита"
+    },
+    {
+      "id": "blood",
+      "stat": "lifesteal",
+      "min": 1,
+      "max": 1,
+      "suffix": "крови",
+      "label": "+%d HP за удар мечом"
+    },
+    {
+      "id": "life",
+      "stat": "max_health",
+      "min": 6,
+      "max": 12,
+      "suffix": "жизни",
+      "label": "+%d к здоровью"
+    },
+    {
+      "id": "might",
+      "stat": "melee_pct",
+      "min": 3,
+      "max": 6,
+      "pct": true,
+      "suffix": "мощи",
+      "label": "+%d%% к физическому урону"
+    },
+    {
+      "id": "arcana",
+      "stat": "spell_pct",
+      "min": 3,
+      "max": 6,
+      "pct": true,
+      "suffix": "чародея",
+      "label": "+%d%% к магическому урону"
+    },
+    {
+      "id": "blaze",
+      "stat": "fire_pct",
+      "min": 5,
+      "max": 10,
+      "pct": true,
+      "suffix": "зноя",
+      "label": "+%d%% к урону огнём"
+    },
+    {
+      "id": "rime",
+      "stat": "frost_pct",
+      "min": 5,
+      "max": 10,
+      "pct": true,
+      "suffix": "стужи",
+      "label": "+%d%% к урону льдом"
+    },
+    {
+      "id": "thunder",
+      "stat": "storm_pct",
+      "min": 5,
+      "max": 10,
+      "pct": true,
+      "suffix": "грома",
+      "label": "+%d%% к урону молнией"
+    },
+    {
+      "id": "fury",
+      "stat": "crit_damage",
+      "min": 8,
+      "max": 15,
+      "pct": true,
+      "suffix": "ярости",
+      "label": "+%d%% к критическому урону"
+    },
+    {
+      "id": "ward",
+      "stat": "resist",
+      "min": 1,
+      "max": 3,
+      "suffix": "оберега",
+      "label": "+%d к магической защите"
+    },
+    {
+      "id": "mend",
+      "stat": "hp_regen",
+      "min": 1,
+      "max": 2,
+      "suffix": "исцеления",
+      "label": "+%d здоровья раз в 5 с"
+    },
+    {
+      "id": "font",
+      "stat": "mp_regen",
+      "min": 1,
+      "max": 1,
+      "suffix": "родника",
+      "label": "+%d маны в секунду"
+    }
+  ],
+  "elite_rarity_weights": {
+    "common": 0,
+    "uncommon": 45,
+    "rare": 35,
+    "epic": 17,
+    "legendary": 3
+  },
+  "boss_rarity_weights": {
+    "common": 0,
+    "uncommon": 0,
+    "rare": 50,
+    "epic": 35,
+    "legendary": 15
+  },
+  "shield_block": {
+    "common": 30,
+    "uncommon": 35,
+    "rare": 40,
+    "epic": 45,
+    "legendary": 50
+  }
 }

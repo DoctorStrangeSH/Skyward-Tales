@@ -23,8 +23,11 @@ static func tables() -> Dictionary:
 static func drop_chance() -> float:
 	return float(tables().get("drop_chance", 0.0))
 
-static func roll_rarity(rng: RandomNumberGenerator, minimum: String = "common") -> String:
-	var weights: Dictionary = tables().get("rarity_weights", {"common": 1})
+## source: "" — ordinary foes and chests (legendaries almost never),
+## "elite" — mini-bosses, "boss" — bosses (owner's list №31).
+static func roll_rarity(rng: RandomNumberGenerator, minimum: String = "common", source: String = "") -> String:
+	var key := "rarity_weights" if source.is_empty() else source + "_rarity_weights"
+	var weights: Dictionary = tables().get(key, tables().get("rarity_weights", {"common": 1}))
 	var allowed: Array = RARITY_ORDER.slice(RARITY_ORDER.find(minimum))
 	var total := 0.0
 	for rarity in allowed:
@@ -52,6 +55,10 @@ static func generate(rng: RandomNumberGenerator, level: int, rarity: String = ""
 		definition["kind"] = base["kind"]
 	if bool(base.get("bow", false)):
 		definition["bow"] = true
+	if base.has("hands"):
+		definition["hands"] = int(base["hands"])
+	if str(base.get("slot", "")) == "offhand":
+		definition["block"] = int(data.get("shield_block", {}).get(rarity, 30))
 	definition["rarity"] = rarity
 	definition["icon"] = base.get("icon", "")
 	definition["generated"] = true
@@ -61,7 +68,9 @@ static func generate(rng: RandomNumberGenerator, level: int, rarity: String = ""
 	var first_suffix := ""
 	for i in range(mini(int(rarity_data.get("affixes", 1)), pool.size())):
 		var affix: Dictionary = pool.pop_at(rng.randi_range(0, pool.size() - 1))
-		var amount := maxi(1, roundi(rng.randi_range(int(affix["min"]), int(affix["max"])) * scale))
+		# Percent stats grow slower with the land's level than flat ones.
+		var affix_scale := float(rarity_data.get("mult", 1.0)) * (1.0 + 0.03 * float(maxi(0, level - 1))) if bool(affix.get("pct", false)) else scale
+		var amount := maxi(1, roundi(rng.randi_range(int(affix["min"]), int(affix["max"])) * affix_scale))
 		_add_stat(definition, str(affix["stat"]), amount)
 		lines.append(str(affix["label"]) % amount)
 		if first_suffix.is_empty():

@@ -15,10 +15,16 @@ signal compare_cleared
 signal unequip_requested(slot: String)
 signal craft_requested
 signal assign_requested(slot_index: int, skill_id: String)
+## A piece dropped on a particular slot (the second ring slot, say).
+signal equip_to_requested(item_id: String, slot: String)
+## The bag was rearranged by hand.
+signal reordered
 
-const SLOT_POSITIONS := {"blade": Vector2(2, 6), "weapon": Vector2(2, 58), "armor": Vector2(150, 6), "amulet": Vector2(150, 58), "relic": Vector2(150, 110)}
+## Left of the hero: hands and rings; right: armour, cloak and jewellery.
+const SLOT_POSITIONS := {"blade": Vector2(4, 4), "offhand": Vector2(4, 36), "ring1": Vector2(4, 82), "ring2": Vector2(4, 114),
+	"armor": Vector2(154, 4), "cloak": Vector2(154, 36), "amulet": Vector2(154, 68), "earrings": Vector2(154, 100), "relic": Vector2(154, 132)}
 const GRID_COLUMNS := 10
-const HINT := "Перетащите вещь из сумки на слот героя — надеть; из слота в сумку — снять. Клик по зелью — выпить."
+const HINT := "Перетащите вещь на слот героя — надеть, из слота в сумку — снять, по сумке — переложить. Наведите — подробности и сравнение."
 
 var tab: String = "gear"
 var tab_buttons: Dictionary = {}
@@ -45,6 +51,14 @@ var _frame := 0
 var _clock := 0.0
 var _player: PlayerCharacter
 var _skills: CombatSkills
+## The bag cells in the order shown (for drag reordering).
+var _shown: Array[String] = []
+
+func _reorder(item_id: String, before_id: String) -> void:
+	if _player == null or item_id.is_empty() or item_id == before_id:
+		return
+	_player.move_in_bag(item_id, before_id, _shown)
+	reordered.emit()
 
 func _ready() -> void:
 	position = Vector2(12, 12)
@@ -139,8 +153,8 @@ func _build_gear_page(contents: VBoxContainer) -> void:
 	stats_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	doll.add_child(stats_label)
 	stats_grid = GridContainer.new()
-	stats_grid.columns = 2
-	stats_grid.add_theme_constant_override("h_separation", 8)
+	stats_grid.columns = 4
+	stats_grid.add_theme_constant_override("h_separation", 4)
 	stats_grid.add_theme_constant_override("v_separation", 0)
 	left.add_child(stats_grid)
 	# Right: the bag.
@@ -205,6 +219,7 @@ func _build_gear_page(contents: VBoxContainer) -> void:
 	bag_area.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	bag_area.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	bag_area.unequip_requested.connect(func(slot: String) -> void: unequip_requested.emit(slot))
+	bag_area.reorder_requested.connect(_reorder)
 	var bag_bg := StyleBoxFlat.new()
 	bag_bg.bg_color = Color(0.06, 0.045, 0.04, 0.7)
 	bag_bg.set_corner_radius_all(3)
@@ -287,7 +302,8 @@ func populate(player: PlayerCharacter, filter_index: int, sort_index: int, prefe
 		item_ids.append(item_id)
 	InventoryItemOrder.sort_items(player, item_ids, sort_index, fallback_names)
 	if sort_index == 0:
-		# "Обычно": gear first, then consumables, then resources.
+		# "Обычно": gear first, then consumables, then resources — or the
+		# player's own order once the bag was rearranged (new items go last).
 		var rank := {"equipment": 0, "consumable": 1, "other": 2}
 		var grouped: Array[String] = []
 		for wanted in [0, 1, 2]:
@@ -295,6 +311,16 @@ func populate(player: PlayerCharacter, filter_index: int, sort_index: int, prefe
 				if int(rank.get(InventoryItemOrder.category(player, item_id, consumable_ids), 2)) == wanted:
 					grouped.append(item_id)
 		item_ids = grouped
+		if not player.bag_order.is_empty():
+			var placed: Array[String] = []
+			for id in player.bag_order:
+				if item_ids.has(str(id)):
+					placed.append(str(id))
+			for id in item_ids:
+				if not placed.has(id):
+					placed.append(id)
+			item_ids = placed
+	_shown = item_ids.duplicate()
 	bag_caption.text = "СУМКА · %s" % str(CATEGORIES[clampi(filter_index, 0, CATEGORIES.size() - 1)][0]).to_upper()
 	if item_ids.is_empty():
 		bag_caption.text += "  — пусто" if available_item_ids.is_empty() else ""
@@ -302,8 +328,9 @@ func populate(player: PlayerCharacter, filter_index: int, sort_index: int, prefe
 		var button := InventoryItemButton.new()
 		button.configure(player, item_id, fallback_names, fallback_descriptions, rarity_names, consumable_ids)
 		button.use_requested.connect(func(requested_id: String) -> void: use_requested.emit(requested_id))
-		button.compare_requested.connect(func(requested_id: String) -> void: compare_requested.emit(requested_id))
+		# The item card (tooltip) now shows the comparison itself.
 		button.unequip_requested.connect(func(slot: String) -> void: unequip_requested.emit(slot))
+		button.reorder_requested.connect(_reorder)
 		var line := button.summary
 		var hints := button.tooltip_text.split("\n")
 		var hint: String = hints[mini(hints.size() - 1, 1)] if hints.size() > 1 else hints[0]
@@ -321,15 +348,16 @@ func _populate_doll(player: PlayerCharacter) -> void:
 		equipment_list.remove_child(child)
 		child.queue_free()
 	slot_buttons.clear()
-	for slot in ["blade", "weapon", "armor", "amulet", "relic"]:
+	for slot in PlayerCharacter.SLOTS:
 		var button := EquipSlot.new()
 		button.setup(player, slot)
 		button.position = SLOT_POSITIONS[slot]
-		button.equip_requested.connect(func(item_id: String) -> void: use_requested.emit(item_id))
+		button.equip_requested.connect(func(item_id: String, target: String) -> void: equip_to_requested.emit(item_id, target))
 		button.unequip_requested.connect(func(s: String) -> void: unequip_requested.emit(s))
 		button.hovered.connect(func(s: String) -> void:
 			var worn := str(player.equipment.get(s, ""))
-			detail.text = "%s: %s" % [EquipSlot.NAMES[s], (player.get_item_name(worn) + " — " + player.get_item_description(worn) + "   ·   клик или перетащите в сумку — снять") if not worn.is_empty() else "пусто — перетащите сюда подходящий предмет из сумки"])
+			var empty_line := "занята: двуручное оружие держат обеими руками" if s == "offhand" and player.two_handed() else "пусто — перетащите сюда подходящий предмет из сумки"
+			detail.text = "%s: %s" % [EquipSlot.NAMES[s], (player.get_item_name(worn) + "   ·   клик или перетащите в сумку — снять") if not worn.is_empty() else empty_line])
 		equipment_list.add_child(button)
 		slot_buttons[slot] = button
 	var sheet := WorldArt.texture("sprites/chibi/%s/idle.png" % player._chibi_id())
@@ -343,21 +371,26 @@ func _populate_doll(player: PlayerCharacter) -> void:
 	for child in stats_grid.get_children():
 		stats_grid.remove_child(child)
 		child.queue_free()
+	var regen := player._equipped_stat("hp_regen")
 	var lines := [
-		["Здоровье", "%d/%d" % [player.health, player.max_health]],
-		["Мана", "%d/%d" % [player.mana, player.max_mana]],
-		["Урон оружием", "%d (%s)" % [player.get_melee_damage(), str(SkywardGame.WEAPON_PROFILES.get(player.weapon_kind(), {}).get("name", "Меч")).to_lower()]],
-		["Крит", "%d%%" % roundi(player.get_crit_chance() * 100.0)],
-		["Сила магии", "%d (+%d%% урона)" % [player.get_stat("power"), roundi((player.get_spell_power_multiplier() - 1.0) * 100.0)]],
-		["Броня", str(player.get_armor())],
-		["Ловкость", str(player.get_stat("agility"))],
-		["Воля", str(player.get_stat("will"))],
-		["Опыт", "%d/%d" % [player.experience, player.experience_to_next]],
+		["Здоровье", "%d/%d" % [player.health, player.max_health]], ["Мана", "%d/%d" % [player.mana, player.max_mana]],
+		["Физ. урон", "%d · %s" % [player.get_melee_damage() if not player.has_bow() else player.get_ranged_damage(), str(SkywardGame.WEAPON_PROFILES.get(player.weapon_kind(), {}).get("name", "Меч")).to_lower()]],
+		["Маг. урон", "+%d%%" % roundi((player.get_spell_power_multiplier() - 1.0) * 100.0)],
+		["Крит", "%d%%" % roundi(player.get_crit_chance() * 100.0)], ["Крит. урон", "×%.1f" % player.get_crit_multiplier()],
+		["Броня", str(player.get_armor())], ["Маг. защ.", str(player.get_resist())],
+		["Блок", ("%d%%" % roundi(player.get_block() * 100.0)) if player.has_shield() else "нет щита"], ["Реген", ("+%d/5с" % regen) if regen > 0 else "—"],
+		["Ловкость", str(player.get_stat("agility"))], ["Воля", str(player.get_stat("will"))],
+		["Сила маг.", str(player.get_stat("power"))], ["Опыт", "%d/%d" % [player.experience, player.experience_to_next]],
 		["Золото", str(player.gold)],
 	]
 	for line in lines:
-		stats_grid.add_child(_label(line[0], 8, UiStyle.MUTED))
-		stats_grid.add_child(_label(line[1], 8, UiStyle.TEXT))
+		var name_label := _label(line[0], 7, UiStyle.MUTED)
+		name_label.custom_minimum_size = Vector2(40, 0)
+		stats_grid.add_child(name_label)
+		var value_label := _label(line[1], 7, UiStyle.TEXT)
+		value_label.custom_minimum_size = Vector2(52, 0)
+		value_label.clip_text = true
+		stats_grid.add_child(value_label)
 	# Old callers read the compact line too.
 	stats_label.tooltip_text = "Сила магии %d (+%d%% урона) · Воля %d · Ловкость %d · Броня %d" % [
 		player.get_stat("power"), roundi((player.get_spell_power_multiplier() - 1.0) * 100.0),

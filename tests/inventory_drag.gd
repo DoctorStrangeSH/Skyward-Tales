@@ -27,8 +27,8 @@ func _run() -> void:
 	hero.add_item("wolf_fang", 3)
 	game._handle_key(KEY_I)
 	var window := game.hud.inventory_view
-	if not window.visible or window.tab != "gear" or window.slot_buttons.size() != 5:
-		return _fail("I opens the hero window with the doll and five slots")
+	if not window.visible or window.tab != "gear" or window.slot_buttons.size() != PlayerCharacter.SLOTS.size():
+		return _fail("I opens the hero window with the doll and nine slots")
 	var sword := _cell(window, "iron_sword")
 	if sword == null or sword.icon == null:
 		return _fail("the bag shows the sword as an icon cell")
@@ -52,8 +52,11 @@ func _run() -> void:
 	if hero.equipment.get("blade", "") == "iron_sword" or int(hero.inventory.get("iron_sword", 0)) != 1:
 		return _fail("dragging the sword back to the bag takes it off")
 	var fang := _cell(window, "wolf_fang")
-	if fang == null or fang._get_drag_data(Vector2.ZERO) != null:
-		return _fail("materials stay in the bag and cannot be dragged onto slots")
+	# Materials can be dragged around the bag (owner's list №22), but no
+	# slot takes them.
+	var fang_data: Variant = fang._get_drag_data(Vector2.ZERO) if fang != null else null
+	if fang == null or fang_data == null or window.slot_buttons["armor"]._can_drop_data(Vector2.ZERO, fang_data) or window.slot_buttons["blade"]._can_drop_data(Vector2.ZERO, fang_data):
+		return _fail("materials move in the bag but fit no slot")
 	game.hud._on_inventory_filter_selected(3)
 	for child in window.item_list.get_children():
 		if child is InventoryItemButton and child.item_id != "wolf_fang":

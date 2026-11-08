@@ -28,7 +28,11 @@ func _run() -> void:
 	foe.max_health = 99999
 	foe.health = 99999
 
-	# Parry.
+	# Parry: no shield — no guard (owner's list №25).
+	if hero.start_guard():
+		return _fail("guarding needs a shield")
+	hero.add_item("wooden_shield")
+	hero.equip_item("wooden_shield")
 	if not hero.start_guard() or not hero.blocking:
 		return _fail("guard up")
 	hero.take_damage(30, foe)
@@ -90,7 +94,7 @@ func _run() -> void:
 	if foe.shock_time_left <= 0.0:
 		return _fail("spark collar shocks after a dodge")
 
-	hero.equipment["weapon"] = "jelly_staff"
+	hero.equipment["blade"] = "jelly_staff"
 	foe.slow_time_left = 0.0
 	game.on_spell_hit(foe)
 	if foe.slow_time_left <= 0.0:

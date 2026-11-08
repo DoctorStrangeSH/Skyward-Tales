@@ -170,7 +170,7 @@ func _summon_element() -> String:
 	return str(ElementalCombos.ELEMENT_OF.get(game.selected_spell_id, "fire"))
 
 func _summon_power() -> float:
-	return game.player.get_spell_power_multiplier()
+	return game.player.get_spell_power_multiplier(game.selected_spell_id)
 
 func _spirit_wolf(data: Dictionary) -> bool:
 	if not game.player.spend_mana(int(data.get("mana", 25))):

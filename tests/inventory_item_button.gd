@@ -30,7 +30,7 @@ func _run() -> void:
 				potion_button = child
 	if not _require(equip_button != null and potion_button != null, "HUD did not create item components"):
 		return
-	if not _require(equip_button.summary.contains("Реликвия проверки") and equip_button.tooltip_text.contains("сравнить характеристики"), "relic tooltip missing"):
+	if not _require(equip_button.summary.contains("Реликвия проверки") and equip_button._make_custom_tooltip("") != null, "relic tooltip missing"):
 		return
 	if not _require(potion_button.summary.contains("Зелье здоровья ×2") and not potion_button.tooltip_text.contains("сравнить характеристики"), "consumable display incorrect"):
 		return

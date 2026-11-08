@@ -67,7 +67,8 @@ static func capture(game: SkywardGame) -> Dictionary:
 			"bonus_skill_points": player.bonus_skill_points,
 			"generated_items": player.generated_items.duplicate(true), "generated_counter": player._generated_counter,
 			"hero_name": player.hero_name, "hero_gender": player.hero_gender,
-			"learned_recipes": player.learned_recipes.duplicate()
+			"learned_recipes": player.learned_recipes.duplicate(),
+			"bag_order": player.bag_order.duplicate()
 		},
 		"quest": {"states": game.quests.states.duplicate(true), "active": game.quests.active_quest_id},
 		"world": {
@@ -169,11 +170,32 @@ static func _apply_player(player: PlayerCharacter, character: Dictionary) -> voi
 	player.generated_items = rolled.duplicate(true) if rolled is Dictionary else {}
 	player._generated_counter = maxi(int(character.get("generated_counter", 0)), player.generated_items.size())
 	player.inventory = character["inventory"].duplicate(true)
-	player.equipment = {"blade": "", "weapon": "", "armor": "", "amulet": "", "relic": ""}
-	for slot in player.equipment.keys():
-		var saved_item: String = str(character["equipment"].get(slot, ""))
-		if not saved_item.is_empty() and player._slot_for_item(saved_item) == str(slot):
+	player.equipment = {}
+	for slot in PlayerCharacter.SLOTS:
+		player.equipment[slot] = ""
+	var saved_gear: Dictionary = character["equipment"]
+	for slot in PlayerCharacter.SLOTS:
+		var saved_item: String = str(saved_gear.get(slot, ""))
+		if not saved_item.is_empty() and player._slot_for_item(saved_item) == PlayerCharacter.slot_kind(str(slot)):
 			player.equipment[slot] = saved_item
+	# Saves before package C: the staff or bow lived in its own "weapon" slot,
+	# and cloaks and the granite aegis in "armor". Such pieces take their new
+	# place when it is free, otherwise they go back to the bag.
+	for old_slot in ["weapon", "armor"]:
+		var old_item := str(saved_gear.get(old_slot, ""))
+		if old_item.is_empty() or player.equipment.values().has(old_item):
+			continue
+		var target := player.target_slot(old_item)
+		if not target.is_empty() and str(player.equipment.get(target, "")).is_empty() and not (target == "offhand" and player.two_handed()) and not (target == "blade" and player.hands(old_item) >= 2 and player.has_shield()):
+			player.equipment[target] = old_item
+		else:
+			player.inventory[old_item] = int(player.inventory.get(old_item, 0)) + 1
+			player.max_mana = maxi(1, player.max_mana - player._equipment_stat(old_item, "max_mana"))
+			player.max_health = maxi(1, player.max_health - player._equipment_stat(old_item, "max_health"))
+	player.health = mini(player.health, player.max_health)
+	player.mana = mini(player.mana, player.max_mana)
+	var order: Variant = character.get("bag_order", [])
+	player.bag_order = (order as Array).duplicate() if order is Array else []
 	player.talents = character.get("talents", {}).duplicate(true)
 	player.fish_log = (character.get("fish_log", {}) as Dictionary).duplicate(true) if character.get("fish_log", {}) is Dictionary else {}
 	var slots: Variant = character.get("skill_slots", [])

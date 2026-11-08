@@ -117,7 +117,7 @@ func _run() -> void:
 		return _fail("the snare roots its prey")
 
 	# Without a bow RMB casts again.
-	hero.unequip_slot("weapon")
+	hero.unequip_slot("blade")
 	if hero.has_bow():
 		return _fail("bow removed")
 	print("RANGER OK: Toren's bows, shots, aimed pierce, imbued arrows, volley, snare")

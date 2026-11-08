@@ -49,6 +49,8 @@ var combat_feedback: EnemyCombatFeedback
 
 ## Shielded bosses ignore damage (Этап 18, BossMechanics).
 var invulnerable: bool = false
+## Spirits and casters hit with magic: the hero's magic defence counts.
+var magic_attacks: bool = false
 
 func _ready() -> void:
 	add_to_group("enemies")
