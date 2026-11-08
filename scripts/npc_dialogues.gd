@@ -405,6 +405,9 @@ func on_blacksmith_crafting() -> void:
 		choices.append({"id": "blacksmith_craft:reinforce_mantle", "label": "Укрепить волчью накидку — 2 шкуры, 30 золота"})
 	if bool(staff_status.get("success", false)):
 		choices.append({"id": "blacksmith_craft:ironbound_staff", "label": "Усилить посох железом — 3 руды, 50 золота"})
+	if not game.borin.upgraded():
+		choices.push_front({"id": "borin_forge", "label": "⚒ Заточка снаряжения (до +1)"})
+		choices.push_back({"id": "borin_shop", "label": "Купить оружие"})
 	if not choices.is_empty():
 		choices.append({"id": "blacksmith_craft:later", "label": "В другой раз"})
 		_ask("Борин, кузнец", "Приноси материалы — и я превращу обычное снаряжение в надёжное оружие и броню. Выбирай работу:", choices)

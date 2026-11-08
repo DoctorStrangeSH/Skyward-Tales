@@ -62,6 +62,7 @@ func configure(player: PlayerCharacter, id: String, fallback_names: Dictionary, 
 	var icon_id: String = str(definition.get("icon", item_id))
 	if ResourceLoader.exists("res://assets/icons/%s.png" % icon_id):
 		icon = WorldArt.texture("icons/%s.png" % icon_id)
+	UiStyle.fit_icon(self, 26)
 	_apply_style()
 
 func _apply_style() -> void:

@@ -248,6 +248,9 @@ func _ready() -> void:
 		GameAudio.play("hurt", -3.0)
 		shake(clampf(1.5 + amount * 0.15, 1.5, 4.0), 0.18))
 	player.second_wind_triggered.connect(func() -> void: hud.show_message("Второе дыхание! Смерть отступила.", 3.0))
+	player.phoenix_triggered.connect(func() -> void:
+		hud.show_title_card("Перо феникса!", 2.0)
+		Vfx.burst(self, player.global_position, [Color(1, 0.9, 0.5), Color(1, 0.5, 0.2), Color(1, 0.3, 0.1, 0)], 30, 120.0, 0.6))
 	_apply_camera_limits()
 	StoryText.reset()
 
@@ -1799,6 +1802,13 @@ func roll_drops(kind: String, at: Vector2, elite: bool = false) -> Array:
 		dropped.append(potion)
 	if not elite and loot_rng.randf() < float(table.get("gear", LootGenerator.drop_chance())) * GEAR_RATE:
 		dropped.append(spawn_generated_loot(_scatter(at)))
+	# The Keepers' regalia lie scattered over the high sky islands.
+	if RegionCatalog.style(current_region) in ["sky", "spires", "rift"] and loot_rng.randf() < (0.08 if elite else 0.025):
+		var missing := KEEPER_SET.filter(func(id: String) -> bool: return not player.inventory.has(id) and not player.wears_base(id))
+		if not missing.is_empty():
+			var piece: String = missing[loot_rng.randi_range(0, missing.size() - 1)]
+			_spawn_loot(_scatter(at), piece)
+			dropped.append(piece)
 	if not RegionCatalog.is_underground(RegionCatalog.style(current_region)) and loot_rng.randf() < 0.015:
 		_spawn_loot(_scatter(at), TreasureHunt.MAP_ITEM)
 		dropped.append(TreasureHunt.MAP_ITEM)
@@ -1806,6 +1816,7 @@ func roll_drops(kind: String, at: Vector2, elite: bool = false) -> Array:
 
 ## Balance: monster drops and experience (lower = slower, rarer).
 const LOOT_RATE := 0.6
+const KEEPER_SET := ["keeper_staff", "keeper_robe", "keeper_sigil"]
 const GEAR_RATE := 0.45
 const XP_RATE := 0.7
 
@@ -1957,7 +1968,7 @@ func _update_spell_hud() -> void:
 func _update_mouse_slots() -> void:
 	var weapon := str(player.equipment.get("blade", ""))
 	var left := {"key": "ЛКМ", "icon": ("icons/%s.png" % weapon) if not weapon.is_empty() and ResourceLoader.exists("res://assets/icons/%s.png" % weapon) else "icons/skill_slash.png",
-		"name": "Меч", "tooltip": "Меч — ЛКМ, удерживать — вихрь", "cooldown": clampf(attack_cooldown / SLASH_COOLDOWN, 0.0, 1.0)}
+		"name": str(weapon_profile()["name"]), "tooltip": "%s — ЛКМ, удерживать — вихрь" % str(weapon_profile()["name"]), "cooldown": clampf(attack_cooldown / (SLASH_COOLDOWN * float(weapon_profile()["cooldown"])), 0.0, 1.0)}
 	var right := {}
 	if player.has_bow():
 		var bow := str(player.equipment.get("weapon", ""))
@@ -2001,6 +2012,17 @@ const COMBO_WINDOW := 0.65
 const CHARGE_TIME := 0.5
 const SLASH_REACH := 30.0
 const SPIN_REACH := 40.0
+
+## How each kind of blade swings: cooldown, reach and arc multipliers, push.
+const WEAPON_PROFILES := {
+	"sword": {"cooldown": 1.0, "reach": 1.0, "arc": 75.0, "push": 110.0, "name": "Меч"},
+	"dagger": {"cooldown": 0.62, "reach": 0.85, "arc": 70.0, "push": 60.0, "name": "Кинжал"},
+	"spear": {"cooldown": 1.15, "reach": 1.65, "arc": 34.0, "push": 150.0, "name": "Копьё"},
+	"hammer": {"cooldown": 1.5, "reach": 1.05, "arc": 120.0, "push": 210.0, "name": "Молот"},
+}
+
+func weapon_profile() -> Dictionary:
+	return WEAPON_PROFILES.get(player.weapon_kind(), WEAPON_PROFILES["sword"])
 
 var attack_cooldown: float = 0.0
 var _combo_step: int = 0
@@ -2056,11 +2078,21 @@ func sword_slash() -> bool:
 		hits = _melee_hit(player.global_position, direction, SPIN_REACH, 360.0, damage * 2, 150.0)
 		_ring(player.global_position, SPIN_REACH, Color(1.0, 0.85, 0.5, 0.8))
 	else:
-		hits = _melee_hit(player.global_position, direction, SLASH_REACH, 75.0, damage, 110.0)
+		var profile := weapon_profile()
+		hits = _melee_hit(player.global_position, direction, SLASH_REACH * float(profile["reach"]), float(profile["arc"]), damage, float(profile["push"]))
+		if player.weapon_kind() == "spear":
+			_streak(player.global_position + direction * 8.0, player.global_position + direction * SLASH_REACH * float(profile["reach"]), Color(1, 1, 1, 0.7), 2.0)
+		elif player.weapon_kind() == "hammer":
+			if hits > 0:
+				shake(2.0, 0.12)
+				for enemy in last_hit_enemies:
+					if is_instance_valid(enemy) and enemy.health > 0 and crit_rng.randf() < 0.3:
+						enemy.apply_slow(0.05, 0.6)
+						enemy.combat_feedback.show_reaction("ОГЛУШЁН!")
 	GameAudio.play("dash" if hits == 0 else "hit", -4.0, 0.1)
 	_combo_step = (_combo_step + 1) % (3 if player.has_skill("blade_dance") else 2)
 	_combo_timer = COMBO_WINDOW
-	attack_cooldown = SLASH_COOLDOWN
+	attack_cooldown = SLASH_COOLDOWN * float(weapon_profile()["cooldown"])
 	return true
 
 ## Held attack: a full circle at 1.8x damage.
@@ -2095,6 +2127,7 @@ func _strike(enemy: SlimeEnemy, damage: int, push_direction: Vector2, push: floa
 	if crit:
 		damage *= 2
 		Vfx.sparkle(self, enemy.global_position)
+		gear.on_crit(enemy)
 	var shaped := gear.modify_strike(damage)
 	damage = int(shaped["damage"])
 	if bool(shaped["riposte"]):
@@ -2215,7 +2248,7 @@ func _bow_release() -> void:
 	_bow_holding = false
 	var aimed := _bow_held >= AIM_TIME
 	var damage := player.get_ranged_damage() * (2 if aimed else 1)
-	var pierce := (99 if player.equipment.get("weapon", "") == "wind_bow" else 2) if aimed else 0
+	var pierce := (99 if player.wears_base("wind_bow") else 2) if aimed else 0
 	shoot_arrow(_aim_direction(), damage, aimed, pierce)
 	player.play_cast(_aim_direction())
 	GameAudio.play("dash", -6.0 if not aimed else -2.0, 0.2)

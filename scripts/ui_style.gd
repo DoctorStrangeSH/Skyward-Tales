@@ -86,6 +86,16 @@ static func inset(background: Color = SLOT_BG, edge: Color = SLOT_EDGE, content:
 	box.set_content_margin_all(content)
 	return box
 
+## Pack-art icons are 32 px; old ones 16. Big icons are shrunk to `max_side`
+## and smoothed, small ones stay crisp.
+static func fit_icon(button: Button, max_side: int) -> void:
+	if button.icon != null and button.icon.get_width() > 16:
+		button.add_theme_constant_override("icon_max_width", max_side)
+		button.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+	else:
+		button.remove_theme_constant_override("icon_max_width")
+		button.texture_filter = CanvasItem.TEXTURE_FILTER_PARENT_NODE
+
 static func label(text: String, font_size: int, color: Color = TEXT) -> Label:
 	var result := Label.new()
 	result.text = text

@@ -165,6 +165,7 @@ func _build_gear_page(contents: VBoxContainer) -> void:
 		if ResourceLoader.exists("res://assets/" + icon_path):
 			tab_button.icon = WorldArt.texture(icon_path)
 		tab_button.expand_icon = false
+		UiStyle.fit_icon(tab_button, 14)
 		tab_button.add_theme_font_size_override("font_size", UiFont.px(8))
 		tab_button.add_theme_constant_override("h_separation", 2)
 		UiStyle.small_toggle(tab_button)
@@ -345,7 +346,7 @@ func _populate_doll(player: PlayerCharacter) -> void:
 	var lines := [
 		["Здоровье", "%d/%d" % [player.health, player.max_health]],
 		["Мана", "%d/%d" % [player.mana, player.max_mana]],
-		["Урон мечом", str(player.get_melee_damage())],
+		["Урон оружием", "%d (%s)" % [player.get_melee_damage(), str(SkywardGame.WEAPON_PROFILES.get(player.weapon_kind(), {}).get("name", "Меч")).to_lower()]],
 		["Крит", "%d%%" % roundi(player.get_crit_chance() * 100.0)],
 		["Сила магии", "%d (+%d%% урона)" % [player.get_stat("power"), roundi((player.get_spell_power_multiplier() - 1.0) * 100.0)]],
 		["Броня", str(player.get_armor())],

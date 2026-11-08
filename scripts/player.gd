@@ -58,6 +58,12 @@ var oath_left: float = 0.0
 var last_attacker: Node
 var starlight_essence_used: int = 0
 var equipment_definitions: Dictionary = {}
+## Gear sets (equipment.json → sets): {set_id: {"name", "bonuses": {"2": stats, "3": stats}}}.
+var gear_sets: Dictionary = {}
+## Phoenix feather: seconds until it can save the hero again.
+var phoenix_ready_in: float = 0.0
+const PHOENIX_COOLDOWN := 180.0
+signal phoenix_triggered
 
 func _ready() -> void:
 	_load_equipment_definitions()
@@ -79,7 +85,7 @@ func heal(amount: int) -> void:
 func start_guard() -> bool:
 	if guard_cooldown_left > 0.0 or health <= 0 or dodge_time_left > 0.0:
 		return false
-	parry_left = PARRY_WINDOW + (0.1 if equipment.get("armor", "") == "crab_aegis" else 0.0)
+	parry_left = PARRY_WINDOW + (0.1 if wears_base("crab_aegis") else 0.0)
 	blocking = true
 	guard_cooldown_left = GUARD_COOLDOWN
 	queue_redraw()
@@ -124,6 +130,7 @@ func _physics_process(_delta: float) -> void:
 		parry_left = maxf(0.0, parry_left - _delta)
 		queue_redraw()
 	second_wind_ready_in = maxf(0.0, second_wind_ready_in - _delta)
+	phoenix_ready_in = maxf(0.0, phoenix_ready_in - _delta)
 	if dodge_time_left > 0.0:
 		dodge_time_left = maxf(0.0, dodge_time_left - _delta)
 		velocity = dodge_direction * dodge_speed
@@ -230,6 +237,12 @@ func take_damage(amount: int, source: Node = null) -> void:
 		second_wind_ready_in = SECOND_WIND_COOLDOWN
 		Vfx.level_up(get_parent(), global_position)
 		second_wind_triggered.emit()
+	elif health <= 0 and phoenix_ready_in <= 0.0 and wears_base("phoenix_feather"):
+		# Phoenix feather: rise from the ashes.
+		health = maxi(1, int(max_health * 0.4))
+		phoenix_ready_in = PHOENIX_COOLDOWN
+		Vfx.level_up(get_parent(), global_position)
+		phoenix_triggered.emit()
 	Vfx.flash(visual, Color(1.0, 0.45, 0.45), 0.2)
 	stats_changed.emit()
 	if previous_health > 0 and health <= 0:
@@ -267,6 +280,7 @@ func _load_equipment_definitions() -> void:
 	var parsed: Variant = JSON.parse_string(file.get_as_text())
 	if parsed is Dictionary and parsed.get("items", {}) is Dictionary:
 		equipment_definitions = parsed["items"].duplicate(true)
+		gear_sets = parsed.get("sets", {}).duplicate(true)
 	else:
 		push_error("Некорректный каталог экипировки: " + EQUIPMENT_DATA_PATH)
 
@@ -309,7 +323,15 @@ func get_item_name(item_id: String) -> String:
 	return str(get_item_definition(item_id).get("name", item_id))
 
 func get_item_description(item_id: String) -> String:
-	return str(get_item_definition(item_id).get("description", ""))
+	var definition := get_item_definition(item_id)
+	var text := str(definition.get("description", ""))
+	var level := int(definition.get("upgrade", 0))
+	if level > 0:
+		text += " Заточка +%d: характеристики +%d%%." % [level, 15 * level]
+	var set_line := set_description(item_id)
+	if not set_line.is_empty():
+		text += "\n" + set_line
+	return text
 
 func _equipment_stat(item_id: String, stat: String) -> int:
 	return int(get_item_definition(item_id).get(stat, 0))
@@ -318,7 +340,159 @@ func _equipped_stat(stat: String) -> int:
 	var total: int = 0
 	for item_id in equipment.values():
 		total += _equipment_stat(str(item_id), stat)
+	return total + int(set_bonus_stats().get(stat, 0))
+
+# --- Weapons, sets and forging (Этап 14) -------------------------------------
+
+## True when the worn gear includes this catalog item (also forged "+N" copies).
+func wears_base(base_id: String) -> bool:
+	for item_id in equipment.values():
+		var id := str(item_id)
+		if id == base_id or (not id.is_empty() and str(get_item_definition(id).get("base_id", "")) == base_id):
+			return true
+	return false
+
+## sword | dagger | spear | hammer — how the blade in hand swings.
+func weapon_kind() -> String:
+	var blade := str(equipment.get("blade", ""))
+	return str(get_item_definition(blade).get("kind", "sword")) if not blade.is_empty() else "sword"
+
+## Worn pieces per set: {set_id: count}.
+func worn_sets() -> Dictionary:
+	var counts := {}
+	for item_id in equipment.values():
+		var set_id := str(get_item_definition(str(item_id)).get("set", ""))
+		if not set_id.is_empty():
+			counts[set_id] = int(counts.get(set_id, 0)) + 1
+	return counts
+
+## Stats granted by the worn set bonuses (spell_bonus kept as a dictionary).
+func set_bonus_stats() -> Dictionary:
+	var total := {}
+	var worn := worn_sets()
+	for set_id in worn:
+		var bonuses: Dictionary = gear_sets.get(set_id, {}).get("bonuses", {})
+		for need in bonuses:
+			if int(worn[set_id]) < int(need):
+				continue
+			var stats: Dictionary = bonuses[need]
+			for stat in stats:
+				if stats[stat] is Dictionary:
+					var spells: Dictionary = total.get(stat, {})
+					for spell in stats[stat]:
+						spells[spell] = int(spells.get(spell, 0)) + int(stats[stat][spell])
+					total[stat] = spells
+				else:
+					total[stat] = int(total.get(stat, 0)) + int(stats[stat])
 	return total
+
+## "Небесная сталь (2/3): +4 урона мечом, +4 брони; 3 — …" for tooltips.
+func set_description(item_id: String) -> String:
+	var set_id := str(get_item_definition(item_id).get("set", ""))
+	if set_id.is_empty() or not gear_sets.has(set_id):
+		return ""
+	var data: Dictionary = gear_sets[set_id]
+	var pieces := 0
+	for id in equipment_definitions:
+		if str(equipment_definitions[id].get("set", "")) == set_id:
+			pieces += 1
+	var worn := int(worn_sets().get(set_id, 0))
+	var parts: Array[String] = []
+	var bonuses: Dictionary = data.get("bonuses", {})
+	for need in bonuses:
+		parts.append("%s%s — %s" % ["✓ " if worn >= int(need) else "", need, stat_text(bonuses[need])])
+	return "Комплект «%s» (%d/%d): %s" % [str(data.get("name", set_id)), worn, pieces, "; ".join(parts)]
+
+const STAT_NAMES := {"melee": "урон оружием", "armor": "броня", "crit": "% крита", "power": "сила магии", "agility": "ловкость",
+	"will": "воля", "lifesteal": "вампиризм", "ranged": "урон луком", "max_mana": "мана", "max_health": "здоровье", "haste": "% скорости умений"}
+
+static func stat_text(stats: Dictionary) -> String:
+	var parts: Array[String] = []
+	for stat in stats:
+		if stats[stat] is Dictionary:
+			parts.append("+%d к заклинаниям" % int(stats[stat].get("*", 0)))
+		else:
+			parts.append("+%d %s" % [int(stats[stat]), STAT_NAMES.get(stat, stat)])
+	return ", ".join(parts)
+
+const UPGRADE_STATS := ["melee", "armor", "crit", "power", "agility", "will", "ranged", "max_mana", "max_health", "lifesteal"]
+const RARITY_COST := {"common": 1.0, "uncommon": 1.5, "rare": 2.2, "epic": 3.2, "legendary": 4.5}
+
+## Forging level of an item (0 for a plain one).
+func upgrade_level(item_id: String) -> int:
+	return int(get_item_definition(item_id).get("upgrade", 0))
+
+## What the next forging costs: {"gold", "materials": {id: n}}.
+func upgrade_cost(item_id: String) -> Dictionary:
+	var definition := get_item_definition(item_id)
+	var next := upgrade_level(item_id) + 1
+	var mult := float(RARITY_COST.get(str(definition.get("rarity", "common")), 1.0))
+	var materials := {"iron_ore": 2 * next}
+	if next >= 3:
+		materials["obsidian_shard"] = next - 2
+	if next >= 4:
+		materials["meteor_iron"] = 1
+		materials["wind_essence"] = next - 3
+	return {"gold": roundi(40.0 * next * mult), "materials": materials}
+
+func can_pay(cost: Dictionary) -> bool:
+	if gold < int(cost.get("gold", 0)):
+		return false
+	var materials: Dictionary = cost.get("materials", {})
+	for material in materials:
+		if int(inventory.get(material, 0)) < int(materials[material]):
+			return false
+	return true
+
+## Forges an item one level up (pays the cost). The forged piece becomes its
+## own item ("Стальной меч +2", saved with generated items); if it was worn,
+## it is worn again. Returns the new id, or "" when it could not be done.
+func upgrade_item(item_id: String) -> String:
+	var definition := get_item_definition(item_id)
+	if str(definition.get("slot", "")).is_empty():
+		return ""
+	var worn_slot := ""
+	for slot in equipment:
+		if str(equipment[slot]) == item_id:
+			worn_slot = str(slot)
+	if worn_slot.is_empty() and int(inventory.get(item_id, 0)) <= 0:
+		return ""
+	var cost := upgrade_cost(item_id)
+	if not can_pay(cost):
+		return ""
+	gold -= int(cost["gold"])
+	var materials: Dictionary = cost["materials"]
+	for material in materials:
+		remove_item(str(material), int(materials[material]))
+	var base_id := str(definition.get("base_id", item_id))
+	var base := get_item_definition(base_id) if base_id != item_id else definition
+	var next := upgrade_level(item_id) + 1
+	var forged := definition.duplicate(true)
+	var scale := 1.0 + 0.15 * float(next)
+	for stat in UPGRADE_STATS:
+		if base.has(stat) and not base[stat] is bool:
+			forged[stat] = maxi(int(base[stat]) + next, roundi(float(base[stat]) * scale))
+	if base.get("spell_bonus", null) is Dictionary:
+		var spells := {}
+		for spell in base["spell_bonus"]:
+			spells[spell] = maxi(int(base["spell_bonus"][spell]) + next, roundi(float(base["spell_bonus"][spell]) * scale))
+		forged["spell_bonus"] = spells
+	forged["upgrade"] = next
+	forged["base_id"] = base_id
+	forged["icon"] = str(base.get("icon", base_id))
+	forged["name"] = "%s +%d" % [str(base.get("name", base_id)), next]
+	forged["value"] = int(base.get("value", 20)) * (1 + next)
+	if next >= 4:
+		forged["name"] = "%s (пробуждён) +%d" % [str(base.get("name", base_id)), next]
+	var new_id := register_generated_item(forged)
+	if not worn_slot.is_empty():
+		unequip_slot(worn_slot)
+	remove_item(item_id, 1)
+	add_item(new_id, 1)
+	if not worn_slot.is_empty():
+		equip_item(new_id)
+	stats_changed.emit()
+	return new_id
 
 ## Sword damage: base 10, +2 per level, the blade's "melee", +1 per 2 power.
 func get_melee_damage() -> int:
@@ -365,7 +539,7 @@ func get_crit_chance() -> float:
 func get_damage_reduction() -> float:
 	var reduction := 0.15 if has_skill("unbreakable") else 0.0
 	# Golem heart: stone skin when the hero is close to falling.
-	if equipment.get("relic", "") == "golem_heart" and health < max_health * 0.3:
+	if wears_base("golem_heart") and health < max_health * 0.3:
 		reduction += 0.3
 	return reduction
 
@@ -379,7 +553,7 @@ func get_gold_multiplier() -> float:
 
 ## Cooldown multiplier of the hotbar skills (Battle Rhythm).
 func get_skill_cooldown_multiplier() -> float:
-	return maxf(0.6, 1.0 - 0.08 * float(talents.get("battle_rhythm", 0)))
+	return maxf(0.5, (1.0 - 0.08 * float(talents.get("battle_rhythm", 0))) * (1.0 - 0.01 * float(_equipped_stat("haste"))))
 
 ## Puts a skill into a hotbar slot; a skill already on the bar swaps places.
 func assign_skill(slot_index: int, skill_id: String) -> bool:
@@ -453,6 +627,9 @@ func get_spell_bonus(spell_id: String = "") -> int:
 		if spell_bonuses is Dictionary:
 			bonus += int(spell_bonuses.get("*", 0))
 			bonus += int(spell_bonuses.get(spell_id, 0))
+	var set_spells: Variant = set_bonus_stats().get("spell_bonus", {})
+	if set_spells is Dictionary:
+		bonus += int(set_spells.get("*", 0)) + int(set_spells.get(spell_id, 0))
 	bonus += int(talents.get("arcane_power", 0)) * 3
 	if spell_id == "fireball":
 		bonus += int(talents.get("fire_power", 0)) * 3

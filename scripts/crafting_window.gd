@@ -247,6 +247,7 @@ func _row(recipe_id: String) -> Button:
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.icon = WorldArt.texture(_icon_path(_output_id(recipe_id))) if ResourceLoader.exists("res://assets/" + _icon_path(_output_id(recipe_id))) else null
 	button.expand_icon = false
+	UiStyle.fit_icon(button, 18)
 	button.text = str(recipe.get("name", recipe_id))
 	button.add_theme_font_size_override("font_size", UiFont.px(8))
 	button.add_theme_constant_override("h_separation", 4)

@@ -8,6 +8,8 @@ class_name AdventurersGuild
 ## Level 2: "Гроза земель" bounties — twice as tough, epic loot.
 
 const BUILDING := "guild"
+## A mighty bounty also pays with one of these (each once).
+const TROPHIES := ["viper_fang", "storm_spear", "titan_breaker", "blossom_bow"]
 const RANKS := [["Новичок", 0], ["Медь", 2], ["Бронза", 5], ["Серебро", 9], ["Золото", 14], ["Небесный", 20]]
 const NICKNAMES := ["Клык", "Шрам", "Гроза троп", "Седая Грива", "Пепел", "Тихоступ", "Железный Зуб", "Одноглаз", "Бешеный Рык", "Ночная Тень", "Костолом", "Хромая Беда"]
 
@@ -158,12 +160,23 @@ func turn_in() -> bool:
 	if active.is_empty() or not bool(active.get("done", false)):
 		return false
 	var before := rank()
+	var trophy := ""
+	if bool(active.get("mighty", false)):
+		var left: Array = TROPHIES.filter(func(id: String) -> bool: return not game.player.inventory.has(id) and not game.player.wears_base(id))
+		if not left.is_empty():
+			trophy = str(left[randi() % left.size()])
+			game.player.add_item(trophy, 1)
 	game.player.add_gold(roundi(active["gold"] * reward_mult()))
 	game.player.add_experience(roundi(active["xp"] * reward_mult()))
 	finished += 1
 	active = {}
 	game.achievements.add("bounties")
 	game.achievements.set_max("guild_rank", rank())
+	if rank() >= 4 and before < 4:
+		game.player.add_item("phoenix_feather", 1)
+		game.hud.show_message("Рагна: «Золотой ранг — держи Перо феникса. Оно спасало меня трижды».", 4.0)
+	if not trophy.is_empty():
+		game.hud.show_message("Трофей «Грозы»: %s!" % game.player.get_item_name(trophy), 4.0)
 	if rank() > before:
 		game.hud.show_title_card("Ранг гильдии: %s" % rank_name(), 2.5)
 	else:

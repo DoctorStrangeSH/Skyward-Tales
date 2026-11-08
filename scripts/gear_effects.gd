@@ -25,6 +25,11 @@ const DESCRIPTIONS := {
 	"golem_heart": "При здоровье ниже 30% — +30% к снижению урона.",
 	"spark_collar": "После переката два удара электризуют врагов.",
 	"jelly_staff": "Заклинания липнут: поражённые враги замедлены.",
+	"viper_fang": "Критические удары отравляют врага.",
+	"storm_spear": "Выпад с шансом 30% перескакивает молнией на соседнего врага.",
+	"titan_breaker": "Каждый третий удар — ударная волна вокруг героини.",
+	"phoenix_feather": "Раз в 3 минуты смертельный удар оставляет 40% здоровья.",
+	"keeper_hourglass": "Умения перезаряжаются на 20% быстрее.",
 }
 
 var game: SkywardGame
@@ -39,14 +44,22 @@ func _player() -> PlayerCharacter:
 	return game.player
 
 func wears(item_id: String) -> bool:
-	return _player().equipment.values().has(item_id)
+	return _player().wears_base(item_id)
 
 static func effect_text(item_id: String) -> String:
 	return str(DESCRIPTIONS.get(item_id, ""))
 
+var _set_check := 0.0
+
 func _process(delta: float) -> void:
 	if game == null or game.get_tree().paused:
 		return
+	_set_check -= delta
+	if _set_check <= 0.0:
+		_set_check = 1.0
+		for count in _player().worn_sets().values():
+			if int(count) >= 3:
+				game.achievements.set_max("full_set", 1)
 	riposte_left = maxf(0.0, riposte_left - delta)
 	if streak > 0:
 		streak_left -= delta
@@ -89,9 +102,37 @@ func on_strike(enemy: SlimeEnemy, _damage: int) -> void:
 			enemy.apply_shock(2.0)
 		Vfx.burst(game, enemy.global_position + Vector2(0, -20), [Color(1, 1, 1), Color(0.6, 0.9, 1.0), Color(0.4, 0.6, 1.0, 0)], 16, 70.0, 0.3)
 		game._ring(enemy.global_position, 18.0, Color(0.7, 0.9, 1.0))
+	if wears("storm_spear") and is_instance_valid(enemy) and game.crit_rng.randf() < 0.3:
+		var next: SlimeEnemy = null
+		var best := 90.0
+		for other in game._living_enemies():
+			var d: float = other.global_position.distance_to(enemy.global_position)
+			if other != enemy and d < best:
+				best = d
+				next = other
+		if next != null:
+			next.take_elemental_damage(6 + _player().level, "lightning")
+			if is_instance_valid(next) and next.health > 0:
+				next.apply_shock(2.0)
+			game._streak(enemy.global_position + Vector2(0, -8), next.global_position + Vector2(0, -8), Color(0.7, 0.9, 1.0), 2.0)
+	if wears("titan_breaker") and _strikes % 3 == 0:
+		var wave := roundi(_damage * 0.6)
+		for other in game._living_enemies():
+			if other.global_position.distance_to(_player().global_position) < 56.0:
+				other.take_damage(wave)
+				if is_instance_valid(other) and other.health > 0:
+					other.apply_knockback((other.global_position - _player().global_position).normalized(), 180.0)
+		game._ring(_player().global_position, 56.0, Color(1.0, 0.85, 0.5, 0.9))
+		game.shake(3.0, 0.18)
 	if _spark_charges > 0 and is_instance_valid(enemy) and enemy.health > 0:
 		_spark_charges -= 1
 		enemy.apply_shock(2.5)
+
+## A critical blow landed.
+func on_crit(enemy: SlimeEnemy) -> void:
+	if wears("viper_fang") and is_instance_valid(enemy) and enemy.health > 0:
+		enemy.apply_burning(3 + _player().level / 2, 3.0)
+		enemy.combat_feedback.show_reaction("ЯД!")
 
 func on_dodge() -> void:
 	if wears("spark_collar"):

@@ -280,7 +280,8 @@
       "spell_bonus": {
         "*": 22
       },
-      "power": 4
+      "power": 4,
+      "set": "skysteel"
     },
     "skysteel_mail": {
       "name": "Доспех небесной стали",
@@ -288,7 +289,8 @@
       "slot": "armor",
       "rarity": "epic",
       "armor": 16,
-      "agility": 3
+      "agility": 3,
+      "set": "skysteel"
     },
     "recipe_steel_mail": {
       "name": "Рецепт: стальная кольчуга",
@@ -334,7 +336,8 @@
       "slot": "blade",
       "rarity": "epic",
       "melee": 22,
-      "agility": 3
+      "agility": 3,
+      "set": "skysteel"
     },
     "slime_gel": {
       "name": "Слизь",
@@ -451,7 +454,8 @@
       "rarity": "uncommon",
       "melee": 2,
       "crit": 4,
-      "value": 40
+      "value": 40,
+      "set": "pack"
     },
     "shell_mail": {
       "name": "Ракушечная броня",
@@ -863,6 +867,229 @@
       "rarity": "epic",
       "material": true,
       "value": 40
+    },
+    "scout_knife": {
+      "name": "Нож следопыта",
+      "description": "Кинжал: +5 к урону, +6% крит, +1 к ловкости. Бьёт почти вдвое чаще меча.",
+      "slot": "blade",
+      "kind": "dagger",
+      "rarity": "uncommon",
+      "melee": 5,
+      "crit": 6,
+      "agility": 1,
+      "set": "pack",
+      "value": 70
+    },
+    "shadow_dagger": {
+      "name": "Кинжал тени",
+      "description": "Кинжал: +10 к урону, +10% крит, +2 к ловкости. Бьёт почти вдвое чаще меча.",
+      "slot": "blade",
+      "kind": "dagger",
+      "rarity": "rare",
+      "melee": 10,
+      "crit": 10,
+      "agility": 2,
+      "value": 180
+    },
+    "viper_fang": {
+      "name": "Жало гадюки",
+      "description": "Кинжал: +15 к урону, +12% крит, +2 к ловкости. Особое: критические удары отравляют.",
+      "slot": "blade",
+      "kind": "dagger",
+      "rarity": "epic",
+      "melee": 15,
+      "crit": 12,
+      "agility": 2,
+      "value": 320
+    },
+    "guard_spear": {
+      "name": "Копьё стражника",
+      "description": "Копьё: +7 к урону, +1 к броне. Длинный узкий выпад — бьёт издалека.",
+      "slot": "blade",
+      "kind": "spear",
+      "rarity": "uncommon",
+      "melee": 7,
+      "armor": 1,
+      "value": 70
+    },
+    "coral_pike": {
+      "name": "Коралловая пика",
+      "description": "Копьё: +13 к урону, +1 к ловкости. Длинный узкий выпад — бьёт издалека.",
+      "slot": "blade",
+      "kind": "spear",
+      "rarity": "rare",
+      "melee": 13,
+      "agility": 1,
+      "value": 190
+    },
+    "storm_spear": {
+      "name": "Копьё грозы",
+      "description": "Копьё: +21 к урону, +2 к ловкости. Особое: выпад с шансом 30% перескакивает молнией на соседа.",
+      "slot": "blade",
+      "kind": "spear",
+      "rarity": "epic",
+      "melee": 21,
+      "agility": 2,
+      "value": 340
+    },
+    "smith_hammer": {
+      "name": "Кузнечный молот",
+      "description": "Молот: +11 к урону. Медленный широкий удар, отбрасывает и оглушает.",
+      "slot": "blade",
+      "kind": "hammer",
+      "rarity": "uncommon",
+      "melee": 11,
+      "value": 75
+    },
+    "mountain_maul": {
+      "name": "Молот гор",
+      "description": "Молот: +20 к урону, +2 к броне. Медленный широкий удар, отбрасывает и оглушает.",
+      "slot": "blade",
+      "kind": "hammer",
+      "rarity": "rare",
+      "melee": 20,
+      "armor": 2,
+      "value": 200
+    },
+    "titan_breaker": {
+      "name": "Сокрушитель титанов",
+      "description": "Молот: +34 к урону, +30 к здоровью. Особое: каждый третий удар — ударная волна вокруг.",
+      "slot": "blade",
+      "kind": "hammer",
+      "rarity": "legendary",
+      "melee": 34,
+      "max_health": 30,
+      "value": 700
+    },
+    "ranger_jerkin": {
+      "name": "Куртка следопыта",
+      "description": "+7 к броне, +3 к ловкости, +2% крит.",
+      "slot": "armor",
+      "rarity": "rare",
+      "armor": 7,
+      "agility": 3,
+      "crit": 2,
+      "set": "pack",
+      "value": 150
+    },
+    "warden_plate": {
+      "name": "Латы стража",
+      "description": "+20 к броне, +25 к здоровью.",
+      "slot": "armor",
+      "rarity": "epic",
+      "armor": 20,
+      "max_health": 25,
+      "value": 420
+    },
+    "keeper_robe": {
+      "name": "Мантия Хранителя",
+      "description": "+6 к броне, +4 к силе магии, +25 к мане.",
+      "slot": "armor",
+      "rarity": "epic",
+      "armor": 6,
+      "power": 4,
+      "max_mana": 25,
+      "set": "keeper",
+      "value": 380
+    },
+    "keeper_staff": {
+      "name": "Посох Хранителя",
+      "description": "+18 к урону всех заклинаний, +3 к силе магии.",
+      "slot": "weapon",
+      "rarity": "epic",
+      "spell_bonus": {
+        "*": 18
+      },
+      "power": 3,
+      "set": "keeper",
+      "value": 400
+    },
+    "keeper_sigil": {
+      "name": "Печать Хранителя",
+      "description": "+4 к воле, +20 к мане, +4 к урону заклинаний.",
+      "slot": "amulet",
+      "rarity": "epic",
+      "will": 4,
+      "max_mana": 20,
+      "spell_bonus": {
+        "*": 4
+      },
+      "set": "keeper",
+      "value": 380
+    },
+    "phoenix_feather": {
+      "name": "Перо феникса",
+      "description": "+3 к силе магии, +20 к здоровью. Особое: раз в 3 минуты смертельный удар оставляет 40% здоровья.",
+      "slot": "relic",
+      "rarity": "legendary",
+      "power": 3,
+      "max_health": 20,
+      "value": 700
+    },
+    "keeper_hourglass": {
+      "name": "Песочные часы Хранителя",
+      "description": "+2 к воле. Особое: умения перезаряжаются на 20% быстрее.",
+      "slot": "relic",
+      "rarity": "epic",
+      "will": 2,
+      "haste": 20,
+      "value": 450
+    },
+    "blossom_bow": {
+      "name": "Цветущий лук",
+      "description": "Лук: +12 к урону стрел, +1 HP за попадание.",
+      "slot": "weapon",
+      "bow": true,
+      "rarity": "rare",
+      "ranged": 12,
+      "lifesteal": 1,
+      "value": 210
+    }
+  },
+  "sets": {
+    "skysteel": {
+      "name": "Небесная сталь",
+      "bonuses": {
+        "2": {
+          "melee": 4,
+          "armor": 4
+        },
+        "3": {
+          "power": 4,
+          "agility": 4,
+          "crit": 5
+        }
+      }
+    },
+    "pack": {
+      "name": "Волчья стая",
+      "bonuses": {
+        "2": {
+          "crit": 5,
+          "agility": 2
+        },
+        "3": {
+          "lifesteal": 2,
+          "melee": 6
+        }
+      }
+    },
+    "keeper": {
+      "name": "Наследие Хранителя",
+      "bonuses": {
+        "2": {
+          "power": 4,
+          "spell_bonus": {
+            "*": 6
+          }
+        },
+        "3": {
+          "will": 6,
+          "spell_bonus": {
+            "*": 10
+          }
+        }
+      }
     }
   }
 }

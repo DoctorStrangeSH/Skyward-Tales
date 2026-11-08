@@ -279,6 +279,27 @@
       "stat": "haven",
       "goal": 5,
       "gold": 120
+    },
+    "forged_5": {
+      "title": "Подмастерье",
+      "description": "Заточите снаряжение у Борина 5 раз.",
+      "stat": "forged",
+      "goal": 5,
+      "gold": 80
+    },
+    "forge_3": {
+      "title": "Хозяйка горна",
+      "description": "Расширьте кузницу Борина до 3-го уровня.",
+      "stat": "forge",
+      "goal": 1,
+      "gold": 150
+    },
+    "full_set": {
+      "title": "Полный комплект",
+      "description": "Наденьте все три вещи одного комплекта.",
+      "stat": "full_set",
+      "goal": 1,
+      "gold": 120
     }
   }
 }

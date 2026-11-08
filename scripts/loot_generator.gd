@@ -48,6 +48,10 @@ static func generate(rng: RandomNumberGenerator, level: int, rarity: String = ""
 	var base: Dictionary = bases[base_id]
 	var definition: Dictionary = base.get("base", {}).duplicate(true)
 	definition["slot"] = base.get("slot", "")
+	if base.has("kind"):
+		definition["kind"] = base["kind"]
+	if bool(base.get("bow", false)):
+		definition["bow"] = true
 	definition["rarity"] = rarity
 	definition["icon"] = base.get("icon", "")
 	definition["generated"] = true

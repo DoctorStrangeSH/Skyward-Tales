@@ -35,6 +35,7 @@ func setup(player: PlayerCharacter, slot_id: String) -> void:
 		add_theme_stylebox_override(state, box)
 	var icon_id := str(definition.get("icon", item_id))
 	icon = WorldArt.texture("icons/%s.png" % icon_id) if not item_id.is_empty() and ResourceLoader.exists("res://assets/icons/%s.png" % icon_id) else null
+	UiStyle.fit_icon(self, 28)
 	disabled = item_id.is_empty()
 	tooltip_text = "%s: %s" % [NAMES.get(slot, slot), player.get_item_name(item_id) if not item_id.is_empty() else "пусто — перетащите сюда предмет"]
 	queue_redraw()

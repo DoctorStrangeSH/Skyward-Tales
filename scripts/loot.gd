@@ -86,7 +86,11 @@ func _draw() -> void:
 	if item_id == "gold":
 		WorldArt.draw_prop(self, "props/loot_coins.png", false, Vector2(0, bob * 0.5))
 	elif _icon != null:
-		draw_texture(_icon, Vector2(-8, -16 + bob))
+		if _icon.get_width() > 16:
+			texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
+			draw_texture_rect(_icon, Rect2(Vector2(-10, -20 + bob), Vector2(20, 20)), false)
+		else:
+			draw_texture(_icon, Vector2(-8, -16 + bob))
 	else:
 		var art := "pouch"
 		if item_id in ["health_potion", "mana_potion", "wolf_pelt"]:
