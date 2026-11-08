@@ -9,10 +9,14 @@ var count := 14
 var speed_scale := 1.0
 var clouds: Array = []
 var textures: Array = []
+var _hd := false
 
 func _ready() -> void:
 	for variant in 3:
-		var texture := WorldArt.texture("world/cloud_puff_%s_%d.png" % ["night" if night else "day", variant])
+		var path := "world/cloud_puff_%s_%d.png" % ["night" if night else "day", variant]
+		var hd := WorldArt.hd_path(path)
+		_hd = _hd or not hd.is_empty()
+		var texture := WorldArt.texture(hd if not hd.is_empty() else path)
 		if texture != null:
 			textures.append(texture)
 	if textures.is_empty():
@@ -35,6 +39,10 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _draw() -> void:
+	if _hd:
+		texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2(0.5, 0.5))
 	for cloud in clouds:
 		var texture: Texture2D = cloud["texture"]
-		draw_texture(texture, cloud["pos"] - texture.get_size() * 0.5, Color(1, 1, 1, float(cloud["alpha"])))
+		var at: Vector2 = cloud["pos"] * (2.0 if _hd else 1.0)
+		draw_texture(texture, at - texture.get_size() * 0.5, Color(1, 1, 1, float(cloud["alpha"])))

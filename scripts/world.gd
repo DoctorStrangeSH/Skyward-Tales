@@ -9,6 +9,9 @@ const MAP_WIDTH := 80
 const MAP_HEIGHT := 54
 const COLLISION_WORLD := 4
 const ART_DIR := "res://assets/world/"
+## HD art from the asset pack (tools/art/hd): same names, drawn at 1/HD_K.
+const HD_DIR := "res://assets/world_hd/"
+const HD_K := 2.0
 const PROP_TEXTURES := {"ruins": "ruins.png", "standing_stones": "standing_stones.png", "crystal_altar": "crystal_altar.png", "sky_archive": "sky_archive.png", "mine_entrance": "mine_entrance.png"}
 
 var region_id: String = "greenreach"
@@ -42,14 +45,19 @@ func is_cave() -> bool:
 func _build() -> void:
 	terrain = RegionCatalog.terrain(region_id)
 	var style := RegionCatalog.style(region_id)
-	_add_layer(region_id + "_ground.png", -100)
+	if ResourceLoader.exists(HD_DIR + region_id + "_ground.webp"):
+		_add_hd_layer(region_id + "_ground.webp", -100)
+	else:
+		_add_layer(region_id + "_ground.png", -100)
 	_add_apron()
-	_add_layer(region_id + "_canopy.png", 60)
+	if not ResourceLoader.exists(HD_DIR + region_id + "_ground.webp"):
+		_add_layer(region_id + "_canopy.png", 60)
 	var trees: Array = terrain.get("trees", [])
+	var tree_kinds := _variants(style + "_tree_", 3)
 	for index in range(trees.size()):
 		var pos := _vec(trees[index])
 		# Trunk base sits 10 px below the stored canopy position.
-		var variant: int = absi(int(pos.x) * 7 + int(pos.y) * 13) % 3
+		var variant: int = absi(int(pos.x) * 7 + int(pos.y) * 13) % tree_kinds
 		_add_sprite("%s_tree_%d.png" % [style, variant], pos + Vector2(0, 10))
 		_add_wall(pos + Vector2(0.0, 5.0), Vector2(10.0, 11.0))
 	for prop in terrain.get("props", []):
@@ -70,8 +78,18 @@ func _build() -> void:
 ## from trails, water and gameplay objects.
 func _add_decor_bushes(style: String) -> void:
 	var spots: Array = terrain.get("bushes", [])
+	var kinds := _variants(style + "_bush_", 2)
 	for index in range(spots.size()):
-		_add_sprite("%s_bush_%d.png" % [style, index % 2], _vec(spots[index]))
+		_add_sprite("%s_bush_%d.png" % [style, index % kinds], _vec(spots[index]))
+
+## How many numbered variants exist (HD art may bring more than the old 2–3).
+func _variants(prefix: String, fallback: int) -> int:
+	if not ResourceLoader.exists(HD_DIR + prefix + "0.png"):
+		return fallback
+	var count := 1
+	while ResourceLoader.exists(HD_DIR + prefix + str(count) + ".png"):
+		count += 1
+	return count
 
 ## Fireflies at night, drifting pollen by day, and glints on the water.
 func _add_ambient() -> void:
@@ -199,7 +217,7 @@ func _weather(id: String, size: Vector2, amount: int, life: float, direction: Ve
 const APRON := 160
 
 func has_apron() -> bool:
-	return ResourceLoader.exists(ART_DIR + region_id + "_apron_top.png")
+	return ResourceLoader.exists(ART_DIR + region_id + "_apron_top.png") or ResourceLoader.exists(HD_DIR + region_id + "_apron_top.webp")
 
 func _add_apron() -> void:
 	if not has_apron():
@@ -207,7 +225,9 @@ func _add_apron() -> void:
 	var size := map_size()
 	var places := {"top": Vector2(-APRON, -APRON), "bottom": Vector2(-APRON, size.y), "left": Vector2(-APRON, 0), "right": Vector2(size.x, 0)}
 	for side in places:
-		var texture := _texture("%s_apron_%s.png" % [region_id, side])
+		var hd_file := HD_DIR + "%s_apron_%s.webp" % [region_id, side]
+		var hd := ResourceLoader.exists(hd_file)
+		var texture: Texture2D = (load(hd_file) as Texture2D) if hd else _texture("%s_apron_%s.png" % [region_id, side])
 		if texture == null:
 			continue
 		var sprite := Sprite2D.new()
@@ -216,8 +236,21 @@ func _add_apron() -> void:
 		sprite.centered = false
 		sprite.position = places[side]
 		sprite.z_index = -110
-		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR if hd else CanvasItem.TEXTURE_FILTER_NEAREST
+		if hd:
+			sprite.scale = Vector2.ONE / HD_K
 		add_child(sprite)
+	# Sky islands smaller than the map: the sky and cliffs inside the map edge.
+	var inner_file := HD_DIR + region_id + "_apron_inner.webp"
+	if ResourceLoader.exists(inner_file):
+		var inner := Sprite2D.new()
+		inner.name = "Apron_inner"
+		inner.texture = load(inner_file) as Texture2D
+		inner.centered = false
+		inner.scale = Vector2.ONE / HD_K
+		inner.z_index = -99
+		inner.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		add_child(inner)
 	var drift := Node2D.new()
 	drift.name = "SkyClouds"
 	drift.z_index = -105
@@ -243,15 +276,32 @@ func _add_layer(file: String, layer_z: int) -> void:
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	add_child(sprite)
 
+func _add_hd_layer(file: String, layer_z: int) -> void:
+	var texture := load(HD_DIR + file) as Texture2D
+	if texture == null:
+		return
+	var sprite := Sprite2D.new()
+	sprite.name = "GroundHD"
+	sprite.texture = texture
+	sprite.centered = false
+	sprite.scale = Vector2.ONE / HD_K
+	sprite.z_index = layer_z
+	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	add_child(sprite)
+
 func _add_sprite(file: String, base: Vector2) -> void:
-	var texture := _texture(file)
+	var hd := ResourceLoader.exists(HD_DIR + file)
+	var texture: Texture2D = (load(HD_DIR + file) as Texture2D) if hd else _texture(file)
 	if texture == null:
 		return
 	var sprite := Sprite2D.new()
 	sprite.texture = texture
 	sprite.centered = false
-	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	var origin: Variant = art_manifest.get("world/" + file, {}).get("origin", [texture.get_width() / 2, texture.get_height()])
+	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR if hd else CanvasItem.TEXTURE_FILTER_NEAREST
+	if hd:
+		sprite.scale = Vector2.ONE / HD_K
+	var key := ("world_hd/" if hd else "world/") + file
+	var origin: Variant = art_manifest.get(key, {}).get("origin", [texture.get_width() / 2, texture.get_height()])
 	sprite.offset = -Vector2(float(origin[0]), float(origin[1]))
 	sprite.position = base
 	add_child(sprite)

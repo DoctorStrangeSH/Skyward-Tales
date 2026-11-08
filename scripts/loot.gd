@@ -84,8 +84,7 @@ func _draw() -> void:
 	draw_circle(Vector2.ZERO, 5.0, glow)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	if item_id == "gold":
-		draw_set_transform(Vector2(0, bob * 0.5), 0.0, Vector2.ONE)
-		WorldArt.draw_prop(self, "props/loot_coins.png")
+		WorldArt.draw_prop(self, "props/loot_coins.png", false, Vector2(0, bob * 0.5))
 	elif _icon != null:
 		draw_texture(_icon, Vector2(-8, -16 + bob))
 	else:
@@ -94,5 +93,4 @@ func _draw() -> void:
 			art = item_id
 		elif item_id == "ancient_relic":
 			art = "relic"
-		draw_set_transform(Vector2(0, bob), 0.0, Vector2.ONE)
-		WorldArt.draw_prop(self, "props/%s.png" % art)
+		WorldArt.draw_prop(self, "props/%s.png" % art, false, Vector2(0, bob))

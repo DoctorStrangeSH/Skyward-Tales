@@ -131,8 +131,7 @@ func _draw() -> void:
 	if not marker.is_empty():
 		# Gentle bob so the marker catches the eye.
 		var bob := roundf(sin(_marker_time * 4.0) * 1.5)
-		draw_set_transform(Vector2(0, -30 + bob))
-		WorldArt.draw_prop(self, "props/marker_%s.png" % marker)
+		WorldArt.draw_prop(self, "props/marker_%s.png" % marker, false, Vector2(0, -30 + bob))
 		draw_set_transform(Vector2.ZERO)
 	if visual != null:
 		return

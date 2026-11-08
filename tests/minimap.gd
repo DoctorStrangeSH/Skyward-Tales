@@ -12,8 +12,8 @@ func _run() -> void:
 		quit(1)
 		return
 	game.hud.minimap.hero_position = Vector2(960, 640)
-	if not game.hud.minimap._map_point(Vector2(960, 640)).distance_to(WorldMinimap.AREA.get_center()) < 0.01 or not game.hud.minimap._map_point(Vector2(966, 640)).distance_to(WorldMinimap.AREA.get_center() + Vector2(1, 0)) < 0.01:
-		push_error("MINIMAP TEST: the minimap follows the hero at 1/6 scale")
+	if not game.hud.minimap._map_point(Vector2(960, 640)).distance_to(WorldMinimap.AREA.get_center()) < 0.01 or not game.hud.minimap._map_point(Vector2(960 + WorldMinimap.THUMB_SCALE, 640)).distance_to(WorldMinimap.AREA.get_center() + Vector2(1, 0)) < 0.01:
+		push_error("MINIMAP TEST: the minimap follows the hero at 1/THUMB_SCALE")
 		quit(1)
 		return
 	game.player.global_position = Vector2(560, 520)

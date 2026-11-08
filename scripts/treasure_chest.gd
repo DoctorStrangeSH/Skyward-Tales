@@ -59,12 +59,10 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	var squash := 1.0 + 0.25 * sin(_pop / 0.3 * PI) if _pop > 0.0 else 1.0
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2(2.0 - squash, squash))
 	var art := "props/chest_%s_%s.png" % [tier, "open" if is_opened else "closed"]
 	if not ResourceLoader.exists("res://assets/" + art):
 		art = "props/chest_open.png" if is_opened else "props/chest_closed.png"
-	WorldArt.draw_prop(self, art)
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	WorldArt.draw_prop(self, art, false, Vector2.ZERO, Vector2(2.0 - squash, squash))
 	if not is_opened:
 		# A glint runs over the lid every few seconds so chests catch the eye.
 		var phase := fmod(_twinkle, 3.0)

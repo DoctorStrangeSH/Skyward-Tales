@@ -1485,6 +1485,9 @@ func _spawn_gate(target_region: String, gate_position: Vector2, arrival: Vector2
 	gate.kind = str(look["kind"])
 	gate.outward = look["outward"]
 	gate.edge_distance = float(look["edge_distance"])
+	# HD ground has the walkway to the rim painted in.
+	if ResourceLoader.exists("res://assets/world_hd/%s_ground.webp" % current_region):
+		gate.edge_distance = 0.0
 	add_child(gate)
 	gate.global_position = gate_position
 	gate.travel_requested.connect(_on_region_travel)

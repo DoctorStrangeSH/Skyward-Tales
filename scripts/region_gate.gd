@@ -89,10 +89,7 @@ func _draw() -> void:
 	var art := "props/gate_%s.png" % kind
 	if not ResourceLoader.exists("res://assets/" + art):
 		art = "props/gate_%s.png" % art_style
-	if kind == "bridge_h" and outward == Vector2.LEFT:
-		draw_set_transform(Vector2.ZERO, 0.0, Vector2(-1, 1))
-	WorldArt.draw_prop(self, art)
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	WorldArt.draw_prop(self, art, kind == "bridge_h" and outward == Vector2.LEFT)
 
 ## Planks from the gate to the rim, joining the rope bridge drawn outside.
 func _draw_planks(canvas: Node2D) -> void:

@@ -2,13 +2,13 @@ extends Control
 class_name WorldMinimap
 
 ## Minimap. `follow` (HUD): a window over the region's real thumbnail
-## (assets/world/<region>_mini.png, 1/6 scale) centred on the hero, sky
+## (assets/world/<region>_mini.png, 1/3 scale, shown at 1/4.5) centred on the hero, sky
 ## beyond the island's rim. Otherwise (M map) the whole region fitted in.
 ## Icons: quest givers (! / ?), exits, chests, sky stones, fishing spots,
 ## workshops, quest items, enemies (elites, bosses) and the hero's heading.
 
 const WORLD_SIZE := Vector2(1280.0, 864.0)
-const THUMB_SCALE := 6.0
+const THUMB_SCALE := 4.5
 const HUD_SIZE := Vector2(150, 116)
 const AREA := Rect2(4, 18, 142, 94)
 
@@ -27,6 +27,8 @@ var _clock: float = 0.0
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# The detailed thumbnail is shown smaller than it is: smooth it.
+	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS
 	if follow:
 		custom_minimum_size = HUD_SIZE
 		size = HUD_SIZE
@@ -84,8 +86,11 @@ func _draw() -> void:
 	var cave := RegionCatalog.is_underground(style)
 	if follow:
 		# Frame: dark wood, a gold line, the region banner.
-		draw_rect(Rect2(Vector2.ZERO, HUD_SIZE), Color(0.17, 0.11, 0.08, 0.95))
-		draw_rect(Rect2(Vector2(1, 1), HUD_SIZE - Vector2(2, 2)), Color(0.85, 0.66, 0.38), false, 1.0)
+		draw_rect(Rect2(Vector2.ZERO, HUD_SIZE), Color(0.13, 0.085, 0.06, 0.96))
+		draw_rect(Rect2(Vector2(1, 1), HUD_SIZE - Vector2(2, 2)), Color(0.92, 0.72, 0.4), false, 1.0)
+		draw_rect(Rect2(Vector2(2.5, 2.5), HUD_SIZE - Vector2(5, 5)), Color(0.55, 0.38, 0.2, 0.9), false, 0.5)
+		for corner in [Vector2(2, 2), Vector2(HUD_SIZE.x - 2, 2), Vector2(2, HUD_SIZE.y - 2), HUD_SIZE - Vector2(2, 2)]:
+			draw_colored_polygon(PackedVector2Array([corner + Vector2(0, -3), corner + Vector2(3, 0), corner + Vector2(0, 3), corner + Vector2(-3, 0)]), Color(1.0, 0.85, 0.5))
 		var font := UiFont.font()
 		draw_string(font, Vector2(6, 13), RegionCatalog.display_name(region_id).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 110, UiFont.px(9), Color(1.0, 0.9, 0.62))
 		draw_string(font, Vector2(6, 13), "ур. %d" % RegionCatalog.level(region_id), HORIZONTAL_ALIGNMENT_RIGHT, HUD_SIZE.x - 24, UiFont.px(8), Color(0.75, 0.85, 1.0))
@@ -124,7 +129,9 @@ func _draw() -> void:
 		_draw_marker(kind, at, str(marker.get("label", "")), bool(marker.get("main", false)))
 	_draw_hero(_map_point(hero_position))
 	if follow:
-		draw_rect(area, Color(0.1, 0.07, 0.06), false, 1.0)
+		# Inner bevel: a soft dark edge, then the gold line.
+		draw_rect(area.grow(-0.5), Color(0, 0, 0, 0.35), false, 2.0)
+		draw_rect(area.grow(1), Color(0.78, 0.6, 0.34), false, 1.0)
 
 ## Discovered landmarks (saved) and live icons together.
 func _all_markers() -> Array:

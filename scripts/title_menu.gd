@@ -121,7 +121,13 @@ func _set_menu_background() -> void:
 
 func _floating(view: SubViewport, art: String, at: Vector2, lift: float, period: float) -> void:
 	var sprite := Sprite2D.new()
-	sprite.texture = WorldArt.texture(art)
+	var hd := art.replace(".png", "_hd.png")
+	if ResourceLoader.exists("res://assets/" + hd):
+		sprite.texture = WorldArt.texture(hd)
+		sprite.scale = Vector2(0.5, 0.5)
+		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	else:
+		sprite.texture = WorldArt.texture(art)
 	sprite.position = at
 	view.add_child(sprite)
 	var bob := sprite.create_tween().set_loops()

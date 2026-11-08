@@ -3564,5 +3564,2194 @@
    1280,
    864
   ]
+ },
+ "world_hd/ash_bush_0.png": {
+  "size": [
+   44,
+   34
+  ],
+  "origin": [
+   22,
+   32
+  ],
+  "scale": 0.5
+ },
+ "world_hd/ash_bush_1.png": {
+  "size": [
+   44,
+   32
+  ],
+  "origin": [
+   22,
+   30
+  ],
+  "scale": 0.5
+ },
+ "world_hd/ash_bush_2.png": {
+  "size": [
+   44,
+   38
+  ],
+  "origin": [
+   22,
+   36
+  ],
+  "scale": 0.5
+ },
+ "world_hd/ash_bush_3.png": {
+  "size": [
+   44,
+   38
+  ],
+  "origin": [
+   22,
+   36
+  ],
+  "scale": 0.5
+ },
+ "world_hd/ash_tree_0.png": {
+  "size": [
+   116,
+   125
+  ],
+  "origin": [
+   58,
+   121
+  ],
+  "scale": 0.5
+ },
+ "world_hd/ash_tree_1.png": {
+  "size": [
+   128,
+   138
+  ],
+  "origin": [
+   64,
+   134
+  ],
+  "scale": 0.5
+ },
+ "world_hd/ash_tree_2.png": {
+  "size": [
+   104,
+   112
+  ],
+  "origin": [
+   52,
+   109
+  ],
+  "scale": 0.5
+ },
+ "world_hd/ash_tree_3.png": {
+  "size": [
+   104,
+   112
+  ],
+  "origin": [
+   52,
+   109
+  ],
+  "scale": 0.5
+ },
+ "world_hd/cave_bush_0.png": {
+  "size": [
+   48,
+   33
+  ],
+  "origin": [
+   24,
+   31
+  ],
+  "scale": 0.5
+ },
+ "world_hd/cave_bush_1.png": {
+  "size": [
+   48,
+   33
+  ],
+  "origin": [
+   24,
+   31
+  ],
+  "scale": 0.5
+ },
+ "world_hd/cave_bush_2.png": {
+  "size": [
+   48,
+   32
+  ],
+  "origin": [
+   24,
+   31
+  ],
+  "scale": 0.5
+ },
+ "world_hd/cave_bush_3.png": {
+  "size": [
+   48,
+   34
+  ],
+  "origin": [
+   24,
+   32
+  ],
+  "scale": 0.5
+ },
+ "world_hd/cave_tree_0.png": {
+  "size": [
+   88,
+   80
+  ],
+  "origin": [
+   44,
+   78
+  ],
+  "scale": 0.5
+ },
+ "world_hd/cave_tree_1.png": {
+  "size": [
+   88,
+   84
+  ],
+  "origin": [
+   44,
+   82
+  ],
+  "scale": 0.5
+ },
+ "world_hd/cave_tree_2.png": {
+  "size": [
+   88,
+   85
+  ],
+  "origin": [
+   44,
+   83
+  ],
+  "scale": 0.5
+ },
+ "world_hd/cave_tree_3.png": {
+  "size": [
+   96,
+   103
+  ],
+  "origin": [
+   48,
+   100
+  ],
+  "scale": 0.5
+ },
+ "world_hd/cloud_puff_day_0.png": {
+  "size": [
+   192,
+   112
+  ],
+  "origin": [
+   96,
+   56
+  ],
+  "scale": 0.5
+ },
+ "world_hd/cloud_puff_day_1.png": {
+  "size": [
+   164,
+   68
+  ],
+  "origin": [
+   82,
+   34
+  ],
+  "scale": 0.5
+ },
+ "world_hd/cloud_puff_day_2.png": {
+  "size": [
+   136,
+   61
+  ],
+  "origin": [
+   68,
+   30
+  ],
+  "scale": 0.5
+ },
+ "world_hd/cloud_puff_night_0.png": {
+  "size": [
+   192,
+   112
+  ],
+  "origin": [
+   96,
+   56
+  ],
+  "scale": 0.5
+ },
+ "world_hd/cloud_puff_night_1.png": {
+  "size": [
+   164,
+   68
+  ],
+  "origin": [
+   82,
+   34
+  ],
+  "scale": 0.5
+ },
+ "world_hd/cloud_puff_night_2.png": {
+  "size": [
+   136,
+   61
+  ],
+  "origin": [
+   68,
+   30
+  ],
+  "scale": 0.5
+ },
+ "world_hd/coast_bush_0.png": {
+  "size": [
+   40,
+   40
+  ],
+  "origin": [
+   20,
+   37
+  ],
+  "scale": 0.5
+ },
+ "world_hd/coast_bush_1.png": {
+  "size": [
+   40,
+   45
+  ],
+  "origin": [
+   20,
+   42
+  ],
+  "scale": 0.5
+ },
+ "world_hd/coast_bush_2.png": {
+  "size": [
+   40,
+   30
+  ],
+  "origin": [
+   20,
+   28
+  ],
+  "scale": 0.5
+ },
+ "world_hd/coast_bush_3.png": {
+  "size": [
+   40,
+   29
+  ],
+  "origin": [
+   20,
+   27
+  ],
+  "scale": 0.5
+ },
+ "world_hd/coast_tree_0.png": {
+  "size": [
+   116,
+   141
+  ],
+  "origin": [
+   58,
+   138
+  ],
+  "scale": 0.5
+ },
+ "world_hd/coast_tree_1.png": {
+  "size": [
+   104,
+   141
+  ],
+  "origin": [
+   52,
+   138
+  ],
+  "scale": 0.5
+ },
+ "world_hd/coast_tree_2.png": {
+  "size": [
+   112,
+   164
+  ],
+  "origin": [
+   56,
+   158
+  ],
+  "scale": 0.5
+ },
+ "world_hd/coast_tree_3.png": {
+  "size": [
+   124,
+   150
+  ],
+  "origin": [
+   62,
+   146
+  ],
+  "scale": 0.5
+ },
+ "world_hd/crypt_bush_0.png": {
+  "size": [
+   40,
+   32
+  ],
+  "origin": [
+   20,
+   30
+  ],
+  "scale": 0.5
+ },
+ "world_hd/crypt_bush_1.png": {
+  "size": [
+   44,
+   33
+  ],
+  "origin": [
+   22,
+   31
+  ],
+  "scale": 0.5
+ },
+ "world_hd/crypt_tree_0.png": {
+  "size": [
+   60,
+   77
+  ],
+  "origin": [
+   30,
+   75
+  ],
+  "scale": 0.5
+ },
+ "world_hd/crypt_tree_1.png": {
+  "size": [
+   60,
+   59
+  ],
+  "origin": [
+   30,
+   57
+  ],
+  "scale": 0.5
+ },
+ "world_hd/crypt_tree_2.png": {
+  "size": [
+   68,
+   82
+  ],
+  "origin": [
+   34,
+   80
+  ],
+  "scale": 0.5
+ },
+ "world_hd/day_bush_0.png": {
+  "size": [
+   44,
+   33
+  ],
+  "origin": [
+   22,
+   31
+  ],
+  "scale": 0.5
+ },
+ "world_hd/day_bush_1.png": {
+  "size": [
+   48,
+   32
+  ],
+  "origin": [
+   24,
+   30
+  ],
+  "scale": 0.5
+ },
+ "world_hd/day_bush_2.png": {
+  "size": [
+   44,
+   32
+  ],
+  "origin": [
+   22,
+   30
+  ],
+  "scale": 0.5
+ },
+ "world_hd/day_bush_3.png": {
+  "size": [
+   48,
+   35
+  ],
+  "origin": [
+   24,
+   32
+  ],
+  "scale": 0.5
+ },
+ "world_hd/day_tree_0.png": {
+  "size": [
+   124,
+   124
+  ],
+  "origin": [
+   62,
+   120
+  ],
+  "scale": 0.5
+ },
+ "world_hd/day_tree_1.png": {
+  "size": [
+   124,
+   119
+  ],
+  "origin": [
+   62,
+   115
+  ],
+  "scale": 0.5
+ },
+ "world_hd/day_tree_2.png": {
+  "size": [
+   116,
+   114
+  ],
+  "origin": [
+   58,
+   110
+  ],
+  "scale": 0.5
+ },
+ "world_hd/day_tree_3.png": {
+  "size": [
+   132,
+   132
+  ],
+  "origin": [
+   66,
+   127
+  ],
+  "scale": 0.5
+ },
+ "world_hd/decor_armor_stand.png": {
+  "size": [
+   32,
+   53
+  ],
+  "origin": [
+   16,
+   51
+  ],
+  "scale": 0.5
+ },
+ "world_hd/decor_forge.png": {
+  "size": [
+   128,
+   110
+  ],
+  "origin": [
+   64,
+   108
+  ],
+  "scale": 0.5
+ },
+ "world_hd/decor_potted_plant.png": {
+  "size": [
+   28,
+   37
+  ],
+  "origin": [
+   14,
+   36
+  ],
+  "scale": 0.5
+ },
+ "world_hd/decor_stall_blue.png": {
+  "size": [
+   128,
+   99
+  ],
+  "origin": [
+   64,
+   96
+  ],
+  "scale": 0.5
+ },
+ "world_hd/decor_stall_orange.png": {
+  "size": [
+   128,
+   108
+  ],
+  "origin": [
+   64,
+   105
+  ],
+  "scale": 0.5
+ },
+ "world_hd/decor_stall_white.png": {
+  "size": [
+   132,
+   66
+  ],
+  "origin": [
+   66,
+   64
+  ],
+  "scale": 0.5
+ },
+ "world_hd/decor_wagon.png": {
+  "size": [
+   112,
+   96
+  ],
+  "origin": [
+   56,
+   93
+  ],
+  "scale": 0.5
+ },
+ "world_hd/decor_weapon_rack.png": {
+  "size": [
+   52,
+   36
+  ],
+  "origin": [
+   26,
+   34
+  ],
+  "scale": 0.5
+ },
+ "world_hd/decor_workbench.png": {
+  "size": [
+   64,
+   43
+  ],
+  "origin": [
+   32,
+   42
+  ],
+  "scale": 0.5
+ },
+ "world_hd/gather_bluebell.png": {
+  "size": [
+   36,
+   35
+  ],
+  "origin": [
+   18,
+   33
+  ],
+  "scale": 0.5
+ },
+ "world_hd/gather_healroot.png": {
+  "size": [
+   36,
+   31
+  ],
+  "origin": [
+   18,
+   28
+  ],
+  "scale": 0.5
+ },
+ "world_hd/gather_iron.png": {
+  "size": [
+   56,
+   39
+  ],
+  "origin": [
+   28,
+   37
+  ],
+  "scale": 0.5
+ },
+ "world_hd/gather_stone.png": {
+  "size": [
+   56,
+   34
+  ],
+  "origin": [
+   28,
+   32
+  ],
+  "scale": 0.5
+ },
+ "world_hd/gather_wood.png": {
+  "size": [
+   56,
+   49
+  ],
+  "origin": [
+   28,
+   48
+  ],
+  "scale": 0.5
+ },
+ "world_hd/haven_bush_0.png": {
+  "size": [
+   40,
+   34
+  ],
+  "origin": [
+   20,
+   31
+  ],
+  "scale": 0.5
+ },
+ "world_hd/haven_bush_1.png": {
+  "size": [
+   48,
+   32
+  ],
+  "origin": [
+   24,
+   30
+  ],
+  "scale": 0.5
+ },
+ "world_hd/haven_bush_2.png": {
+  "size": [
+   44,
+   40
+  ],
+  "origin": [
+   22,
+   38
+  ],
+  "scale": 0.5
+ },
+ "world_hd/haven_bush_3.png": {
+  "size": [
+   48,
+   35
+  ],
+  "origin": [
+   24,
+   32
+  ],
+  "scale": 0.5
+ },
+ "world_hd/haven_tree_0.png": {
+  "size": [
+   124,
+   120
+  ],
+  "origin": [
+   62,
+   115
+  ],
+  "scale": 0.5
+ },
+ "world_hd/haven_tree_1.png": {
+  "size": [
+   124,
+   120
+  ],
+  "origin": [
+   62,
+   117
+  ],
+  "scale": 0.5
+ },
+ "world_hd/haven_tree_2.png": {
+  "size": [
+   124,
+   124
+  ],
+  "origin": [
+   62,
+   120
+  ],
+  "scale": 0.5
+ },
+ "world_hd/haven_tree_3.png": {
+  "size": [
+   132,
+   128
+  ],
+  "origin": [
+   66,
+   123
+  ],
+  "scale": 0.5
+ },
+ "world_hd/magma_bush_0.png": {
+  "size": [
+   44,
+   32
+  ],
+  "origin": [
+   22,
+   30
+  ],
+  "scale": 0.5
+ },
+ "world_hd/magma_bush_1.png": {
+  "size": [
+   44,
+   30
+  ],
+  "origin": [
+   22,
+   28
+  ],
+  "scale": 0.5
+ },
+ "world_hd/magma_tree_0.png": {
+  "size": [
+   68,
+   47
+  ],
+  "origin": [
+   34,
+   45
+  ],
+  "scale": 0.5
+ },
+ "world_hd/magma_tree_1.png": {
+  "size": [
+   80,
+   82
+  ],
+  "origin": [
+   40,
+   79
+  ],
+  "scale": 0.5
+ },
+ "world_hd/magma_tree_2.png": {
+  "size": [
+   68,
+   51
+  ],
+  "origin": [
+   34,
+   49
+  ],
+  "scale": 0.5
+ },
+ "world_hd/marsh_bush_0.png": {
+  "size": [
+   44,
+   44
+  ],
+  "origin": [
+   22,
+   41
+  ],
+  "scale": 0.5
+ },
+ "world_hd/marsh_bush_1.png": {
+  "size": [
+   44,
+   49
+  ],
+  "origin": [
+   22,
+   46
+  ],
+  "scale": 0.5
+ },
+ "world_hd/marsh_bush_2.png": {
+  "size": [
+   40,
+   58
+  ],
+  "origin": [
+   20,
+   56
+  ],
+  "scale": 0.5
+ },
+ "world_hd/marsh_bush_3.png": {
+  "size": [
+   44,
+   32
+  ],
+  "origin": [
+   22,
+   30
+  ],
+  "scale": 0.5
+ },
+ "world_hd/marsh_tree_0.png": {
+  "size": [
+   124,
+   108
+  ],
+  "origin": [
+   62,
+   104
+  ],
+  "scale": 0.5
+ },
+ "world_hd/marsh_tree_1.png": {
+  "size": [
+   116,
+   125
+  ],
+  "origin": [
+   58,
+   121
+  ],
+  "scale": 0.5
+ },
+ "world_hd/marsh_tree_2.png": {
+  "size": [
+   132,
+   115
+  ],
+  "origin": [
+   66,
+   111
+  ],
+  "scale": 0.5
+ },
+ "world_hd/marsh_tree_3.png": {
+  "size": [
+   88,
+   107
+  ],
+  "origin": [
+   44,
+   103
+  ],
+  "scale": 0.5
+ },
+ "world_hd/mine_entrance.png": {
+  "size": [
+   144,
+   123
+  ],
+  "origin": [
+   72,
+   120
+  ],
+  "scale": 0.5
+ },
+ "world_hd/mountain_bush_0.png": {
+  "size": [
+   44,
+   38
+  ],
+  "origin": [
+   22,
+   35
+  ],
+  "scale": 0.5
+ },
+ "world_hd/mountain_bush_1.png": {
+  "size": [
+   44,
+   37
+  ],
+  "origin": [
+   22,
+   35
+  ],
+  "scale": 0.5
+ },
+ "world_hd/mountain_bush_2.png": {
+  "size": [
+   44,
+   32
+  ],
+  "origin": [
+   22,
+   30
+  ],
+  "scale": 0.5
+ },
+ "world_hd/mountain_bush_3.png": {
+  "size": [
+   40,
+   33
+  ],
+  "origin": [
+   20,
+   30
+  ],
+  "scale": 0.5
+ },
+ "world_hd/mountain_tree_0.png": {
+  "size": [
+   92,
+   131
+  ],
+  "origin": [
+   46,
+   127
+  ],
+  "scale": 0.5
+ },
+ "world_hd/mountain_tree_1.png": {
+  "size": [
+   104,
+   148
+  ],
+  "origin": [
+   52,
+   144
+  ],
+  "scale": 0.5
+ },
+ "world_hd/mountain_tree_2.png": {
+  "size": [
+   116,
+   110
+  ],
+  "origin": [
+   58,
+   107
+  ],
+  "scale": 0.5
+ },
+ "world_hd/mountain_tree_3.png": {
+  "size": [
+   88,
+   107
+  ],
+  "origin": [
+   44,
+   103
+  ],
+  "scale": 0.5
+ },
+ "world_hd/night_bush_0.png": {
+  "size": [
+   40,
+   38
+  ],
+  "origin": [
+   20,
+   36
+  ],
+  "scale": 0.5
+ },
+ "world_hd/night_bush_1.png": {
+  "size": [
+   40,
+   34
+  ],
+  "origin": [
+   20,
+   32
+  ],
+  "scale": 0.5
+ },
+ "world_hd/night_bush_2.png": {
+  "size": [
+   44,
+   42
+  ],
+  "origin": [
+   22,
+   40
+  ],
+  "scale": 0.5
+ },
+ "world_hd/night_bush_3.png": {
+  "size": [
+   44,
+   35
+  ],
+  "origin": [
+   22,
+   32
+  ],
+  "scale": 0.5
+ },
+ "world_hd/night_tree_0.png": {
+  "size": [
+   124,
+   128
+  ],
+  "origin": [
+   62,
+   125
+  ],
+  "scale": 0.5
+ },
+ "world_hd/night_tree_1.png": {
+  "size": [
+   120,
+   124
+  ],
+  "origin": [
+   60,
+   121
+  ],
+  "scale": 0.5
+ },
+ "world_hd/night_tree_2.png": {
+  "size": [
+   128,
+   119
+  ],
+  "origin": [
+   64,
+   115
+  ],
+  "scale": 0.5
+ },
+ "world_hd/night_tree_3.png": {
+  "size": [
+   124,
+   120
+  ],
+  "origin": [
+   62,
+   117
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/chest_closed.png": {
+  "size": [
+   48,
+   40
+  ],
+  "origin": [
+   24,
+   39
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/chest_gold_closed.png": {
+  "size": [
+   56,
+   47
+  ],
+  "origin": [
+   28,
+   45
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/chest_gold_open.png": {
+  "size": [
+   56,
+   51
+  ],
+  "origin": [
+   28,
+   49
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/chest_iron_closed.png": {
+  "size": [
+   56,
+   47
+  ],
+  "origin": [
+   28,
+   45
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/chest_iron_open.png": {
+  "size": [
+   56,
+   51
+  ],
+  "origin": [
+   28,
+   49
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/chest_open.png": {
+  "size": [
+   48,
+   44
+  ],
+  "origin": [
+   24,
+   43
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/chest_wood_closed.png": {
+  "size": [
+   52,
+   43
+  ],
+  "origin": [
+   26,
+   42
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/chest_wood_open.png": {
+  "size": [
+   52,
+   47
+  ],
+  "origin": [
+   26,
+   46
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/coal_sack.png": {
+  "size": [
+   36,
+   39
+  ],
+  "origin": [
+   18,
+   37
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/echo_crystal.png": {
+  "size": [
+   24,
+   41
+  ],
+  "origin": [
+   12,
+   38
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/ember_coal.png": {
+  "size": [
+   44,
+   30
+  ],
+  "origin": [
+   22,
+   28
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/flour_sack.png": {
+  "size": [
+   32,
+   35
+  ],
+  "origin": [
+   16,
+   34
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/gate_bridge_h.png": {
+  "size": [
+   88,
+   58
+  ],
+  "origin": [
+   44,
+   56
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/gate_bridge_v.png": {
+  "size": [
+   104,
+   138
+  ],
+  "origin": [
+   52,
+   137
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/gate_cave.png": {
+  "size": [
+   88,
+   66
+  ],
+  "origin": [
+   44,
+   64
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/gate_cave_exit.png": {
+  "size": [
+   152,
+   113
+  ],
+  "origin": [
+   76,
+   110
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/gate_cave_mouth.png": {
+  "size": [
+   152,
+   113
+  ],
+  "origin": [
+   76,
+   110
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/gate_coast.png": {
+  "size": [
+   80,
+   106
+  ],
+  "origin": [
+   40,
+   105
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/gate_crypt.png": {
+  "size": [
+   80,
+   85
+  ],
+  "origin": [
+   40,
+   83
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/gate_day.png": {
+  "size": [
+   80,
+   106
+  ],
+  "origin": [
+   40,
+   105
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/gate_marsh.png": {
+  "size": [
+   80,
+   106
+  ],
+  "origin": [
+   40,
+   105
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/gate_mountain.png": {
+  "size": [
+   80,
+   106
+  ],
+  "origin": [
+   40,
+   105
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/gate_night.png": {
+  "size": [
+   80,
+   106
+  ],
+  "origin": [
+   40,
+   105
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/gate_stairs_down.png": {
+  "size": [
+   120,
+   128
+  ],
+  "origin": [
+   60,
+   126
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/gate_stairs_up.png": {
+  "size": [
+   120,
+   128
+  ],
+  "origin": [
+   60,
+   126
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/keeper_echo.png": {
+  "size": [
+   28,
+   29
+  ],
+  "origin": [
+   14,
+   28
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/lever_off.png": {
+  "size": [
+   44,
+   42
+  ],
+  "origin": [
+   22,
+   40
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/lever_on.png": {
+  "size": [
+   44,
+   43
+  ],
+  "origin": [
+   22,
+   42
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/loot_coins.png": {
+  "size": [
+   28,
+   24
+  ],
+  "origin": [
+   14,
+   22
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/lore_stone.png": {
+  "size": [
+   44,
+   59
+  ],
+  "origin": [
+   22,
+   57
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/lost_letter.png": {
+  "size": [
+   30,
+   20
+  ],
+  "origin": [
+   15,
+   19
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/map_fragment.png": {
+  "size": [
+   36,
+   23
+  ],
+  "origin": [
+   18,
+   21
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/marsh_lantern.png": {
+  "size": [
+   40,
+   32
+  ],
+  "origin": [
+   20,
+   30
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/memory_crystal.png": {
+  "size": [
+   28,
+   45
+  ],
+  "origin": [
+   14,
+   42
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/meteor_iron.png": {
+  "size": [
+   56,
+   39
+  ],
+  "origin": [
+   28,
+   37
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/moonleaf.png": {
+  "size": [
+   32,
+   39
+  ],
+  "origin": [
+   16,
+   37
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/ore_node.png": {
+  "size": [
+   56,
+   42
+  ],
+  "origin": [
+   28,
+   40
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/pattern_core.png": {
+  "size": [
+   28,
+   29
+  ],
+  "origin": [
+   14,
+   28
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/pouch.png": {
+  "size": [
+   26,
+   35
+  ],
+  "origin": [
+   13,
+   34
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/relic.png": {
+  "size": [
+   32,
+   37
+  ],
+  "origin": [
+   16,
+   34
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/sky_shard.png": {
+  "size": [
+   32,
+   67
+  ],
+  "origin": [
+   16,
+   65
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/song_scroll.png": {
+  "size": [
+   28,
+   35
+  ],
+  "origin": [
+   14,
+   34
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/spirit_blossom.png": {
+  "size": [
+   40,
+   34
+  ],
+  "origin": [
+   20,
+   32
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/supply_crate.png": {
+  "size": [
+   48,
+   28
+  ],
+  "origin": [
+   24,
+   27
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/waystone_off.png": {
+  "size": [
+   52,
+   89
+  ],
+  "origin": [
+   26,
+   86
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/waystone_on.png": {
+  "size": [
+   52,
+   89
+  ],
+  "origin": [
+   26,
+   86
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/wind_rune.png": {
+  "size": [
+   28,
+   30
+  ],
+  "origin": [
+   14,
+   28
+  ],
+  "scale": 0.5
+ },
+ "world_hd/rift_bush_0.png": {
+  "size": [
+   44,
+   38
+  ],
+  "origin": [
+   22,
+   36
+  ],
+  "scale": 0.5
+ },
+ "world_hd/rift_bush_1.png": {
+  "size": [
+   44,
+   35
+  ],
+  "origin": [
+   22,
+   33
+  ],
+  "scale": 0.5
+ },
+ "world_hd/rift_bush_2.png": {
+  "size": [
+   40,
+   40
+  ],
+  "origin": [
+   20,
+   38
+  ],
+  "scale": 0.5
+ },
+ "world_hd/rift_bush_3.png": {
+  "size": [
+   44,
+   49
+  ],
+  "origin": [
+   22,
+   47
+  ],
+  "scale": 0.5
+ },
+ "world_hd/rift_tree_0.png": {
+  "size": [
+   124,
+   116
+  ],
+  "origin": [
+   62,
+   113
+  ],
+  "scale": 0.5
+ },
+ "world_hd/rift_tree_1.png": {
+  "size": [
+   116,
+   125
+  ],
+  "origin": [
+   58,
+   121
+  ],
+  "scale": 0.5
+ },
+ "world_hd/rift_tree_2.png": {
+  "size": [
+   116,
+   120
+  ],
+  "origin": [
+   58,
+   117
+  ],
+  "scale": 0.5
+ },
+ "world_hd/rift_tree_3.png": {
+  "size": [
+   92,
+   67
+  ],
+  "origin": [
+   46,
+   64
+  ],
+  "scale": 0.5
+ },
+ "world_hd/ruins.png": {
+  "size": [
+   208,
+   176
+  ],
+  "origin": [
+   104,
+   171
+  ],
+  "scale": 0.5
+ },
+ "world_hd/sky_bush_0.png": {
+  "size": [
+   44,
+   33
+  ],
+  "origin": [
+   22,
+   31
+  ],
+  "scale": 0.5
+ },
+ "world_hd/sky_bush_1.png": {
+  "size": [
+   48,
+   32
+  ],
+  "origin": [
+   24,
+   30
+  ],
+  "scale": 0.5
+ },
+ "world_hd/sky_bush_2.png": {
+  "size": [
+   44,
+   32
+  ],
+  "origin": [
+   22,
+   30
+  ],
+  "scale": 0.5
+ },
+ "world_hd/sky_bush_3.png": {
+  "size": [
+   48,
+   35
+  ],
+  "origin": [
+   24,
+   32
+  ],
+  "scale": 0.5
+ },
+ "world_hd/sky_tree_0.png": {
+  "size": [
+   120,
+   120
+  ],
+  "origin": [
+   60,
+   116
+  ],
+  "scale": 0.5
+ },
+ "world_hd/sky_tree_1.png": {
+  "size": [
+   120,
+   114
+  ],
+  "origin": [
+   60,
+   111
+  ],
+  "scale": 0.5
+ },
+ "world_hd/sky_tree_2.png": {
+  "size": [
+   120,
+   116
+  ],
+  "origin": [
+   60,
+   111
+  ],
+  "scale": 0.5
+ },
+ "world_hd/sky_tree_3.png": {
+  "size": [
+   124,
+   118
+  ],
+  "origin": [
+   62,
+   116
+  ],
+  "scale": 0.5
+ },
+ "world_hd/spires_bush_0.png": {
+  "size": [
+   44,
+   32
+  ],
+  "origin": [
+   22,
+   30
+  ],
+  "scale": 0.5
+ },
+ "world_hd/spires_bush_1.png": {
+  "size": [
+   44,
+   32
+  ],
+  "origin": [
+   22,
+   29
+  ],
+  "scale": 0.5
+ },
+ "world_hd/spires_bush_2.png": {
+  "size": [
+   44,
+   29
+  ],
+  "origin": [
+   22,
+   27
+  ],
+  "scale": 0.5
+ },
+ "world_hd/spires_bush_3.png": {
+  "size": [
+   40,
+   32
+  ],
+  "origin": [
+   20,
+   29
+  ],
+  "scale": 0.5
+ },
+ "world_hd/spires_tree_0.png": {
+  "size": [
+   120,
+   125
+  ],
+  "origin": [
+   60,
+   121
+  ],
+  "scale": 0.5
+ },
+ "world_hd/spires_tree_1.png": {
+  "size": [
+   120,
+   118
+  ],
+  "origin": [
+   60,
+   114
+  ],
+  "scale": 0.5
+ },
+ "world_hd/spires_tree_2.png": {
+  "size": [
+   120,
+   120
+  ],
+  "origin": [
+   60,
+   116
+  ],
+  "scale": 0.5
+ },
+ "world_hd/spires_tree_3.png": {
+  "size": [
+   124,
+   119
+  ],
+  "origin": [
+   62,
+   115
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_arch.png": {
+  "size": [
+   128,
+   103
+  ],
+  "origin": [
+   64,
+   101
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_bench.png": {
+  "size": [
+   52,
+   35
+  ],
+  "origin": [
+   26,
+   33
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_board.png": {
+  "size": [
+   68,
+   68
+  ],
+  "origin": [
+   34,
+   67
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_fence_h.png": {
+  "size": [
+   72,
+   34
+  ],
+  "origin": [
+   36,
+   32
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_fence_v.png": {
+  "size": [
+   16,
+   72
+  ],
+  "origin": [
+   8,
+   70
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_flowers_a.png": {
+  "size": [
+   60,
+   48
+  ],
+  "origin": [
+   30,
+   45
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_flowers_b.png": {
+  "size": [
+   56,
+   48
+  ],
+  "origin": [
+   28,
+   44
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_flowers_c.png": {
+  "size": [
+   56,
+   47
+  ],
+  "origin": [
+   28,
+   44
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_fountain.png": {
+  "size": [
+   136,
+   129
+  ],
+  "origin": [
+   68,
+   131
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_guild_1.png": {
+  "size": [
+   208,
+   171
+  ],
+  "origin": [
+   104,
+   169
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_guild_2.png": {
+  "size": [
+   212,
+   188
+  ],
+  "origin": [
+   106,
+   186
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_hall.png": {
+  "size": [
+   248,
+   195
+  ],
+  "origin": [
+   124,
+   193
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_hay.png": {
+  "size": [
+   52,
+   32
+  ],
+  "origin": [
+   26,
+   30
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_home_1.png": {
+  "size": [
+   160,
+   184
+  ],
+  "origin": [
+   80,
+   182
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_home_2.png": {
+  "size": [
+   188,
+   173
+  ],
+  "origin": [
+   94,
+   171
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_house_blue.png": {
+  "size": [
+   140,
+   129
+  ],
+  "origin": [
+   70,
+   127
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_house_large.png": {
+  "size": [
+   208,
+   164
+  ],
+  "origin": [
+   104,
+   162
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_house_long.png": {
+  "size": [
+   224,
+   206
+  ],
+  "origin": [
+   112,
+   203
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_house_moss.png": {
+  "size": [
+   176,
+   202
+  ],
+  "origin": [
+   88,
+   199
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_house_slate.png": {
+  "size": [
+   164,
+   151
+  ],
+  "origin": [
+   82,
+   149
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_house_small.png": {
+  "size": [
+   148,
+   170
+  ],
+  "origin": [
+   74,
+   168
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_house_wine.png": {
+  "size": [
+   156,
+   179
+  ],
+  "origin": [
+   78,
+   177
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_lamp.png": {
+  "size": [
+   36,
+   67
+  ],
+  "origin": [
+   18,
+   65
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_library_1.png": {
+  "size": [
+   180,
+   187
+  ],
+  "origin": [
+   90,
+   184
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_library_2.png": {
+  "size": [
+   192,
+   176
+  ],
+  "origin": [
+   96,
+   174
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_market_green.png": {
+  "size": [
+   120,
+   92
+  ],
+  "origin": [
+   60,
+   89
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_market_red.png": {
+  "size": [
+   120,
+   102
+  ],
+  "origin": [
+   60,
+   99
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_sign.png": {
+  "size": [
+   44,
+   40
+  ],
+  "origin": [
+   22,
+   38
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_tavern_1.png": {
+  "size": [
+   208,
+   162
+  ],
+  "origin": [
+   104,
+   160
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_tavern_2.png": {
+  "size": [
+   228,
+   178
+  ],
+  "origin": [
+   114,
+   175
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_well.png": {
+  "size": [
+   76,
+   82
+  ],
+  "origin": [
+   38,
+   80
+  ],
+  "scale": 0.5
+ },
+ "world_hd/village_windmill.png": {
+  "size": [
+   168,
+   213
+  ],
+  "origin": [
+   84,
+   210
+  ],
+  "scale": 0.5
  }
 }
