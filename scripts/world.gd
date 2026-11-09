@@ -397,6 +397,80 @@ func _create_world_collisions() -> void:
 		_add_wall(Vector2(size.x - margin * 0.5, size.y * 0.5), Vector2(margin, size.y))
 	for blocker in terrain.get("blockers", []):
 		_add_wall(_vec(blocker.get("center")), _vec(blocker.get("size"), Vector2(16, 16)))
+	_add_water_walls()
+
+## Owner's list №39: nobody walks on lakes, bogs or lava. Each pool is cut
+## into 8 px rows of solid water a little inside the shore (the shore stays
+## walkable for fishing); where a trail crosses the water — a ford or a
+## bridge — the row is left open.
+const WATER_INSET := 10.0
+const WATER_STEP := 8.0
+
+func _add_water_walls() -> void:
+	var trails: Array = terrain.get("trails", [])
+	# Piers stand over the water: walkable.
+	var piers: Array[Rect2] = []
+	for prop in terrain.get("props", []):
+		if str(prop.get("kind", "")).contains("pier"):
+			piers.append(Rect2(_vec(prop.get("position")) - Vector2(58, 22), Vector2(116, 32)))
+	# Walls already there (a lake fenced by a blocker) need no water strips.
+	var walls := _wall_rects.duplicate()
+	for pond in terrain.get("ponds", []):
+		var box := _pond_box(pond)
+		if box.size.x <= 0.0:
+			continue
+		var y := box.position.y + WATER_STEP * 0.5
+		while y < box.end.y:
+			var run_start := NAN
+			var x := box.position.x + WATER_STEP * 0.5
+			while x <= box.end.x + WATER_STEP:
+				var cell := Vector2(x, y)
+				var solid := x < box.end.x and _deep_water(pond, cell) and not _near_trail(trails, cell, 14.0) and not piers.any(func(r: Rect2) -> bool: return r.has_point(cell)) and not walls.any(func(r: Rect2) -> bool: return r.grow(WATER_STEP).has_point(cell))
+				if solid and is_nan(run_start):
+					run_start = x
+				elif not solid and not is_nan(run_start):
+					var left := run_start - WATER_STEP * 0.5
+					var right := x - WATER_STEP * 0.5
+					_add_wall(Vector2((left + right) * 0.5, y), Vector2(right - left, WATER_STEP))
+					run_start = NAN
+				x += WATER_STEP
+			y += WATER_STEP
+
+func _pond_box(pond: Dictionary) -> Rect2:
+	if pond.has("rect"):
+		var r: Array = pond["rect"]
+		return Rect2(float(r[0]), float(r[1]), float(r[2]), float(r[3]))
+	if pond.has("circle"):
+		var c: Array = pond["circle"]
+		var radius := float(c[2])
+		return Rect2(float(c[0]) - radius, float(c[1]) - radius, radius * 2.0, radius * 2.0)
+	return Rect2()
+
+## True a little inside the shore (the art wobbles the edge a few pixels).
+func _deep_water(pond: Dictionary, at: Vector2) -> bool:
+	if pond.has("rect"):
+		var r: Array = pond["rect"]
+		var half := Vector2(float(r[2]), float(r[3])) * 0.5
+		var center := Vector2(float(r[0]), float(r[1])) + half
+		var inner := half - Vector2(WATER_INSET, WATER_INSET)
+		if inner.x <= 0.0 or inner.y <= 0.0:
+			return false
+		return pow(absf((at.x - center.x) / inner.x), 3.2) + pow(absf((at.y - center.y) / inner.y), 3.2) <= 1.0
+	var c: Array = pond["circle"]
+	var radius := float(c[2]) - WATER_INSET
+	if radius <= 4.0:
+		return false
+	return Vector2(at.x - float(c[0]), (at.y - float(c[1])) * 1.08).length() <= radius
+
+static func _near_trail(trails: Array, at: Vector2, distance: float) -> bool:
+	for trail in trails:
+		var points: Array = trail
+		for index in range(points.size() - 1):
+			var a := _vec(points[index])
+			var b := _vec(points[index + 1])
+			if Geometry2D.get_closest_point_to_segment(at, a, b).distance_to(at) < distance:
+				return true
+	return false
 
 ## Every solid rectangle, kept for the navigation mesh.
 var _wall_rects: Array[Rect2] = []
