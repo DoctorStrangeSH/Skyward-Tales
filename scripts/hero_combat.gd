@@ -312,7 +312,7 @@ func _cast_spell() -> void:
 		# Stage 20: a wave, a wall or an orb instead of a bolt.
 		SpellForms.cast(game, game.selected_spell_id, spell, direction, spell_damage)
 		game.player.play_cast(direction)
-		GameAudio.play({"fire": "cast_fire", "ice": "cast_ice", "lightning": "cast_lightning"}.get(str(spell.get("school", "fire")), "cast_fire"), -4.0)
+		GameAudio.play(str(spell.get("sound", {"fire": "cast_fire", "ice": "cast_ice", "lightning": "cast_lightning"}.get(str(spell.get("school", "fire")), "cast_fire"))), -4.0)
 		game.cast_cooldown_total = float(spell.get("cooldown", 0.25)) * game.player.get_cooldown_multiplier()
 		game.cast_cooldown_remaining = game.cast_cooldown_total
 		game._update_spell_hud()

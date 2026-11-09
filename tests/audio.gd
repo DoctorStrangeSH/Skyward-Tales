@@ -11,10 +11,10 @@ func _fail(reason: String) -> void:
 	quit(1)
 
 func _run() -> void:
-	for sound in ["hit", "enemy_die", "hurt", "cast_fire", "cast_ice", "cast_lightning", "dash", "pickup", "chest", "level_up", "quest", "travel", "boss_roar", "gust", "ui"]:
+	for sound in ["hit", "enemy_die", "hurt", "cast_fire", "cast_ice", "cast_lightning", "dash", "pickup", "chest", "level_up", "quest", "travel", "boss_roar", "gust", "ui", "cast_wave", "cast_wall", "cast_orb"]:
 		if not load(GameAudio.SFX_DIR + sound + ".wav") is AudioStreamWAV:
 			return _fail("missing sound " + sound)
-	for track in ["meadow", "night", "caves", "sky", "boss"]:
+	for track in ["title", "meadow", "night", "caves", "sky", "coast", "marsh", "ash", "rift", "boss"]:
 		if not load(GameAudio.MUSIC_DIR + track + ".ogg") is AudioStreamOggVorbis:
 			return _fail("missing track " + track)
 	var game: SkywardGame = load("res://scenes/main.tscn").instantiate()
@@ -29,6 +29,10 @@ func _run() -> void:
 	await process_frame
 	if audio.current_track != "caves":
 		return _fail("caves have their own music")
+	game._set_region("misty_marsh", Vector2(640, 100), false)
+	await process_frame
+	if audio.current_track != "marsh":
+		return _fail("the marsh has its own music, got " + audio.current_track)
 	game._set_region("wind_spires", Vector2(560, 560), false)
 	await process_frame
 	if audio.current_track != "sky":
@@ -53,5 +57,5 @@ func _run() -> void:
 		return _fail("music volume 0 mutes the bus")
 	GameSettings.set_float("music_volume", 0.6)
 	GameAudio.apply_volumes()
-	print("AUDIO OK: 15 sounds, 5 tracks, region music, boss music, volumes")
+	print("AUDIO OK: 18 sounds, 10 tracks, region music, boss music, volumes")
 	quit(0)

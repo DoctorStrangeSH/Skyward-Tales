@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
-"""Generates all Skyward Tales sound effects and music from code.
+"""Ambience beds of Skyward Tales (and the old 8-bit sounds).
 
-Usage: python3 tools/audio/build_audio.py [--only sfx|music]
+Usage: python3 tools/audio/build_audio.py [--names birds,night]
+
+Stage 20 (9 ноября 2026): music and sound effects moved to real
+instruments — tools/audio/orchestra.py (music) and tools/audio/sfx_hd.py
+(effects). This script now writes only the ambience beds by default;
+`--only sfx` / `--only music` still rebuild the old chiptune versions
+(they overwrite the new files — only for comparison).
 Writes assets/audio/sfx/*.wav and assets/audio/music/*.ogg (needs ffmpeg with
 libvorbis). Deterministic: the same seeds always give the same sounds.
 """
@@ -570,7 +576,7 @@ AMBIENCE = {"wind": amb_wind, "waves": amb_waves, "birds": amb_birds, "night": a
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--only", choices=["sfx", "music", "ambience"])
+    parser.add_argument("--only", choices=["sfx", "music", "ambience"], default="ambience")
     parser.add_argument("--names", default="", help="comma list of ambience beds to rebuild")
     args = parser.parse_args()
     if args.only in (None, "sfx"):

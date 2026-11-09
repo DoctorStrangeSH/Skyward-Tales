@@ -12,7 +12,7 @@ static var _display_applied := false
 
 func _ready() -> void:
 	get_tree().paused = false
-	GameAudio.music("sky")
+	GameAudio.music("title")
 	if not _display_applied:
 		_display_applied = true
 		GameSettings.apply_display()

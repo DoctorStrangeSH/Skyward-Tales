@@ -395,7 +395,11 @@ func hit_stop(duration: float) -> void:
 func _exit_tree() -> void:
 	Engine.time_scale = 1.0
 
-## Region music by art style; bosses override it while alive.
+## Region music by art style (stage 20: an orchestral track per kind of land,
+## tools/audio/orchestra.py); bosses override it while alive.
+const MUSIC_BY_STYLE := {"night": "night", "cave": "caves", "sky": "sky", "spires": "sky", "rift": "rift", "marsh": "marsh",
+	"coast": "coast", "mountain": "caves", "crypt": "caves", "ash": "ash", "magma": "ash"}
+
 func update_music() -> void:
 	for actor in get_children():
 		if actor is GroveGuardian and not actor.is_queued_for_deletion() and actor.health > 0:
@@ -403,7 +407,7 @@ func update_music() -> void:
 			return
 	var style := RegionCatalog.style(current_region)
 	update_ambience()
-	GameAudio.music({"night": "night", "cave": "caves", "sky": "sky", "spires": "sky", "rift": "night", "marsh": "night", "coast": "sky", "mountain": "caves", "crypt": "caves", "ash": "night", "magma": "boss"}.get(style, "meadow"))
+	GameAudio.music(MUSIC_BY_STYLE.get(style, "meadow"))
 
 ## The background bed of the land: wind on the islands, waves on the coast,
 ## birds by day and crickets by night, drips in caves, crackling in ash.
