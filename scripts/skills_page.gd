@@ -86,7 +86,7 @@ func _build_skills() -> void:
 	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	right.add_theme_constant_override("separation", 2)
 	row.add_child(right)
-	right.add_child(UiStyle.section("Пассивные — с уровнем"))
+	right.add_child(UiStyle.section("Пассивные — у наставников" if _player.skills_need_learning else "Пассивные — с уровнем"))
 	var passives := CombatSkills.passives()
 	for passive_id in passives:
 		right.add_child(_passive_row(str(passive_id), passives[passive_id]))
@@ -96,6 +96,9 @@ func _name(skill_id: String) -> String:
 
 func _active_card(skill_id: String, data: Dictionary) -> Control:
 	var reason := _skills.lock_reason(skill_id) if _skills != null else ""
+	if reason == "Не изучено":
+		var teacher := Trainers.teacher_of(skill_id)
+		reason = ("Учит: " + teacher) if not teacher.is_empty() else "Придёт с пробуждением магии"
 	var card := SkillCard.new()
 	card.setup(skill_id, data, reason, _player.skill_slots.has(skill_id))
 	card.double_clicked.connect(func(id: String) -> void:
@@ -111,6 +114,7 @@ func _active_card(skill_id: String, data: Dictionary) -> Control:
 
 func _passive_row(passive_id: String, data: Dictionary) -> Control:
 	var active := _player.has_passive(passive_id)
+	var known := _player.knows(passive_id)
 	var row := PanelContainer.new()
 	row.add_theme_stylebox_override("panel", UiStyle.inset(Color(0.2, 0.3, 0.2, 0.35) if active else Color(0.08, 0.06, 0.05, 0.6)))
 	var line := HBoxContainer.new()
@@ -121,7 +125,7 @@ func _passive_row(passive_id: String, data: Dictionary) -> Control:
 	text.add_theme_constant_override("separation", 0)
 	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	line.add_child(text)
-	var state := "✓" if active else "ур. %d" % int(data.get("level", 1))
+	var state := "✓" if active else ("ур. %d" % int(data.get("level", 1)) if known else "учит: %s · ур. %d" % [Trainers.teacher_of(passive_id), int(data.get("level", 1))])
 	text.add_child(UiStyle.label("%s  %s" % [str(data.get("name", passive_id)), state], 8, Color(0.7, 1.0, 0.7) if active else UiStyle.MUTED))
 	var description := UiStyle.label(str(data.get("description", "")), 7, Color(0.75, 0.78, 0.85))
 	description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART

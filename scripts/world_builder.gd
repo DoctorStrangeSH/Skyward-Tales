@@ -364,7 +364,10 @@ func _spawn_npc(npc_data: Dictionary) -> void:
 	game.add_child(npc)
 	npc.global_position = SkywardGame._vec(npc_data.get("position"))
 	var handler := Callable(game, "_on_%s_interacted" % npc_id)
-	if handler.is_valid():
+	if handler.is_valid() and game.trainers.has_trainer(npc_id):
+		# A trainer first asks: talk or learn (owner's list №29).
+		npc.interacted.connect(func(source: Node2D) -> void: game.trainers.greet(npc_id, func(_s: Variant) -> void: handler.call(source)))
+	elif handler.is_valid():
 		npc.interacted.connect(handler)
 	elif game.settlement.has_settler_npc(npc_id):
 		npc.interacted.connect(func(_source: Node2D) -> void: game.settlement.talk(npc_id))

@@ -13,6 +13,8 @@ var pierce_left: int = 0
 var lifetime: float = 0.9
 var aimed: bool = false
 var _hit: Array = []
+## A companion's arrow (Toren): provokes, and is not the hero's hit.
+var shooter: Node2D = null
 
 func setup(owner_game: SkywardGame, flight: Vector2, arrow_damage: int, pierces: int = 0, is_aimed: bool = false) -> void:
 	game = owner_game
@@ -34,7 +36,10 @@ func _physics_process(delta: float) -> void:
 			continue
 		if enemy.global_position.distance_to(global_position) <= 11.0 + (6.0 if aimed else 0.0):
 			_hit.append(enemy)
-			game._strike(enemy, damage, direction, 60.0 if not aimed else 120.0)
+			if shooter != null and is_instance_valid(shooter):
+				game.crew_strike(enemy, damage, direction, shooter)
+			else:
+				game._strike(enemy, damage, direction, 60.0 if not aimed else 120.0)
 			Vfx.sparkle(game, global_position)
 			if pierce_left <= 0:
 				queue_free()

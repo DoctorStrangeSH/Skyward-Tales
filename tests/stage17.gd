@@ -183,6 +183,8 @@ func _run() -> void:
 		return _fail("Toren follows the hero")
 	var slime := game.spawn_enemy("slime", hero.global_position + Vector2(60, 0))
 	slime.set_physics_process(false)
+	# Companions fight what attacks the hero (owner's list №18).
+	slime.brain_state = SlimeEnemy.BrainState.CHASE
 	toren.attack_ready_in = 0.0
 	await process_frame
 	await process_frame

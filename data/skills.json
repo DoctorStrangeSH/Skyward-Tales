@@ -46,17 +46,20 @@
     "fireball": {
       "name": "Огненный шар",
       "spell": true,
-      "description": "Заклинание: огонь и горение."
+      "description": "Заклинание: огонь и горение.",
+      "level": 1
     },
     "frostbolt": {
       "name": "Ледяная стрела",
       "spell": true,
-      "description": "Заклинание: урон и замедление."
+      "description": "Заклинание: урон и замедление.",
+      "level": 5
     },
     "chain_lightning": {
       "name": "Цепная молния",
       "spell": true,
-      "description": "Заклинание: перескакивает между врагами."
+      "description": "Заклинание: перескакивает между врагами.",
+      "level": 9
     },
     "snare": {
       "name": "Капкан",

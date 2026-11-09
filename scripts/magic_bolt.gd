@@ -22,6 +22,8 @@ var explode_radius: float = 0.0
 var pierce_left: int = 0
 var freeze_on_hit: bool = false
 var _already_hit: Array[Node2D] = []
+## A companion's shot: hits provoke the foe and don't count as the hero's.
+var shooter: Node2D = null
 
 func _ready() -> void:
 	body_entered.connect(_on_body_entered)
@@ -77,8 +79,13 @@ func _on_body_entered(body: Node2D) -> void:
 		body.take_elemental_damage(damage, _element_for_spell()) if body.has_method("take_elemental_damage") else body.take_damage(damage)
 		if not body.is_queued_for_deletion() and body.has_method("react_to_spell"):
 			body.react_to_spell(spell_id)
-		if not body.is_queued_for_deletion() and get_parent() != null and get_parent().has_method("on_spell_hit"):
+		if shooter != null and is_instance_valid(shooter):
+			if not body.is_queued_for_deletion() and body.has_method("provoke"):
+				body.provoke(shooter)
+		elif not body.is_queued_for_deletion() and get_parent() != null and get_parent().has_method("on_spell_hit"):
 			get_parent().on_spell_hit(body)
+			if get_parent().has_method("note_hero_target"):
+				get_parent().note_hero_target(body)
 		if spell_id == "fireball" and burn_duration > 0.0 and body.has_method("apply_burning") and not body.is_queued_for_deletion():
 			body.apply_burning(burn_damage, burn_duration)
 		if spell_id == "chain_lightning":

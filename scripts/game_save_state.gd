@@ -63,7 +63,7 @@ static func capture(game: SkywardGame) -> Dictionary:
 			"gold": player.gold,
 			"inventory": player.inventory.duplicate(true),
 			"equipment": player.equipment.duplicate(true),
-			"talents": player.talents.duplicate(true), "skill_slots": player.skill_slots.duplicate(), "fish_log": player.fish_log.duplicate(true), "starlight_essence_used": player.starlight_essence_used,
+			"talents": player.talents.duplicate(true), "skill_slots": player.skill_slots.duplicate(), "learned_skills": player.learned_skills.duplicate(), "skills_need_learning": player.skills_need_learning, "fish_log": player.fish_log.duplicate(true), "starlight_essence_used": player.starlight_essence_used,
 			"bonus_skill_points": player.bonus_skill_points,
 			"generated_items": player.generated_items.duplicate(true), "generated_counter": player._generated_counter,
 			"hero_name": player.hero_name, "hero_gender": player.hero_gender,
@@ -83,7 +83,7 @@ static func capture(game: SkywardGame) -> Dictionary:
 			"visited": game.visited_regions.duplicate(),
 			"doors": game.opened_doors.duplicate(),
 			"day": game.day_night.make_snapshot(), "treasure": game.treasure.make_snapshot(), "contracts": game.contracts.make_snapshot(),
-			"legends": game.legends.make_snapshot(), "achievements": game.achievements.make_snapshot(), "lore": game.lore.make_snapshot(), "epilogue": game.epilogue.make_snapshot(), "world_state": game.world_state.make_snapshot(), "mine": game.mine.make_snapshot(), "combos": game.combos.make_snapshot(), "farm": game.farm.make_snapshot(), "buildings": game.buildings.make_snapshot(), "guild": game.guild.make_snapshot(), "expeditions": game.expeditions.make_snapshot(), "ship": game.ship.make_snapshot(), "factions": game.factions.make_snapshot(), "fates": game.fates.make_snapshot(), "party": game.party.make_snapshot(), "deep_rifts": game.deep_rifts.make_snapshot(), "ng_plus": game.ng_plus
+			"legends": game.legends.make_snapshot(), "achievements": game.achievements.make_snapshot(), "lore": game.lore.make_snapshot(), "epilogue": game.epilogue.make_snapshot(), "world_state": game.world_state.make_snapshot(), "mine": game.mine.make_snapshot(), "combos": game.combos.make_snapshot(), "farm": game.farm.make_snapshot(), "buildings": game.buildings.make_snapshot(), "guild": game.guild.make_snapshot(), "expeditions": game.expeditions.make_snapshot(), "ship": game.ship.make_snapshot(), "factions": game.factions.make_snapshot(), "fates": game.fates.make_snapshot(), "party": game.party.make_snapshot(), "crew": game.crew.make_snapshot(), "deep_rifts": game.deep_rifts.make_snapshot(), "ng_plus": game.ng_plus
 		},
 		"magic": game.selected_spell_id
 	}
@@ -128,6 +128,7 @@ static func apply(game: SkywardGame, data: Dictionary) -> bool:
 	game.factions.restore_snapshot(world_data.get("factions", {}))
 	game.fates.restore_snapshot(world_data.get("fates", {}))
 	game.party.restore_snapshot(world_data.get("party", {}))
+	game.crew.restore_snapshot(world_data.get("crew", {}))
 	game.deep_rifts.restore_snapshot(world_data.get("deep_rifts", {}))
 	game.ng_plus = maxi(0, int(world_data.get("ng_plus", 0)))
 	game.party.ensure_follower()
@@ -198,6 +199,9 @@ static func _apply_player(player: PlayerCharacter, character: Dictionary) -> voi
 	player.bag_order = (order as Array).duplicate() if order is Array else []
 	player.talents = character.get("talents", {}).duplicate(true)
 	player.fish_log = (character.get("fish_log", {}) as Dictionary).duplicate(true) if character.get("fish_log", {}) is Dictionary else {}
+	player.skills_need_learning = bool(character.get("skills_need_learning", false))
+	var learned: Variant = character.get("learned_skills", {})
+	player.learned_skills = (learned as Dictionary).duplicate() if learned is Dictionary else {}
 	var slots: Variant = character.get("skill_slots", [])
 	if slots is Array and not (slots as Array).is_empty():
 		player.skill_slots = (slots as Array).duplicate()

@@ -30,7 +30,11 @@ func lock_reason(skill_id: String) -> String:
 	if data.is_empty():
 		return "Пусто"
 	if is_spell(skill_id):
-		return "" if game.magic_unlocked() else "Магия спит"
+		if not game.magic_unlocked():
+			return "Магия спит"
+		return "" if game.player.knows(skill_id) else "Не изучено"
+	if not game.player.knows(skill_id):
+		return "Не изучено"
 	var needed := int(data.get("level", 1))
 	if game.player.level < needed:
 		return "Ур. %d" % needed

@@ -292,8 +292,13 @@ func spend_mana(amount: int) -> bool:
 static func xp_for_level(level_now: int) -> int:
 	return int(round(60.0 + 45.0 * pow(float(maxi(1, level_now) - 1), 1.55)))
 
+## For companions' share of the experience.
+signal experience_gained(amount: int)
+
 func add_experience(amount: int) -> void:
 	experience += amount
+	if amount > 0:
+		experience_gained.emit(amount)
 	while experience >= experience_to_next:
 		experience -= experience_to_next
 		level += 1
@@ -625,10 +630,31 @@ var fish_log: Dictionary = {}
 static func skill_catalog() -> Dictionary:
 	return GameCatalogs.shared().skills
 
-## Passives switch on by themselves when the hero reaches their level.
+## Owner's list №29–30: in a story game skills and passives are learned from
+## trainers (data/trainers.json); at first the hero only swings the weapon.
+## Free play and saves from before keep everything open by level.
+var skills_need_learning: bool = false
+var learned_skills: Dictionary = {}
+
+func knows(skill_id: String) -> bool:
+	return not skills_need_learning or learned_skills.has(skill_id)
+
+## Learns an active skill or passive; a new active goes to a free bar slot.
+func learn_skill(skill_id: String) -> bool:
+	if learned_skills.has(skill_id):
+		return false
+	learned_skills[skill_id] = true
+	if skill_catalog().get("active", {}).has(skill_id) and not bool(skill_catalog()["active"][skill_id].get("spell", false)) and not skill_slots.has(skill_id):
+		var free := skill_slots.find("")
+		if free >= 0:
+			skill_slots[free] = skill_id
+	stats_changed.emit()
+	return true
+
+## Passives work once learned and the hero has their level.
 func has_passive(passive_id: String) -> bool:
 	var definition: Dictionary = skill_catalog().get("passive", {}).get(passive_id, {})
-	return not definition.is_empty() and level >= int(definition.get("level", 1))
+	return not definition.is_empty() and level >= int(definition.get("level", 1)) and knows(passive_id)
 
 ## Chance (0..1) that a sword hit deals double damage.
 func get_crit_chance() -> float:

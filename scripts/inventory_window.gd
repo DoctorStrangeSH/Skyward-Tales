@@ -30,6 +30,8 @@ var tab: String = "gear"
 var tab_buttons: Dictionary = {}
 var gear_page: HBoxContainer
 var skills_view: SkillsPage
+## «Отряд»: companions' level, skills, gear and tactics (owner's list №19).
+var party_view: PartyPage
 ## The five EquipSlot buttons live here (positioned around the hero).
 var equipment_list: Control
 var slot_buttons: Dictionary = {}
@@ -74,7 +76,7 @@ func _ready() -> void:
 	var title := _label("ГЕРОЙ", 14, Color(1.0, 0.88, 0.56))
 	title.custom_minimum_size = Vector2(70, 0)
 	top.add_child(title)
-	for entry in [["gear", "Снаряжение"], ["skills", "Навыки"]]:
+	for entry in [["gear", "Снаряжение"], ["skills", "Навыки"], ["party", "Отряд"]]:
 		var button := Button.new()
 		button.text = entry[1]
 		button.toggle_mode = true
@@ -104,6 +106,13 @@ func _ready() -> void:
 	skills_view.assign_requested.connect(func(index: int, skill_id: String) -> void: assign_requested.emit(index, skill_id))
 	skills_view.detail_changed.connect(func(text: String) -> void: detail.text = text)
 	contents.add_child(skills_view)
+	party_view = PartyPage.new()
+	party_view.visible = false
+	party_view.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	party_view.changed.connect(func() -> void:
+		if _player != null:
+			_player.stats_changed.emit())
+	contents.add_child(party_view)
 	detail = _label("", 9, Color(0.86, 0.9, 0.95))
 	detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	detail.custom_minimum_size = Vector2(596, 26)
@@ -246,9 +255,12 @@ func show_tab(tab_id: String) -> void:
 		(tab_buttons[id] as Button).button_pressed = id == tab
 	gear_page.visible = tab == "gear"
 	skills_view.visible = tab == "skills"
-	detail.text = HINT if tab == "gear" else ""
+	party_view.visible = tab == "party"
+	detail.text = HINT if tab == "gear" else ("Компаньоны растут вместе с вами: очки навыков — за уровни, вещи — из вашей сумки." if tab == "party" else "")
 	if tab == "skills" and _player != null:
 		skills_view.populate(_player, _skills)
+	if tab == "party" and _skills != null:
+		party_view.populate(_skills.game.crew)
 
 func set_skills(skills: CombatSkills) -> void:
 	_skills = skills
@@ -268,6 +280,8 @@ func populate(player: PlayerCharacter, filter_index: int, sort_index: int, prefe
 		(tab_buttons[id] as Button).button_pressed = id == tab
 	if tab == "skills":
 		skills_view.populate(player, _skills)
+	if tab == "party" and _skills != null:
+		party_view.populate(_skills.game.crew)
 	_populate_doll(player)
 	for child in item_list.get_children():
 		item_list.remove_child(child)

@@ -424,6 +424,12 @@ func close_world_map() -> void:
 	world_map_view.visible = false
 	get_tree().paused = false
 
+## Opens the hero window on «Отряд».
+func open_party_page(player: PlayerCharacter) -> void:
+	if not inventory_open:
+		toggle_inventory(player)
+	inventory_view.show_tab("party")
+
 func toggle_inventory(player: PlayerCharacter) -> void:
 	inventory_open = not inventory_open
 	inventory_panel.visible = inventory_open

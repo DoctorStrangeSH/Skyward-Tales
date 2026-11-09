@@ -85,7 +85,8 @@ func ensure_follower() -> void:
 	game.add_child(_follower)
 	_follower.add_to_group("interactables")
 	_follower.global_position = game.player.global_position + _follower.follow_offset
-	_follower.interacted.connect(func(_source: Node2D) -> void: _talk_follower())
+	_follower.interacted.connect(func(_source: Node2D) -> void: game.crew.talk(extra))
+	game.crew.apply(extra)
 
 func follower() -> Companion:
 	return _follower if _follower != null and is_instance_valid(_follower) else null
@@ -99,11 +100,13 @@ func _talk_follower() -> void:
 		{"id": "party_dismiss", "label": "Отпустить на свой пост"},
 		{"id": "party_later", "label": "Идём дальше"}])
 
-## Mira's first aid after her quest.
+## Mira's first aid after her quest (and every companion's level and gear).
 func apply_mira() -> void:
 	if game.companion != null and is_instance_valid(game.companion) and game.director.has_flag(MIRA_FLAG):
 		game.companion.heal_amount = 35
 		game.companion.heal_cooldown = 18.0
+	if game.crew != null:
+		game.crew.apply_all()
 
 # --- Mira's quest ---------------------------------------------------------------
 

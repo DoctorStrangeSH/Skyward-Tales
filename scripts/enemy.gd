@@ -51,6 +51,21 @@ var combat_feedback: EnemyCombatFeedback
 var invulnerable: bool = false
 ## Spirits and casters hit with magic: the hero's magic defence counts.
 var magic_attacks: bool = false
+## A companion who shot this foe may draw it away from the hero for a while
+## (owner's list №18).
+var taunt: Node2D = null
+var taunt_left: float = 0.0
+
+func provoke(by: Node2D) -> void:
+	if by == null or not is_instance_valid(by) or bool(by.call("is_down")):
+		return
+	# A foe already biting the hero keeps at it most of the time.
+	var hero := get_tree().get_first_node_in_group("player") as Node2D
+	if hero != null and global_position.distance_to(hero.global_position) <= attack_range + 6.0 and randf() < 0.7:
+		return
+	taunt = by
+	taunt_left = 5.0
+	brain_state = BrainState.CHASE
 
 func _ready() -> void:
 	add_to_group("enemies")
@@ -203,6 +218,12 @@ func _physics_process(delta: float) -> void:
 		velocity = Vector2.ZERO
 		visual.set_moving(false)
 		return
+	taunt_left = maxf(0.0, taunt_left - delta)
+	if taunt != null:
+		if taunt_left <= 0.0 or not is_instance_valid(taunt) or bool(taunt.call("is_down")):
+			taunt = null
+		else:
+			player = taunt
 	var offset: Vector2 = player.global_position - global_position
 	var distance_to_player: float = offset.length()
 	_choose_state(distance_to_player)

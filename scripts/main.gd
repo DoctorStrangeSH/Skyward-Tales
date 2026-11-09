@@ -109,6 +109,10 @@ var input_handler: GameInput = GameInput.new(self)
 var factions: Factions
 var fates: IslandFates
 var party: Party
+## Skill trainers (owner's list №29–30).
+var trainers: Trainers
+## Companions' levels, skills, gear, tactics and talk (owner's list №18–21).
+var crew: Crew
 var deep_rifts: DeepRifts
 var achievements: Achievements
 var lore: LoreBook = LoreBook.new()
@@ -158,6 +162,8 @@ func _ready() -> void:
 		_clear_quest_items(quest_id)
 		if quest_id == "main_guardian" and director != null and director.story_mode() and not director.has_flag("magic_unlocked"):
 			director.set_flag("magic_unlocked")
+			# Awakened magic knows one spell; the others are taught.
+			player.learn_skill("fireball")
 			_place_spell_on_hotbar("fireball")
 			hud.show_message("Илара пробудила в вас магию неба! Огненный шар — на панели навыков, ПКМ — заклинание. C — навыки.", 5.0)
 			_update_spell_hud()
@@ -208,6 +214,8 @@ func _ready() -> void:
 	factions = Factions.new(self)
 	fates = IslandFates.new(self)
 	party = Party.new(self)
+	trainers = Trainers.new(self)
+	crew = Crew.new(self)
 	buildings = VillageBuildings.new(self)
 	guild = AdventurersGuild.new(self)
 	expeditions = Expeditions.new()
@@ -263,6 +271,7 @@ func _ready() -> void:
 	add_child(player)
 	player.global_position = GameSaveState.DEFAULT_PLAYER_POSITION
 	player.stats_changed.connect(_refresh_hud)
+	player.experience_gained.connect(func(amount: int) -> void: crew.on_hero_experience(amount))
 	player.level_up.connect(_on_level_up)
 	player.died.connect(_on_player_died)
 	player.charge_cancelled.connect(func() -> void: combat.cancel_charge())
@@ -335,6 +344,10 @@ func _ready() -> void:
 		var hero: Dictionary = get_tree().get_meta("skyward_new_hero")
 		get_tree().remove_meta("skyward_new_hero")
 		start_new_story(str(hero.get("name", "")), str(hero.get("gender", "m")))
+		# Only the weapon at first: skills are learned from trainers.
+		player.skills_need_learning = true
+		player.learned_skills = {}
+		player.skill_slots = ["", "", "", ""]
 		# A new adventure starts with a sword and a plank shield; magic comes later.
 		player.add_item("traveler_sword")
 		player.equip_item("traveler_sword")
@@ -659,6 +672,7 @@ func ensure_companion() -> void:
 	companion.global_position = player.global_position + Companion.FOLLOW_OFFSET
 	companion.interacted.connect(_on_cartographer_interacted)
 	director.set_flag("mira_companion")
+	crew.apply("cartographer")
 
 func _place_companion() -> void:
 	if companion != null and is_instance_valid(companion):
@@ -1095,8 +1109,14 @@ func _on_elder_interacted(_source: Node2D) -> void:
 		dialogues.on_elder()
 
 func _on_cartographer_interacted(_source: Node2D) -> void:
-	if not director.try_talk("cartographer") and not party.talk("cartographer"):
-		dialogues.on_cartographer()
+	if director.try_talk("cartographer") or party.talk("cartographer"):
+		return
+	# Mira on the road: quest business first, otherwise her own menu
+	# (owner's list №21).
+	if companion != null and is_instance_valid(companion) and dialogues.marker_for("cartographer").is_empty():
+		crew.talk("cartographer")
+		return
+	dialogues.on_cartographer()
 
 func _on_grove_warden_interacted(_source: Node2D) -> void:
 	if not director.try_talk("grove_warden"):
@@ -1164,6 +1184,10 @@ func _on_dialogue_choice_selected(choice_id: String) -> void:
 	if choice_id == "knock_leave":
 		hud.close_dialogue()
 		player.set_physics_process(true)
+		return
+	if choice_id.begins_with("train_") and trainers.handle_choice(choice_id):
+		return
+	if choice_id.begins_with("crew_") and crew.handle_choice(choice_id):
 		return
 	dialogues.handle_choice(choice_id)
 
@@ -1682,7 +1706,29 @@ func _living_enemies() -> Array:
 
 ## One sword blow: crit roll, lifesteal, knockback.
 func _strike(enemy: SlimeEnemy, damage: int, push_direction: Vector2, push: float) -> void:
+	note_hero_target(enemy)
 	combat._strike(enemy, damage, push_direction, push)
+
+## The foe the hero fights: companions on «Защищать» help with it.
+var hero_target: Node2D = null
+var _hero_target_until: int = 0
+
+func note_hero_target(enemy: Node) -> void:
+	if enemy is Node2D:
+		hero_target = enemy
+		_hero_target_until = Time.get_ticks_msec() + 6000
+
+func hero_target_fresh() -> bool:
+	return is_instance_valid(hero_target) and Time.get_ticks_msec() < _hero_target_until
+
+## A companion's arrow: plain damage and a push, no hero bonuses.
+func crew_strike(enemy: SlimeEnemy, damage: int, push_direction: Vector2, shooter: Node2D) -> void:
+	if enemy == null or not is_instance_valid(enemy):
+		return
+	enemy.apply_knockback(push_direction, 60.0)
+	enemy.take_damage(damage)
+	if is_instance_valid(enemy) and not enemy.is_queued_for_deletion():
+		enemy.provoke(shooter)
 
 ## Damages enemies within reach and the arc (degrees); returns how many.
 func _melee_hit(origin: Vector2, direction: Vector2, reach: float, arc: float, damage: int, push: float) -> int:

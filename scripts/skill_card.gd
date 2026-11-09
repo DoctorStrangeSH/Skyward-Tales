@@ -34,7 +34,7 @@ func setup(id: String, data: Dictionary, lock_reason: String, on_bar: bool) -> v
 	text.add_child(UiStyle.label(str(data.get("name", id)), 9, UiStyle.TEXT if locked.is_empty() else UiStyle.MUTED))
 	var info := ""
 	if not locked.is_empty():
-		info = ("откроется на ур. " + locked.trim_prefix("Ур. ")) if locked.begins_with("Ур.") else locked.to_lower()
+		info = ("откроется на ур. " + locked.trim_prefix("Ур. ")) if locked.begins_with("Ур.") else (locked if locked.begins_with("Учит") or locked.begins_with("Придёт") else locked.to_lower())
 	elif CombatSkills.is_spell(id):
 		info = "заклинание"
 	else:
