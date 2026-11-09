@@ -11,6 +11,14 @@ class_name StoryScene
 ##   {"speaker", "text", "choice": [{"label", "flag"?, "steps": [...]}]} — the
 ##     hero answers; the chosen branch plays next (E picks the first answer).
 ## A scene may have a "title" shown as a title card when it starts.
+## Scenes on the engine (stage 20): "cinematic": true puts black bars on
+## the screen while the scene runs, and steps can move the camera:
+##   {"effect": "camera", "to": [x, y], "zoom": 1.25, "time": 1.2} — glides to
+##     a world point (and zooms in by that factor);
+##   {"effect": "camera_back", "time": 0.8} — back to the hero;
+##   {"effect": "fade", "to": 1.0|0.0, "time": 0.6} — darkens the world;
+##   {"effect": "shake", "power": 4, "time": 0.6}.
+## Whatever a scene does to the camera, its end puts everything back.
 
 const DATA_PATH := "res://data/dialogues.json"
 const NARRATOR := "—"
@@ -72,6 +80,8 @@ func play(id: String, on_finished: Callable = Callable()) -> bool:
 	game.player.set_physics_process(false)
 	if scene.has("title"):
 		game.hud.show_title_card(str(scene["title"]))
+	if bool(scene.get("cinematic", false)):
+		game.hud.set_letterbox(true)
 	advance()
 	return true
 
@@ -139,6 +149,11 @@ func _finish() -> void:
 	scene_id = ""
 	game.hud.close_dialogue()
 	game.player.set_physics_process(true)
+	_restore_camera(0.6)
+	if game.hud.letterbox_on():
+		game.hud.set_letterbox(false)
+	if game.hud.fade_rect != null and is_instance_valid(game.hud.fade_rect) and game.hud.fade_rect.modulate.a > 0.0:
+		game.hud.fade_world(0.0, 0.5)
 	var callback := _on_finished
 	_on_finished = Callable()
 	if callback.is_valid():
@@ -172,3 +187,45 @@ func _run_effect(step: Dictionary) -> void:
 			game.ensure_companion()
 		"title":
 			game.hud.show_title_card(StoryText.format(str(step.get("text", ""))), 4.0)
+		"camera":
+			# No "to": the camera stays on the hero and only zooms.
+			var offset := game.cinema_offset
+			if step.get("to", null) is Array:
+				var to: Array = step["to"]
+				offset = Vector2(float(to[0]), float(to[1])) - game.player.global_position
+			_move_camera(offset, float(step.get("zoom", 1.0)), float(step.get("time", 1.0)))
+		"camera_back":
+			_restore_camera(float(step.get("time", 0.8)))
+		"fade":
+			game.hud.fade_world(float(step.get("to", 1.0)), float(step.get("time", 0.6)))
+		"shake":
+			game.shake(float(step.get("power", 4.0)), float(step.get("time", 0.6)))
+
+## The hero camera's zoom before a scene touched it.
+var _base_zoom := Vector2.ZERO
+var _camera_tween: Tween
+
+func _move_camera(offset: Vector2, zoom_factor: float, time: float) -> void:
+	var camera := game.hero_camera()
+	if camera == null:
+		return
+	if _base_zoom == Vector2.ZERO:
+		_base_zoom = camera.zoom
+	if _camera_tween != null and _camera_tween.is_valid():
+		_camera_tween.kill()
+	_camera_tween = game.create_tween().set_parallel(true).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_camera_tween.tween_property(game, "cinema_offset", offset, maxf(0.01, time))
+	_camera_tween.tween_property(camera, "zoom", _base_zoom * zoom_factor, maxf(0.01, time))
+
+func _restore_camera(time: float) -> void:
+	if _base_zoom == Vector2.ZERO and game.cinema_offset == Vector2.ZERO:
+		return
+	var camera := game.hero_camera()
+	if camera == null:
+		game.cinema_offset = Vector2.ZERO
+		return
+	_move_camera(Vector2.ZERO, 1.0, time)
+	var base := _base_zoom
+	_base_zoom = Vector2.ZERO
+	_camera_tween.chain().tween_callback(func() -> void:
+		camera.zoom = base)

@@ -551,6 +551,12 @@
    32
   ]
  },
+ "icons/skill_ball_lightning.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/skill_blade_wave.png": {
   "size": [
    16,
@@ -575,6 +581,12 @@
    16
   ]
  },
+ "icons/skill_fire_wave.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/skill_fireball.png": {
   "size": [
    16,
@@ -594,6 +606,12 @@
   ]
  },
  "icons/skill_guardian_oath.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/skill_ice_wall.png": {
   "size": [
    16,
    16

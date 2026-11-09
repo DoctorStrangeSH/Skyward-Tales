@@ -356,7 +356,7 @@ func get_spell_power_multiplier(spell_id: String = "") -> float:
 	var gear := 1.0 + 0.01 * float(_equipped_stat("spell_pct") + element_pct(spell_id))
 	return (1.0 + 0.02 * float(get_stat("power"))) * gear * (1.0 + buff_value("power"))
 
-const ELEMENT_STATS := {"fireball": "fire_pct", "meteor": "fire_pct", "frostbolt": "frost_pct", "chain_lightning": "storm_pct"}
+const ELEMENT_STATS := {"fireball": "fire_pct", "meteor": "fire_pct", "frostbolt": "frost_pct", "chain_lightning": "storm_pct", "fire_wave": "fire_pct", "ice_wall": "frost_pct", "ball_lightning": "storm_pct"}
 
 ## % bonus of the spell's element from gear.
 func element_pct(spell_id: String) -> int:

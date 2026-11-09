@@ -56,7 +56,7 @@ static func stat_lines(player: PlayerCharacter, item_id: String) -> Array[String
 	var spells: Variant = definition.get("spell_bonus", {})
 	if spells is Dictionary:
 		for spell in spells:
-			var label: String = "всем заклинаниям" if str(spell) == "*" else {"fireball": "огненному шару", "frostbolt": "ледяной стреле", "chain_lightning": "цепной молнии"}.get(str(spell), str(spell))
+			var label: String = "всем заклинаниям" if str(spell) == "*" else {"fireball": "огненному шару", "frostbolt": "ледяной стреле", "chain_lightning": "цепной молнии", "fire_wave": "огненной волне", "ice_wall": "ледяной стене", "ball_lightning": "шаровой молнии"}.get(str(spell), str(spell))
 			lines.append("+%d урона %s" % [int(spells[spell]), label])
 	for extra in [["burn_damage_bonus", "+%d к урону горения"], ["chain_targets_bonus", "+%d прыжка молнии"]]:
 		if int(definition.get(extra[0], 0)) != 0:

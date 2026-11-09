@@ -451,6 +451,30 @@ def skill_icon(kind: str) -> Canvas:
             for x, y in ((9, 2), (8, 3), (7, 4), (6, 5), (7, 6), (8, 6), (9, 6), (8, 7), (7, 8), (6, 9), (7, 10), (8, 10), (7, 11), (6, 12), (5, 13)):
                 c.put(x, y, colors[0])
                 c.put(x + 1, y, colors[1])
+    elif kind in ("fire_wave", "ice_wall", "ball_lightning"):
+        # Stage 20 spells: a fan of flame, a wall of ice, a crackling orb.
+        _sky_bg(c, ramp("#40384e", "#2a2438", "#18141f"))
+        if kind == "fire_wave":
+            flame = ramp("#ffe066", "#ff7a2c", "#c8402e")
+            for row, (a, b) in enumerate([(6, 9), (4, 11), (3, 12), (3, 12)]):
+                for x in range(a, b + 1):
+                    c.put(x, 4 + row * 2, flame[0] if (x + row) % 3 == 0 else flame[1])
+                    c.put(x, 5 + row * 2, flame[1] if (x + row) % 2 == 0 else flame[2])
+            c.put(7, 13, flame[2]); c.put(8, 13, flame[2])
+        elif kind == "ice_wall":
+            ice = ramp("#f0fcff", "#8ad0f8", "#3a78c0")
+            for bx in (2, 6, 10):
+                for y in range(5, 13):
+                    for x in range(bx, bx + 4):
+                        c.put(x, y - (1 if bx == 6 else 0), ice[0] if x == bx else (ice[1] if y < 9 else ice[2]))
+            c.put(7, 3, ice[0]); c.put(3, 4, ice[1]); c.put(12, 4, ice[1])
+        else:
+            orb = ramp("#ffffff", "#c8a8ff", "#6a4ad8")
+            c.ellipse(8, 8, 4.0, 4.0, orb[2])
+            c.ellipse(8, 8, 2.8, 2.8, orb[1])
+            c.ellipse(7.5, 7.5, 1.3, 1.3, orb[0])
+            for x, y in ((2, 4), (3, 5), (13, 3), (12, 4), (2, 12), (3, 11), (13, 12), (12, 11), (8, 1), (8, 14)):
+                c.put(x, y, orb[0])
     # Passives: a square frame instead of a round badge.
     elif kind in PASSIVE_SYMBOLS:
         frame = ramp("#e8d8b0", "#6a5038", "#3a2a20")

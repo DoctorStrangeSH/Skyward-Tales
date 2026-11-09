@@ -22,7 +22,7 @@ const REACTIONS := {
 	"shatter": {"name": "Раскол", "recipe": "Меч по замедленному или оглушённому", "text": "Удар раскалывает лёд: +60% урона."},
 	"conduct": {"name": "Проводник", "recipe": "Меч по наэлектризованному", "text": "Удар перескакивает разрядом ещё на двух врагов."},
 }
-const ELEMENT_OF := {"fireball": "fire", "frostbolt": "ice", "chain_lightning": "lightning"}
+const ELEMENT_OF := {"fireball": "fire", "frostbolt": "ice", "chain_lightning": "lightning", "fire_wave": "fire", "ice_wall": "ice", "ball_lightning": "lightning"}
 const ELEMENT_NAMES := {"fire": "огонь", "ice": "лёд", "lightning": "молния"}
 const ELEMENT_COLORS := {"fire": Color(1.0, 0.6, 0.35), "ice": Color(0.6, 0.85, 1.0), "lightning": Color(0.85, 0.75, 1.0)}
 

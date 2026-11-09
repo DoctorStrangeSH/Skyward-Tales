@@ -308,6 +308,15 @@ func _cast_spell() -> void:
 	var direction := (game.get_global_mouse_position() - game.player.global_position).normalized()
 	if direction.length_squared() < 0.01:
 		direction = game.player.facing
+	if spell.has("form"):
+		# Stage 20: a wave, a wall or an orb instead of a bolt.
+		SpellForms.cast(game, game.selected_spell_id, spell, direction, spell_damage)
+		game.player.play_cast(direction)
+		GameAudio.play({"fire": "cast_fire", "ice": "cast_ice", "lightning": "cast_lightning"}.get(str(spell.get("school", "fire")), "cast_fire"), -4.0)
+		game.cast_cooldown_total = float(spell.get("cooldown", 0.25)) * game.player.get_cooldown_multiplier()
+		game.cast_cooldown_remaining = game.cast_cooldown_total
+		game._update_spell_hud()
+		return
 	var bolt := SkywardGame.BOLT_SCENE.instantiate() as MagicBolt
 	if bolt == null:
 		push_error("Не удалось создать снаряд заклинания")

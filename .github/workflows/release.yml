@@ -48,11 +48,24 @@ jobs:
             godot --headless --path . --editor --import --quit
             godot --headless --path . --export-release "Windows Desktop" build/windows/SkywardTales.exe
             godot --headless --path . --export-release "Linux" build/linux/SkywardTales.x86_64
+            # The stock template, to check below that the game icon replaced Godot'"'"'s.
+            find / -name "windows_release_x86_64.exe" -path "*export_templates*" 2>/dev/null | head -1 | xargs -r -I{} cp {} build/stock_template.exe
           '
           sudo chown -R "$USER" build .godot
           ls -la build/windows build/linux
           test -s build/windows/SkywardTales.exe
           test -s build/linux/SkywardTales.x86_64
+
+      - name: The game icon is inside the .exe
+        run: |
+          sudo apt-get install -y -qq icoutils > /dev/null
+          wrestool -x -t14 build/windows/SkywardTales.exe > game_icon.ico
+          test -s game_icon.ico
+          if [ -s build/stock_template.exe ]; then
+            wrestool -x -t14 build/stock_template.exe > stock_icon.ico || true
+            if cmp -s game_icon.ico stock_icon.ico; then echo "The .exe still has Godot's icon"; exit 1; fi
+          fi
+          rm -f build/stock_template.exe game_icon.ico stock_icon.ico
 
       - name: Smoke-run the exported Linux build
         run: |

@@ -406,6 +406,52 @@ SCENES["ending_lower"] = {"steps": [
 ]}
 
 
+def add_cinema(scenes: dict) -> None:
+    """Stage 20: key scenes on the engine — black bars, the camera, fades."""
+    def cam(**k):
+        return dict(effect="camera", **k)
+
+    def at(name, prefix):
+        for i, step in enumerate(scenes[name]["steps"]):
+            if str(step.get("text", "")).startswith(prefix):
+                return i
+        raise SystemExit(f"{name}: no line «{prefix}»")
+
+    def before(name, prefix, *new):
+        i = at(name, prefix)
+        scenes[name]["steps"][i:i] = list(new)
+
+    def first(name, key, value):
+        return [i for i, s in enumerate(scenes[name]["steps"]) if s.get(key) == value][0]
+
+    for name in ["prologue", "guardian_freed", "act1_finale", "island_arrival", "vail_confront", "vail_falls",
+                 "core_confront", "voice_falls", "ending_restore", "ending_lower"]:
+        scenes[name]["cinematic"] = True
+    # Prologue: the camera follows the falling star.
+    st = scenes["prologue"]["steps"]
+    i = first("prologue", "effect", "meteor")
+    st[i:i + 1] = [cam(to=[895, 178], zoom=0.8, time=1.4), st[i], FX("shake", power=5, time=0.8)]
+    before("prologue", "Старейшина появился", FX("camera_back", time=1.0))
+    scenes["guardian_freed"]["steps"].insert(1, cam(zoom=1.3, time=1.0))
+    before("guardian_freed", "Дух улыбнулся", FX("camera_back", time=1.2))
+    scenes["act1_finale"]["steps"].insert(0, cam(zoom=1.25, time=1.2))
+    before("act1_finale", "Алтарь вспыхнул", FX("shake", power=3, time=0.6))
+    before("act1_finale", "А над Подоблачьем", FX("camera_back", time=1.0), FX("fade", to=0.55, time=1.2))
+    # Act II: a wide look at the white city first.
+    scenes["island_arrival"]["steps"].insert(1, cam(zoom=0.8, time=1.6))
+    scenes["island_arrival"]["steps"].insert(first("island_arrival", "speaker", "cartographer"), FX("camera_back", time=1.0))
+    scenes["vail_confront"]["steps"].insert(0, cam(zoom=1.3, time=1.4))
+    i = first("vail_confront", "effect", "flash")
+    scenes["vail_confront"]["steps"][i + 1:i + 1] = [FX("shake", power=4, time=0.7), FX("camera_back", time=0.6)]
+    scenes["vail_falls"]["steps"].insert(0, cam(zoom=1.25, time=1.2))
+    before("vail_falls", "Над Расколотым островом", FX("camera_back", time=1.0), FX("fade", to=0.6, time=1.4))
+    scenes["core_confront"]["steps"][1:1] = [FX("shake", power=5, time=0.9), cam(zoom=0.85, time=1.2)]
+    scenes["voice_falls"]["steps"].insert(first("voice_falls", "effect", "flash") + 1, cam(zoom=1.3, time=1.4))
+    for name in ["ending_restore", "ending_lower"]:
+        st = scenes[name]["steps"]
+        st.insert(len(st) - 1, FX("fade", to=0.5, time=1.6))
+
+
 def main() -> int:
     path = ROOT / "data" / "dialogues.json"
     data = json.loads(path.read_text(encoding="utf-8"))
@@ -414,7 +460,9 @@ def main() -> int:
     if missing or extra:
         print("scene mismatch: missing", missing, "extra", extra)
         return 1
-    for scene_id, scene in SCENES.items():
+    scenes = json.loads(json.dumps(SCENES))
+    add_cinema(scenes)
+    for scene_id, scene in scenes.items():
         data["scenes"][scene_id] = scene
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     words = sum(len(str(s.get("text", "")).split()) for sc in SCENES.values() for s in sc["steps"])

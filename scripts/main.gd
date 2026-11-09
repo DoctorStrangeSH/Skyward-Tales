@@ -433,16 +433,22 @@ func shake(strength: float, duration: float) -> void:
 		_shake_duration = duration
 		_shake_time = duration
 
+## Where a story scene points the camera (stage 20), relative to the hero.
+var cinema_offset := Vector2.ZERO
+
+func hero_camera() -> Camera2D:
+	return player.get_node_or_null("Camera2D") as Camera2D if player != null else null
+
 func _update_shake(delta: float) -> void:
-	var camera := player.get_node_or_null("Camera2D") as Camera2D if player != null else null
+	var camera := hero_camera()
 	if camera == null:
 		return
 	if _shake_time <= 0.0:
-		camera.offset = Vector2.ZERO
+		camera.offset = cinema_offset.round()
 		return
 	_shake_time = maxf(0.0, _shake_time - delta)
 	var power := _shake_strength * (_shake_time / maxf(0.01, _shake_duration))
-	camera.offset = Vector2(randf_range(-power, power), randf_range(-power, power)).round()
+	camera.offset = (cinema_offset + Vector2(randf_range(-power, power), randf_range(-power, power))).round()
 
 func _process(delta: float) -> void:
 	_session_time += delta

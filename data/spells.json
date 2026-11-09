@@ -32,5 +32,48 @@
     "chain_targets": 2,
     "chain_radius": 150,
     "chain_damage_factor": 0.7
+  },
+  "fire_wave": {
+    "name": "Огненная волна",
+    "description": "Веер пламени перед героиней: бьёт всех врагов в дуге 110° на 96 px, отбрасывает и поджигает на 2,5 с.",
+    "mana_cost": 20,
+    "damage": 20,
+    "cooldown": 1.6,
+    "school": "fire",
+    "form": "wave",
+    "radius": 96,
+    "arc": 110,
+    "burn_damage": 3,
+    "burn_duration": 2.5
+  },
+  "ice_wall": {
+    "name": "Ледяная стена",
+    "description": "Пять ледяных глыб поперёк прицела на 6 с: враги не проходят и замедляются у льда. Враг на месте глыбы вмерзает. В конце стена раскалывается и ранит всех рядом.",
+    "mana_cost": 22,
+    "damage": 16,
+    "cooldown": 4.0,
+    "school": "ice",
+    "form": "wall",
+    "blocks": 5,
+    "block_size": 14,
+    "distance": 50,
+    "duration": 6.0,
+    "slow_multiplier": 0.45,
+    "slow_duration": 1.5
+  },
+  "ball_lightning": {
+    "name": "Шаровая молния",
+    "description": "Медленный шар молнии летит 3,2 с и каждые 0,35 с бьёт разрядом двух ближайших врагов в радиусе 56 px, электризуя их.",
+    "mana_cost": 24,
+    "damage": 7,
+    "projectile_speed": 70,
+    "cooldown": 2.5,
+    "school": "lightning",
+    "form": "orb",
+    "duration": 3.2,
+    "zap_radius": 56,
+    "zap_targets": 2,
+    "zap_interval": 0.35
   }
 }
+

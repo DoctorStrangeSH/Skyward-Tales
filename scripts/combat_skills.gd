@@ -32,7 +32,12 @@ func lock_reason(skill_id: String) -> String:
 	if is_spell(skill_id):
 		if not game.magic_unlocked():
 			return "Магия спит"
-		return "" if game.player.knows(skill_id) else "Не изучено"
+		if not game.player.knows(skill_id):
+			return "Не изучено"
+		# Form spells (stage 20) also wait for the hero's level.
+		if game.spell_definitions.get(skill_id, {}).has("form") and game.player.level < int(data.get("level", 1)):
+			return "Ур. %d" % int(data.get("level", 1))
+		return ""
 	if not game.player.knows(skill_id):
 		return "Не изучено"
 	var needed := int(data.get("level", 1))

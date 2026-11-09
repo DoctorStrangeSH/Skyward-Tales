@@ -781,6 +781,54 @@ func show_title_card(text: String, duration: float = 3.0) -> void:
 	title_card = card
 
 ## Full-screen colour that fades away (screen flashes, fade from black).
+## Story scenes on the engine (stage 20): black bars top and bottom.
+var letterbox_bars: Array[ColorRect] = []
+var fade_rect: ColorRect
+const LETTERBOX := 30.0
+
+func set_letterbox(on: bool, time: float = 0.45) -> void:
+	if letterbox_bars.is_empty():
+		for top in [true, false]:
+			var bar := ColorRect.new()
+			bar.color = Color(0.02, 0.02, 0.04)
+			bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			bar.size = Vector2(640, LETTERBOX)
+			bar.position = Vector2(0, -LETTERBOX if top else 360)
+			bar.set_meta("top", top)
+			dialogue_panel.get_parent().add_child(bar)
+			dialogue_panel.get_parent().move_child(bar, 0)
+			letterbox_bars.append(bar)
+	# The game's own panels step aside while a scene plays.
+	for panel in [vitals, minimap, quest_tracker, action_bar]:
+		if panel != null and is_instance_valid(panel):
+			(panel as CanvasItem).create_tween().tween_property(panel, "modulate:a", 0.0 if on else 1.0, maxf(0.01, time))
+	for bar in letterbox_bars:
+		var top := bool(bar.get_meta("top"))
+		var target := (0.0 if on else -LETTERBOX) if top else (360.0 - LETTERBOX if on else 360.0)
+		if time <= 0.0:
+			bar.position.y = target
+		else:
+			bar.create_tween().tween_property(bar, "position:y", target, time).set_trans(Tween.TRANS_SINE)
+
+func letterbox_on() -> bool:
+	return not letterbox_bars.is_empty() and letterbox_bars[0].position.y > -LETTERBOX * 0.5
+
+## Fades the world to a colour (alpha 1) or back (alpha 0); the dialogue box
+## stays on top.
+func fade_world(alpha: float, time: float = 0.6, color: Color = Color(0.01, 0.01, 0.03)) -> void:
+	if fade_rect == null or not is_instance_valid(fade_rect):
+		fade_rect = ColorRect.new()
+		fade_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		fade_rect.size = Vector2(640, 360)
+		fade_rect.modulate.a = 0.0
+		dialogue_panel.get_parent().add_child(fade_rect)
+		dialogue_panel.get_parent().move_child(fade_rect, 0)
+	fade_rect.color = color
+	if time <= 0.0:
+		fade_rect.modulate.a = alpha
+	else:
+		fade_rect.create_tween().tween_property(fade_rect, "modulate:a", alpha, time)
+
 func flash_screen(color: Color, duration: float = 0.4) -> void:
 	var rect := ColorRect.new()
 	rect.color = color
