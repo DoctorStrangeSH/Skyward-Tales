@@ -339,7 +339,7 @@ func _update_special_attack(delta: float, player: Node2D) -> bool:
 		visual.set_direction_vector(attack_direction)
 		visual.set_moving(true)
 		move_and_slide()
-		if not attack_has_hit and player.has_method("take_damage") and global_position.distance_to(player.global_position) <= attack_hit_radius:
+		if not attack_has_hit and _can_hit_lunge_target(player):
 			player.take_damage(attack_damage, self)
 			attack_has_hit = true
 		attack_timer = maxf(0.0, attack_timer - delta)
@@ -351,6 +351,9 @@ func _update_special_attack(delta: float, player: Node2D) -> bool:
 			visual.modulate = base_visual_tint
 		return true
 	return false
+
+func _can_hit_lunge_target(player: Node2D) -> bool:
+	return player.has_method("take_damage") and global_position.distance_to(player.global_position) <= attack_hit_radius
 
 func _refresh_elemental_feedback() -> void:
 	if combat_feedback != null:

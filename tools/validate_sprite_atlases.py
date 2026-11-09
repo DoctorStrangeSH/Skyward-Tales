@@ -12,6 +12,7 @@ SHEETS = {
     "hero_f": (ROOT / "assets/sprites/characters/hero_f_8dir_walk.png", 32),
     "slime": (ROOT / "assets/sprites/enemies/forest_slime_true8.png", 32),
     "wolf": (ROOT / "assets/sprites/enemies/forest_wolf_8dir.png", 32),
+    "windtail": (ROOT / "assets/sprites/enemies/windtail_8dir.png", 48),
     "shaman": (ROOT / "assets/sprites/enemies/forest_shaman_8dir.png", 32),
     "guardian": (ROOT / "assets/sprites/enemies/grove_guardian_8dir.png", 48),
     "bat": (ROOT / "assets/sprites/enemies/cave_bat_8dir.png", 32),

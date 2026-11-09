@@ -29,6 +29,7 @@ const STORY_BOSSES := {"echo": "Отголосок", "tempest": "Буревой 
 const ENEMY_SCRIPTS := {
 	"slime": preload("res://scripts/enemy.gd"),
 	"wolf": preload("res://scripts/forest_wolf.gd"),
+	"windtail": preload("res://scripts/windtail.gd"),
 	"shaman": preload("res://scripts/forest_shaman.gd"),
 	"guardian": preload("res://scripts/grove_guardian.gd"),
 	"bat": preload("res://scripts/cave_bat.gd"),
@@ -1001,6 +1002,8 @@ static func enemy_kind(enemy: SlimeEnemy) -> String:
 		return "golem"
 	if enemy is Skeleton:
 		return "skeleton"
+	if enemy is Windtail:
+		return "windtail"
 	if enemy is ForestWolf:
 		return "wolf"
 	if enemy is CaveBat:

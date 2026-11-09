@@ -1776,6 +1776,10 @@
         "kind": "wisp",
         "position": [794, 379],
         "pacing": true
+      },
+      {
+        "kind": "windtail",
+        "position": [1060, 520]
       }
     ],
     "gates": [
