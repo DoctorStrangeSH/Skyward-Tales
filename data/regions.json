@@ -1803,6 +1803,28 @@
       "size": [1280, 864],
       "style": "sky",
       "edge_margin": 64,
+      "sky_landmarks": [
+        {
+          "texture": "world_hd/sky_scenery/castle_island.png",
+          "position": [-62, 540],
+          "scale": 0.19
+        },
+        {
+          "texture": "world_hd/sky_scenery/linked_islets.png",
+          "position": [756, -21],
+          "scale": 0.22
+        },
+        {
+          "texture": "world_hd/sky_scenery/windmill_island.png",
+          "position": [1337, 642],
+          "scale": 0.18
+        }
+      ],
+      "sky_clouds": [
+        "world_hd/sky_scenery/cloud_bank.png",
+        "world_hd/sky_scenery/cloud_tower.png",
+        "world_hd/sky_scenery/cloud_wisp.png"
+      ],
       "trails": [
         [
           [640, 864],

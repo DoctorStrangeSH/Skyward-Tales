@@ -253,12 +253,14 @@ func _add_apron() -> void:
 		inner.z_index = -99
 		inner.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 		add_child(inner)
+	_add_sky_landmarks()
 	var drift := Node2D.new()
 	drift.name = "SkyClouds"
 	drift.z_index = -105
 	drift.set_script(preload("res://scripts/sky_clouds.gd"))
 	drift.set("area", Rect2(-APRON, -APRON, size.x + APRON * 2, size.y + APRON * 2))
 	drift.set("night", is_night())
+	drift.set("texture_paths", terrain.get("sky_clouds", []))
 	add_child(drift)
 	var shadows := Node2D.new()
 	shadows.name = "CloudShadows"
@@ -266,6 +268,21 @@ func _add_apron() -> void:
 	shadows.set_script(preload("res://scripts/cloud_shadows.gd"))
 	shadows.set("area", Rect2(Vector2.ZERO, size))
 	add_child(shadows)
+
+## Distant landmarks sit above the baked sky, below moving clouds and cliffs.
+func _add_sky_landmarks() -> void:
+	for landmark in terrain.get("sky_landmarks", []):
+		var texture := WorldArt.texture(str(landmark["texture"]))
+		if texture == null:
+			continue
+		var sprite := Sprite2D.new()
+		sprite.texture = texture
+		sprite.position = _vec(landmark["position"])
+		sprite.scale = Vector2.ONE * float(landmark["scale"])
+		sprite.z_index = -107
+		sprite.modulate.a = 0.86
+		sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+		add_child(sprite)
 
 func _add_layer(file: String, layer_z: int) -> void:
 	var texture := _texture(file)

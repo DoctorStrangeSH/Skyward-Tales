@@ -139,6 +139,17 @@ func _run() -> void:
 	if not game.hud.dialogue_visible:
 		return _fail("boarding at the island opens the travel menu")
 	ship.handle_choice("ship_later")
+	var scenic_clouds := game.world.get_node("SkyClouds") as Node2D
+	var landmarks := game.world.get_children().filter(func(node: Node) -> bool:
+		return node is Sprite2D and node.texture != null \
+			and node.texture.resource_path.contains("/sky_scenery/"))
+	if landmarks.size() != 3 or not landmarks.all(func(node: Node) -> bool:
+		return node.z_index < scenic_clouds.z_index and node.z_index > -110):
+		return _fail("the three distant landmarks render behind the clouds")
+	var cloud_textures: Array = scenic_clouds.get("textures")
+	if cloud_textures.size() != 3 or not cloud_textures.all(func(texture: Texture2D) -> bool:
+		return texture.resource_path.contains("/sky_scenery/")):
+		return _fail("the island uses the three new cloud sprites")
 
 	# Weather and the storm engine.
 	var storm_slot := _slot_with(ship, "storm")
@@ -162,6 +173,10 @@ func _run() -> void:
 	if not ship.fly_now("storm_isle"):
 		return _fail("flight into the storm")
 	await process_frame
+	var storm_clouds: Array = game.world.get_node("SkyClouds").get("textures")
+	if storm_clouds.is_empty() or not storm_clouds.all(func(texture: Texture2D) -> bool:
+		return texture.resource_path.get_file().begins_with("cloud_puff_")):
+		return _fail("other islands keep their usual clouds")
 	if game.get_children().filter(func(n: Node) -> bool: return n is WeatherOverlay).is_empty():
 		return _fail("rain over the storm island")
 	var warden: SlimeEnemy = null
