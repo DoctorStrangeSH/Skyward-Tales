@@ -19,13 +19,11 @@ const CONTROLS := [
 	["F", "блок; вовремя — парирование и контратака"],
 	["E", "говорить, подбирать, открывать"],
 	["Q / R", "зелье здоровья / маны"],
-	["I / Tab", "сумка и экипировка"],
+	["Tab", "меню игры (последняя вкладка)"],
+	["I / C", "герой: снаряжение, навыки, отряд"],
+	["J / M / T / K", "журнал / карта / таланты / бестиарий"],
+	["L", "занятия мира"],
 	["B", "ремесло (Enter — создать)"],
-	["J", "журнал заданий"],
-	["C", "герой: снаряжение и навыки"],
-	["T", "таланты"],
-	["K", "бестиарий"],
-	["M", "карта региона"],
 	["F6 / F9", "быстрое сохранение / загрузка"],
 	["Esc", "закрыть окно / пауза"],
 ]
@@ -40,6 +38,7 @@ var music_slider: HSlider
 var sfx_slider: HSlider
 var resolution_picker: OptionButton
 var window_picker: OptionButton
+var settings: SettingsPanel
 
 func _ready() -> void:
 	position = Vector2(190, 40)
@@ -73,38 +72,15 @@ func _ready() -> void:
 	_button(controls_page, "Назад", func() -> void: show_page(main_page))
 
 	settings_page = _page("НАСТРОЙКИ")
-	hints_toggle = _toggle(settings_page, "Обучающие советы", "hints")
-	damage_toggle = _toggle(settings_page, "Числа урона над врагами", "damage_numbers")
-	shake_toggle = _toggle(settings_page, "Тряска экрана", "screen_shake")
-	music_slider = _slider(settings_page, "Музыка", "music_volume")
-	sfx_slider = _slider(settings_page, "Звуки", "sfx_volume")
-	_slider(settings_page, "Окружение", "ambience_volume")
-	var resolutions: Array = []
-	for index in GameSettings.RESOLUTIONS.size():
-		resolutions.append(GameSettings.resolution_label(index))
-	resolution_picker = _picker(settings_page, "Разрешение", resolutions, GameSettings.resolution_index())
-	window_picker = _picker(settings_page, "Режим", GameSettings.WINDOW_MODES, GameSettings.window_mode_index())
-	# Resolution sizes the window; full screen and borderless always use the
-	# monitor's own resolution, so the picker is off there (owner's list №37).
-	var display_hint := _label("", 8, Color(0.75, 0.78, 0.85))
-	display_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	display_hint.custom_minimum_size = Vector2(180, 0)
-	settings_page.add_child(display_hint)
-	var refresh_hint := func() -> void:
-		var windowed := window_picker.selected == 0
-		resolution_picker.disabled = not windowed
-		if windowed:
-			var size: Vector2i = DisplayServer.window_get_size() if DisplayServer.get_name() != "headless" else GameSettings.RESOLUTIONS[resolution_picker.selected]
-			display_hint.text = "Окно: %d × %d" % [size.x, size.y]
-		else:
-			display_hint.text = "Полный экран — родное разрешение монитора."
-	var apply := func(_index: int) -> void:
-		GameSettings.set_display(resolution_picker.selected, window_picker.selected)
-		refresh_hint.call_deferred()
-	resolution_picker.item_selected.connect(apply)
-	window_picker.item_selected.connect(apply)
-	refresh_hint.call()
-	_button(settings_page, "Показать советы заново", func() -> void: GameSettings.reset_tips())
+	settings = SettingsPanel.new()
+	settings_page.add_child(settings)
+	hints_toggle = settings.hints_toggle
+	damage_toggle = settings.damage_toggle
+	shake_toggle = settings.shake_toggle
+	music_slider = settings.music_slider
+	sfx_slider = settings.sfx_slider
+	resolution_picker = settings.resolution_picker
+	window_picker = settings.window_picker
 	_button(settings_page, "Назад", func() -> void: show_page(main_page))
 	show_page(main_page)
 	visible = false
@@ -113,6 +89,8 @@ func show_page(page: VBoxContainer) -> void:
 	for child in get_children():
 		child.visible = child == page
 	reset_size()
+	# The settings page is wide: keep the panel centred.
+	position = Vector2(roundf((640.0 - get_combined_minimum_size().x) / 2.0), 40.0 if page != settings_page else 24.0)
 
 func _page(title: String) -> VBoxContainer:
 	var box := VBoxContainer.new()

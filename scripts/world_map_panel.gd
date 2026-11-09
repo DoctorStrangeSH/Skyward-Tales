@@ -13,7 +13,7 @@ var region_canvas: Control
 var tab_region: Button
 var tab_world: Button
 
-const MAP_SIZE := Vector2(596, 284)
+const MAP_SIZE := Vector2(596, 258)
 
 func _ready() -> void:
 	position = Vector2(14, 6)
@@ -25,11 +25,11 @@ func _ready() -> void:
 	style.set_corner_radius_all(6)
 	add_theme_stylebox_override("panel", UiStyle.panel(false))
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 7)
+	box.add_theme_constant_override("separation", 4)
 	add_child(box)
 	var header := HBoxContainer.new()
 	header.add_theme_constant_override("separation", 6)
-	title_label = _label("КАРТА РЕГИОНА — [M закрыть]", 13, Color(0.99, 0.87, 0.58))
+	title_label = _label("КАРТА РЕГИОНА", 13, Color(0.99, 0.87, 0.58))
 	title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title_label)
 	tab_region = _tab("Регион", false)
@@ -112,7 +112,7 @@ func show_world(world: bool) -> void:
 	overview.visible = world
 	region_canvas.visible = not world
 	quest_label.visible = not world
-	title_label.text = "КАРТА МИРА — [M закрыть]" if world else _region_title
+	title_label.text = "КАРТА МИРА" if world else _region_title
 	tab_world.disabled = world
 	tab_region.disabled = not world
 
@@ -129,7 +129,7 @@ func _label(value: String, font_size: int, color: Color) -> Label:
 
 func show_region(region: String, hero: Vector2, landmarks: Dictionary, quest: String) -> void:
 	map_view.update_map(region, hero, landmarks)
-	_region_title = "%s · ур. %d — [M закрыть]" % [RegionCatalog.display_name(region).to_upper(), RegionCatalog.level(region)]
+	_region_title = "%s · ур. %d" % [RegionCatalog.display_name(region).to_upper(), RegionCatalog.level(region)]
 	show_world(false)
 	quest_label.text = "ЗАДАНИЕ: " + quest
 	visible = true

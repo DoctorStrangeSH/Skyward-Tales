@@ -8,13 +8,9 @@ signal skill_dropped(slot_index: int, skill_id: String)
 ## Asks main to act as if this key was pressed (C, J, M, T, B, K).
 signal menu_requested(keycode: int)
 
+## One button for the one tabbed window (owner's list №28).
 const MENU := [
-	["hero", KEY_C, "Герой и сумка — C / I"],
-	["journal", KEY_J, "Журнал заданий — J"],
-	["map", KEY_M, "Карта — M"],
-	["talents", KEY_T, "Таланты — T"],
-	["craft", KEY_B, "Ремесло — B"],
-	["bestiary", KEY_K, "Бестиарий — K"],
+	["hero", KEY_TAB, "Меню игры — Tab\nГерой I · Журнал J · Карта M · Таланты T · Бестиарий K · Занятия L · Ремесло B"],
 ]
 
 var mouse_slots: Array = []
@@ -51,13 +47,16 @@ func _ready() -> void:
 		slots.append(slot)
 	_divider(row)
 	var menu := GridContainer.new()
-	menu.columns = 3
+	menu.columns = 1
 	menu.add_theme_constant_override("h_separation", 1)
 	menu.add_theme_constant_override("v_separation", 0)
 	row.add_child(menu)
 	for entry in MENU:
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(16, 12)
+		button.custom_minimum_size = Vector2(34, 24)
+		button.text = "Меню"
+		button.add_theme_font_size_override("font_size", UiFont.px(7))
+		button.icon_alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.focus_mode = Control.FOCUS_NONE
 		button.tooltip_text = str(entry[2])
 		button.icon = load("res://assets/ui/menu_%s.png" % entry[0]) if ResourceLoader.exists("res://assets/ui/menu_%s.png" % entry[0]) else null

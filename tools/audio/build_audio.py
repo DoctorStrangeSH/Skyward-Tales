@@ -427,32 +427,118 @@ def amb_waves():
     return _loopable(x, 1.0)
 
 
+NATURE_LEN = 36.0
+
+
+def _tone(freqs: np.ndarray, harmonic: float = 0.12) -> np.ndarray:
+    """A whistled note: the frequency track, a touch of the 2nd harmonic."""
+    phase = np.cumsum(freqs) / SR
+    return np.sin(2 * np.pi * phase) + harmonic * np.sin(4 * np.pi * phase)
+
+
+def _soft_env(n: int, attack: float = 0.15, release: float = 0.35) -> np.ndarray:
+    """Smooth rise and fall as a share of the note (no clicks)."""
+    x = np.linspace(0.0, 1.0, n)
+    rise = np.clip(x / attack, 0, 1)
+    fall = np.clip((1.0 - x) / release, 0, 1)
+    return np.sin(rise * np.pi / 2) ** 2 * np.sin(fall * np.pi / 2) ** 2
+
+
+def _distant(x: np.ndarray, distance: float) -> np.ndarray:
+    """Far birds are quieter and duller, with a little forest echo."""
+    cutoff = 7500 - 4500 * distance
+    y = lowpass(x, cutoff) * (1.0 - 0.75 * distance)
+    return echo(y, 0.09 + 0.05 * distance, 0.18 + 0.15 * distance, 2)
+
+
+def _warble(rng: random.Random) -> np.ndarray:
+    """A robin-like phrase: quick notes gliding up and down."""
+    notes = []
+    for _ in range(rng.randint(4, 8)):
+        dur = rng.uniform(0.06, 0.16)
+        n = int(SR * dur)
+        f0, f1 = rng.uniform(2300, 4300), rng.uniform(2300, 4600)
+        track = np.linspace(f0, f1, n) + 90 * np.sin(2 * np.pi * rng.uniform(25, 55) * np.arange(n) / SR)
+        notes.append(_tone(track) * _soft_env(n, 0.2, 0.4))
+        notes.append(np.zeros(int(SR * rng.uniform(0.02, 0.07))))
+    return np.concatenate(notes)
+
+
+def _two_note(rng: random.Random) -> np.ndarray:
+    """A tit's "ти-ву, ти-ву": a high and a lower note, repeated."""
+    hi, lo = rng.uniform(4200, 5200), rng.uniform(2800, 3500)
+    parts = []
+    for _ in range(rng.randint(2, 4)):
+        for f, dur in ((hi, 0.08), (lo, 0.11)):
+            n = int(SR * dur)
+            parts.append(_tone(np.full(n, f) * np.linspace(1.02, 0.98, n), 0.06) * _soft_env(n))
+            parts.append(np.zeros(int(SR * 0.05)))
+        parts.append(np.zeros(int(SR * 0.12)))
+    return np.concatenate(parts)
+
+
+def _dove(rng: random.Random) -> np.ndarray:
+    """A far wood pigeon: low, soft hoots."""
+    parts = []
+    for f, dur in ((560, 0.32), (520, 0.5), (500, 0.28)):
+        n = int(SR * dur)
+        parts.append(_tone(np.full(n, f) * np.linspace(1.0, 0.94, n), 0.25) * _soft_env(n, 0.3, 0.5))
+        parts.append(np.zeros(int(SR * 0.12)))
+    return np.concatenate(parts)
+
+
 def amb_birds():
-    base = 0.25 * lowpass(noise(AMB_LEN + 2, 303), 500)
-    rng = random.Random(7)
-    t = 0.4
-    while t < AMB_LEN:
-        f0 = rng.uniform(2200, 3800)
-        for k in range(rng.randint(2, 5)):
-            dur = rng.uniform(0.05, 0.12)
-            tt = t_axis(dur)
-            chirp = np.sin(2 * np.pi * (f0 + rng.uniform(-400, 600) * tt / dur) * tt) * env(len(tt), 0.005, 0.05)
-            place(base, 0.35 * chirp, t + k * 0.13)
-        t += rng.uniform(0.9, 2.6)
-    return _loopable(base, 1.0)
+    """Daytime meadow (owner's list №4): leaves in a light wind and a few
+    birds now and then — a warbler, a tit, a far pigeon — at different
+    distances, with long quiet gaps."""
+    length = NATURE_LEN + 2
+    t_all = t_axis(length)
+    leaves = lowpass(noise(length, 303), 900) * (0.05 + 0.03 * np.sin(2 * np.pi * t_all / 9.0) ** 2)
+    base = leaves.copy()
+    rng = random.Random(17)
+    t = 1.5
+    while t < NATURE_LEN - 2.0:
+        kind = rng.choices(["warble", "two", "dove"], weights=[5, 4, 1])[0]
+        phrase = {"warble": _warble, "two": _two_note, "dove": _dove}[kind](rng)
+        distance = rng.uniform(0.25, 0.95) if kind != "dove" else 0.9
+        place(base, 0.16 * _distant(phrase, distance), t)
+        t += len(phrase) / SR + rng.uniform(2.5, 7.0)
+    return _loopable(base, 1.5)
+
+
+def _chirp(freq: float, pulses: int) -> np.ndarray:
+    """One field-cricket chirp: a few 20 ms pulses of a pure high tone."""
+    parts = []
+    for _ in range(pulses):
+        n = int(SR * 0.02)
+        parts.append(np.sin(2 * np.pi * freq * np.arange(n) / SR) * _soft_env(n, 0.25, 0.4))
+        parts.append(np.zeros(int(SR * 0.016)))
+    return np.concatenate(parts)
 
 
 def amb_night():
-    base = 0.2 * lowpass(noise(AMB_LEN + 2, 404), 400)
-    rng = random.Random(9)
-    t = 0.2
-    while t < AMB_LEN:
-        dur = 0.35
-        tt = t_axis(dur)
-        trill = np.sin(2 * np.pi * 4300 * tt) * (0.5 + 0.5 * np.sign(np.sin(2 * np.pi * 38 * tt))) * env(len(tt), 0.02, 0.1)
-        place(base, 0.12 * trill, t)
-        t += rng.uniform(0.5, 1.1)
-    return _loopable(base, 1.0)
+    """A summer night (owner's list №4): a soft breeze, two or three crickets
+    at different distances singing in bouts with pauses, an owl once."""
+    length = NATURE_LEN + 2
+    base = lowpass(noise(length, 404), 350) * 0.05
+    rng = random.Random(23)
+    for cricket in range(3):
+        freq = rng.uniform(4200, 4900)
+        gain = [0.11, 0.06, 0.035][cricket]
+        rate = rng.uniform(1.6, 2.3)
+        t = rng.uniform(0.0, 4.0)
+        while t < NATURE_LEN - 1.0:
+            bout_end = t + rng.uniform(5.0, 11.0)
+            while t < min(bout_end, NATURE_LEN - 1.0):
+                place(base, gain * lowpass(_chirp(freq, rng.choice([3, 3, 4])), 6500 - 1500 * cricket), t)
+                t += 1.0 / rate * rng.uniform(0.92, 1.08)
+            t += rng.uniform(3.0, 9.0)
+    owl = []
+    for dur, f in ((0.45, 390), (0.18, 0), (0.22, 400), (0.12, 0), (0.5, 380)):
+        n = int(SR * dur)
+        owl.append(np.zeros(n) if f == 0 else _tone(np.full(n, f), 0.3) * _soft_env(n, 0.3, 0.5))
+    place(base, 0.07 * _distant(np.concatenate(owl), 0.8), rng.uniform(12.0, 24.0))
+    return _loopable(base, 1.5)
 
 
 def amb_cave():
@@ -485,6 +571,7 @@ AMBIENCE = {"wind": amb_wind, "waves": amb_waves, "birds": amb_birds, "night": a
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--only", choices=["sfx", "music", "ambience"])
+    parser.add_argument("--names", default="", help="comma list of ambience beds to rebuild")
     args = parser.parse_args()
     if args.only in (None, "sfx"):
         for name, fn in SFX.items():
@@ -495,8 +582,12 @@ def main() -> int:
             write_ogg(OUT / "music" / f"{name}.ogg", build_track(name, bpm, prog, scale, seed, style))
             print(f"  music/{name}.ogg")
     if args.only in (None, "ambience"):
+        wanted = [n for n in args.names.split(",") if n]
         for name, fn in AMBIENCE.items():
-            write_ogg(OUT / "ambience" / f"{name}.ogg", normalize(fn(), 0.6))
+            if wanted and name not in wanted:
+                continue
+            # Nature beds are mixed quieter (owner's list №4).
+            write_ogg(OUT / "ambience" / f"{name}.ogg", normalize(fn(), 0.32 if name in ("birds", "night") else 0.6))
             print(f"  ambience/{name}.ogg")
     return 0
 

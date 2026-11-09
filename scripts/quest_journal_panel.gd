@@ -30,7 +30,7 @@ func _ready() -> void:
 	var top := HBoxContainer.new()
 	top.add_theme_constant_override("separation", 4)
 	box.add_child(top)
-	var title := _label("ЖУРНАЛ  [J — закрыть]", 14, Color(1.0, 0.87, 0.57))
+	var title := _label("ЖУРНАЛ", 14, Color(1.0, 0.87, 0.57))
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(title)
 	for entry in TABS:
@@ -38,8 +38,8 @@ func _ready() -> void:
 		button.text = entry[1]
 		button.toggle_mode = true
 		button.focus_mode = Control.FOCUS_NONE
-		button.custom_minimum_size = Vector2(70, 20)
-		button.add_theme_font_size_override("font_size", UiFont.px(10))
+		button.custom_minimum_size = Vector2(66, 18)
+		button.add_theme_font_size_override("font_size", UiFont.px(9))
 		UiStyle.small_toggle(button)
 		var tab_id: String = entry[0]
 		button.pressed.connect(func() -> void: show_tab(tab_id))
@@ -49,7 +49,7 @@ func _ready() -> void:
 	row.add_theme_constant_override("separation", 8)
 	box.add_child(row)
 	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(210, 272)
+	scroll.custom_minimum_size = Vector2(210, 280)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	row.add_child(scroll)
 	entry_list = VBoxContainer.new()
@@ -57,7 +57,7 @@ func _ready() -> void:
 	entry_list.add_theme_constant_override("separation", 3)
 	scroll.add_child(entry_list)
 	var detail_panel := PanelContainer.new()
-	detail_panel.custom_minimum_size = Vector2(350, 272)
+	detail_panel.custom_minimum_size = Vector2(356, 278)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.1, 0.08, 0.08, 0.75)
 	style.border_color = Color(0.5, 0.38, 0.25)
@@ -65,7 +65,12 @@ func _ready() -> void:
 	style.set_corner_radius_all(3)
 	style.set_content_margin_all(8)
 	detail_panel.add_theme_stylebox_override("panel", style)
-	row.add_child(detail_panel)
+	# Long entries scroll instead of stretching the window off the screen.
+	var detail_scroll := ScrollContainer.new()
+	detail_scroll.custom_minimum_size = Vector2(368, 280)
+	detail_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	row.add_child(detail_scroll)
+	detail_scroll.add_child(detail_panel)
 	detail_box = VBoxContainer.new()
 	detail_box.add_theme_constant_override("separation", 5)
 	detail_panel.add_child(detail_box)

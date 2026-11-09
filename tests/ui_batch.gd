@@ -71,7 +71,7 @@ func _run() -> void:
 	await process_frame
 	if hud.action_bar.mouse_slots.size() != 2 or (hud.action_bar.mouse_slots[0] as HotbarSlot).key_text != "ЛКМ":
 		return _fail("mouse slots on the bar")
-	(hud.action_bar.menu_buttons["journal"] as Button).pressed.emit()
+	(hud.menu_tabs.buttons["journal"] as Button).pressed.emit()
 	if not hud.journal_visible:
 		return _fail("the journal button opens the journal")
 	hud.close_top_window()

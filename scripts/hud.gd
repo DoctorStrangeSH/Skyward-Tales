@@ -92,6 +92,13 @@ signal hero_assign_requested(slot_index: int, skill_id: String)
 signal skill_learn_requested(skill_id: String)
 signal skills_reset_requested
 var journal_visible: bool = false
+## «Занятия» (owner's list №33) and the tab strip over every window (№28).
+var activities_view: ActivitiesPanel
+var activities_visible: bool = false
+var menu_tabs: MenuTabs
+signal menu_tab_requested(tab_id: String)
+## Main tells which tab is open ("" — none).
+var tab_provider: Callable = func() -> String: return ""
 var minimap: WorldMinimap
 var world_map_panel: PanelContainer
 var world_map_view: WorldMapPanel
@@ -279,6 +286,15 @@ func _ready() -> void:
 	root.add_child(skills_view)
 	skills_view.learn_requested.connect(func(id: String) -> void: skill_learn_requested.emit(id))
 	skills_view.reset_requested.connect(func() -> void: skills_reset_requested.emit())
+	activities_view = ActivitiesPanel.new()
+	root.add_child(activities_view)
+	# Owner's list №28: one window with tabs — every book takes the same
+	# frame under the tab strip.
+	for window in [inventory_view, journal_view, world_map_view, skills_view, bestiary_view, activities_view, crafting_view]:
+		MenuTabs.fit(window)
+	menu_tabs = MenuTabs.new()
+	root.add_child(menu_tabs)
+	menu_tabs.tab_requested.connect(func(id: String) -> void: menu_tab_requested.emit(id))
 
 	# Dialogue box: portrait on the left, name tag, text and choices.
 	dialogue_panel = PanelContainer.new()
@@ -338,7 +354,13 @@ func _process(delta: float) -> void:
 			message_label.text = ""
 	# Toasts hide under big windows (the windows show their own status).
 	if toasts != null:
-		toasts.visible = not (inventory_open or crafting_visible or journal_visible or skills_visible or bestiary_visible or world_map_visible)
+		toasts.visible = not (inventory_open or crafting_visible or journal_visible or skills_visible or bestiary_visible or world_map_visible or activities_visible)
+	if menu_tabs != null:
+		var open_tab: String = str(tab_provider.call())
+		if open_tab.is_empty() != not menu_tabs.visible or (not open_tab.is_empty() and not (menu_tabs.buttons[open_tab] as Button).button_pressed):
+			menu_tabs.select(open_tab)
+		if menu_tabs.visible:
+			menu_tabs.move_to_front()
 	# Big title cards hide while a window (journal, bag...) covers the screen.
 	if title_card != null and is_instance_valid(title_card):
 		title_card.visible = not (journal_view.visible or inventory_open or world_map_visible or overlay_visible())
@@ -347,6 +369,11 @@ func _unhandled_input(event: InputEvent) -> void:
 	if world_map_visible:
 		if event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_M, KEY_ESCAPE]:
 			close_world_map()
+			get_viewport().set_input_as_handled()
+		elif event is InputEventKey and event.pressed and not event.echo and event.keycode in [KEY_I, KEY_TAB, KEY_C, KEY_J, KEY_T, KEY_K, KEY_L, KEY_B]:
+			# Another tab's key while the (pausing) map is open.
+			close_world_map()
+			menu_key_requested.emit(event.keycode)
 			get_viewport().set_input_as_handled()
 		return
 	if defeat_visible or talent_visible:
@@ -391,6 +418,10 @@ func close_top_window() -> bool:
 	if bestiary_visible:
 		bestiary_visible = false
 		bestiary_panel.visible = false
+		return true
+	if activities_visible:
+		activities_visible = false
+		activities_view.visible = false
 		return true
 	return false
 
@@ -534,7 +565,13 @@ func toggle_bestiary(entries: Dictionary, discovered: Dictionary) -> void:
 
 ## True while a full-screen book (bestiary or quest journal) is open.
 func overlay_visible() -> bool:
-	return bestiary_visible or journal_visible or skills_visible
+	return bestiary_visible or journal_visible or skills_visible or activities_visible
+
+func toggle_activities(rows: Array[Dictionary]) -> void:
+	activities_visible = not activities_visible
+	activities_view.visible = activities_visible
+	if activities_visible:
+		activities_view.populate(rows)
 
 func show_fishing(fishing: Fishing) -> void:
 	fishing_view.show_for(fishing)

@@ -70,20 +70,27 @@ func _ready() -> void:
 	var spacer := Control.new()
 	spacer.custom_minimum_size = Vector2(0, 8)
 	menu_column.add_child(spacer)
-	_add_button(menu_column, "Новая игра", _start_new)
 	continue_button = _add_button(menu_column, "Продолжить", _continue_game)
-	continue_button.disabled = SaveSystem.load_latest().is_empty()
-	var ng := ng_plus_seed(SaveSystem.load_latest())
+	var latest := SaveSystem.latest_slot()
+	continue_button.disabled = latest == 0
+	if latest > 0:
+		var summary := SaveSystem.slot_summary(latest)
+		continue_button.tooltip_text = "Слот %d: %s, ур. %d" % [latest, summary["name"], summary["level"]]
+	_add_button(menu_column, "Новая игра", func() -> void: _show_slots("new"))
+	_add_button(menu_column, "Сохранения", func() -> void: _show_slots("load"))
+	var ng := ng_plus_seed(SaveSystem.load_latest(SaveSystem.slot_path(maxi(1, latest))))
 	if not ng.is_empty():
 		_add_button(menu_column, "Новая игра+ (круг %d)" % (int(ng["ng"]) + 1), _start_ng_plus)
+	_add_button(menu_column, "Настройки", _show_settings)
 	_add_button(menu_column, "Выход", _exit_game)
+	_build_slots(center)
+	_build_settings(center)
 	creation = HeroCreationPanel.new()
 	creation.visible = false
 	creation.confirmed.connect(_begin_adventure)
 	creation.cancelled.connect(func() -> void:
 		creation.visible = false
-		menu_column.visible = true
-		_menu_frame.visible = true)
+		_back_to_menu())
 	center.add_child(creation)
 
 func _set_menu_background() -> void:
@@ -169,7 +176,132 @@ func _add_button(parent: VBoxContainer, label: String, callback: Callable) -> Bu
 func _start_new() -> void:
 	_menu_frame.visible = false
 	menu_column.visible = false
+	slots_frame.visible = false
 	creation.visible = true
+
+func _back_to_menu() -> void:
+	slots_frame.visible = false
+	settings_frame.visible = false
+	menu_column.visible = true
+	_menu_frame.visible = true
+
+# --- Save slots (owner's list №35) --------------------------------------------
+
+var slots_frame: PanelContainer
+var slots_box: VBoxContainer
+var _slot_mode: String = "load"
+var _confirm: String = ""
+
+func _build_slots(center: CenterContainer) -> void:
+	slots_frame = PanelContainer.new()
+	slots_frame.add_theme_stylebox_override("panel", UiStyle.panel(true))
+	slots_frame.visible = false
+	center.add_child(slots_frame)
+	slots_box = VBoxContainer.new()
+	slots_box.add_theme_constant_override("separation", 6)
+	slots_box.custom_minimum_size = Vector2(380, 0)
+	slots_frame.add_child(slots_box)
+
+func _show_slots(mode: String) -> void:
+	_slot_mode = mode
+	_confirm = ""
+	_menu_frame.visible = false
+	slots_frame.visible = true
+	_fill_slots()
+
+func _fill_slots() -> void:
+	for child in slots_box.get_children():
+		slots_box.remove_child(child)
+		child.queue_free()
+	slots_box.add_child(UiStyle.label("НОВАЯ ИГРА — выберите слот" if _slot_mode == "new" else "СОХРАНЕНИЯ", 14, UiStyle.TITLE))
+	for slot in range(1, SaveSystem.SLOTS + 1):
+		var summary := SaveSystem.slot_summary(slot)
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 6)
+		slots_box.add_child(row)
+		var info := VBoxContainer.new()
+		info.custom_minimum_size = Vector2(220, 0)
+		info.add_theme_constant_override("separation", 0)
+		row.add_child(info)
+		if summary.is_empty():
+			info.add_child(UiStyle.label("Слот %d — пусто" % slot, 11, UiStyle.MUTED))
+		else:
+			info.add_child(UiStyle.label("Слот %d — %s, ур. %d%s" % [slot, summary["name"], summary["level"], ("  · круг %d" % (int(summary["ng"]) + 1)) if int(summary["ng"]) > 0 else ""], 11, UiStyle.TEXT))
+			var when := Time.get_datetime_string_from_unix_time(int(float(summary["saved_at"])) + int(Time.get_time_zone_from_system().get("bias", 0)) * 60, true)
+			info.add_child(UiStyle.label("%s · %s" % [RegionCatalog.display_name(str(summary["region"])), when.substr(0, 16)], 8, UiStyle.MUTED))
+		var main := Button.new()
+		main.custom_minimum_size = Vector2(96, 24)
+		main.add_theme_font_size_override("font_size", UiFont.px(10))
+		UiStyle.style_button(main)
+		var key := "%s:%d" % [_slot_mode, slot]
+		if _slot_mode == "new":
+			main.text = "Начать здесь" if summary.is_empty() else ("Точно?" if _confirm == key else "Перезаписать")
+			main.pressed.connect(func() -> void:
+				if not summary.is_empty() and _confirm != key:
+					_confirm = key
+					_fill_slots()
+					return
+				SaveSystem.delete_slot(slot)
+				get_tree().set_meta("skyward_slot", slot)
+				_start_new())
+		else:
+			main.text = "Играть" if not summary.is_empty() else "—"
+			main.disabled = summary.is_empty()
+			main.pressed.connect(func() -> void: _continue_slot(slot))
+		row.add_child(main)
+		if not summary.is_empty():
+			var drop := Button.new()
+			drop.text = "Удалить?" if _confirm == "del:%d" % slot else "✕"
+			drop.tooltip_text = "Удалить сохранение (нужно нажать дважды)"
+			drop.custom_minimum_size = Vector2(28, 24)
+			drop.add_theme_font_size_override("font_size", UiFont.px(9))
+			UiStyle.style_button(drop)
+			drop.pressed.connect(func() -> void:
+				if _confirm != "del:%d" % slot:
+					_confirm = "del:%d" % slot
+				else:
+					SaveSystem.delete_slot(slot)
+					_confirm = ""
+				_fill_slots())
+			row.add_child(drop)
+	var back := Button.new()
+	back.text = "Назад"
+	back.add_theme_font_size_override("font_size", UiFont.px(11))
+	UiStyle.style_button(back)
+	back.pressed.connect(_back_to_menu)
+	slots_box.add_child(back)
+
+func _continue_slot(slot: int) -> void:
+	if SaveSystem.slot_summary(slot).is_empty():
+		return
+	get_tree().set_meta("skyward_slot", slot)
+	get_tree().set_meta("skyward_continue", true)
+	get_tree().change_scene_to_file(GAME_SCENE)
+
+# --- Settings in the title menu (owner's list №36) -----------------------------
+
+var settings_frame: PanelContainer
+
+func _build_settings(center: CenterContainer) -> void:
+	settings_frame = PanelContainer.new()
+	settings_frame.add_theme_stylebox_override("panel", UiStyle.panel(true))
+	settings_frame.visible = false
+	center.add_child(settings_frame)
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 6)
+	settings_frame.add_child(box)
+	box.add_child(UiStyle.label("НАСТРОЙКИ", 14, UiStyle.TITLE))
+	box.add_child(SettingsPanel.new())
+	var back := Button.new()
+	back.text = "Назад"
+	back.add_theme_font_size_override("font_size", UiFont.px(11))
+	UiStyle.style_button(back)
+	back.pressed.connect(_back_to_menu)
+	box.add_child(back)
+
+func _show_settings() -> void:
+	_menu_frame.visible = false
+	settings_frame.visible = true
 
 func _begin_adventure(hero_name: String, gender: String) -> void:
 	get_tree().set_meta("skyward_continue", false)
@@ -190,18 +322,19 @@ static func ng_plus_seed(save: Dictionary) -> Dictionary:
 		"lore": world.get("lore", {}), "discovered": world.get("discovered", {})}
 
 func _start_ng_plus() -> void:
-	var seed := ng_plus_seed(SaveSystem.load_latest())
+	var slot := maxi(1, SaveSystem.latest_slot())
+	var seed := ng_plus_seed(SaveSystem.load_latest(SaveSystem.slot_path(slot)))
 	if seed.is_empty():
 		return
+	get_tree().set_meta("skyward_slot", slot)
 	get_tree().set_meta("skyward_continue", false)
 	get_tree().set_meta("skyward_ng_plus", seed)
 	get_tree().change_scene_to_file(GAME_SCENE)
 
 func _continue_game() -> void:
-	if SaveSystem.load_latest().is_empty():
-		return
-	get_tree().set_meta("skyward_continue", true)
-	get_tree().change_scene_to_file(GAME_SCENE)
+	var slot := SaveSystem.latest_slot()
+	if slot > 0:
+		_continue_slot(slot)
 
 func _exit_game() -> void:
 	get_tree().quit()

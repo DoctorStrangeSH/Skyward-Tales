@@ -62,7 +62,7 @@ static func apply_volumes() -> void:
 
 func _setup() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	for bus in ["Music", "SFX", "Ambience"]:
+	for bus in ["Music", "SFX", "UI", "Ambience", "Nature"]:
 		if AudioServer.get_bus_index(bus) == -1:
 			AudioServer.add_bus()
 			var index := AudioServer.bus_count - 1
@@ -94,9 +94,20 @@ func _on_node_added(node: Node) -> void:
 		(node as BaseButton).pressed.connect(func() -> void: _play("ui", -14.0, 0.05))
 
 func _apply_volumes() -> void:
+	_set_bus_volume("Master", GameSettings.get_float("master_volume"))
 	_set_bus_volume("Music", GameSettings.get_float("music_volume"))
 	_set_bus_volume("SFX", GameSettings.get_float("sfx_volume"))
+	_set_bus_volume("UI", GameSettings.get_float("ui_volume"))
 	_set_bus_volume("Ambience", GameSettings.get_float("ambience_volume"))
+	_set_bus_volume("Nature", GameSettings.get_float("nature_volume"))
+
+## Owner's list №5: silence while the game window is in the background.
+func _notification(what: int) -> void:
+	var master := AudioServer.get_bus_index("Master")
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and GameSettings.get_bool("mute_unfocused"):
+		AudioServer.set_bus_mute(master, true)
+	elif what == NOTIFICATION_APPLICATION_FOCUS_IN:
+		AudioServer.set_bus_mute(master, GameSettings.get_float("master_volume") <= 0.001)
 
 func _set_bus_volume(bus: String, value: float) -> void:
 	var index := AudioServer.get_bus_index(bus)
@@ -123,6 +134,7 @@ func _play(sound: String, volume_db: float, pitch_jitter: float) -> void:
 	var voice := _voices[_next_voice]
 	_next_voice = (_next_voice + 1) % _voices.size()
 	voice.stream = stream
+	voice.bus = "UI" if sound == "ui" else "SFX"
 	voice.volume_db = volume_db
 	voice.pitch_scale = 1.0 + randf_range(-pitch_jitter, pitch_jitter)
 	voice.play()
@@ -173,6 +185,8 @@ func _set_ambience(bed: String) -> void:
 		if stream is AudioStreamOggVorbis:
 			(stream as AudioStreamOggVorbis).loop = true
 		_ambience.stream = stream
+		# Birds and crickets have their own slider (owner's list №4–5).
+		_ambience.bus = "Nature" if bed in ["birds", "night"] else "Ambience"
 		_ambience.play()
 		var fade_in := create_tween()
 		fade_in.tween_property(_ambience, "volume_db", -6.0, 1.5))

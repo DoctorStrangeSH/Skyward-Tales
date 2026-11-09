@@ -327,6 +327,8 @@ func _ready() -> void:
 	hud.dialogue_dismissed.connect(func() -> void: player.set_physics_process(true))
 	hud.can_dismiss_dialogue = func() -> bool: return not story.active
 	hud.menu_key_requested.connect(func(keycode: int) -> void: _handle_key(keycode as Key))
+	hud.menu_tab_requested.connect(func(tab_id: String) -> void: input_handler.open_tab(tab_id))
+	hud.tab_provider = input_handler.current_tab
 	hud.skills_view.combos = combos
 	hud.dialogue_choice_selected.connect(_on_dialogue_choice_selected)
 	hud.world_map_view.travel_requested.connect(fast_travel)
@@ -334,6 +336,9 @@ func _ready() -> void:
 	_populate_region()
 	update_music.call_deferred()
 
+	# Owner's list №35: the save slot chosen in the title menu.
+	if get_tree().has_meta("skyward_slot"):
+		save_path = SaveSystem.slot_path(int(get_tree().get_meta("skyward_slot")))
 	if get_tree().has_meta("skyward_continue") and bool(get_tree().get_meta("skyward_continue")):
 		get_tree().remove_meta("skyward_continue")
 		load_game(true)

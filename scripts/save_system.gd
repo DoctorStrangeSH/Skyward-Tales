@@ -4,6 +4,43 @@ class_name SaveSystem
 const VERSION: int = 1
 const SAVE_PATH: String = "user://skyward_tales_save.json"
 
+## Owner's list №35: three save slots. Slot 1 is the old single save file,
+## so saves from before keep working.
+const SLOTS := 3
+
+static func slot_path(slot: int) -> String:
+	return SAVE_PATH if slot <= 1 else "user://skyward_tales_save_%d.json" % slot
+
+## What the slot holds, for the title menu: {} when empty, else
+## {slot, name, level, region, saved_at, ng, ending}.
+static func slot_summary(slot: int) -> Dictionary:
+	var data := load_latest(slot_path(slot))
+	if data.is_empty():
+		return {}
+	var player: Dictionary = data.get("player", {}) if data.get("player", {}) is Dictionary else {}
+	var world: Dictionary = data.get("world", {}) if data.get("world", {}) is Dictionary else {}
+	var flags: Variant = world.get("story_flags", {})
+	return {"slot": slot, "name": str(player.get("hero_name", "Герой")), "level": int(player.get("level", 1)),
+		"region": str(world.get("region", "greenreach")), "saved_at": float(data.get("saved_at", 0.0)), "ng": int(world.get("ng_plus", 0)),
+		"ending": flags is Dictionary and ((flags as Dictionary).has("ending_restore") or (flags as Dictionary).has("ending_lower"))}
+
+## The slot played last (0 when there are no saves).
+static func latest_slot() -> int:
+	var best := 0
+	var best_time := -1.0
+	for slot in range(1, SLOTS + 1):
+		var summary := slot_summary(slot)
+		if not summary.is_empty() and float(summary["saved_at"]) > best_time:
+			best_time = float(summary["saved_at"])
+			best = slot
+	return best
+
+static func delete_slot(slot: int) -> void:
+	var path := slot_path(slot)
+	for file in [path, autosave_path_for(path)]:
+		if FileAccess.file_exists(file):
+			DirAccess.remove_absolute(ProjectSettings.globalize_path(file))
+
 ## Autosaves live next to the manual save: foo.json -> foo_autosave.json.
 static func autosave_path_for(path: String = SAVE_PATH) -> String:
 	return path.get_basename() + "_autosave." + path.get_extension()

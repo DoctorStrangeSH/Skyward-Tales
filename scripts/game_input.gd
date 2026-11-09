@@ -108,54 +108,85 @@ func _input(event: InputEvent) -> void:
 				game._cast_spell()
 			game.get_viewport().set_input_as_handled()
 
+# --- One window with tabs (owner's list №28) -----------------------------------
+
+## Keys of the tabs; Tab opens the window on the last tab.
+const TAB_KEYS := {KEY_I: "hero", KEY_C: "hero", KEY_J: "journal", KEY_M: "map", KEY_T: "talents", KEY_K: "bestiary", KEY_L: "activities", KEY_B: "craft", KEY_TAB: "last"}
+var last_tab: String = "hero"
+
+## The tab open now ("" — the window is closed).
+func current_tab() -> String:
+	var hud := game.hud
+	if hud.inventory_open:
+		return "hero"
+	if hud.journal_visible:
+		return "journal"
+	if hud.world_map_visible:
+		return "map"
+	if hud.skills_visible:
+		return "talents"
+	if hud.bestiary_visible:
+		return "bestiary"
+	if hud.activities_visible:
+		return "activities"
+	if hud.crafting_visible:
+		return "craft"
+	return ""
+
+func close_tabs() -> void:
+	var hud := game.hud
+	if hud.world_map_visible:
+		hud.close_world_map()
+	if hud.inventory_open:
+		hud.toggle_inventory(game.player)
+	game._close_books()
+	if hud.activities_visible:
+		hud.toggle_activities([])
+	if game.crafting.is_open():
+		game.crafting.close()
+
+func open_tab(tab_id: String) -> void:
+	if tab_id == "last":
+		tab_id = last_tab
+	close_tabs()
+	last_tab = tab_id
+	match tab_id:
+		"hero":
+			game.hud.toggle_hero_panel(game.player, game.skills)
+		"journal":
+			game.hud.toggle_journal(game.quests, game.player)
+		"map":
+			game._update_minimap()
+			game.open_map()
+		"talents":
+			game.hud.toggle_skill_tree(game.player)
+		"bestiary":
+			game.hud.toggle_bestiary(game.bestiary_entries, game.discovered_enemies)
+		"activities":
+			game.hud.toggle_activities(Activities.entries(game))
+		"craft":
+			game.crafting.open("hand")
+
+## The tab's key: opens it, or closes the window when it is already open.
+func toggle_tab(tab_id: String) -> void:
+	var open := current_tab()
+	if not open.is_empty() and (open == tab_id or tab_id == "last"):
+		close_tabs()
+		return
+	open_tab(tab_id)
+
 ## Returns true when the key was consumed and must not reach other handlers.
 func _handle_key(keycode: Key) -> bool:
 	var world_blocked: bool = game.get_tree().paused or game.hud.dialogue_visible
-	if game.hud.crafting_visible and keycode != KEY_B:
+	if game.hud.crafting_visible and not TAB_KEYS.has(keycode):
 		if keycode == KEY_E:
 			game.crafting.close()
 			return true
-		return keycode in [KEY_SPACE, KEY_F, KEY_1, KEY_2, KEY_3, KEY_4, KEY_Q, KEY_R, KEY_I, KEY_C, KEY_J, KEY_M, KEY_T, KEY_K]
-	match keycode:
-		KEY_M when not world_blocked:
-			if game.hud.inventory_open:
-				game.hud.toggle_inventory(game.player)
-			game._close_books()
-			game._update_minimap()
-			game.open_map()
-			return true
-		KEY_K when not world_blocked:
-			if game.hud.skills_visible:
-				game.hud.toggle_skill_tree(game.player)
-			if game.hud.inventory_open:
-				game.hud.toggle_inventory(game.player)
-			if game.hud.journal_visible:
-				game.hud.toggle_journal(game.quests, game.player)
-			game.hud.toggle_bestiary(game.bestiary_entries, game.discovered_enemies)
-			return true
-		KEY_C when not world_blocked:
-			if not game.hud.inventory_open:
-				game._close_books()
-			game.hud.toggle_hero_panel(game.player, game.skills)
-			return true
-		KEY_T when not world_blocked:
-			if game.hud.inventory_open:
-				game.hud.toggle_inventory(game.player)
-			if game.hud.bestiary_visible:
-				game.hud.toggle_bestiary(game.bestiary_entries, game.discovered_enemies)
-			if game.hud.journal_visible:
-				game.hud.toggle_journal(game.quests, game.player)
-			game.hud.toggle_skill_tree(game.player)
-			return true
-		KEY_J when not world_blocked:
-			if game.hud.skills_visible:
-				game.hud.toggle_skill_tree(game.player)
-			if game.hud.inventory_open:
-				game.hud.toggle_inventory(game.player)
-			if game.hud.bestiary_visible:
-				game.hud.toggle_bestiary(game.bestiary_entries, game.discovered_enemies)
-			game.hud.toggle_journal(game.quests, game.player)
-			return true
+		return keycode in [KEY_SPACE, KEY_F, KEY_1, KEY_2, KEY_3, KEY_4, KEY_Q, KEY_R]
+	var tab := str(TAB_KEYS.get(keycode, ""))
+	if not tab.is_empty() and not world_blocked:
+		toggle_tab(tab)
+		return true
 	if game.hud.overlay_visible():
 		return false
 	match keycode:
@@ -177,12 +208,6 @@ func _handle_key(keycode: Key) -> bool:
 				game.player.visual.play_named("charge", 0.3)
 			elif not game.player.has_shield():
 				game.hud.show_message("Блок и парирование — только со щитом в левой руке.", 2.0)
-			return true
-		KEY_I, KEY_TAB when not world_blocked:
-			game.hud.toggle_inventory(game.player)
-			return true
-		KEY_B when not world_blocked:
-			game.open_handcraft()
 			return true
 	if game.hud.inventory_open:
 		return false
