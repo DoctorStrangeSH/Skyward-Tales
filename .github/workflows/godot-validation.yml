@@ -20,6 +20,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/cache@v4
+        with:
+          path: .godot
+          key: godot-import-${{ hashFiles('assets/**', 'project.godot') }}
+          restore-keys: godot-import-
+
       - name: Validate PNG atlas dimensions and transparency
         run: python3 tools/validate_sprite_atlases.py
 
@@ -47,3 +53,7 @@ jobs:
               exit 1
             fi
           '
+
+      - name: Let the cache step read the import folder
+        if: always()
+        run: sudo chown -R "$USER" .godot || true

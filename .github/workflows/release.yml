@@ -1,8 +1,9 @@
 name: Build game
 
 # Builds Windows and Linux versions. Every push to main leaves a downloadable
-# artifact on the run page. A Release is published either by pushing a tag like
-# v0.3.0 or by running the workflow manually with "release_tag" filled in.
+# artifact on the run page: the Windows installer (SkywardTales-Setup.exe) and
+# zip archives for Windows and Linux. A Release is published either by pushing
+# a tag like v0.3.0 or by running the workflow manually with "release_tag".
 
 on:
   push:
@@ -32,6 +33,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # The Godot import cache: unchanged art is not imported again.
+      - uses: actions/cache@v4
+        with:
+          path: .godot
+          key: godot-import-${{ hashFiles('assets/**', 'project.godot') }}
+          restore-keys: godot-import-
+
       - name: Export Windows and Linux builds
         run: |
           docker run --rm -v "${PWD}:/project" -w /project "$GODOT_IMAGE" bash -c '
@@ -41,7 +49,7 @@ jobs:
             godot --headless --path . --export-release "Windows Desktop" build/windows/SkywardTales.exe
             godot --headless --path . --export-release "Linux" build/linux/SkywardTales.x86_64
           '
-          sudo chown -R "$USER" build
+          sudo chown -R "$USER" build .godot
           ls -la build/windows build/linux
           test -s build/windows/SkywardTales.exe
           test -s build/linux/SkywardTales.x86_64
@@ -62,10 +70,19 @@ jobs:
           (cd build/windows && zip -9 -r ../SkywardTales-windows.zip .)
           (cd build/linux && chmod +x SkywardTales.x86_64 && zip -9 -r ../SkywardTales-linux.zip .)
 
+      - name: Windows installer
+        run: |
+          sudo apt-get install -y -qq nsis > /dev/null
+          version="$(sed -n 's/^config\/version="\(.*\)"/\1/p' project.godot).${{ github.run_number }}"
+          makensis -V2 -NOCD -DVERSION="$version" -DSRC=build/windows -DOUT=build/SkywardTales-Setup.exe installer/skyward_tales.nsi
+          test -s build/SkywardTales-Setup.exe
+          ls -la build/*.exe build/*.zip
+
       - uses: actions/upload-artifact@v4
         with:
           name: SkywardTales-${{ github.sha }}
           path: |
+            build/SkywardTales-Setup.exe
             build/SkywardTales-windows.zip
             build/SkywardTales-linux.zip
           retention-days: 30
@@ -76,5 +93,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.release_tag || github.ref_name }}
         run: |
-          gh release create "$TAG" build/SkywardTales-windows.zip build/SkywardTales-linux.zip \
+          gh release create "$TAG" build/SkywardTales-Setup.exe build/SkywardTales-windows.zip build/SkywardTales-linux.zip \
             --target "$GITHUB_SHA" --title "Skyward Tales $TAG" --notes-file docs/RELEASE_NOTES.md --prerelease
