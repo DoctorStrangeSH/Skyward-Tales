@@ -20,7 +20,7 @@ var _clouds: Array = []
 func _ready() -> void:
 	layer = 50
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	_ship = load(SkyShipView.SHIP)
+	_ship = WorldArt.texture(SkyShipView.SHIP)
 	_canvas = Control.new()
 	_canvas.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_canvas.size = Vector2(640, 360)
@@ -63,7 +63,7 @@ func _draw_flight() -> void:
 		for k in 3:
 			_canvas.draw_circle(Vector2(x + k * 22.0 * c.z, c.y + (k % 2) * 6.0), 20.0 * c.z, col)
 	if _ship != null:
-		var size := Vector2(170, 150)
+		var size := _ship.get_size() * 0.5
 		var pos := Vector2(lerpf(-120.0, 560.0, t), 110.0 + sin(_clock * 3.0) * 6.0)
 		_canvas.draw_texture_rect(_ship, Rect2(pos, size), false, Color(1, 1, 1, a))
 	if not title.is_empty():

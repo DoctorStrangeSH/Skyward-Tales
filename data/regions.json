@@ -1855,6 +1855,30 @@
         {
           "kind": "sky_archive",
           "position": [640, 300]
+        },
+        {
+          "kind": "decor_harbor_viewing_telescope",
+          "position": [261, 710]
+        },
+        {
+          "kind": "decor_harbor_windsock",
+          "position": [321, 738]
+        },
+        {
+          "kind": "decor_harbor_cargo_pallet",
+          "position": [353, 763]
+        },
+        {
+          "kind": "decor_harbor_mooring_beacon",
+          "position": [463, 720]
+        },
+        {
+          "kind": "decor_harbor_cargo_crane",
+          "position": [531, 698]
+        },
+        {
+          "kind": "decor_harbor_ticket_kiosk",
+          "position": [516, 763]
         }
       ],
       "blockers": [
@@ -1865,6 +1889,30 @@
         {
           "center": [840, 560],
           "size": [56, 50]
+        },
+        {
+          "center": [261, 706],
+          "size": [24, 12]
+        },
+        {
+          "center": [321, 731],
+          "size": [14, 12]
+        },
+        {
+          "center": [353, 754],
+          "size": [46, 22]
+        },
+        {
+          "center": [463, 714],
+          "size": [28, 14]
+        },
+        {
+          "center": [531, 692],
+          "size": [31, 17]
+        },
+        {
+          "center": [516, 754],
+          "size": [57, 23]
         }
       ],
       "bushes": []

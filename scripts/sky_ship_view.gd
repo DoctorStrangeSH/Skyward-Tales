@@ -7,12 +7,13 @@ class_name SkyShipView
 
 signal used
 
-const SHIP := "res://assets/world_hd/sky_ship.png"
-const WRECK := "res://assets/world_hd/sky_ship_wreck.png"
+const SHIP := "world_hd/sky_ship_vetrokryl.png"
+const WRECK := "world_hd/sky_ship_wreck.png"
 
 var wrecked: bool = false
 var prompt: String = "подняться на борт"
 var _sprite: Sprite2D
+var _rest_y: float
 var _clock: float = 0.0
 
 func _ready() -> void:
@@ -20,12 +21,13 @@ func _ready() -> void:
 	add_to_group("region_actor")
 	prompt = "осмотреть обломки" if wrecked else "подняться на борт"
 	_sprite = Sprite2D.new()
-	_sprite.texture = load(WRECK if wrecked else SHIP)
+	_sprite.texture = WorldArt.texture(WRECK if wrecked else SHIP)
 	_sprite.scale = Vector2(0.5, 0.5)
 	_sprite.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
-	# The ladder foot (sprite x≈260/340, bottom) sits on this node.
+	# Keep the ladder foot attached to the existing boarding point.
 	_sprite.centered = false
-	_sprite.position = Vector2(-132, -150) if not wrecked else Vector2(-110, -100)
+	_sprite.position = Vector2(-110, -100) if wrecked else -WorldArt.origin(SHIP) * _sprite.scale
+	_rest_y = _sprite.position.y
 	add_child(_sprite)
 	# Y-sort with the hero: the ship is drawn by its ladder foot.
 	z_index = 0
@@ -45,7 +47,7 @@ func _process(delta: float) -> void:
 	if wrecked:
 		return
 	_clock += delta
-	_sprite.position.y = -150.0 + sin(_clock * 1.6) * 2.5
+	_sprite.position.y = _rest_y + sin(_clock * 1.6) * 2.5
 	queue_redraw()
 
 func _draw() -> void:

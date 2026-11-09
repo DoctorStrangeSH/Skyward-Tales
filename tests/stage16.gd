@@ -110,8 +110,35 @@ func _run() -> void:
 	if not ship.fly_now("sky_island") or game.current_region != "sky_island":
 		return _fail("flight to the sky island")
 	await process_frame
-	if _views(game).size() != 1:
+	views = _views(game)
+	if views.size() != 1:
 		return _fail("the ship docks at the island")
+	var island_ship: SkyShipView = views[0]
+	var ship_sprite := island_ship.get_child(0) as Sprite2D
+	var airship_texture := ship_sprite.texture
+	var ladder_offset := ship_sprite.position + WorldArt.origin(SkyShipView.SHIP) * ship_sprite.scale
+	if ship_sprite.texture.resource_path != "res://assets/" + SkyShipView.SHIP \
+			or not is_zero_approx(ladder_offset.x) or absf(ladder_offset.y) > 2.5:
+		return _fail("the new airship is anchored by its boarding ladder")
+	var harbor_props: Dictionary = {}
+	for node in game.world.get_children():
+		var sprite := node as Sprite2D
+		if sprite != null and sprite.texture != null and sprite.texture.resource_path.contains("/decor_harbor_"):
+			harbor_props[sprite.texture.resource_path.get_file()] = sprite
+	if harbor_props.size() != 6 or not harbor_props.has("decor_harbor_mooring_beacon.png"):
+		return _fail("all six harbor props are loaded on the island")
+	if not get_nodes_in_group("night_lights").any(func(node: Node) -> bool:
+		return node is PointLight2D and node.position == Vector2(463, 696)):
+		return _fail("the beacon provides a light for the night cycle")
+	if game.player.global_position != island_ship.global_position + Vector2(0, 26) \
+			or game.player.test_move(game.player.global_transform, Vector2(0, -12)):
+		return _fail("the arrival and path to the ladder remain open")
+	if game._find_nearest_interactable() != island_ship:
+		return _fail("the ladder is the nearest interactable from the arrival spot")
+	game._try_interact()
+	if not game.hud.dialogue_visible:
+		return _fail("boarding at the island opens the travel menu")
+	ship.handle_choice("ship_later")
 
 	# Weather and the storm engine.
 	var storm_slot := _slot_with(ship, "storm")
@@ -183,6 +210,9 @@ func _run() -> void:
 	game.visited_regions["haven"] = true
 	if not ship.fly("haven"):
 		return _fail("flight starts")
+	var transitions := game.get_children().filter(func(node: Node) -> bool: return node is FlightTransition)
+	if transitions.size() != 1 or (transitions[0] as FlightTransition)._ship != airship_texture:
+		return _fail("the flight transition uses the same airship")
 	var waited := 0.0
 	while game.current_region != "haven" and waited < 5.0:
 		await process_frame

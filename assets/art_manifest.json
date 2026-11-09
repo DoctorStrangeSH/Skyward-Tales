@@ -4150,6 +4150,72 @@
   ],
   "scale": 0.5
  },
+ "world_hd/decor_harbor_cargo_crane.png": {
+  "size": [
+   165,
+   168
+  ],
+  "origin": [
+   50,
+   152
+  ],
+  "scale": 0.5
+ },
+ "world_hd/decor_harbor_cargo_pallet.png": {
+  "size": [
+   109,
+   90
+  ],
+  "origin": [
+   54,
+   76
+  ],
+  "scale": 0.5
+ },
+ "world_hd/decor_harbor_mooring_beacon.png": {
+  "size": [
+   80,
+   108
+  ],
+  "origin": [
+   39,
+   100
+  ],
+  "scale": 0.5
+ },
+ "world_hd/decor_harbor_ticket_kiosk.png": {
+  "size": [
+   142,
+   148
+  ],
+  "origin": [
+   74,
+   135
+  ],
+  "scale": 0.5
+ },
+ "world_hd/decor_harbor_viewing_telescope.png": {
+  "size": [
+   83,
+   104
+  ],
+  "origin": [
+   43,
+   92
+  ],
+  "scale": 0.5
+ },
+ "world_hd/decor_harbor_windsock.png": {
+  "size": [
+   97,
+   106
+  ],
+  "origin": [
+   22,
+   97
+  ],
+  "scale": 0.5
+ },
  "world_hd/decor_potted_plant.png": {
   "size": [
    28,
@@ -5357,6 +5423,17 @@
   "origin": [
    24,
    32
+  ],
+  "scale": 0.5
+ },
+ "world_hd/sky_ship_vetrokryl.png": {
+  "size": [
+   359,
+   304
+  ],
+  "origin": [
+   272,
+   299
   ],
   "scale": 0.5
  },

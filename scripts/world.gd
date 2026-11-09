@@ -332,7 +332,7 @@ func _add_sprite(file: String, base: Vector2, sway: float = 0.0) -> void:
 	add_child(sprite)
 
 ## Lamps and torches cast warm light (seen at night and underground).
-const LIGHT_PROPS := {"village_lamp": 26, "crypt_torch": 18}
+const LIGHT_PROPS := {"village_lamp": 26, "crypt_torch": 18, "decor_harbor_mooring_beacon": 24}
 static var _glow_texture: GradientTexture2D
 
 func _add_glow(at: Vector2, always: bool) -> void:
