@@ -96,6 +96,7 @@ var village: VillageLife
 var mine: PassMine
 var borin: BorinStory
 var lira: LiraStory
+var fair: VillageFair
 var bran: BranStory
 var combos: ElementalCombos
 var gear: GearEffects
@@ -193,6 +194,10 @@ func _ready() -> void:
 	fishing.name = "Fishing"
 	fishing.game = self
 	add_child(fishing)
+	fair = VillageFair.new()
+	fair.name = "VillageFair"
+	fair.game = self
+	add_child(fair)
 	events = WorldEvents.new()
 	events.name = "WorldEvents"
 	events.game = self
@@ -411,6 +416,9 @@ func update_music() -> void:
 			return
 	var style := RegionCatalog.style(current_region)
 	update_ambience()
+	if fair != null and fair.open_here():
+		GameAudio.music("fair")
+		return
 	GameAudio.music(MUSIC_BY_STYLE.get(style, "meadow"))
 
 ## The background bed of the land: wind on the islands, waves on the coast,

@@ -65,6 +65,9 @@ func spot(npc_id: String, for_phase: String) -> Vector2:
 	var routine: Dictionary = data.get("npcs", {}).get(npc_id, {})
 	match for_phase:
 		"evening":
+			# A fair day: everyone dances around the ribbon pole (stage 20).
+			if game.fair != null and VillageFair.is_fair_day(game.day_night.day):
+				return game.fair.evening_spot(data.get("npcs", {}).keys().find(npc_id))
 			# With a tavern, evenings move to its door.
 			if game.settlement.building_level(VillageBuildings.TAVERN) >= 1:
 				var door := SkywardGame._vec(game.settlement.building_info(VillageBuildings.TAVERN).get("position")) + Vector2(0, 34)

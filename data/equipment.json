@@ -1354,6 +1354,39 @@
       "agility": 2,
       "melee_pct": 5,
       "value": 120
+    },
+    "fair_token": {
+      "name": "Ярмарочный жетон",
+      "description": "Медный кружок с ласточкой. На ярмарке в Зелёных Пределах его меняют на призы.",
+      "slot": "",
+      "rarity": "uncommon",
+      "material": true,
+      "value": 0
+    },
+    "candy_cock": {
+      "name": "Сахарный петушок",
+      "description": "+25 здоровья и «Сладость»: скорость +12% на 2 минуты. Ярмарочное лакомство.",
+      "slot": "",
+      "rarity": "common",
+      "value": 5,
+      "use": {
+        "heal": 25,
+        "buff": {
+          "type": "speed",
+          "value": 0.12,
+          "duration": 120,
+          "label": "Сладость"
+        }
+      }
+    },
+    "fair_wreath": {
+      "name": "Ярмарочный венок",
+      "description": "Венок из полевых цветов с ярмарки. Пахнет летом и немного — пирогами.",
+      "slot": "amulet",
+      "rarity": "rare",
+      "max_health": 20,
+      "hp_regen": 2,
+      "value": 40
     }
   },
   "sets": {

@@ -796,6 +796,50 @@ def boss_track(s: Score) -> int:
     return 32
 
 
+def fair_track(s: Score) -> int:
+    """The village fair (D major, a jig in 6/8): fiddle and whistle, accordion, guitar, drums."""
+    b = s.beats
+    fiddle = s.part("fiddle", 104, 52)
+    whistle = s.part("panflute", 96, 76)
+    accordion = s.part("accordion", 70, 88)
+    guitar = s.part("nylon", 84, 40)
+    bassp = s.part("acbass", 94, 64)
+    perc = s.drums(DRUMS_STD, 82)
+    glock = s.part("glock", 50, 96)
+    A = bars_of("D | G | D | A | D | G | A | D")
+    Bc = bars_of("Bm | G | D | A | Bm | G | A | D")
+    mel_a = ("F#5:2 E5:1 D5:2 A4:1 | B4:2 D5:1 G5:2 F#5:1 | A5:2 F#5:1 D5:2 F#5:1 | E5:3 C#5:2 A4:1 |"
+             "F#5:2 E5:1 D5:2 A4:1 | B4:2 D5:1 G5:2 B5:1 | A5:2 G5:1 F#5:2 E5:1 | D5:5 r:1")
+    mel_b = ("F#5:1 G5:1 A5:1 B5:2 A5:1 | G5:2 F#5:1 E5:2 D5:1 | F#5:1 G5:1 A5:1 D6:2 A5:1 | C#6:2 B5:1 A5:3 |"
+             "B5:2 A5:1 F#5:2 D5:1 | G5:2 F#5:1 E5:2 G5:1 | F#5:2 E5:1 C#5:2 E5:1 | D5:5 r:1")
+    for rep in range(2):
+        base = rep * 16
+        fiddle.melody(base * b, mel_a, 92, legato=0.9)
+        (whistle if rep == 0 else fiddle).melody((base + 8) * b, mel_b, 88, legato=0.9)
+        if rep == 1:
+            whistle.melody(base * b, mel_a, 70, octave=1, legato=0.85)
+            whistle.melody((base + 8) * b, mel_b, 64, octave=1, legato=0.85)
+            glock.melody(base * b, mel_a, 40, octave=1, legato=0.6)
+        for start, chart in [(base, A), (base + 8, Bc)]:
+            arpeggio(guitar, chart, b, start, 50, [0, 2, 1, 3, 2, 1], 1, 64, 0.9)
+            bass(bassp, chart, b, start, 38, [(0, "root", 2), (3, "fifth", 2)], 76)
+            # Accordion chords on the off-beats: oom-pa.
+            for beat, length, sym in each_chord(chart, b, start):
+                _, tones = chord(sym)
+                v = voice(tones, None, 60, 72, 3)
+                accordion.notes_at(beat + 1, v, 0.9, 46 if rep == 0 else 54)
+                accordion.notes_at(beat + 4, v, 0.9, 42 if rep == 0 else 50)
+            for bar in range(start, start + 8):
+                perc.note(bar * b, 61, 0.5, 78)      # low bongo
+                perc.note(bar * b + 3, 61, 0.5, 70)
+                perc.note(bar * b + 2, 60, 0.5, 52)  # high bongo
+                perc.note(bar * b + 5, 60, 0.5, 48)
+                perc.note(bar * b + 3, TAMB, 0.5, 44)
+                for e in range(6):
+                    perc.note(bar * b + e, SHAKER, 0.25, 30 + (10 if e in (0, 3) else 0))
+    return 32
+
+
 TRACKS = {
     # name: (bpm, beats per bar, builder, reverb mix, hall seconds, seed)
     "title": (80, 4, title_track, 0.34, 3.0, 11),
@@ -808,6 +852,7 @@ TRACKS = {
     "ash": (100, 4, ash_track, 0.28, 2.4, 18),
     "rift": (60, 4, rift_track, 0.42, 4.0, 19),
     "boss": (150, 4, boss_track, 0.22, 2.0, 20),
+    "fair": (208, 6, fair_track, 0.2, 1.6, 21),
 }
 
 

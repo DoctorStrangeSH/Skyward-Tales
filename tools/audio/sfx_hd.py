@@ -350,6 +350,17 @@ def sfx_boss_roar():
     return room(mix(1.9, (brass, 0, 1.0), (growl, 0.05, 0.7)), 1.0, 0.25)
 
 
+def sfx_firework():
+    """A rocket: whistle up, a soft boom and a long sparkling crackle."""
+    t = t_of(0.55)
+    whistle = np.sin(2 * np.pi * np.cumsum(np.linspace(700, 2300, len(t))) / SR) * swell(len(t), 0.7, 1.2) * 0.25
+    hiss = bp(noise(0.55, 141), 2500, 7000) * swell(len(t), 0.6) * 0.3
+    boom = sine_glide(110, 45, 0.5, 3) * adsr(n_of(0.5), 0.003, 3)
+    pop = lp(noise(0.25, 142), 900) * adsr(n_of(0.25), 0.002, 5)
+    sparkle = crackles(1.2, 90, 143, 3000, 9000) * np.linspace(1, 0, n_of(1.2)) ** 1.5
+    return room(mix(1.9, (whistle, 0, 1.0), (hiss, 0, 1.0), (boom, 0.55, 0.9), (pop, 0.55, 0.7), (sparkle, 0.6, 0.6)), 1.0, 0.3)
+
+
 def sfx_ui():
     """A soft wooden tick for buttons."""
     tick = ring([1850, 3200, 4700], 0.05, [0.008, 0.005, 0.003], [1.0, 0.4, 0.2])
@@ -362,10 +373,10 @@ SFX = {
     "cast_fire": sfx_cast_fire, "cast_ice": sfx_cast_ice, "cast_lightning": sfx_cast_lightning,
     "cast_wave": sfx_cast_wave, "cast_wall": sfx_cast_wall, "cast_orb": sfx_cast_orb,
     "dash": sfx_dash, "gust": sfx_gust, "pickup": sfx_pickup, "chest": sfx_chest, "level_up": sfx_level_up,
-    "quest": sfx_quest, "travel": sfx_travel, "boss_roar": sfx_boss_roar, "ui": sfx_ui,
+    "quest": sfx_quest, "travel": sfx_travel, "boss_roar": sfx_boss_roar, "ui": sfx_ui, "firework": sfx_firework,
 }
 # Loudness by role (RMS, dB): interface and small pickups quieter, blows and magic fuller.
-LOUDNESS = {"ui": -27.0, "pickup": -22.0, "dash": -23.0, "gust": -24.0, "travel": -20.0}
+LOUDNESS = {"firework": -22.0, "ui": -27.0, "pickup": -22.0, "dash": -23.0, "gust": -24.0, "travel": -20.0}
 
 
 def write_wav(path: pathlib.Path, x: np.ndarray, rms_db: float) -> None:

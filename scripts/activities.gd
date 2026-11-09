@@ -50,6 +50,8 @@ static func entries(game: SkywardGame) -> Array[Dictionary]:
 	rows.append(_row("fishing", "Рыбалка", "Мирное", true, "поймано %d" % stat.call("fish"), "Места с рябью на воде", "Подсечь вовремя и удержать рыбу в зелёной зоне."))
 	rows.append(_row("treasure", "Карты сокровищ", "Мирное", true, "найдено кладов %d%s" % [game.treasure.found, " · карта в работе" if game.treasure.has_active() else ""], "Карты падают с врагов и из сундуков", "Прочитайте карту — на миникарте появится место раскопок."))
 	rows.append(_row("farm", "Огород", "Мирное", game.farm.level() >= 1, ("уровень %d, урожаев %d" % [game.farm.level(), stat.call("harvests")]) if game.farm.level() >= 1 else "", "Деревня", "Сажайте семена, поливайте, собирайте." if game.farm.level() >= 1 else "Постройте огород на доске поселения."))
+	var fair_when := "сегодня!" if VillageFair.is_fair_day(game.day_night.day) else "через %d дн." % game.fair.days_until()
+	rows.append(_row("fair", "Ярмарка", "Мирное", true, "%s · рекорд тира %d" % [fair_when, game.fair.best], "Луг у рынка в Зелёных Пределах, каждые 4 дня", "Тир, рыбный день, лавка призов за жетоны, вечером фейерверк."))
 	rows.append(_row("forge", "Кузня Борина", "Мирное", true, "уровень %d, заточек %d" % [game.borin.forge_level(), stat.call("forged")], "Борин в Пределах", "Заточка вещей, полки с оружием, щитами и украшениями."))
 	rows.append(_row("trainers", "Наставники", "Мирное", true, "изучено %d" % game.player.learned_skills.size(), "Борин, Торен, Илара, Ориэн, Бран", "Навыки, заклинания и пассивки за золото."))
 	rows.append(_row("crafts", "Ремесло", "Мирное", true, "создано %d" % stat.call("crafts"), "Клавиша B, верстаки и котлы", "Зелья, снаряжение, еда."))

@@ -105,7 +105,7 @@ func minimap_markers() -> Array:
 
 func _discover_nearby_enemies() -> void:
 	for enemy in game.get_tree().get_nodes_in_group("enemies"):
-		if not enemy is SlimeEnemy or enemy.is_queued_for_deletion():
+		if not enemy is SlimeEnemy or enemy.is_queued_for_deletion() or enemy.has_meta("fair_target"):
 			continue
 		if game.player.global_position.distance_squared_to(enemy.global_position) > 180.0 * 180.0:
 			continue

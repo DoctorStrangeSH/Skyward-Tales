@@ -426,6 +426,13 @@
       "stat": "ng_plus",
       "goal": 1,
       "gold": 300
+    },
+    "fair_marksman": {
+      "title": "Меткий глаз",
+      "description": "Собейте 12 мишеней за один заход в ярмарочном тире.",
+      "stat": "fair_gallery",
+      "goal": 12,
+      "gold": 120
     }
   }
 }

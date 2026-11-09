@@ -857,8 +857,47 @@ def crate_icon() -> Canvas:
     return _finish(c)
 
 
+def fair_token() -> Canvas:
+    """Stage 20: a copper fair token with a swallow."""
+    c = Canvas(16, 16)
+    copper = ramp("#ffd8a0", "#d88a48", "#8a4a28")
+    c.ellipse(8, 8, 6.0, 6.0, copper[2])
+    c.ellipse(7.6, 7.6, 5.0, 5.0, copper[1])
+    c.ellipse(6.5, 6.5, 2.0, 1.6, copper[0])
+    for x, y in ((5, 9), (6, 8), (7, 8), (8, 9), (9, 8), (10, 7), (11, 7), (8, 10)):
+        c.put(x, y, copper[2])
+    return _finish(c)
+
+
+def candy_cock() -> Canvas:
+    """A red sugar cockerel on a stick."""
+    c = Canvas(16, 16)
+    candy = ramp("#ffc0b0", "#e0483c", "#90202a")
+    c.line(8, 9, 8, 15, hex_color("#f0e6d0"))
+    c.ellipse(8, 6, 4.5, 4.0, candy[1])
+    c.ellipse(6.5, 4.5, 1.6, 1.4, candy[0])
+    c.put(11, 2, candy[2]); c.put(12, 3, candy[1]); c.put(10, 1, candy[1])
+    c.put(4, 6, candy[2]); c.put(9, 5, hex_color("#2a1a1a"))
+    return _finish(c)
+
+
+def wreath() -> Canvas:
+    """A wreath of field flowers."""
+    import math as _m
+    c = Canvas(16, 16)
+    leaf = ramp("#b0e090", "#5aa040", "#2a6020")
+    for k in range(16):
+        a = k * _m.tau / 16
+        c.ellipse(8 + _m.cos(a) * 5, 8 + _m.sin(a) * 4.5, 1.6, 1.4, leaf[1 if k % 2 else 2])
+    for k, col in enumerate(["#ff8aa8", "#ffe060", "#b090ff", "#ffffff", "#ff8aa8", "#ffe060"]):
+        a = k * _m.tau / 6 + 0.3
+        c.put(round(8 + _m.cos(a) * 5), round(8 + _m.sin(a) * 4.5), hex_color(col))
+    return _finish(c)
+
+
 def build_misc() -> dict[str, Canvas]:
     return {
+        "fair_token": fair_token(), "candy_cock": candy_cock(), "fair_wreath": wreath(),
         "moonleaf": flower_icon(ramp("#f0fff8", "#a8e0d0", "#4a9a8a")),
         "spirit_blossom": flower_icon(ramp("#fff0ff", "#f0a0e0", "#a04a9a")),
         "echo_crystal": gem(ramp("#f0f8ff", "#a0c8ff", "#5a6ad0")),

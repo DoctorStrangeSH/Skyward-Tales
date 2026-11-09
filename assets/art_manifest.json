@@ -77,6 +77,12 @@
    16
   ]
  },
+ "icons/candy_cock.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/coal_sack.png": {
   "size": [
    16,
@@ -165,6 +171,18 @@
   "size": [
    32,
    32
+  ]
+ },
+ "icons/fair_token.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/fair_wreath.png": {
+  "size": [
+   16,
+   16
   ]
  },
  "icons/fang_charm.png": {
@@ -4923,6 +4941,50 @@
   "origin": [
    22,
    28
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/fair_booth.png": {
+  "size": [
+   104,
+   100
+  ],
+  "origin": [
+   52,
+   96
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/fair_gallery.png": {
+  "size": [
+   108,
+   84
+  ],
+  "origin": [
+   54,
+   80
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/fair_maypole.png": {
+  "size": [
+   40,
+   156
+  ],
+  "origin": [
+   20,
+   152
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/fair_target.png": {
+  "size": [
+   40,
+   60
+  ],
+  "origin": [
+   20,
+   56
   ],
   "scale": 0.5
  },
