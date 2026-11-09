@@ -1259,6 +1259,16 @@
    13
   ]
  },
+ "props/keeper_alchemy_notes.png": {
+  "size": [
+   16,
+   16
+  ],
+  "origin": [
+   8,
+   14
+  ]
+ },
  "props/keeper_echo.png": {
   "size": [
    20,
@@ -4784,6 +4794,17 @@
   ],
   "scale": 0.5
  },
+ "world_hd/props/alchemy_still.png": {
+  "size": [
+   64,
+   76
+  ],
+  "origin": [
+   32,
+   72
+  ],
+  "scale": 0.5
+ },
  "world_hd/props/chest_closed.png": {
   "size": [
    48,
@@ -5056,6 +5077,17 @@
   "origin": [
    60,
    126
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/keeper_alchemy_notes.png": {
+  "size": [
+   32,
+   32
+  ],
+  "origin": [
+   16,
+   28
   ],
   "scale": 0.5
  },
@@ -5452,6 +5484,17 @@
   "origin": [
    272,
    299
+  ],
+  "scale": 0.5
+ },
+ "world_hd/sky_shop_lastochka.png": {
+  "size": [
+   132,
+   120
+  ],
+  "origin": [
+   66,
+   60
   ],
   "scale": 0.5
  },

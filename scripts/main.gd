@@ -95,6 +95,8 @@ var world_state: WorldState
 var village: VillageLife
 var mine: PassMine
 var borin: BorinStory
+var lira: LiraStory
+var bran: BranStory
 var combos: ElementalCombos
 var gear: GearEffects
 var farm: Farm
@@ -212,6 +214,8 @@ func _ready() -> void:
 	world_state.game = self
 	add_child(world_state)
 	borin = BorinStory.new(self)
+	lira = LiraStory.new(self)
+	bran = BranStory.new(self)
 	factions = Factions.new(self)
 	fates = IslandFates.new(self)
 	party = Party.new(self)
@@ -1800,6 +1804,10 @@ func _cast_spell() -> void:
 func _refresh_hud() -> void:
 	if borin != null:
 		borin.sync_progress()
+	if lira != null:
+		lira.sync_progress()
+	if bran != null:
+		bran.sync_progress()
 	if ship != null:
 		ship.sync_progress()
 	if hud != null and player != null and quests != null:

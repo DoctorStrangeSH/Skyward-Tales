@@ -58,6 +58,8 @@ func _populate_region() -> void:
 	for gate_data in layout.get("gates", []):
 		game._spawn_gate(str(gate_data.get("target", "")), SkywardGame._vec(gate_data.get("position")), SkywardGame._vec(gate_data.get("arrival")), str(gate_data.get("label", "")))
 	game.buildings.spawn_mercenary()
+	game.lira.populate()
+	game.bran.populate()
 	game.buildings.reveal_chests()
 	game.guild.spawn_target()
 	if game.current_region == Expeditions.REGION:

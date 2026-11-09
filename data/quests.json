@@ -924,5 +924,83 @@
         }
       ]
     }
+  },
+  {
+    "id": "lira_still",
+    "title": "Перегонный куб",
+    "description": "Лира задумала перегонный куб для новых зелий. Принесите ей 5 железной руды и 4 порции слизи.",
+    "target": 2,
+    "side": true,
+    "requires_quest": "lira_slime",
+    "reward": {
+      "experience": 240,
+      "gold": 60
+    }
+  },
+  {
+    "id": "lira_blast",
+    "title": "Сбежавшие зелья",
+    "description": "Первая закваска Лиры взорвалась, и пять живых зелий расползлись вокруг лаборатории. Переловите их, пока они не добрались до огородов.",
+    "target": 5,
+    "side": true,
+    "requires_quest": "lira_still",
+    "reward": {
+      "experience": 320,
+      "gold": 80,
+      "items": [
+        {
+          "id": "health_potion",
+          "amount": 2
+        }
+      ]
+    }
+  },
+  {
+    "id": "lira_recipe",
+    "title": "Записи алхимика Хранителей",
+    "description": "Чтобы зелья не убегали, нужна формула стабилизации. Найдите записи алхимика Хранителей в Архиве на Небесном острове и отнесите их Лире.",
+    "target": 1,
+    "side": true,
+    "requires_quest": "lira_blast",
+    "reward": {
+      "experience": 650,
+      "gold": 150,
+      "items": [
+        {
+          "id": "power_elixir",
+          "amount": 2
+        }
+      ]
+    }
+  },
+  {
+    "id": "bran_hull",
+    "title": "Корпус для лавки",
+    "description": "Бран мечтает о летающей лавке «Ласточка». Для корпуса нужны 10 брёвен, 6 железной руды и 2 эссенции ветра.",
+    "target": 3,
+    "side": true,
+    "requires_quest": "bran_supply_run",
+    "reward": {
+      "experience": 450,
+      "gold": 0
+    }
+  },
+  {
+    "id": "bran_charter",
+    "title": "Торговая грамота",
+    "description": "Без грамоты лавку в небо не выпустят. Слетайте в Вольную пристань к квартирмейстеру Бруно, получите грамоту и отнесите её Брану.",
+    "target": 1,
+    "side": true,
+    "requires_quest": "bran_hull",
+    "reward": {
+      "experience": 700,
+      "gold": 0,
+      "items": [
+        {
+          "id": "starlight_essence",
+          "amount": 1
+        }
+      ]
+    }
   }
 ]

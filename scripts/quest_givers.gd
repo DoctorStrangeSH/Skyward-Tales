@@ -48,6 +48,10 @@ func _unlocked(quest_id: String) -> bool:
 
 ## "quest" (!) when an offer is waiting, "ready" (?) when a reward is due.
 func marker_for(npc_id: String) -> String:
+	if game.bran != null:
+		var bran_marker := game.bran.marker(npc_id)
+		if not bran_marker.is_empty():
+			return bran_marker
 	if game.ship != null:
 		var ship_marker := game.ship.marker(npc_id)
 		if not ship_marker.is_empty():
@@ -56,6 +60,10 @@ func marker_for(npc_id: String) -> String:
 		var party_marker := game.party.marker(npc_id)
 		if not party_marker.is_empty():
 			return party_marker
+	if game.lira != null and npc_id == LiraStory.NPC:
+		var lira_marker := game.lira.marker()
+		if not lira_marker.is_empty() and (lira_marker != "service" or current_quest(npc_id).is_empty()):
+			return lira_marker
 	if game.factions != null:
 		var faction_marker := game.factions.marker(npc_id)
 		if not faction_marker.is_empty():
@@ -70,11 +78,17 @@ func marker_for(npc_id: String) -> String:
 	return ""
 
 func talk(npc_id: String) -> void:
+	# Bran's charter at Bruno's comes before the port's own talk.
+	if game.bran != null and game.bran.talk(npc_id):
+		return
 	if game.ship != null and game.ship.talk(npc_id):
 		return
 	if game.party != null and game.party.talk(npc_id):
 		return
 	if game.factions != null and game.factions.talk(npc_id):
+		return
+	# Lira's own story comes after her first quest.
+	if game.lira != null and current_quest(npc_id).is_empty() and game.lira.talk(npc_id):
 		return
 	if npc_id == "herald" and game.deep_rifts != null and game.deep_rifts.unlocked():
 		game._show_dialogue(_speaker(npc_id), game.deep_rifts.herald_line())

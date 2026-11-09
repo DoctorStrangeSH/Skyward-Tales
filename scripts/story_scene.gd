@@ -50,7 +50,7 @@ func has_scene(id: String) -> bool:
 
 ## A conversation with an NPC told like a scene (several windows, a
 ## narrator): steps may name the speaker "self" — the NPC being talked to.
-func play_steps(steps: Array, self_id: String, self_name: String, on_finished: Callable = Callable()) -> bool:
+func play_steps(steps: Array, self_id: String, self_name: String, on_finished: Callable = Callable(), cinematic: bool = false) -> bool:
 	var resolved: Array = []
 	for step in steps:
 		if step is String:
@@ -62,7 +62,7 @@ func play_steps(steps: Array, self_id: String, self_name: String, on_finished: C
 		resolved.append(copy)
 	if not self_id.is_empty() and not speakers.has(self_id):
 		speakers[self_id] = self_name
-	scenes["_talk"] = {"steps": resolved}
+	scenes["_talk"] = {"steps": resolved, "cinematic": cinematic}
 	return play("_talk", on_finished)
 
 func play(id: String, on_finished: Callable = Callable()) -> bool:

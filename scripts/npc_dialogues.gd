@@ -88,6 +88,10 @@ func marker_for(npc_id: String) -> String:
 			return "quest"
 	if npc_id == "hunter" and quests.is_completed("toren_wolf_hunt") and _can_craft_mantle():
 		return "service"
+	if npc_id == "merchant" and game.bran != null:
+		var bran_marker := game.bran.marker(npc_id)
+		if not bran_marker.is_empty():
+			return bran_marker
 	if npc_id == "blacksmith":
 		var story := game.borin.marker()
 		if not story.is_empty():
@@ -129,6 +133,10 @@ func handle_choice(choice_id: String) -> void:
 	if game.givers != null and game.givers.handle_choice(choice_id):
 		return
 	if game.borin != null and game.borin.handle_choice(choice_id):
+		return
+	if game.lira != null and game.lira.handle_choice(choice_id):
+		return
+	if game.bran != null and game.bran.handle_choice(choice_id):
 		return
 	if game.guild != null and game.guild.handle_choice(choice_id):
 		return
@@ -500,6 +508,12 @@ func _complete_miner_quest(choice_id: String) -> void:
 # --- Merchant Bran -------------------------------------------------------
 
 func on_merchant() -> void:
+	if game.bran != null and game.bran.talk("merchant"):
+		return
+	open_bran_shop()
+
+## Bran's shop itself (his story can open it from its own choices).
+func open_bran_shop() -> void:
 	const quest_id := "bran_supply_run"
 	var quests := game.quests
 	var reputation: int = game.relationships.get_score("elder")
@@ -512,6 +526,10 @@ func on_merchant() -> void:
 	var plundered: bool = game.world_state.has("caravan_lost")
 	game.merchant_shop.caravan_open = route_open
 	game.merchant_shop.price_mult = 0.9 if route_open else (1.15 if plundered else 1.0)
+	# «Ласточка» (stage 20): goods from the islands and a lasting discount.
+	if game.bran != null and game.bran.flying():
+		game.merchant_shop.price_mult *= 0.9
+		choices.append({"id": "bran_isle_menu", "label": "✈ Товары с островов («Ласточка»)"})
 	game.merchant_shop.sell_mult = {"iron_ore": game.mine.iron_price_mult()}
 	if quests.is_completed(quest_id):
 		message = "Благодаря тебе лавка снова получает товары. %s. Для тебя всегда найдётся что-нибудь под прилавком." % game.relationships.get_reaction("bran")
@@ -559,7 +577,7 @@ func _sell_to_merchant(item_id: String) -> void:
 		_show_sell_menu()
 		return
 	if item_id == "back":
-		on_merchant()
+		open_bran_shop()
 		return
 	var result: Dictionary = game.merchant_shop.sell(game.player, item_id, game.relationships.get_score("bran"))
 	if bool(result.get("success", false)):
@@ -607,4 +625,4 @@ func _purchase_merchant_item(item_id: String) -> void:
 			game.hud.show_message("Куплено: %s за %d золота." % [str(result.get("name", item_id)), int(result.get("price", 0))], 2.5)
 	else:
 		game.hud.show_message(str(result.get("message", "Покупка не удалась.")), 2.5)
-	on_merchant()
+	open_bran_shop()

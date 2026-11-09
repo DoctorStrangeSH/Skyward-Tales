@@ -34,6 +34,8 @@ func handle(herb: WorldCollectible) -> void:
 		_mine_ore(herb)
 	elif herb.item_id == "meteor_iron":
 		_collect_meteor(herb)
+	elif game.lira.handles(herb.item_id):
+		game.lira.collect(herb)
 	elif not game.story_object(herb.item_id).is_empty():
 		_inspect_story_object(herb)
 		return
