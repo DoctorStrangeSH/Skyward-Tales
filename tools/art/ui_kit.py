@@ -72,7 +72,14 @@ def main() -> int:
     nine(kit_image("Dialogue_UI", "journal_panel.png"), 14).save(OUT / "panel_gold.png")
     for state in ("normal", "hover", "pressed", "disabled"):
         button(state).save(OUT / f"button_{state}.png")
-    print("  ui: panel, panel_gold, buttons")
+    # The HUD pieces (drawn at half size by scripts/hud_vitals.gd).
+    hud = OUT / "hud"
+    hud.mkdir(exist_ok=True)
+    for name in ("vitals_panel", "level_badge_rim", "health_fill", "mana_fill", "stamina_fill", "empty_track",
+                 "health", "mana", "experience"):
+        kit_image("Combat_HUD", name + ".png").save(hud / f"{name}.png")
+    kit_image("Inventory_UI", "coins.png").save(hud / "coins.png")
+    print("  ui: panel, panel_gold, buttons, hud")
     return 0
 
 

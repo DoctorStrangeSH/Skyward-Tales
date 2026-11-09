@@ -86,11 +86,9 @@ func _draw() -> void:
 	var cave := RegionCatalog.is_underground(style)
 	if follow:
 		# Frame: dark wood, a gold line, the region banner.
-		draw_rect(Rect2(Vector2.ZERO, HUD_SIZE), Color(0.13, 0.085, 0.06, 0.96))
-		draw_rect(Rect2(Vector2(1, 1), HUD_SIZE - Vector2(2, 2)), Color(0.92, 0.72, 0.4), false, 1.0)
-		draw_rect(Rect2(Vector2(2.5, 2.5), HUD_SIZE - Vector2(5, 5)), Color(0.55, 0.38, 0.2, 0.9), false, 0.5)
-		for corner in [Vector2(2, 2), Vector2(HUD_SIZE.x - 2, 2), Vector2(2, HUD_SIZE.y - 2), HUD_SIZE - Vector2(2, 2)]:
-			draw_colored_polygon(PackedVector2Array([corner + Vector2(0, -3), corner + Vector2(3, 0), corner + Vector2(0, 3), corner + Vector2(-3, 0)]), Color(1.0, 0.85, 0.5))
+		# The gold frame with sapphire corners (stage 21, UiStyle).
+		draw_style_box(UiStyle.panel(true), Rect2(Vector2(-4, -4), HUD_SIZE + Vector2(8, 8)))
+		draw_rect(Rect2(3, 3, HUD_SIZE.x - 6, 13), Color(0.07, 0.07, 0.15))
 		var font := UiFont.font()
 		draw_string(font, Vector2(6, 13), RegionCatalog.display_name(region_id).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 110, UiFont.px(9), Color(1.0, 0.9, 0.62))
 		draw_string(font, Vector2(6, 13), "ур. %d" % RegionCatalog.level(region_id), HORIZONTAL_ALIGNMENT_RIGHT, HUD_SIZE.x - 24, UiFont.px(8), Color(0.75, 0.85, 1.0))

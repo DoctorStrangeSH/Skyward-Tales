@@ -83,7 +83,7 @@ HAVEN.update({
 # Enchanted moonlit forest: deep blue-green moss, glowing flora and pools.
 NIGHT = dict(DAY)
 NIGHT.update({
-    "grass": GRASS[:2],
+    "grass": NEW_GRASS,
     "recolor": (0.38, 0.62, 0.78),
     "overlays": [{"sources": [MOSS], "recolor": (0.42, 0.6, 0.72), "cell": 120, "cover": 0.35}],
     "shade": (0.7, 1.0),
@@ -104,7 +104,7 @@ NIGHT.update({
 # Misty marsh: olive moss and mud, murky bog water with lily pads.
 MARSH = dict(DAY)
 MARSH.update({
-    "grass": PLAIN_GRASS,
+    "grass": NEW_GRASS,
     "recolor": (0.6, 0.7, 0.42),
     "overlays": [{"sources": [MOSS, (A2, (590, 330, 630, 374), 1.0)], "recolor": (0.62, 0.66, 0.46), "cell": 110, "cover": 0.45}],
     "shade": (0.62, 0.92),
@@ -114,8 +114,8 @@ MARSH.update({
     "liquid": "murk",
     "water_decals": [(LILY[0], LILY[1], 18, 70)],
     "decals": [(N % "nature_027", 16, 40), (N % "nature_037", 14, 40), (N % "nature_030", 16, 30)] + MUSHROOMS + [(N % "nature_022", 16, 10)],
-    "trees": [(N % "weeping_willow", 62), (N % "dead_tree", 58), (N % "weeping_willow", 66), (N % "nature_extra_020", 44)],
-    "bushes": [(N % "nature_027", 22), (N % "nature_030", 22), (N % "nature_037", 20), (N % "nature_019", 22)],
+    "trees": [(N % "weeping_willow", 62), (NEW % "green_reach/base/oak_dark", 66), (N % "weeping_willow", 66), (N % "dead_tree", 58)],
+    "bushes": [(NEW % "hd/sky_harbor/flora/wild_fern", 24), (NEW % "hd/sky_harbor/flora/mossy_log", 28), (NEW % "hd/sky_harbor/flora/cream_mushrooms", 18), (N % "nature_027", 22)],
     "sky": "dusk",
 })
 
@@ -124,7 +124,7 @@ COAST = dict(DAY)
 COAST.update({
     "grass": [SAND, SAND2],
     "patch": 40, "step": 26,
-    "overlays": [{"sources": PLAIN_GRASS, "recolor": (0.9, 0.95, 0.75), "cell": 160, "cover": 0.22}],
+    "overlays": [{"sources": NEW_GRASS, "recolor": (0.96, 1.0, 0.8), "cell": 160, "cover": 0.22, "patch": 96, "step": 60}],
     "shade": (0.86, 1.04),
     "warm": (1.03, 1.0, 0.94), "cool": (0.96, 0.98, 1.0),
     "dirt": [(150, 118, 80), (176, 142, 100), (196, 164, 120), (214, 186, 144), (230, 206, 168)],
@@ -140,7 +140,7 @@ COAST.update({
 # Stone pass: cold grass, bare rock and snowfields, snowy pines.
 MOUNTAIN = dict(DAY)
 MOUNTAIN.update({
-    "grass": PLAIN_GRASS,
+    "grass": NEW_GRASS,
     "recolor": (0.74, 0.86, 0.8),
     "overlays": [{"sources": [STONE, MOSS_STONE], "cell": 120, "cover": 0.35},
                  {"sources": [SNOW, SNOW2], "cell": 150, "cover": 0.32}],
@@ -150,7 +150,7 @@ MOUNTAIN.update({
     "dirt_tile": None,
     "water": [(110, 180, 210), (40, 90, 140)],
     "decals": STONES + STONES + [(N % "nature_extra_012", 14, 20), (N % "nature_extra_013", 12, 16)],
-    "trees": [(N % "pine_tree", 46), (N % "pine_tree", 52), (N % "snow_blossom_tree", 58), (N % "nature_extra_020", 44)],
+    "trees": [(N % "pine_tree", 46), (N % "pine_tree", 52), (NEW % "hd/greenreach/nature/tree_winter", 64), (N % "pine_tree", 56)],
     "bushes": [(N % "nature_extra_009", 22), (N % "nature_extra_010", 22), (N % "nature_018", 22), (N % "nature_extra_012", 20)],
     "sky": "cold",
 })
@@ -158,8 +158,8 @@ MOUNTAIN.update({
 # Floating sky islands: bright meadows, white and pink blossom.
 SKY = dict(DAY)
 SKY.update({
-    "trees": [(N % "summer_oak", 60), (N % "snow_blossom_tree", 60), (N % "spring_blossom_tree", 60), (N % "nature_extra_018", 62)],
-    "decals": FLOWERS + STONES[:1],
+    "trees": [(NEW % "hd/greenreach/nature/tree_summer", 68), (NEW % "hd/greenreach/nature/tree_spring", 68), (NEW % "green_reach/base/blossom", 72), (NEW % "green_reach/base/oak", 74)],
+    "decals": NEW_FLOWERS + NEW_STONES[:2],
 })
 
 # Wind spires: golden autumn grass under a sunset sky.
@@ -167,8 +167,8 @@ SPIRES = dict(DAY)
 SPIRES.update({
     "recolor": (1.08, 0.92, 0.55),
     "shade": (0.72, 1.0),
-    "trees": [(N % "golden_tree", 60), (N % "autumn_tree_orange", 60), (N % "nature_extra_016", 60), (N % "nature_extra_015", 62)],
-    "bushes": [(N % "nature_019", 22), (N % "nature_extra_032", 22), (N % "nature_016", 22), (N % "nature_036", 20)],
+    "trees": [(NEW % "hd/greenreach/nature/tree_autumn", 68), (N % "golden_tree", 60), (NEW % "hd/greenreach/nature/tree_autumn", 74), (N % "autumn_tree_orange", 60)],
+    "bushes": [(NEW % "hd/wind_spires/props/silver_grass", 24), (N % "nature_extra_032", 22), (NEW % "hd/wind_spires/props/silver_grass", 20), (N % "nature_036", 20)],
     "decals": [(N % "nature_extra_029", 13, 40), (N % "nature_024", 14, 40)] + STONES,
     "decal_tint": (1.0, 0.95, 0.85),
     "sky": "sunset",

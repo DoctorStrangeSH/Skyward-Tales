@@ -4539,45 +4539,45 @@
  },
  "world_hd/marsh_bush_0.png": {
   "size": [
-   44,
-   44
+   48,
+   41
   ],
   "origin": [
-   22,
-   41
+   24,
+   39
   ],
   "scale": 0.5
  },
  "world_hd/marsh_bush_1.png": {
   "size": [
-   44,
-   49
+   56,
+   41
   ],
   "origin": [
-   22,
-   46
+   28,
+   38
   ],
   "scale": 0.5
  },
  "world_hd/marsh_bush_2.png": {
   "size": [
-   40,
-   58
+   36,
+   27
   ],
   "origin": [
-   20,
-   56
+   18,
+   26
   ],
   "scale": 0.5
  },
  "world_hd/marsh_bush_3.png": {
   "size": [
    44,
-   32
+   44
   ],
   "origin": [
    22,
-   30
+   41
   ],
   "scale": 0.5
  },
@@ -4594,12 +4594,12 @@
  },
  "world_hd/marsh_tree_1.png": {
   "size": [
-   116,
-   125
+   132,
+   153
   ],
   "origin": [
-   58,
-   121
+   66,
+   151
   ],
   "scale": 0.5
  },
@@ -4616,12 +4616,12 @@
  },
  "world_hd/marsh_tree_3.png": {
   "size": [
-   88,
-   107
+   116,
+   125
   ],
   "origin": [
-   44,
-   103
+   58,
+   121
   ],
   "scale": 0.5
  },
@@ -4704,23 +4704,23 @@
  },
  "world_hd/mountain_tree_2.png": {
   "size": [
-   116,
-   110
+   128,
+   121
   ],
   "origin": [
-   58,
-   107
+   64,
+   118
   ],
   "scale": 0.5
  },
  "world_hd/mountain_tree_3.png": {
   "size": [
-   88,
-   107
+   112,
+   160
   ],
   "origin": [
-   44,
-   103
+   56,
+   156
   ],
   "scale": 0.5
  },
@@ -5562,56 +5562,56 @@
  },
  "world_hd/sky_tree_0.png": {
   "size": [
-   120,
-   120
+   136,
+   128
   ],
   "origin": [
-   60,
-   116
+   68,
+   125
   ],
   "scale": 0.5
  },
  "world_hd/sky_tree_1.png": {
   "size": [
-   120,
-   114
+   136,
+   129
   ],
   "origin": [
-   60,
-   111
+   68,
+   126
   ],
   "scale": 0.5
  },
  "world_hd/sky_tree_2.png": {
   "size": [
-   120,
-   116
+   144,
+   148
   ],
   "origin": [
-   60,
-   111
+   72,
+   144
   ],
   "scale": 0.5
  },
  "world_hd/sky_tree_3.png": {
   "size": [
-   124,
-   118
+   148,
+   117
   ],
   "origin": [
-   62,
-   116
+   74,
+   114
   ],
   "scale": 0.5
  },
  "world_hd/spires_bush_0.png": {
   "size": [
-   44,
-   32
+   48,
+   35
   ],
   "origin": [
-   22,
-   30
+   24,
+   34
   ],
   "scale": 0.5
  },
@@ -5628,12 +5628,12 @@
  },
  "world_hd/spires_bush_2.png": {
   "size": [
-   44,
-   29
+   40,
+   30
   ],
   "origin": [
-   22,
-   27
+   20,
+   29
   ],
   "scale": 0.5
  },
@@ -5650,6 +5650,17 @@
  },
  "world_hd/spires_tree_0.png": {
   "size": [
+   136,
+   128
+  ],
+  "origin": [
+   68,
+   125
+  ],
+  "scale": 0.5
+ },
+ "world_hd/spires_tree_1.png": {
+  "size": [
    120,
    125
   ],
@@ -5659,7 +5670,18 @@
   ],
   "scale": 0.5
  },
- "world_hd/spires_tree_1.png": {
+ "world_hd/spires_tree_2.png": {
+  "size": [
+   148,
+   139
+  ],
+  "origin": [
+   74,
+   136
+  ],
+  "scale": 0.5
+ },
+ "world_hd/spires_tree_3.png": {
   "size": [
    120,
    118
@@ -5667,28 +5689,6 @@
   "origin": [
    60,
    114
-  ],
-  "scale": 0.5
- },
- "world_hd/spires_tree_2.png": {
-  "size": [
-   120,
-   120
-  ],
-  "origin": [
-   60,
-   116
-  ],
-  "scale": 0.5
- },
- "world_hd/spires_tree_3.png": {
-  "size": [
-   124,
-   119
-  ],
-  "origin": [
-   62,
-   115
   ],
   "scale": 0.5
  },

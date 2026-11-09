@@ -127,11 +127,11 @@ func _ready() -> void:
 	status_label.visible = false
 	root.add_child(status_label)
 	quest_label = _make_label("", 9, Color(1.0, 0.93, 0.72))
-	quest_label.position = Vector2(8, 50)
+	quest_label.position = Vector2(8, 68)
 	quest_label.size = Vector2(300, 14)
 	root.add_child(quest_label)
 	side_quest_label = _make_label("", 9, Color(0.78, 0.9, 1.0))
-	side_quest_label.position = Vector2(8, 63)
+	side_quest_label.position = Vector2(8, 81)
 	side_quest_label.size = Vector2(300, 40)
 	root.add_child(side_quest_label)
 	# The tracker panel replaces the two plain lines (kept for old callers).

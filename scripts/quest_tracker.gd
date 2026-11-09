@@ -11,7 +11,7 @@ var entries: Array = []
 var extra: Array = []
 
 func _ready() -> void:
-	position = Vector2(6, 48)
+	position = Vector2(6, 66)
 	custom_minimum_size = Vector2(196, 0)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var style := StyleBoxFlat.new()
