@@ -15,8 +15,25 @@ PACK = ROOT / "assets" / "incoming" / "Skyward_Tales_Mega_AssetPack_v1.5" / "Sky
 K = 2
 
 
+# The owner's new sprites (stage 21, the reference style): read straight from
+# the archive in assets/New Sprites. A path "new:<file inside sprites/>".
+NEW_ZIP = ROOT / "assets" / "New Sprites" / "Skyward_Tales_All_Sprites.zip"
+_new_zip = None
+
+
+def _new(rel: str) -> Image.Image:
+    global _new_zip
+    if _new_zip is None:
+        import zipfile
+        _new_zip = zipfile.ZipFile(NEW_ZIP)
+    import io
+    return Image.open(io.BytesIO(_new_zip.read("sprites/" + rel))).convert("RGBA")
+
+
 @functools.lru_cache(maxsize=None)
 def image(rel: str) -> Image.Image:
+    if rel.startswith("new:"):
+        return _new(rel[4:])
     return Image.open(PACK / rel).convert("RGBA")
 
 

@@ -242,7 +242,7 @@ def main() -> int:
         "charge": to_eight(load(red + "Sword Charge Loop.png")),
         "spin": to_eight(load(red + "Sword Spin White.png")),
     }
-    save("hero_f", hero, manifest=manifest)
+    # hero_f is the HD heroine now (tools/art/hero_hd.py, called at the end).
 
     # Male hero drawn in the same style: short dark hair, blue coat.
     male_colors = {HAIR_LIGHT: (128, 84, 60), HAIR_SHADE: (86, 54, 44), RED_DARK: (34, 58, 104),
@@ -433,13 +433,17 @@ def main() -> int:
     build_decor()
     import village
     village.build(ROOT)
-    village.build_ui(ROOT)
+    import ui_kit  # stage 21: the gold-and-navy frames
+    ui_kit.main()
     village.build_gathering(ROOT)
     village.build_coast(ROOT)
     village.build_dungeon(ROOT)
     import haven
     haven.build(ROOT)
     (OUT / "manifest.json").write_text(json.dumps(manifest, indent=1, sort_keys=True) + "\n")
+    # The HD heroine from the owner's painted sheets replaces hero_f.
+    import hero_hd
+    hero_hd.main()
     return 0
 
 

@@ -31,52 +31,54 @@ P = "props/%s.png"
 W = "workshops/%s.png"
 S = "skylands/%s.png"
 N2 = "nature/%s.png"
+# Stage 21: the owner's new sprites (assets/New Sprites), see hd/pack.py.
+NS = "new:%s.png"
 
 # name: (pack file, world width, roof hue (None = keep), origin y-fraction from the bottom of content)
 BUILDINGS = {
-    "village_house_small": (B % "cottage_red_roof", 74, None),
-    "village_house_wine": (B % "cottage_red_roof", 78, 0.97),
-    "village_house_blue": (B % "buildings_extra_002", 70, 0.6),
-    "village_house_slate": (B % "buildings_extra_002", 82, 0.58),
-    "village_house_moss": (B % "cottage_red_roof", 88, 0.3),
-    "village_house_large": (B % "buildings_extra_004", 104, None),
-    "village_house_long": (B % "buildings_extra_002", 112, None),
-    "village_hall": (B % "buildings_extra_001", 124, None),
-    "village_tavern_1": (B % "tavern_red_roof", 104, None),
-    "village_tavern_2": (B % "tavern_red_roof", 114, None),
+    "village_house_small": (NS % "hd/redrawn/settlement/cottage", 84, None),
+    "village_house_wine": (NS % "hd/greenreach/village/cottage", 86, None),
+    "village_house_blue": (NS % "hd/redrawn/settlement/cottage", 80, 0.6),
+    "village_house_slate": (NS % "hd/greenreach/village/cottage", 88, 0.58),
+    "village_house_moss": (NS % "hd/redrawn/settlement/cottage", 92, 0.3),
+    "village_house_large": (NS % "hd/redrawn/settlement/inn", 108, None),
+    "village_house_long": (NS % "hd/redrawn/settlement/inn", 116, 0.58),
+    "village_hall": (NS % "hd/redrawn/settlement/watchtower", 124, None),
+    "village_tavern_1": (NS % "hd/redrawn/settlement/inn", 108, None),
+    "village_tavern_2": (NS % "hd/redrawn/settlement/inn", 118, None),
     "village_library_1": (B % "arcane_shop", 90, None),
     "village_library_2": (B % "buildings_extra_003", 96, None),
     "village_guild_1": (W % "buildings/buildings_005", 104, None),
     "village_guild_2": (B % "stone_cathedral", 106, None),
-    "village_home_1": (B % "cottage_red_roof", 80, 0.08),
-    "village_home_2": (B % "buildings_extra_002", 94, 0.08),
+    "village_home_1": (NS % "hd/greenreach/village/cottage", 84, 0.08),
+    "village_home_2": (NS % "hd/redrawn/settlement/cottage", 94, 0.08),
     "village_windmill": (B % "windmill_house", 84, None),
     "village_arch": (B % "flower_arch_gate", 64, None),
-    "village_market_red": (B % "market_stall", 60, None),
-    "village_market_green": (B % "buildings_extra_018", 60, 0.33),
+    "village_market_red": (NS % "hd/redrawn/settlement/market_stall", 68, None),
+    "village_market_green": (NS % "hd/redrawn/settlement/market_stall", 68, 0.33),
     "decor_stall_white": (W % "resources_market/resources_market_001", 66, None),
-    "decor_stall_blue": (B % "buildings_extra_018", 64, 0.6),
-    "decor_stall_orange": (B % "market_stall", 64, 0.08),
-    "decor_wagon": (B % "buildings_extra_009", 56, None),
-    "decor_forge": (W % "buildings/buildings_001", 64, None),
-    "village_well": (P % "prop_026", 38, None),
-    "village_lamp": (S % "bridges_arches/sky_bridge_008", 18, None),
-    "village_sign": (P % "prop_022", 22, None),
-    "village_board": (W % "resources_market/resources_market_019", 34, None),
-    "village_fence_h": (P % "prop_030", 36, None),
+    "decor_stall_blue": (NS % "hd/sky_harbor/harbor/ticket_kiosk", 60, None),
+    "decor_stall_orange": (NS % "hd/redrawn/settlement/market_stall", 68, 0.08),
+    "decor_wagon": (NS % "hd/greenreach/village/merchant_cart", 66, None),
+    "decor_forge": (NS % "hd/greenreach/sky/village_forge", 64, None),
+    "village_well": (NS % "hd/redrawn/settlement/well", 42, None),
+    "village_lamp": (NS % "green_reach/base/lantern", 17, None),
+    "village_sign": (NS % "hd/sky_harbor/road/trail_signpost", 26, None),
+    "village_board": (NS % "hd/sky_harbor/road/notice_board", 38, None),
+    "village_fence_h": (NS % "hd/greenreach/village/wood_fence", 38, None),
     "village_hay": (W % "resources_market/resources_market_036", 26, None),
-    "decor_potted_plant": (W % "resources_market/resources_market_009", 14, None),
+    "decor_potted_plant": (NS % "hd/greenreach/village/flower_planter", 22, None),
     "ruins": (S % "sky_ruins/sky_ruin_006", 104, None),
     "mine_entrance": (P % "props_extra_010", 72, None),
-    "village_flowers_a": (N2 % "nature_025", 30, None),
-    "village_flowers_b": (N2 % "nature_extra_023", 28, None),
-    "village_flowers_c": (N2 % "nature_extra_036", 28, None),
+    "village_flowers_a": (NS % "green_reach/base/flowers_gold", 30, None),
+    "village_flowers_b": (NS % "green_reach/base/flowers_white", 28, None),
+    "village_flowers_c": (NS % "hd/sky_harbor/flora/lupines", 22, None),
     "decor_armor_stand": (W % "forges_tools/forges_tools_012", 16, None),
     "decor_weapon_rack": (W % "forges_tools/forges_tools_008", 26, None),
     "decor_workbench": (W % "tailor_wood_mason/tailor_wood_mason_013", 32, None),
-    "village_bench": (W % "tailor_wood_mason/tailor_wood_mason_018", 26, None),
-    "gather_wood": (W % "tailor_wood_mason/tailor_wood_mason_020", 28, None),
-    "gather_stone": ("nature/nature_extra_046.png", 28, None),
+    "village_bench": (NS % "hd/sky_harbor/road/flowered_bench", 32, None),
+    "gather_wood": (NS % "hd/sky_harbor/flora/mossy_log", 30, None),
+    "gather_stone": (NS % "hd/greenreach/nature/mossy_rocks", 28, None),
     "gather_iron": ("crystals/crystal_ores/crystal_ore_027.png", 28, None),
     "gather_healroot": ("nature/nature_extra_029.png", 18, None),
     "gather_bluebell": ("crystals/arcane_flora/arcane_flora_025.png", 18, None),
@@ -88,16 +90,16 @@ D = "dungeons/%s.png"
 R = "workshops/resources_market/resources_market_%03d.png"
 # Gameplay props (props/<name>.png in the game): pack file, world width, tint.
 PROPS = {
-    "chest_gold_closed": (D % "chests_sarcophagi/chests_sarcophagi_002", 28, None),
-    "chest_gold_open": (D % "chests_sarcophagi/chests_sarcophagi_001", 28, None),
-    "chest_iron_closed": (D % "chests_sarcophagi/chests_sarcophagi_002", 28, "iron"),
-    "chest_iron_open": (D % "chests_sarcophagi/chests_sarcophagi_001", 28, "iron"),
-    "chest_wood_closed": (D % "chests_sarcophagi/chests_sarcophagi_002", 26, "wood"),
-    "chest_wood_open": (D % "chests_sarcophagi/chests_sarcophagi_001", 26, "wood"),
-    "chest_closed": (D % "chests_sarcophagi/chests_sarcophagi_002", 24, "wood"),
-    "chest_open": (D % "chests_sarcophagi/chests_sarcophagi_001", 24, "wood"),
-    "waystone_on": (C % "shrines_obelisks/crystal_shrine_001", 26, None),
-    "waystone_off": (C % "shrines_obelisks/crystal_shrine_001", 26, "dim"),
+    "chest_gold_closed": (NS % "hd/greenreach/village/blue_gold_chest", 30, None),
+    "chest_gold_open": (NS % "props/treasure_chest/chest_open", 30, None),
+    "chest_iron_closed": (NS % "hd/redrawn/dungeon/ironbound_chest", 28, None),
+    "chest_iron_open": (NS % "props/treasure_chest/chest_open", 28, "iron"),
+    "chest_wood_closed": (NS % "props/treasure_chest/chest_closed", 26, None),
+    "chest_wood_open": (NS % "props/treasure_chest/chest_open", 26, None),
+    "chest_closed": (NS % "props/treasure_chest/chest_closed", 24, None),
+    "chest_open": (NS % "props/treasure_chest/chest_open", 24, None),
+    "waystone_on": (NS % "hd/sky_harbor/road/wayshrine", 30, None),
+    "waystone_off": (NS % "hd/sky_harbor/road/wayshrine", 30, "dim"),
     "lore_stone": (C % "shrines_obelisks/crystal_shrine_009", 22, None),
     "moonleaf": (C % "arcane_flora/arcane_flora_024", 16, None),
     "spirit_blossom": (C % "arcane_flora/arcane_flora_018", 20, None),
@@ -112,7 +114,7 @@ PROPS = {
     "ore_node": (C % "crystal_ores/crystal_ore_023", 28, None),
     "meteor_iron": (C % "crystal_ores/crystal_ore_027", 28, None),
     "ember_coal": (C % "crystal_ores/crystal_ore_022", 22, None),
-    "supply_crate": (R % 14, 24, None),
+    "supply_crate": (NS % "hd/sky_harbor/road/travel_cache", 26, None),
     "coal_sack": (R % 39, 18, None),
     "flour_sack": (R % 44, 16, None),
     "map_fragment": (R % 27, 18, None),
@@ -122,7 +124,7 @@ PROPS = {
     "pouch": (R % 3, 13, None),
     "lever_off": (D % "chests_sarcophagi/chests_sarcophagi_013", 22, None),
     "lever_on": (D % "chests_sarcophagi/chests_sarcophagi_012", 22, None),
-    "gate_bridge_h": ("skylands/bridges_arches/sky_bridge_005.png", 44, None),
+    "gate_bridge_h": (NS % "hd/redrawn/islands/rope_bridge", 48, None),
     "gate_bridge_v": ("skylands/bridges_arches/sky_bridge_007.png", 52, None),
     "gate_day": ("skylands/bridges_arches/sky_bridge_007.png", 40, None),
     "gate_coast": ("skylands/bridges_arches/sky_bridge_007.png", 40, None),
@@ -206,18 +208,22 @@ def fountain(width: float = 68) -> tuple[Image.Image, tuple[int, int]]:
     return Image.fromarray(arr), (W_ // 2, int(cy + ry + H_ * 0.06))
 
 
-def fence_v(width: float = 8) -> tuple[Image.Image, tuple[int, int]]:
-    """A fence running north–south: two posts and rails seen from above."""
-    fence = pack.content(pack.image(P % "prop_030"))
-    post = fence.crop((0, 0, int(fence.width * 0.22), fence.height))
+def fence_v(width: float = 9) -> tuple[Image.Image, tuple[int, int]]:
+    """A fence running north–south: posts with two rails between them,
+    cut from the new fence (stage 21)."""
+    fence = pack.content(pack.image(NS % "hd/greenreach/village/wood_fence"))
+    post = fence.crop((0, 0, int(fence.width * 0.19), fence.height))
     scale = width * K / post.width
-    post = post.resize((int(post.width * scale), int(post.height * scale)), Image.LANCZOS)
-    h = 36 * K
+    post = post.resize((max(1, int(post.width * scale)), max(1, int(post.height * scale))), Image.LANCZOS)
+    h = 38 * K
     out = Image.new("RGBA", (post.width, h), (0, 0, 0, 0))
-    rail = np.asarray(post.crop((post.width // 3, post.height // 3, post.width // 3 + 2, post.height // 3 + 2)).resize((1, 1))).reshape(4)
     arr = np.asarray(out).copy()
-    for x in (post.width // 2 - 3, post.width // 2 + 2):
-        arr[post.height // 3: h - post.height // 2, x:x + 2] = rail
+    mid = post.width // 2
+    top, bottom = int(post.height * 0.45), h - int(post.height * 0.45)
+    # Two rails seen from the side of the road: a light top edge, a dark underside.
+    for x0 in (mid - 5, mid + 1):
+        for k, col in enumerate(((112, 72, 42, 255), (196, 140, 82, 255), (172, 116, 64, 255), (112, 72, 42, 255))):
+            arr[top:bottom, x0 + k] = col
     out = Image.fromarray(arr)
     out.alpha_composite(post, (0, 0))
     out.alpha_composite(post, (0, h - post.height))

@@ -21,6 +21,7 @@ func _ready() -> void:
 	hints_toggle = _toggle(game_column, "Обучающие советы", "hints")
 	damage_toggle = _toggle(game_column, "Числа урона над врагами", "damage_numbers")
 	shake_toggle = _toggle(game_column, "Тряска экрана", "screen_shake")
+	_toggle(game_column, "Цветокоррекция и виньетка", "color_grade")
 	var resolutions: Array = []
 	for index in GameSettings.RESOLUTIONS.size():
 		resolutions.append(GameSettings.resolution_label(index))
@@ -80,7 +81,9 @@ func _toggle(parent: VBoxContainer, title: String, key: String) -> CheckButton:
 	toggle.button_pressed = GameSettings.get_bool(key)
 	toggle.toggled.connect(func(on: bool) -> void:
 		GameSettings.set_bool(key, on)
-		GameAudio.apply_volumes())
+		GameAudio.apply_volumes()
+		for grade in get_tree().get_nodes_in_group("screen_grade"):
+			grade.apply())
 	parent.add_child(toggle)
 	return toggle
 

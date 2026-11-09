@@ -46,6 +46,7 @@ func _ready() -> void:
 		visual.set_moving(true)  # gentle idle breathing
 		_idle_moving = true
 		add_child(visual)
+	GroundShadows.attach(self, 14.0)
 	queue_redraw()
 
 func interact() -> void:

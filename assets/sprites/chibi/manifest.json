@@ -255,20 +255,22 @@
   "anims": {
    "cast": 5,
    "charge": 4,
-   "faint": 27,
+   "faint": 12,
    "hit": 4,
-   "idle": 6,
+   "idle": 8,
    "roll": 10,
    "slash1": 6,
    "slash2": 6,
    "spin": 8,
-   "walk": 6
+   "walk": 9
   },
   "cell": [
-   64,
-   64
+   128,
+   128
   ],
-  "feet": 40
+  "feet": 108,
+  "scale": 0.5,
+  "filter": "linear"
  },
  "hero_m": {
   "anims": {

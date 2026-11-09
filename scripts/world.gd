@@ -43,6 +43,11 @@ func is_night() -> bool:
 func is_cave() -> bool:
 	return RegionCatalog.is_underground(str(terrain.get("style", "day")))
 
+## Soft shadows under the scenery (stage 21).
+var shadows: GroundShadows
+## Things that lie flat on the ground cast no shadow.
+const FLAT_WORDS := ["rug", "carpet", "path", "floor", "sigil", "plate", "tilled", "soil", "pier", "bridge", "medallion", "tracks", "stones", "lip", "puddle", "rim", "plank", "garland", "smoke", "water", "mist", "splash"]
+
 func _build() -> void:
 	terrain = RegionCatalog.terrain(region_id)
 	var style := RegionCatalog.style(region_id)
@@ -51,6 +56,9 @@ func _build() -> void:
 	else:
 		_add_layer(region_id + "_ground.png", -100)
 	_add_apron()
+	shadows = GroundShadows.new()
+	shadows.name = "GroundShadows"
+	add_child(shadows)
 	if not ResourceLoader.exists(HD_DIR + region_id + "_ground.webp"):
 		_add_layer(region_id + "_canopy.png", 60)
 	var trees: Array = terrain.get("trees", [])
@@ -347,6 +355,13 @@ func _add_sprite(file: String, base: Vector2, sway: float = 0.0) -> void:
 	if sway > 0.0 and RegionCatalog.style(region_id) not in ["cave", "crypt", "magma"]:
 		sprite.material = sway_material(sway)
 	add_child(sprite)
+	if shadows != null:
+		var size: Vector2 = texture.get_size() * sprite.scale
+		var flat := size.y < 12.0
+		for word in FLAT_WORDS:
+			flat = flat or file.contains(word)
+		if not flat:
+			shadows.add_object(base, size, file.contains("_tree_"))
 
 ## Lamps and torches cast warm light (seen at night and underground).
 const LIGHT_PROPS := {"village_lamp": 26, "crypt_torch": 18, "decor_harbor_mooring_beacon": 24}

@@ -43,24 +43,40 @@ CRYSTAL_BITS = [(C % "crystal_ores/crystal_ore_008", 16, 26), (C % "crystal_ores
 DIRT = [(92, 58, 36), (128, 84, 50), (164, 112, 68), (190, 138, 88), (214, 170, 118)]
 STONE_PAL = [(60, 56, 60), (96, 88, 90), (132, 122, 118), (170, 158, 146), (204, 192, 176)]
 
+# Stage 21: the owner's new sprites (assets/New Sprites, the reference
+# style) for the meadows — crisp painted grass, oaks, flower clusters.
+NEW = "new:%s.png"
+NEW_GRASS = [(NEW % "woodland_guild/ground/grass_00", (0, 0, 128, 128), 2.0),
+             (NEW % "woodland_guild/ground/grass_01", (0, 0, 128, 128), 2.0),
+             (NEW % "woodland_guild/ground/grass_02", (0, 0, 128, 128), 1.5)]
+NEW_FLOWERS = [(NEW % "green_reach/base/flowers_gold", 20, 110), (NEW % "green_reach/base/flowers_white", 20, 110),
+               (NEW % "hd/sky_harbor/flora/lupines", 15, 34), (NEW % "hd/sky_harbor/flora/blue_rock_flowers", 16, 18),
+               (NEW % "woodland_guild/exterior/meadow_flowers", 22, 80), (NEW % "woodland_guild/exterior/bluebells", 13, 60),
+               (NEW % "green_reach/market_approach/trail/daisy_tuft", 9, 300), (NEW % "green_reach/market_approach/trail/grass_sprigs", 14, 320),
+               (NEW % "woodland_guild/exterior/fern_cluster", 16, 44), (NEW % "hd/sky_harbor/flora/cream_mushrooms", 11, 18)]
+NEW_STONES = [(NEW % "green_reach/base/rocks", 24, 9), (NEW % "hd/greenreach/nature/mossy_rocks", 20, 8),
+              (NEW % "green_reach/market_approach/trail/flat_stones", 13, 30), (NEW % "green_reach/market_approach/trail/small_stone_scatter", 11, 40)]
+
 DAY = {
-    "grass": GRASS,
-    "shade": (0.66, 0.98),
+    "grass": NEW_GRASS,
+    "patch": 96,
+    "step": 60,
+    "shade": (0.74, 1.04),
     "dirt": DIRT,
-    "dirt_tile": (T % 7, (36, 62, 96, 94)),
+    "dirt_tile": (NEW % "woodland_guild/ground/path_earth", (8, 8, 120, 120)),
     "stone": STONE_PAL,
     "water": [(70, 168, 196), (26, 82, 140)],
-    "decals": FLOWERS + STONES + MUSHROOMS,
-    "trees": [(N % "summer_oak", 62), (N % "nature_extra_014", 62), (N % "fruit_tree", 58), (N % "summer_oak", 66)],
-    "bushes": [(N % "nature_023", 22), (N % "nature_016", 24), (N % "nature_019", 22), (N % "nature_extra_032", 24)],
+    "decals": NEW_FLOWERS + NEW_STONES,
+    "trees": [(NEW % "green_reach/base/oak", 78), (NEW % "hd/greenreach/nature/tree_summer", 70), (NEW % "green_reach/base/oak_dark", 70), (NEW % "green_reach/base/oak", 86)],
+    "bushes": [(NEW % "green_reach/base/bush_berry", 28), (NEW % "green_reach/base/bush_yellow", 28), (NEW % "hd/greenreach/nature/flowering_shrub", 26), (NEW % "hd/sky_harbor/flora/wild_fern", 22)],
     "sky": "day",
 }
 
 HAVEN = dict(DAY)
 HAVEN.update({
-    "decals": FLOWERS + FLOWERS + STONES[:2],
-    "trees": [(N % "spring_blossom_tree", 62), (N % "nature_extra_022", 62), (N % "summer_oak", 62), (N % "spring_blossom_tree", 66)],
-    "bushes": [(N % "nature_extra_023", 20), (N % "nature_016", 24), (N % "nature_031", 22), (N % "nature_extra_032", 24)],
+    "decals": NEW_FLOWERS + NEW_FLOWERS + NEW_STONES[:2],
+    "trees": [(NEW % "green_reach/base/blossom", 74), (NEW % "hd/greenreach/nature/tree_spring", 70), (NEW % "green_reach/base/oak", 76), (NEW % "green_reach/base/blossom", 82)],
+    "bushes": [(NEW % "hd/greenreach/nature/flowering_shrub", 26), (NEW % "green_reach/base/bush_yellow", 28), (NEW % "green_reach/base/bush_berry", 26), (NEW % "hd/sky_harbor/flora/sunflowers", 20)],
     "warm": (1.06, 1.0, 0.9),
 })
 

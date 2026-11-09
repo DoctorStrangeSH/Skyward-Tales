@@ -1,8 +1,9 @@
 extends RefCounted
 class_name UiStyle
 
-## Interface frames in the pack's warm wood style (assets/ui/*.png, built by
-## tools/art/village.py): nine-slice panels and plank buttons. Panels use
+## Interface frames in the owner's gold-and-navy style (stage 21:
+## assets/ui/*.png, built by tools/art/ui_kit.py from assets/New Sprites):
+## nine-slice panels and buttons. Panels use
 ## UiStyle.panel(); buttons get UiStyle.style_button(button).
 
 const PANEL := "res://assets/ui/panel.png"
@@ -11,8 +12,8 @@ const TEXT := Color(0.96, 0.92, 0.82)
 const TITLE := Color(1.0, 0.84, 0.5)
 const MUTED := Color(0.78, 0.7, 0.6)
 const GOLD := Color(1.0, 0.82, 0.42)
-const SLOT_BG := Color(0.07, 0.05, 0.045, 0.92)
-const SLOT_EDGE := Color(0.45, 0.33, 0.22)
+const SLOT_BG := Color(0.055, 0.06, 0.12, 0.94)
+const SLOT_EDGE := Color(0.5, 0.38, 0.2)
 
 static var _cache: Dictionary = {}
 
@@ -37,7 +38,7 @@ static func _box(path: String, margin: int, content: int) -> StyleBox:
 
 ## Big windows (journal, bag, skills, pause, dialogue).
 static func panel(gold: bool = false, content: int = 9) -> StyleBox:
-	return _box(PANEL_GOLD if gold else PANEL, 8, content)
+	return _box(PANEL_GOLD, 14, maxi(content, 11)) if gold else _box(PANEL, 8, content)
 
 ## Small HUD frames (spell bar, toasts).
 static func small_panel() -> StyleBox:
@@ -66,8 +67,8 @@ static func small_toggle(button: Button) -> void:
 		box.set_content_margin_all(1)
 		box.set_border_width_all(1)
 		var on: bool = state.contains("pressed")
-		box.bg_color = Color(0.55, 0.36, 0.16) if on else (Color(0.26, 0.18, 0.12) if state == "hover" else Color(0.16, 0.11, 0.08))
-		box.border_color = Color(1.0, 0.84, 0.45) if on else Color(0.5, 0.38, 0.25)
+		box.bg_color = Color(0.52, 0.36, 0.14) if on else (Color(0.15, 0.16, 0.3) if state == "hover" else Color(0.09, 0.09, 0.18))
+		box.border_color = Color(1.0, 0.84, 0.45) if on else Color(0.55, 0.4, 0.2)
 		button.add_theme_stylebox_override(state, box)
 	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	button.add_theme_color_override("font_color", MUTED)

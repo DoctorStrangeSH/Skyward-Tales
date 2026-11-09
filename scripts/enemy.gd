@@ -90,6 +90,7 @@ func _ready() -> void:
 	visual.modulate = base_visual_tint
 	Vfx.enable_flash(visual)
 	add_child(visual)
+	GroundShadows.attach(self, 14.0 * maxf(1.0, sprite_scale))
 	combat_feedback = FEEDBACK_SCRIPT.new() as EnemyCombatFeedback
 	combat_feedback.set_health(health, max_health)
 	add_child(combat_feedback)

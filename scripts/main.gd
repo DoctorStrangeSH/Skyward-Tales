@@ -97,6 +97,7 @@ var mine: PassMine
 var borin: BorinStory
 var lira: LiraStory
 var fair: VillageFair
+var grade: ScreenGrade
 var bran: BranStory
 var combos: ElementalCombos
 var gear: GearEffects
@@ -194,6 +195,9 @@ func _ready() -> void:
 	fishing.name = "Fishing"
 	fishing.game = self
 	add_child(fishing)
+	grade = ScreenGrade.new()
+	grade.name = "ScreenGrade"
+	add_child(grade)
 	fair = VillageFair.new()
 	fair.name = "VillageFair"
 	fair.game = self

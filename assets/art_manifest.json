@@ -4088,89 +4088,89 @@
  },
  "world_hd/day_bush_0.png": {
   "size": [
-   44,
-   33
+   56,
+   39
   ],
   "origin": [
-   22,
-   31
+   28,
+   37
   ],
   "scale": 0.5
  },
  "world_hd/day_bush_1.png": {
   "size": [
-   48,
-   32
+   56,
+   42
   ],
   "origin": [
-   24,
-   30
+   28,
+   40
   ],
   "scale": 0.5
  },
  "world_hd/day_bush_2.png": {
   "size": [
-   44,
-   32
+   52,
+   38
   ],
   "origin": [
-   22,
-   30
+   26,
+   36
   ],
   "scale": 0.5
  },
  "world_hd/day_bush_3.png": {
   "size": [
-   48,
-   35
+   44,
+   37
   ],
   "origin": [
-   24,
-   32
+   22,
+   35
   ],
   "scale": 0.5
  },
  "world_hd/day_tree_0.png": {
   "size": [
-   124,
-   124
+   156,
+   123
   ],
   "origin": [
-   62,
+   78,
    120
   ],
   "scale": 0.5
  },
  "world_hd/day_tree_1.png": {
   "size": [
-   124,
-   119
+   140,
+   132
   ],
   "origin": [
-   62,
-   115
+   70,
+   129
   ],
   "scale": 0.5
  },
  "world_hd/day_tree_2.png": {
   "size": [
-   116,
-   114
+   140,
+   162
   ],
   "origin": [
-   58,
-   110
+   70,
+   160
   ],
   "scale": 0.5
  },
  "world_hd/day_tree_3.png": {
   "size": [
-   132,
-   132
+   172,
+   136
   ],
   "origin": [
-   66,
-   127
+   86,
+   132
   ],
   "scale": 0.5
  },
@@ -4188,11 +4188,11 @@
  "world_hd/decor_forge.png": {
   "size": [
    128,
-   110
+   125
   ],
   "origin": [
    64,
-   108
+   123
   ],
   "scale": 0.5
  },
@@ -4264,34 +4264,34 @@
  },
  "world_hd/decor_potted_plant.png": {
   "size": [
-   28,
-   37
+   44,
+   33
   ],
   "origin": [
-   14,
-   36
+   22,
+   32
   ],
   "scale": 0.5
  },
  "world_hd/decor_stall_blue.png": {
   "size": [
-   128,
-   99
+   120,
+   125
   ],
   "origin": [
-   64,
-   96
+   60,
+   123
   ],
   "scale": 0.5
  },
  "world_hd/decor_stall_orange.png": {
   "size": [
-   128,
-   108
+   136,
+   114
   ],
   "origin": [
-   64,
-   105
+   68,
+   113
   ],
   "scale": 0.5
  },
@@ -4308,12 +4308,12 @@
  },
  "world_hd/decor_wagon.png": {
   "size": [
-   112,
-   96
+   132,
+   103
   ],
   "origin": [
-   56,
-   93
+   66,
+   101
   ],
   "scale": 0.5
  },
@@ -4375,110 +4375,110 @@
  "world_hd/gather_stone.png": {
   "size": [
    56,
-   34
+   39
   ],
   "origin": [
    28,
-   32
+   38
   ],
   "scale": 0.5
  },
  "world_hd/gather_wood.png": {
   "size": [
-   56,
-   49
+   60,
+   44
   ],
   "origin": [
-   28,
-   48
+   30,
+   41
   ],
   "scale": 0.5
  },
  "world_hd/haven_bush_0.png": {
   "size": [
-   40,
-   34
+   52,
+   38
   ],
   "origin": [
-   20,
-   31
+   26,
+   36
   ],
   "scale": 0.5
  },
  "world_hd/haven_bush_1.png": {
   "size": [
-   48,
-   32
+   56,
+   42
   ],
   "origin": [
-   24,
-   30
+   28,
+   40
   ],
   "scale": 0.5
  },
  "world_hd/haven_bush_2.png": {
   "size": [
-   44,
-   40
+   52,
+   36
   ],
   "origin": [
-   22,
-   38
+   26,
+   34
   ],
   "scale": 0.5
  },
  "world_hd/haven_bush_3.png": {
   "size": [
-   48,
-   35
+   40,
+   42
   ],
   "origin": [
-   24,
-   32
+   20,
+   40
   ],
   "scale": 0.5
  },
  "world_hd/haven_tree_0.png": {
   "size": [
-   124,
-   120
+   148,
+   152
   ],
   "origin": [
-   62,
-   115
+   74,
+   148
   ],
   "scale": 0.5
  },
  "world_hd/haven_tree_1.png": {
   "size": [
-   124,
-   120
+   140,
+   133
   ],
   "origin": [
-   62,
-   117
+   70,
+   129
   ],
   "scale": 0.5
  },
  "world_hd/haven_tree_2.png": {
   "size": [
-   124,
-   124
+   152,
+   120
   ],
   "origin": [
-   62,
-   120
+   76,
+   117
   ],
   "scale": 0.5
  },
  "world_hd/haven_tree_3.png": {
   "size": [
-   132,
-   128
+   164,
+   168
   ],
   "origin": [
-   66,
-   123
+   82,
+   164
   ],
   "scale": 0.5
  },
@@ -4826,88 +4826,88 @@
  "world_hd/props/chest_closed.png": {
   "size": [
    48,
-   40
+   39
   ],
   "origin": [
    24,
-   39
+   38
   ],
   "scale": 0.5
  },
  "world_hd/props/chest_gold_closed.png": {
   "size": [
-   56,
-   47
+   60,
+   50
   ],
   "origin": [
-   28,
-   45
+   30,
+   49
   ],
   "scale": 0.5
  },
  "world_hd/props/chest_gold_open.png": {
   "size": [
-   56,
-   51
+   60,
+   70
   ],
   "origin": [
-   28,
-   49
+   30,
+   69
   ],
   "scale": 0.5
  },
  "world_hd/props/chest_iron_closed.png": {
   "size": [
    56,
-   47
+   44
   ],
   "origin": [
    28,
-   45
+   43
   ],
   "scale": 0.5
  },
  "world_hd/props/chest_iron_open.png": {
   "size": [
    56,
-   51
+   65
   ],
   "origin": [
    28,
-   49
+   64
   ],
   "scale": 0.5
  },
  "world_hd/props/chest_open.png": {
   "size": [
    48,
-   44
+   56
   ],
   "origin": [
    24,
-   43
+   55
   ],
   "scale": 0.5
  },
  "world_hd/props/chest_wood_closed.png": {
   "size": [
    52,
-   43
+   42
   ],
   "origin": [
    26,
-   42
+   41
   ],
   "scale": 0.5
  },
  "world_hd/props/chest_wood_open.png": {
   "size": [
    52,
-   47
+   61
   ],
   "origin": [
    26,
-   46
+   60
   ],
   "scale": 0.5
  },
@@ -5001,12 +5001,12 @@
  },
  "world_hd/props/gate_bridge_h.png": {
   "size": [
-   88,
-   58
+   96,
+   55
   ],
   "origin": [
-   44,
-   56
+   48,
+   53
   ],
   "scale": 0.5
  },
@@ -5353,34 +5353,34 @@
  },
  "world_hd/props/supply_crate.png": {
   "size": [
-   48,
-   28
+   52,
+   33
   ],
   "origin": [
-   24,
-   27
+   26,
+   32
   ],
   "scale": 0.5
  },
  "world_hd/props/waystone_off.png": {
   "size": [
-   52,
-   89
+   60,
+   73
   ],
   "origin": [
-   26,
-   86
+   30,
+   72
   ],
   "scale": 0.5
  },
  "world_hd/props/waystone_on.png": {
   "size": [
-   52,
-   89
+   60,
+   73
   ],
   "origin": [
-   26,
-   86
+   30,
+   72
   ],
   "scale": 0.5
  },
@@ -5496,45 +5496,45 @@
  },
  "world_hd/sky_bush_0.png": {
   "size": [
-   44,
-   33
+   56,
+   39
   ],
   "origin": [
-   22,
-   31
+   28,
+   37
   ],
   "scale": 0.5
  },
  "world_hd/sky_bush_1.png": {
   "size": [
-   48,
-   32
+   56,
+   42
   ],
   "origin": [
-   24,
-   30
+   28,
+   40
   ],
   "scale": 0.5
  },
  "world_hd/sky_bush_2.png": {
   "size": [
-   44,
-   32
+   52,
+   38
   ],
   "origin": [
-   22,
-   30
+   26,
+   36
   ],
   "scale": 0.5
  },
  "world_hd/sky_bush_3.png": {
   "size": [
-   48,
-   35
+   44,
+   37
   ],
   "origin": [
-   24,
-   32
+   22,
+   35
   ],
   "scale": 0.5
  },
@@ -5705,78 +5705,78 @@
  },
  "world_hd/village_bench.png": {
   "size": [
-   52,
-   35
+   64,
+   41
   ],
   "origin": [
-   26,
-   33
+   32,
+   39
   ],
   "scale": 0.5
  },
  "world_hd/village_board.png": {
   "size": [
-   68,
-   68
+   76,
+   70
   ],
   "origin": [
-   34,
-   67
+   38,
+   69
   ],
   "scale": 0.5
  },
  "world_hd/village_fence_h.png": {
   "size": [
-   72,
-   34
+   76,
+   30
   ],
   "origin": [
-   36,
-   32
+   38,
+   28
   ],
   "scale": 0.5
  },
  "world_hd/village_fence_v.png": {
   "size": [
-   16,
-   72
+   18,
+   76
   ],
   "origin": [
-   8,
-   70
+   9,
+   74
   ],
   "scale": 0.5
  },
  "world_hd/village_flowers_a.png": {
   "size": [
    60,
-   48
+   38
   ],
   "origin": [
    30,
-   45
+   36
   ],
   "scale": 0.5
  },
  "world_hd/village_flowers_b.png": {
   "size": [
    56,
-   48
+   35
   ],
   "origin": [
    28,
-   44
+   34
   ],
   "scale": 0.5
  },
  "world_hd/village_flowers_c.png": {
   "size": [
-   56,
-   47
+   44,
+   44
   ],
   "origin": [
-   28,
-   44
+   22,
+   42
   ],
   "scale": 0.5
  },
@@ -5816,11 +5816,11 @@
  "world_hd/village_hall.png": {
   "size": [
    248,
-   195
+   272
   ],
   "origin": [
    124,
-   193
+   270
   ],
   "scale": 0.5
  },
@@ -5837,111 +5837,111 @@
  },
  "world_hd/village_home_1.png": {
   "size": [
-   160,
-   184
+   168,
+   181
   ],
   "origin": [
-   80,
-   182
+   84,
+   180
   ],
   "scale": 0.5
  },
  "world_hd/village_home_2.png": {
   "size": [
    188,
-   173
+   175
   ],
   "origin": [
    94,
-   171
+   174
   ],
   "scale": 0.5
  },
  "world_hd/village_house_blue.png": {
   "size": [
-   140,
-   129
+   160,
+   149
   ],
   "origin": [
-   70,
-   127
+   80,
+   148
   ],
   "scale": 0.5
  },
  "world_hd/village_house_large.png": {
   "size": [
-   208,
-   164
+   216,
+   198
   ],
   "origin": [
-   104,
-   162
+   108,
+   196
   ],
   "scale": 0.5
  },
  "world_hd/village_house_long.png": {
   "size": [
-   224,
-   206
+   232,
+   212
   ],
   "origin": [
-   112,
-   203
+   116,
+   210
   ],
   "scale": 0.5
  },
  "world_hd/village_house_moss.png": {
   "size": [
-   176,
-   202
+   184,
+   171
   ],
   "origin": [
-   88,
-   199
+   92,
+   170
   ],
   "scale": 0.5
  },
  "world_hd/village_house_slate.png": {
   "size": [
-   164,
-   151
+   176,
+   189
   ],
   "origin": [
-   82,
-   149
+   88,
+   188
   ],
   "scale": 0.5
  },
  "world_hd/village_house_small.png": {
   "size": [
-   148,
-   170
+   168,
+   156
   ],
   "origin": [
-   74,
-   168
+   84,
+   155
   ],
   "scale": 0.5
  },
  "world_hd/village_house_wine.png": {
   "size": [
-   156,
-   179
+   172,
+   185
   ],
   "origin": [
-   78,
-   177
+   86,
+   184
   ],
   "scale": 0.5
  },
  "world_hd/village_lamp.png": {
   "size": [
-   36,
-   67
+   34,
+   86
   ],
   "origin": [
-   18,
-   65
+   17,
+   85
   ],
   "scale": 0.5
  },
@@ -5969,67 +5969,67 @@
  },
  "world_hd/village_market_green.png": {
   "size": [
-   120,
-   92
+   136,
+   114
   ],
   "origin": [
-   60,
-   89
+   68,
+   113
   ],
   "scale": 0.5
  },
  "world_hd/village_market_red.png": {
   "size": [
-   120,
-   102
+   136,
+   114
   ],
   "origin": [
-   60,
-   99
+   68,
+   113
   ],
   "scale": 0.5
  },
  "world_hd/village_sign.png": {
   "size": [
-   44,
-   40
+   52,
+   75
   ],
   "origin": [
-   22,
-   38
+   26,
+   73
   ],
   "scale": 0.5
  },
  "world_hd/village_tavern_1.png": {
   "size": [
-   208,
-   162
+   216,
+   198
   ],
   "origin": [
-   104,
-   160
+   108,
+   196
   ],
   "scale": 0.5
  },
  "world_hd/village_tavern_2.png": {
   "size": [
-   228,
-   178
+   236,
+   216
   ],
   "origin": [
-   114,
-   175
+   118,
+   214
   ],
   "scale": 0.5
  },
  "world_hd/village_well.png": {
   "size": [
-   76,
-   82
+   84,
+   84
   ],
   "origin": [
-   38,
-   80
+   42,
+   83
   ],
   "scale": 0.5
  },

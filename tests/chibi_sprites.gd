@@ -37,7 +37,7 @@ func _run() -> void:
 		return _fail("dodging plays the 10-frame roll")
 	for _i in range(40):
 		await physics_frame
-	if hero.visual.is_playing_action() or hero.visual.hframes != 6:
+	if hero.visual.is_playing_action() or not hero.visual.hframes in [8, 9]:
 		return _fail("after the roll the walk/idle sheet is back")
 	hero.play_cast(Vector2.RIGHT)
 	if hero.visual.hframes != 5:

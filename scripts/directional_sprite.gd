@@ -23,6 +23,7 @@ var _base_frames: int = 4
 ## Chibi characters (assets/sprites/chibi, built by tools/art/chibi.py): named
 ## animations with their own frame counts, an idle loop when standing still.
 const CHIBI_DIR := "res://assets/sprites/chibi/"
+const OLD_CHIBI_SCALE := 1.3
 static var _chibi_manifest: Dictionary = {}
 var chibi_id: String = ""
 var chibi_anims: Dictionary = {}
@@ -56,7 +57,13 @@ func configure_chibi(id: String, fps: float = 10.0, visual_scale: float = 1.0) -
 	chibi_anims = entry.get("anims", {})
 	_walk_fps = fps
 	var start := "walk" if chibi_anims.has("walk") else "idle"
-	configure(_chibi_path(start), int(chibi_anims[start]), 8, visual_scale, fps)
+	# HD characters (tools/art/hero_hd.py): bigger cells shown smaller, smooth.
+	# The old pixel chibis stand next to the HD heroine: a little bigger and
+	# smoothed, so they do not look like dolls beside her.
+	var hd := entry.has("scale")
+	configure(_chibi_path(start), int(chibi_anims[start]), 8, visual_scale * float(entry.get("scale", OLD_CHIBI_SCALE)), fps)
+	if hd or OLD_CHIBI_SCALE != 1.0:
+		texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	var cell: Array = entry.get("cell", [64, 64])
 	offset = Vector2(0.0, float(cell[1]) * 0.5 - float(entry.get("feet", cell[1])))
 	_showing_idle = start == "idle"

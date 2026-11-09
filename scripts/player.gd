@@ -85,6 +85,7 @@ func _ready() -> void:
 	_apply_look()
 	Vfx.enable_flash(visual)
 	add_child(visual)
+	GroundShadows.attach(self, 15.0)
 
 func heal(amount: int) -> void:
 	if health <= 0 or amount <= 0:
