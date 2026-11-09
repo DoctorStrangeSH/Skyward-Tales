@@ -1,6 +1,6 @@
 # The owner's asset pack lives outside git (cleanup of 9 ноября 2026):
-# download it from the "asset-pack" Release into assets/incoming/ when the
-# HD art has to be rebuilt (tools/art/hd/*). The game never loads it.
+# keep a local copy in assets/incoming/ (the owner has the pack) when the HD
+# art has to be rebuilt (tools/art/hd/*). The game never loads it.
 assets/incoming/
 
 # Godot
