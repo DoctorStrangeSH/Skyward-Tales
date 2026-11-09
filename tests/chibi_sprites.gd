@@ -22,7 +22,7 @@ func _run() -> void:
 	await process_frame
 	game.autosave_enabled = false
 	var hero := game.player
-	if hero.visual.chibi_id != "hero_m" or hero.visual.hframes != 6:
+	if hero.visual.chibi_id != "hero_m" or hero.visual.hframes != 8:
 		return _fail("the hero uses the chibi sheet")
 	if not hero.visual.texture.resource_path.ends_with("idle.png"):
 		return _fail("standing still plays the idle loop")
