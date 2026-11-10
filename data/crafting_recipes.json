@@ -762,6 +762,46 @@
         "item_id": "forest_charm",
         "amount": 1
       }
+    },
+    "carp_pickaxe": {
+      "name": "Медная кирка",
+      "description": "Доски на рукоять, медь на клюв.",
+      "gold_cost": 20,
+      "station": "carpentry",
+      "ingredients": [
+        {
+          "item_id": "planks",
+          "amount": 2
+        },
+        {
+          "item_id": "copper_ore",
+          "amount": 4
+        }
+      ],
+      "output": {
+        "item_id": "copper_pickaxe",
+        "amount": 1
+      }
+    },
+    "carp_axe": {
+      "name": "Медный топор",
+      "description": "Доски и медь.",
+      "gold_cost": 20,
+      "station": "carpentry",
+      "ingredients": [
+        {
+          "item_id": "planks",
+          "amount": 2
+        },
+        {
+          "item_id": "copper_ore",
+          "amount": 3
+        }
+      ],
+      "output": {
+        "item_id": "copper_axe",
+        "amount": 1
+      }
     }
   }
 }

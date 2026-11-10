@@ -468,6 +468,13 @@
       "stat": "forester_rank",
       "goal": 3,
       "gold": 300
+    },
+    "adit_geode": {
+      "title": "Сердце жилы",
+      "description": "Одолейте Стража жеоды в старой штольне.",
+      "stat": "adit_guardian",
+      "goal": 1,
+      "gold": 150
     }
   }
 }

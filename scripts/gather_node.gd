@@ -28,8 +28,10 @@ var stage: String = "ready"
 func staged_art() -> String:
 	if kind == "wood":
 		return "props/tree_%s_%s" % ["oak" if absi(hash(key)) % 2 == 0 else "birch", stage]
-	if kind == "iron":
+	if kind == "iron" or kind == "copper":
 		return "props/vein_%s" % ("ready" if stage == "ready" else "cut")
+	if kind == "amethyst":
+		return "props/tower_amethyst" if stage == "ready" else "props/vein_cut"
 	return ""
 
 func _has_stages() -> bool:

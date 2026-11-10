@@ -125,7 +125,9 @@
     "planks": 6,
     "resin": 7,
     "resin_torch": 9,
-    "sapling": 1
+    "sapling": 1,
+    "copper_ore": 4,
+    "amethyst": 30
   },
   "sell_trust_bonus": {
     "trust": 20,

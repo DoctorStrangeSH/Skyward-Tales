@@ -28,6 +28,8 @@ func _interaction_prompt(target: Node2D) -> String:
 		return target.label
 	if target is TowerObject:
 		return target.label
+	if target is OldAdit.Cart:
+		return "E — прокатиться в вагонетке"
 	if target is DungeonLever:
 		return "E — опустить рычаг"
 	if target is SettlementObject:

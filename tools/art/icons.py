@@ -927,6 +927,57 @@ def charm_icon() -> Canvas:
     return _finish(c)
 
 
+def copper_ore_icon() -> Canvas:
+    c = Canvas(16, 16)
+    rock = ramp("#b8b0a8", "#807870", "#4a4440")
+    ore = ramp("#ffc090", "#e07838", "#9a4418")
+    c.ellipse(8, 9, 5.4, 4.6, rock[2])
+    c.ellipse(8, 8.6, 4.6, 3.8, rock[1])
+    c.ellipse(6.5, 7, 2.0, 1.4, rock[0])
+    for x, y in ((6, 9), (9, 8), (10, 10), (7, 11)):
+        c.put(x, y, ore[1])
+        c.put(x + 1, y, ore[0])
+    return _finish(c)
+
+
+def amethyst_icon() -> Canvas:
+    c = Canvas(16, 16)
+    gem = ramp("#f4dcff", "#b070f0", "#5a2a98")
+    for cx, top, h in ((5, 6, 7), (8, 3, 10), (11, 7, 6)):
+        for y in range(top, top + h):
+            half = 1 if y - top < 2 else 2
+            c.hline(cx - half, cx + half - 1, y, gem[1])
+            c.put(cx - half, y, gem[0])
+            c.put(cx + half - 1, y, gem[2])
+    c.hline(3, 12, 13, gem[2])
+    return _finish(c)
+
+
+def _tool(head: str) -> Canvas:
+    c = Canvas(16, 16)
+    c.line(4, 13, 11, 4, hex_color("#7a4e24"))
+    c.line(5, 13, 12, 4, hex_color("#b07c42"))
+    metal = ramp("#ffd0a0", "#e08040", "#9a4a1c")
+    if head == "pick":
+        c.line(6, 3, 13, 6, metal[1])
+        c.line(6, 2, 13, 5, metal[0])
+        c.put(5, 3, metal[2])
+        c.put(14, 7, metal[2])
+    else:
+        c.ellipse(11.5, 4.5, 2.6, 3.0, metal[1])
+        c.ellipse(12, 4, 1.4, 1.8, metal[0])
+        c.vline(14, 3, 6, metal[2])
+    return _finish(c)
+
+
+def pickaxe_icon() -> Canvas:
+    return _tool("pick")
+
+
+def axe_icon() -> Canvas:
+    return _tool("axe")
+
+
 def bread_icon() -> Canvas:
     c = Canvas(16, 16)
     crust = ramp("#ffe0a0", "#d89850", "#9a5a2a")
@@ -1016,7 +1067,7 @@ def build_misc() -> dict[str, Canvas]:
         "skyfire_blade": sword(ramp("#fff6c8", "#ffb050", "#c8502a"), gem_color="#9cf0ff"),
         "seed_healroot": seed_pouch("#e05a4a"), "seed_bluebell": seed_pouch("#5a8ae0"),
         "seed_wheat": seed_pouch("#f0c860"), "seed_sunberry": seed_pouch("#ff8a3a"),
-        "wheat": wheat_icon(), "trial_seal": seal_icon(), "egg": egg_icon(), "sapling": sapling_icon(), "resin": resin_icon(), "planks": planks_icon(), "resin_torch": torch_icon(), "forest_charm": charm_icon(), "omelette": bowl_icon(ramp("#fff2a0", "#f0c840", "#b08020")),
+        "wheat": wheat_icon(), "trial_seal": seal_icon(), "egg": egg_icon(), "copper_ore": copper_ore_icon(), "amethyst": amethyst_icon(), "copper_pickaxe": pickaxe_icon(), "copper_axe": axe_icon(), "sapling": sapling_icon(), "resin": resin_icon(), "planks": planks_icon(), "resin_torch": torch_icon(), "forest_charm": charm_icon(), "omelette": bowl_icon(ramp("#fff2a0", "#f0c840", "#b08020")),
         "seed_carrot": seed_pouch("#f08030"), "carrot": carrot_icon(), "flour": flour_icon(),
         "carrot_pie": bowl_icon(ramp("#ffd0a0", "#f08a3a", "#b0501a")),
         "sunberry": berries(ramp("#ffe0a0", "#ff8a3a", "#c04a20")),

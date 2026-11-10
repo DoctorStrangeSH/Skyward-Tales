@@ -48,6 +48,8 @@ func gather(node: GatherNode) -> bool:
 	var respawn := float(info.get("respawn", 200))
 	if game.forestry != null:
 		amount += game.forestry.on_gathered(node)
+	if game.adit != null:
+		amount += game.adit.tool_bonus(node)
 		respawn *= game.forestry.regrow_factor(node)
 	game.player.add_item(item_id, amount)
 	cooldowns[node.key] = play_time + respawn

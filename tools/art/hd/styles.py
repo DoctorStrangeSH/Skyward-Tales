@@ -292,6 +292,19 @@ LODGE.update({
     "decals": [],
 })
 
+# A mine tunnel (stage 21): trodden dark earth between rock walls.
+# Chosen with terrain "art_style": "mine".
+MINE = dict(CRYPT)
+MINE.update({
+    "grass": [(_OAK % "forest_soil", (0, 0, 128, 128), 1.0), (_OAK % "path_earth", (0, 0, 128, 128), 0.6)],
+    "patch": 96, "step": 64,
+    "recolor": (0.62, 0.56, 0.56),
+    "overlays": [],
+    "shade": (0.7, 1.0),
+    "warm": (1.03, 1.0, 0.94), "cool": (0.9, 0.94, 1.02),
+    "decals": [],
+})
+
 MAGMA = dict(CRYPT)
 MAGMA.update({
     "grass": [F_RED, F_BROWN, F_DARK],
@@ -304,4 +317,4 @@ MAGMA.update({
 })
 
 STYLE = {"day": DAY, "haven": HAVEN, "night": NIGHT, "marsh": MARSH, "coast": COAST, "mountain": MOUNTAIN,
-         "sky": SKY, "spires": SPIRES, "rift": RIFT, "ash": ASH, "cave": CAVE, "crypt": CRYPT, "magma": MAGMA, "cistern": CISTERN, "lodge": LODGE}
+         "sky": SKY, "spires": SPIRES, "rift": RIFT, "ash": ASH, "cave": CAVE, "crypt": CRYPT, "magma": MAGMA, "cistern": CISTERN, "lodge": LODGE, "mine": MINE}

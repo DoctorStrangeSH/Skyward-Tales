@@ -1497,6 +1497,34 @@
       "rarity": "rare",
       "max_health": 25,
       "max_mana": 10
+    },
+    "copper_ore": {
+      "name": "Медная руда",
+      "description": "Из старой штольни. На верстаке лесничих — инструменты.",
+      "slot": "",
+      "material": true,
+      "value": 6
+    },
+    "amethyst": {
+      "name": "Аметист",
+      "description": "Лиловый кристалл из жеоды. Дорого ценится у торговцев.",
+      "slot": "",
+      "material": true,
+      "value": 40
+    },
+    "copper_pickaxe": {
+      "name": "Медная кирка",
+      "description": "Работает из сумки: +1 с каждой жилы и глыбы, разбирает завалы в штольне.",
+      "slot": "",
+      "material": true,
+      "value": 0
+    },
+    "copper_axe": {
+      "name": "Медный топор",
+      "description": "Работает из сумки: +1 бревно с каждого дерева.",
+      "slot": "",
+      "material": true,
+      "value": 0
     }
   },
   "sets": {

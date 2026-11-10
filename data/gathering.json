@@ -65,6 +65,28 @@
       "respawn": 300,
       "art": "gather_iron",
       "verb": "добыть"
+    },
+    "copper": {
+      "name": "Медная жила",
+      "item": "copper_ore",
+      "amount": [
+        1,
+        2
+      ],
+      "respawn": 300,
+      "art": "gather_iron",
+      "verb": "добыть"
+    },
+    "amethyst": {
+      "name": "Аметистовая друза",
+      "item": "amethyst",
+      "amount": [
+        1,
+        1
+      ],
+      "respawn": 900,
+      "art": "gather_iron",
+      "verb": "добыть"
     }
   },
   "stations": {

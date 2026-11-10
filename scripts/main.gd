@@ -108,6 +108,7 @@ var cistern: Cistern
 var hens: VillageHens
 var scout: ScoutTrail
 var forestry: ForestGuild
+var adit: OldAdit
 var buildings: VillageBuildings
 var guild: AdventurersGuild
 var expeditions: Expeditions
@@ -278,6 +279,10 @@ func _ready() -> void:
 	forestry.name = "ForestGuild"
 	forestry.game = self
 	add_child(forestry)
+	adit = OldAdit.new()
+	adit.name = "OldAdit"
+	adit.game = self
+	add_child(adit)
 	gear = GearEffects.new()
 	gear.name = "GearEffects"
 	gear.game = self
