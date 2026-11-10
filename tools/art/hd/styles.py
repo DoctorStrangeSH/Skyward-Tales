@@ -258,6 +258,24 @@ CRYPT.update({
     "bushes": [("dungeons/ruins_statues/ruins_statues_002.png", 20), ("dungeons/ruins_statues/ruins_statues_001.png", 22)],
 })
 
+# The flooded cistern (stage 21): mossy flagstones and block walls from the
+# owner's pack. Chosen with terrain "art_style": "cistern" (the game still
+# sees style "crypt").
+_CIS = NEW % "dungeons/flooded_cistern/%s"
+CISTERN = dict(CRYPT)
+CISTERN.update({
+    "grass": [(_CIS % "floor_192", (0, 0, 192, 192), 1.0), (_CIS % "floor_192_2", (0, 0, 192, 192), 1.0),
+              (_CIS % "floor_192_3", (0, 0, 192, 192), 1.0), (_CIS % "floor_192_4", (0, 0, 192, 192), 1.0)],
+    "patch": 96, "step": 60,
+    "recolor": (0.86, 0.94, 0.92),
+    "overlays": [],
+    "shade": (0.72, 1.0),
+    "warm": (1.0, 1.02, 0.96), "cool": (0.88, 0.98, 1.02),
+    "water": [(60, 150, 140), (14, 60, 70)],
+    "liquid": "water",
+    "decals": [],
+})
+
 MAGMA = dict(CRYPT)
 MAGMA.update({
     "grass": [F_RED, F_BROWN, F_DARK],
@@ -270,4 +288,4 @@ MAGMA.update({
 })
 
 STYLE = {"day": DAY, "haven": HAVEN, "night": NIGHT, "marsh": MARSH, "coast": COAST, "mountain": MOUNTAIN,
-         "sky": SKY, "spires": SPIRES, "rift": RIFT, "ash": ASH, "cave": CAVE, "crypt": CRYPT, "magma": MAGMA}
+         "sky": SKY, "spires": SPIRES, "rift": RIFT, "ash": ASH, "cave": CAVE, "crypt": CRYPT, "magma": MAGMA, "cistern": CISTERN}

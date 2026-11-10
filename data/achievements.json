@@ -447,6 +447,13 @@
       "stat": "trial_tower",
       "goal": 20,
       "gold": 800
+    },
+    "cistern_keeper": {
+      "title": "Смотритель водостока",
+      "description": "Одолейте Хозяина затопленной цистерны.",
+      "stat": "cistern",
+      "goal": 1,
+      "gold": 120
     }
   }
 }

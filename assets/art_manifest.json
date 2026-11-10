@@ -3907,6 +3907,61 @@
   ],
   "scale": 0.5
  },
+ "world_hd/cistern_bush_0.png": {
+  "size": [
+   40,
+   32
+  ],
+  "origin": [
+   20,
+   30
+  ],
+  "scale": 0.5
+ },
+ "world_hd/cistern_bush_1.png": {
+  "size": [
+   44,
+   33
+  ],
+  "origin": [
+   22,
+   31
+  ],
+  "scale": 0.5
+ },
+ "world_hd/cistern_tree_0.png": {
+  "size": [
+   60,
+   77
+  ],
+  "origin": [
+   30,
+   75
+  ],
+  "scale": 0.5
+ },
+ "world_hd/cistern_tree_1.png": {
+  "size": [
+   60,
+   59
+  ],
+  "origin": [
+   30,
+   57
+  ],
+  "scale": 0.5
+ },
+ "world_hd/cistern_tree_2.png": {
+  "size": [
+   68,
+   82
+  ],
+  "origin": [
+   34,
+   80
+  ],
+  "scale": 0.5
+ },
  "world_hd/cloud_puff_day_0.png": {
   "size": [
    192,
@@ -4938,6 +4993,105 @@
   "origin": [
    26,
    60
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/cistern_arch.png": {
+  "size": [
+   96,
+   89
+  ],
+  "origin": [
+   48,
+   88
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/cistern_column.png": {
+  "size": [
+   44,
+   67
+  ],
+  "origin": [
+   22,
+   66
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/cistern_grate.png": {
+  "size": [
+   112,
+   53
+  ],
+  "origin": [
+   56,
+   52
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/cistern_lantern.png": {
+  "size": [
+   28,
+   41
+  ],
+  "origin": [
+   14,
+   39
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/cistern_plate.png": {
+  "size": [
+   60,
+   39
+  ],
+  "origin": [
+   30,
+   19
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/cistern_pots.png": {
+  "size": [
+   48,
+   39
+  ],
+  "origin": [
+   24,
+   38
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/cistern_rubble.png": {
+  "size": [
+   48,
+   26
+  ],
+  "origin": [
+   24,
+   25
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/cistern_sarcophagus.png": {
+  "size": [
+   76,
+   54
+  ],
+  "origin": [
+   38,
+   53
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/cistern_torch.png": {
+  "size": [
+   24,
+   67
+  ],
+  "origin": [
+   12,
+   66
   ],
   "scale": 0.5
  },

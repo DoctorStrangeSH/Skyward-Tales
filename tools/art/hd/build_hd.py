@@ -38,7 +38,7 @@ def build_region(region_id: str, region: dict, art: dict) -> None:
     gates = [g["position"] for g in region.get("gates", [])]
     img = ground.render(region_id, terrain, seed, footprints(terrain, art), gates)
     img.save(OUT / f"{region_id}_ground.webp", quality=90, method=6)
-    cfg = STYLE[terrain.get("style", "day")]
+    cfg = STYLE[terrain.get("art_style", terrain.get("style", "day"))]
     for old in OUT.glob(f"{region_id}_apron_*.webp"):
         old.unlink()
     if cfg.get("apron", True):

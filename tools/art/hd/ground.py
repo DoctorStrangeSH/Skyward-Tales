@@ -285,7 +285,7 @@ def _rooms(terrain: dict, w: int, h: int) -> np.ndarray:
 
 def render(region_id: str, terrain: dict, seed: int, footprints: list, gates: list | None = None) -> Image.Image:
     """footprints: [(x, y, half_width)] world positions of trees/houses for shadows."""
-    cfg = STYLE[terrain.get("style", "day")]
+    cfg = STYLE[terrain.get("art_style", terrain.get("style", "day"))]
     ww, wh = terrain["size"]
     w, h = ww * K, wh * K
     rng = random.Random(seed)
