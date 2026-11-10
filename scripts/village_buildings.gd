@@ -40,6 +40,10 @@ func spawn() -> void:
 		object.wall_width = float(data.get("wall", 56))
 		game.add_child(object)
 		object.global_position = at
+		if str(id) == "mill":
+			var wheel := MillWheel.new()
+			game.add_child(wheel)
+			wheel.global_position = at + Vector2(41, -3)
 		var door: Dictionary = data.get("door", {})
 		if not door.is_empty():
 			var entrance := SettlementObject.new()
@@ -112,6 +116,12 @@ func spawn_mercenary() -> void:
 const HOME := "home"
 
 func use_door(building_id: String) -> void:
+	if building_id == "mill":
+		game.crafting.open("mill")
+		return
+	if building_id == Farm.GREENHOUSE:
+		game.farm.open_greenhouse()
+		return
 	if building_id != HOME:
 		return
 	var choices: Array[Dictionary] = [

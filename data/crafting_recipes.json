@@ -638,6 +638,58 @@
         "item_id": "berry_pie",
         "amount": 1
       }
+    },
+    "mill_flour": {
+      "name": "Мука",
+      "description": "Две пшеницы — три меры муки.",
+      "gold_cost": 0,
+      "station": "mill",
+      "ingredients": [
+        {
+          "item_id": "wheat",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "item_id": "flour",
+        "amount": 3
+      }
+    },
+    "cook_bread_flour": {
+      "name": "Хлеб из муки",
+      "description": "Мера муки — тёплый хлеб.",
+      "gold_cost": 0,
+      "station": "kitchen",
+      "ingredients": [
+        {
+          "item_id": "flour",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "item_id": "bread",
+        "amount": 1
+      }
+    },
+    "cook_carrot_pie": {
+      "name": "Морковный пирог",
+      "description": "Мука и морковь — румяный пирог.",
+      "gold_cost": 0,
+      "station": "kitchen",
+      "ingredients": [
+        {
+          "item_id": "flour",
+          "amount": 2
+        },
+        {
+          "item_id": "carrot",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "item_id": "carrot_pie",
+        "amount": 1
+      }
     }
   }
 }

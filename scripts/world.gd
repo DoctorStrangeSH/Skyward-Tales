@@ -67,7 +67,11 @@ func _build() -> void:
 		var pos := _vec(trees[index])
 		# Trunk base sits 10 px below the stored canopy position.
 		var variant: int = absi(int(pos.x) * 7 + int(pos.y) * 13) % tree_kinds
+		var before := get_child_count()
 		_add_sprite("%s_tree_%d.png" % [style, variant], pos + Vector2(0, 10), 5.0)
+		if get_child_count() > before:
+			# The seasons re-dress these (scripts/seasons.gd).
+			get_child(get_child_count() - 1).set_meta("season_tree", ["%s_tree_%d.png" % [style, variant], variant, pos])
 		_add_wall(pos + Vector2(0.0, 5.0), Vector2(10.0, 11.0))
 	for prop in terrain.get("props", []):
 		if allows.is_valid() and not allows.call(prop):

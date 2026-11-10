@@ -20,35 +20,40 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	var soil := Color(0.36, 0.24, 0.15)
-	var watered: bool = bool(farm.beds.get(index, {}).get("watered", false)) or farm.level() >= 3
-	if watered and farm.beds.has(index):
-		soil = Color(0.26, 0.17, 0.11)
-	draw_rect(Rect2(-15, -9, 30, 18), Color(0.22, 0.14, 0.08))
-	draw_rect(Rect2(-14, -8, 28, 16), soil)
-	for row in 3:
-		draw_line(Vector2(-12, -5 + row * 5), Vector2(12, -5 + row * 5), soil.darkened(0.25), 1.0)
+	var planted := farm.beds.has(index)
+	var watered: bool = planted and (bool(farm.beds[index].get("watered", false)) or farm.level() >= 3)
+	WorldArt.draw_prop(self, "world/props/farm_soil_wet.png" if watered else "world/props/farm_soil.png")
 	var g := farm.growth(index)
 	if g < 0.0:
 		return
 	var crop := farm.crop_of(index)
-	var color: Color = Farm.CROP_COLORS.get(crop, Color.WHITE)
+	var stage := 2 if g >= 1.0 else (1 if g >= 0.45 else 0)
 	var sway := sin(_clock * 2.0 + index) * 0.6
-	for i in 3:
-		var base := Vector2(-9 + i * 9, 4)
-		var height := lerpf(2.0, 11.0, g)
-		var leaf := Color(0.35, 0.7, 0.3).lerp(Color(0.5, 0.75, 0.3), g)
-		draw_line(base, base + Vector2(sway, -height), leaf, 1.5)
-		if g > 0.3:
-			draw_line(base + Vector2(sway * 0.5, -height * 0.5), base + Vector2(-3 + sway, -height * 0.7), leaf, 1.0)
-			draw_line(base + Vector2(sway * 0.5, -height * 0.5), base + Vector2(3 + sway, -height * 0.75), leaf, 1.0)
-		if g >= 1.0:
-			var top := base + Vector2(sway, -height)
-			if crop == "wheat":
-				draw_line(top, top + Vector2(0, -4), color, 2.0)
-			else:
-				draw_circle(top, 2.2, color)
-				draw_circle(top + Vector2(1, 0), 1.0, color.lightened(0.4))
+	if Farm.CROP_ART.has(crop):
+		# Two rows of the crop's own sprite.
+		var art := "world/props/crop_%s_%d.png" % [Farm.CROP_ART[crop], stage]
+		WorldArt.draw_prop(self, art, false, Vector2(sway * 0.3, -1))
+		WorldArt.draw_prop(self, art, true, Vector2(-sway * 0.3, 8))
+	else:
+		_draw_herbs(g, crop, sway)
 	if g >= 1.0:
 		var pulse := 0.5 + 0.5 * sin(_clock * 4.0)
-		draw_circle(Vector2(0, -20), 2.0 + pulse, Color(1.0, 0.95, 0.6, 0.7))
+		draw_circle(Vector2(0, -22), 2.0 + pulse, Color(1.0, 0.95, 0.6, 0.7))
+
+## Herbs without sprites of their own: stems with a flower when ripe.
+func _draw_herbs(g: float, crop: String, sway: float) -> void:
+	var color: Color = Farm.CROP_COLORS.get(crop, Color.WHITE)
+	for i in 6:
+		var base := Vector2(-10 + (i % 3) * 10, -2 + (i / 3) * 9)
+		var height := lerpf(2.0, 10.0, g)
+		var leaf := Color(0.3, 0.62, 0.26).lerp(Color(0.45, 0.72, 0.3), g)
+		draw_line(base, base + Vector2(sway, -height), leaf.darkened(0.25), 2.5)
+		draw_line(base, base + Vector2(sway, -height), leaf, 1.5)
+		if g > 0.3:
+			draw_line(base + Vector2(sway * 0.5, -height * 0.5), base + Vector2(-3 + sway, -height * 0.7), leaf, 1.2)
+			draw_line(base + Vector2(sway * 0.5, -height * 0.5), base + Vector2(3 + sway, -height * 0.75), leaf, 1.2)
+		if g >= 1.0:
+			var top := base + Vector2(sway, -height)
+			draw_circle(top, 2.6, color.darkened(0.3))
+			draw_circle(top, 2.0, color)
+			draw_circle(top + Vector2(0.6, -0.6), 0.9, color.lightened(0.5))

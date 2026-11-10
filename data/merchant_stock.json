@@ -90,6 +90,11 @@
       "description": "+3 к магической защите, +10 маны",
       "base_price": 150,
       "required_bran_trust": 20
+    },
+    "seed_carrot": {
+      "name": "Семена моркови",
+      "description": "Для огорода",
+      "base_price": 5
     }
   },
   "sell_prices": {
@@ -111,7 +116,10 @@
     "wooden_shield": 12,
     "travel_cloak": 14,
     "copper_ring": 18,
-    "silver_earrings": 50
+    "silver_earrings": 50,
+    "carrot": 3,
+    "flour": 3,
+    "carrot_pie": 16
   },
   "sell_trust_bonus": {
     "trust": 20,

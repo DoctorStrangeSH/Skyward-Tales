@@ -825,6 +825,31 @@ def berries(colors) -> Canvas:
     return _finish(c)
 
 
+def carrot_icon() -> Canvas:
+    c = Canvas(16, 16)
+    body = ramp("#ffc070", "#f08030", "#b04a1a")
+    for i in range(8):
+        half = 2.4 - i * 0.28
+        c.hline(round(6 + i - half), round(6 + i + half), 13 - i if False else 5 + i, body[1])
+    c.line(5, 6, 10, 12, body[0])
+    c.line(8, 5, 12, 11, body[2])
+    for x, y in ((4, 2), (6, 1), (3, 4), (5, 3), (7, 3)):
+        c.put(x, y, hex_color("#5aa040"))
+    c.put(4, 3, hex_color("#8ad060"))
+    return _finish(c)
+
+
+def flour_icon() -> Canvas:
+    c = Canvas(16, 16)
+    cloth = ramp("#fffaf0", "#e8dcc0", "#a89878")
+    c.ellipse(8, 10, 5, 4.5, cloth[1])
+    c.ellipse(7, 9, 3, 2.6, cloth[0])
+    c.rect(6, 3, 5, 3, cloth[1])
+    c.hline(5, 11, 6, hex_color("#b07840"))
+    c.hline(6, 10, 13, cloth[2])
+    return _finish(c)
+
+
 def bread_icon() -> Canvas:
     c = Canvas(16, 16)
     crust = ramp("#ffe0a0", "#d89850", "#9a5a2a")
@@ -915,6 +940,8 @@ def build_misc() -> dict[str, Canvas]:
         "seed_healroot": seed_pouch("#e05a4a"), "seed_bluebell": seed_pouch("#5a8ae0"),
         "seed_wheat": seed_pouch("#f0c860"), "seed_sunberry": seed_pouch("#ff8a3a"),
         "wheat": wheat_icon(),
+        "seed_carrot": seed_pouch("#f08030"), "carrot": carrot_icon(), "flour": flour_icon(),
+        "carrot_pie": bowl_icon(ramp("#ffd0a0", "#f08a3a", "#b0501a")),
         "sunberry": berries(ramp("#ffe0a0", "#ff8a3a", "#c04a20")),
         "bread": bread_icon(),
         "berry_pie": bowl_icon(ramp("#e0a0ff", "#a04ac0", "#602a80")),

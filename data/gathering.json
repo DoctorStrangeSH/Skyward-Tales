@@ -91,13 +91,17 @@
     "hand": {
       "name": "Походное ремесло",
       "art": ""
+    },
+    "mill": {
+      "name": "Водяная мельница",
+      "art": ""
     }
   },
   "placements": {
     "greenreach": {
       "kitchen": [
         700,
-        790
+        740
       ],
       "alchemy": [
         972,

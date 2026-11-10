@@ -659,7 +659,7 @@ func has_passive(passive_id: String) -> bool:
 
 ## Chance (0..1) that a sword hit deals double damage.
 func get_crit_chance() -> float:
-	return (0.05 if has_passive("keen_eye") else 0.0) + 0.05 * float(talents.get("keen_edge", 0)) + 0.01 * float(_equipped_stat("crit"))
+	return (0.05 if has_passive("keen_eye") else 0.0) + 0.05 * float(talents.get("keen_edge", 0)) + 0.01 * float(_equipped_stat("crit")) + buff_value("crit")
 
 ## Part of incoming damage that is ignored (Unbreakable).
 func get_damage_reduction() -> float:

@@ -102,6 +102,7 @@ var bran: BranStory
 var combos: ElementalCombos
 var gear: GearEffects
 var farm: Farm
+var seasons: Seasons
 var buildings: VillageBuildings
 var guild: AdventurersGuild
 var expeditions: Expeditions
@@ -248,6 +249,10 @@ func _ready() -> void:
 	farm.name = "Farm"
 	farm.game = self
 	add_child(farm)
+	seasons = Seasons.new()
+	seasons.name = "Seasons"
+	seasons.game = self
+	add_child(seasons)
 	gear = GearEffects.new()
 	gear.name = "GearEffects"
 	gear.game = self
@@ -912,7 +917,7 @@ func on_building_upgraded(building_id: String) -> void:
 ## Rebuilds the village objects and settlers after a house goes up.
 func refresh_settlement() -> void:
 	for node in get_children():
-		if node is SettlementObject or node is FarmBed or node is FarmPatch or (node is WorldNpc and node.npc_id.begins_with("settler_")):
+		if node is SettlementObject or node is FarmBed or node is FarmPatch or node is MillWheel or (node is WorldNpc and node.npc_id.begins_with("settler_")):
 			remove_child(node)
 			node.queue_free()
 	_spawn_settlement()

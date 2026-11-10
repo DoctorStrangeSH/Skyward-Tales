@@ -21,6 +21,8 @@ var live: Array = []
 var follow: bool = true
 ## Day progress 0..1 (DayNight.time) and whether the sky is seen here.
 var day_time: float = -1.0
+## The season in lands that live by the calendar ("" elsewhere).
+var season_label: String = ""
 var _thumb: Texture2D
 var _thumb_region: String = ""
 var _clock: float = 0.0
@@ -91,7 +93,7 @@ func _draw() -> void:
 		draw_rect(Rect2(3, 3, HUD_SIZE.x - 6, 13), Color(0.07, 0.07, 0.15))
 		var font := UiFont.font()
 		draw_string(font, Vector2(6, 13), RegionCatalog.display_name(region_id).to_upper(), HORIZONTAL_ALIGNMENT_LEFT, 110, UiFont.px(9), Color(1.0, 0.9, 0.62))
-		draw_string(font, Vector2(6, 13), "ур. %d" % RegionCatalog.level(region_id), HORIZONTAL_ALIGNMENT_RIGHT, HUD_SIZE.x - 24, UiFont.px(8), Color(0.75, 0.85, 1.0))
+		draw_string(font, Vector2(6, 13), season_label if not season_label.is_empty() else "ур. %d" % RegionCatalog.level(region_id), HORIZONTAL_ALIGNMENT_RIGHT, HUD_SIZE.x - 24, UiFont.px(8), Color(0.75, 0.85, 1.0))
 		_draw_sky_clock(Vector2(HUD_SIZE.x - 10, 9))
 	# Beyond the island: sky (or rock underground).
 	var beyond := Color(0.62, 0.78, 0.94)

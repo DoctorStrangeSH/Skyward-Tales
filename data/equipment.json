@@ -1387,6 +1387,44 @@
       "max_health": 20,
       "hp_regen": 2,
       "value": 40
+    },
+    "seed_carrot": {
+      "name": "Семена моркови",
+      "description": "Посадите на грядке огорода или в теплице. Урожай: морковь.",
+      "slot": "",
+      "material": true,
+      "value": 4
+    },
+    "carrot": {
+      "name": "Морковь",
+      "description": "Хрустящая, с грядки. +12 здоровья; на кухне — морковный пирог.",
+      "slot": "",
+      "value": 5,
+      "use": {
+        "heal": 12
+      }
+    },
+    "flour": {
+      "name": "Мука",
+      "description": "Смолота на водяной мельнице. На кухне — хлеб и пироги.",
+      "slot": "",
+      "material": true,
+      "value": 4
+    },
+    "carrot_pie": {
+      "name": "Морковный пирог",
+      "description": "+60 здоровья и «Зоркость»: шанс крита +10% на 3 минуты.",
+      "slot": "",
+      "value": 28,
+      "use": {
+        "heal": 60,
+        "buff": {
+          "type": "crit",
+          "value": 0.1,
+          "duration": 180,
+          "label": "Зоркость"
+        }
+      }
     }
   },
   "sets": {

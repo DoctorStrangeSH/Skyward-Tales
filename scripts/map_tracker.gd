@@ -52,6 +52,7 @@ func _draw_minimap() -> void:
 	live.append_array(game.deep_rifts.minimap_marker())
 	live.append_array(game.quest_nav.minimap_markers())
 	game.hud.minimap.day_time = game.day_night.time if game.day_night.cycles_here() else -1.0
+	game.hud.minimap.season_label = game.seasons.current_name().to_lower() if game.seasons != null and game.seasons.here() else ""
 	game.hud.minimap.set_live(live, game.player.facing)
 	if game.hud.world_map_visible:
 		game.hud.world_map.set_live(live, game.player.facing)
