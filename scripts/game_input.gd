@@ -26,6 +26,8 @@ func _interaction_prompt(target: Node2D) -> String:
 		return game.farm.prompt(target.index)
 	if target is SettlementObject and target.kind == "door":
 		return target.label
+	if target is TowerObject:
+		return target.label
 	if target is DungeonLever:
 		return "E — опустить рычаг"
 	if target is SettlementObject:

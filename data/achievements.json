@@ -433,6 +433,20 @@
       "stat": "fair_gallery",
       "goal": 12,
       "gold": 120
+    },
+    "tower_climber": {
+      "title": "Первые ступени",
+      "description": "Пройдите 5-й этаж Башни испытаний.",
+      "stat": "trial_tower",
+      "goal": 5,
+      "gold": 150
+    },
+    "tower_master": {
+      "title": "Вершина башни",
+      "description": "Пройдите 20-й этаж Башни испытаний.",
+      "stat": "trial_tower",
+      "goal": 20,
+      "gold": 800
     }
   }
 }

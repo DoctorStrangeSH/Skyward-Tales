@@ -923,6 +923,12 @@
    16
   ]
  },
+ "icons/trial_seal.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/venom_oil.png": {
   "size": [
    16,
@@ -5581,6 +5587,182 @@
   "origin": [
    26,
    32
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/tower_altar.png": {
+  "size": [
+   68,
+   53
+  ],
+  "origin": [
+   34,
+   52
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/tower_altar_charged.png": {
+  "size": [
+   68,
+   69
+  ],
+  "origin": [
+   34,
+   68
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/tower_amethyst.png": {
+  "size": [
+   44,
+   38
+  ],
+  "origin": [
+   22,
+   36
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/tower_banner.png": {
+  "size": [
+   48,
+   58
+  ],
+  "origin": [
+   24,
+   54
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/tower_brazier.png": {
+  "size": [
+   44,
+   52
+  ],
+  "origin": [
+   22,
+   51
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/tower_coffer.png": {
+  "size": [
+   64,
+   55
+  ],
+  "origin": [
+   32,
+   54
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/tower_coffer_open.png": {
+  "size": [
+   64,
+   71
+  ],
+  "origin": [
+   32,
+   70
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/tower_crystal.png": {
+  "size": [
+   52,
+   78
+  ],
+  "origin": [
+   26,
+   77
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/tower_gate_closed.png": {
+  "size": [
+   116,
+   121
+  ],
+  "origin": [
+   58,
+   120
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/tower_gate_open.png": {
+  "size": [
+   116,
+   121
+  ],
+  "origin": [
+   58,
+   120
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/tower_lectern.png": {
+  "size": [
+   52,
+   48
+  ],
+  "origin": [
+   26,
+   47
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/tower_lever.png": {
+  "size": [
+   60,
+   63
+  ],
+  "origin": [
+   30,
+   62
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/tower_lever_pulled.png": {
+  "size": [
+   60,
+   63
+  ],
+  "origin": [
+   30,
+   62
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/tower_medallion.png": {
+  "size": [
+   88,
+   54
+  ],
+  "origin": [
+   44,
+   27
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/tower_sigil.png": {
+  "size": [
+   144,
+   84
+  ],
+  "origin": [
+   72,
+   42
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/tower_stairs.png": {
+  "size": [
+   88,
+   96
+  ],
+  "origin": [
+   44,
+   95
   ],
   "scale": 0.5
  },

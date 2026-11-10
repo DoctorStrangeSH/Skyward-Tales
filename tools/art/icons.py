@@ -850,6 +850,19 @@ def flour_icon() -> Canvas:
     return _finish(c)
 
 
+def seal_icon() -> Canvas:
+    c = Canvas(16, 16)
+    gold = ramp("#ffe9a0", "#e0a83a", "#8a5a1a")
+    gem = ramp("#f0d0ff", "#b070f0", "#6030a0")
+    c.ellipse(8, 8, 6, 6, gold[2])
+    c.ellipse(8, 8, 5, 5, gold[1])
+    c.ellipse(7, 7, 3.4, 3.4, gold[0])
+    c.ellipse(8, 8, 2.6, 2.6, gem[1])
+    c.put(7, 7, gem[0])
+    c.put(9, 9, gem[2])
+    return _finish(c)
+
+
 def bread_icon() -> Canvas:
     c = Canvas(16, 16)
     crust = ramp("#ffe0a0", "#d89850", "#9a5a2a")
@@ -939,7 +952,7 @@ def build_misc() -> dict[str, Canvas]:
         "skyfire_blade": sword(ramp("#fff6c8", "#ffb050", "#c8502a"), gem_color="#9cf0ff"),
         "seed_healroot": seed_pouch("#e05a4a"), "seed_bluebell": seed_pouch("#5a8ae0"),
         "seed_wheat": seed_pouch("#f0c860"), "seed_sunberry": seed_pouch("#ff8a3a"),
-        "wheat": wheat_icon(),
+        "wheat": wheat_icon(), "trial_seal": seal_icon(),
         "seed_carrot": seed_pouch("#f08030"), "carrot": carrot_icon(), "flour": flour_icon(),
         "carrot_pie": bowl_icon(ramp("#ffd0a0", "#f08a3a", "#b0501a")),
         "sunberry": berries(ramp("#ffe0a0", "#ff8a3a", "#c04a20")),

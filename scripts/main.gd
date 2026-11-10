@@ -103,6 +103,7 @@ var combos: ElementalCombos
 var gear: GearEffects
 var farm: Farm
 var seasons: Seasons
+var trials: TrialTower
 var buildings: VillageBuildings
 var guild: AdventurersGuild
 var expeditions: Expeditions
@@ -253,6 +254,10 @@ func _ready() -> void:
 	seasons.name = "Seasons"
 	seasons.game = self
 	add_child(seasons)
+	trials = TrialTower.new()
+	trials.name = "TrialTower"
+	trials.game = self
+	add_child(trials)
 	gear = GearEffects.new()
 	gear.name = "GearEffects"
 	gear.game = self
@@ -1834,6 +1839,8 @@ func _refresh_hud() -> void:
 
 func _on_player_died() -> void:
 	if game_over:
+		return
+	if trials != null and trials.on_fall():
 		return
 	game_over = true
 	pending_level_choices.clear()

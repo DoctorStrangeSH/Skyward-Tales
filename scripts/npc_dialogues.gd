@@ -138,6 +138,8 @@ func handle_choice(choice_id: String) -> void:
 		return
 	if game.fair != null and game.fair.handle_choice(choice_id):
 		return
+	if game.trials != null and game.trials.handle_choice(choice_id):
+		return
 	if game.bran != null and game.bran.handle_choice(choice_id):
 		return
 	if game.guild != null and game.guild.handle_choice(choice_id):
