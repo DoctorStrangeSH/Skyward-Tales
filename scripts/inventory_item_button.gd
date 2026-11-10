@@ -78,7 +78,7 @@ func configure(player: PlayerCharacter, id: String, fallback_names: Dictionary, 
 func _apply_style() -> void:
 	for state in ["normal", "hover", "pressed", "disabled", "focus"]:
 		var box := StyleBoxFlat.new()
-		box.bg_color = Color(0.11, 0.08, 0.07, 0.95) if state != "hover" else Color(0.22, 0.16, 0.12, 0.98)
+		box.bg_color = Color(0.07, 0.09, 0.16, 0.95) if state != "hover" else Color(0.15, 0.19, 0.32, 0.98)
 		box.border_color = rarity_color if state != "hover" else rarity_color.lightened(0.3)
 		box.set_border_width_all(2 if state == "hover" or quest_item else 1)
 		if quest_item:

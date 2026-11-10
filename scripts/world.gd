@@ -250,6 +250,10 @@ func _add_apron() -> void:
 		if hd:
 			sprite.scale = Vector2.ONE / HD_K
 		add_child(sprite)
+	var sky := SkyParallax.new()
+	sky.name = "SkyParallax"
+	add_child(sky)
+	sky.setup(size, region_id, RegionCatalog.style(region_id))
 	# Sky islands smaller than the map: the sky and cliffs inside the map edge.
 	var inner_file := HD_DIR + region_id + "_apron_inner.webp"
 	if ResourceLoader.exists(inner_file):

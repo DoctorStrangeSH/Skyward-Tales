@@ -1,6 +1,8 @@
 # AI HANDOFF — Skyward Tales
 
-Последнее обновление: 9 ноября 2026 года (этап 21: новая графика из `assets/New Sprites`, тени, цветокоррекция, HD-героиня).
+Последнее обновление: 10 ноября 2026 года (этап 21, шаг 3: дальние острова и облака с параллаксом, новый мост, окна в синем стиле).
+
+**Этап 21, шаг 3 (кратко):** `scripts/sky_parallax.gd` (`SkyParallax.setup(map_size, region_id, style)`, создаётся в `world.gd::_add_apron()`, z −109; `items` — словари node/base/depth/drift; острова расставлены по отрезкам кромки слева/справа/сверху в 54–92 px от края — камера видит ~110 px за край; стили marsh/ash/rift без островов). Картинки `assets/world_hd/sky/*.png` вырезаны из `assets/New Sprites` (sky_harbor/parallax). Мост в `tools/art/hd/apron.py::_bridge` — `new:hd/redrawn/islands/rope_bridge.png` (после правки — `build_hd.py`). Кукла героя: `inventory_window.gd::_portrait_region()` (клетка = высота листа / 8; HD — 128 px, линейный фильтр). Подписи пустых слотов — `EquipSlot.SHORT`. Тест `tests/sky_parallax.gd`.
 
 Точка входа для следующего разработчика (человека или ИИ). Прочитай этот файл, затем `docs/ROADMAP.md` (дорожная карта, согласованная с владельцем), `docs/STORY.md` (сюжет) и `assets/ART_GUIDE.md`. История шагов — в `git log` (сообщения коммитов подробные).
 

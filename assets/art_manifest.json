@@ -5494,6 +5494,42 @@
   ],
   "scale": 0.5
  },
+ "world_hd/sky/castle_island.png": {
+  "size": [
+   260,
+   298
+  ]
+ },
+ "world_hd/sky/cloud_bank.png": {
+  "size": [
+   300,
+   163
+  ]
+ },
+ "world_hd/sky/cloud_tower.png": {
+  "size": [
+   300,
+   264
+  ]
+ },
+ "world_hd/sky/cloud_wisp.png": {
+  "size": [
+   300,
+   199
+  ]
+ },
+ "world_hd/sky/linked_islets.png": {
+  "size": [
+   260,
+   152
+  ]
+ },
+ "world_hd/sky/windmill_island.png": {
+  "size": [
+   260,
+   294
+  ]
+ },
  "world_hd/sky_bush_0.png": {
   "size": [
    56,

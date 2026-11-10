@@ -149,12 +149,12 @@ func _skill_button(player: PlayerCharacter, skill_id: String, definition: Dictio
 		style.border_color = color
 		style.set_border_width_all(1)
 	elif reason.is_empty():
-		style.bg_color = Color(0.36, 0.24, 0.16)
+		style.bg_color = Color(0.16, 0.22, 0.4)
 		style.border_color = Color(1.0, 0.85, 0.4)
 		style.set_border_width_all(1)
 	else:
-		style.bg_color = Color(0.17, 0.12, 0.1)
-		style.border_color = Color(0.36, 0.26, 0.2)
+		style.bg_color = Color(0.08, 0.1, 0.18)
+		style.border_color = Color(0.3, 0.34, 0.5)
 		style.set_border_width_all(1)
 	button.add_theme_stylebox_override("normal", style)
 	var hover := style.duplicate() as StyleBoxFlat

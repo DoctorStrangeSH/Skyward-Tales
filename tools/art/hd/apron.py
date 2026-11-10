@@ -280,7 +280,8 @@ def _bridge(cv: Canvas, gx: float, gy: float, island: tuple, w: int, h: int) -> 
     side = min(edges, key=edges.get)
     if edges[side] > 120:
         return
-    deck = pack.content(pack.image("props/prop_018.png"))
+    # Stage 21: the rope bridge from the owner's new sprites.
+    deck = pack.content(pack.image("new:hd/redrawn/islands/rope_bridge.png"))
     if side in ("left", "right"):
         start = ix0 if side == "left" else ix1
         end = -M + 18 if side == "left" else w + M - 18

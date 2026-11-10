@@ -9,6 +9,9 @@ signal unequip_requested(slot: String)
 signal hovered(slot: String)
 
 const SIZE := Vector2(30, 30)
+## Short captions that fit an empty slot.
+const SHORT := {"blade": "Меч", "offhand": "Щит", "armor": "Латы", "cloak": "Плащ", "amulet": "Шея", "earrings": "Уши",
+	"ring1": "Кол.", "ring2": "Кол.", "relic": "Рел.", "weapon": "Меч"}
 const NAMES := {"blade": "Оружие", "offhand": "Щит", "armor": "Броня", "cloak": "Плащ", "amulet": "Амулет", "earrings": "Серьги",
 	"ring1": "Кольцо", "ring2": "Кольцо", "relic": "Реликвия", "weapon": "Оружие"}
 
@@ -31,10 +34,10 @@ func setup(player: PlayerCharacter, slot_id: String) -> void:
 	icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var definition := player.get_item_definition(item_id) if not item_id.is_empty() else {}
 	var rarity := str(definition.get("rarity", "common"))
-	var border: Color = InventoryItemButton.RARITY_COLORS.get(rarity, Color(0.6, 0.5, 0.4)) if not item_id.is_empty() else Color(0.42, 0.32, 0.24)
+	var border: Color = InventoryItemButton.RARITY_COLORS.get(rarity, Color(0.6, 0.5, 0.4)) if not item_id.is_empty() else Color(0.5, 0.42, 0.24)
 	for state in ["normal", "hover", "pressed", "disabled", "focus"]:
 		var box := StyleBoxFlat.new()
-		box.bg_color = Color(0.09, 0.06, 0.05, 0.95) if state != "hover" else Color(0.2, 0.14, 0.1, 0.98)
+		box.bg_color = Color(0.06, 0.08, 0.14, 0.95) if state != "hover" else Color(0.14, 0.18, 0.3, 0.98)
 		box.border_color = border
 		box.set_border_width_all(2)
 		box.set_corner_radius_all(4)
@@ -59,8 +62,8 @@ func _draw() -> void:
 	# An empty slot names itself inside the frame.
 	if item_id.is_empty():
 		var font := UiFont.font()
-		var caption: String = "2 руки" if blocked else str(NAMES.get(slot, slot))
-		draw_string(font, Vector2(0, SIZE.y / 2.0 + 3), caption, HORIZONTAL_ALIGNMENT_CENTER, SIZE.x, UiFont.px(6 if caption.length() > 5 else 7), Color(0.6, 0.5, 0.42, 0.9))
+		var caption: String = "2 руки" if blocked else str(SHORT.get(slot, NAMES.get(slot, slot)))
+		draw_string(font, Vector2(0, SIZE.y / 2.0 + 3), caption, HORIZONTAL_ALIGNMENT_CENTER, SIZE.x, UiFont.px(6 if caption.length() > 4 else 7), Color(0.62, 0.68, 0.82, 0.9))
 		if blocked:
 			draw_line(Vector2(5, 5), SIZE - Vector2(5, 5), Color(0.6, 0.35, 0.3, 0.6), 1.0)
 	if _accepting:

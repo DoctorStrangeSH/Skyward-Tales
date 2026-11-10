@@ -136,7 +136,7 @@ func _build_gear_page(contents: VBoxContainer) -> void:
 	stage.position = Vector2(42, 4)
 	stage.size = Vector2(104, 150)
 	var frame := StyleBoxFlat.new()
-	frame.bg_color = Color(0.16, 0.22, 0.2, 0.9)
+	frame.bg_color = Color(0.12, 0.17, 0.3, 0.9)
 	frame.border_color = Color(0.62, 0.45, 0.27)
 	frame.set_border_width_all(1)
 	frame.set_corner_radius_all(4)
@@ -230,7 +230,7 @@ func _build_gear_page(contents: VBoxContainer) -> void:
 	bag_area.unequip_requested.connect(func(slot: String) -> void: unequip_requested.emit(slot))
 	bag_area.reorder_requested.connect(_reorder)
 	var bag_bg := StyleBoxFlat.new()
-	bag_bg.bg_color = Color(0.06, 0.045, 0.04, 0.7)
+	bag_bg.bg_color = Color(0.03, 0.04, 0.08, 0.7)
 	bag_bg.set_corner_radius_all(3)
 	bag_bg.set_content_margin_all(4)
 	bag_area.add_theme_stylebox_override("panel", bag_bg)
@@ -262,6 +262,18 @@ func show_tab(tab_id: String) -> void:
 	if tab == "party" and _skills != null:
 		party_view.populate(_skills.game.crew)
 
+## The front-facing idle frame of the hero's sheet (8 rows of facings).
+func _portrait_region(frame: int) -> Rect2:
+	var sheet := _portrait.atlas
+	if sheet == null:
+		return Rect2(16, 12, 32, 32)
+	var cell := sheet.get_height() / 8
+	var frames := maxi(1, sheet.get_width() / cell)
+	var x := cell * (frame % frames)
+	if cell > 64:
+		return Rect2(x + cell * 0.2, cell * 0.2, cell * 0.6, cell * 0.68)
+	return Rect2(x + 16, 12, 32, 32)
+
 func set_skills(skills: CombatSkills) -> void:
 	_skills = skills
 
@@ -271,8 +283,8 @@ func _process(delta: float) -> void:
 	_clock += delta
 	if _clock >= 0.16:
 		_clock = 0.0
-		_frame = (_frame + 1) % 6
-		_portrait.region = Rect2(16 + 64 * _frame, 12, 32, 32)
+		_frame += 1
+		_portrait.region = _portrait_region(_frame)
 
 func populate(player: PlayerCharacter, filter_index: int, sort_index: int, preferred_order: Array, fallback_names: Dictionary, fallback_descriptions: Dictionary, rarity_names: Dictionary, consumable_ids: Array) -> void:
 	_player = player
@@ -378,8 +390,10 @@ func _populate_doll(player: PlayerCharacter) -> void:
 	if sheet != null:
 		if _portrait == null:
 			_portrait = AtlasTexture.new()
-			_portrait.region = Rect2(16, 12, 32, 32)
 		_portrait.atlas = sheet
+		_portrait.region = _portrait_region(_frame)
+		# The HD heroes (128 px cells) are smooth, the old chibis are pixels.
+		_portrait_rect.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR if sheet.get_height() / 8 > 64 else CanvasItem.TEXTURE_FILTER_NEAREST
 		_portrait_rect.texture = _portrait
 	stats_label.text = "%s\nур. %d" % [player.hero_name, player.level]
 	for child in stats_grid.get_children():
