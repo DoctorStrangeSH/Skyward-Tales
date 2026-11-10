@@ -321,12 +321,13 @@ def render(region_id: str, terrain: dict, seed: int, footprints: list, gates: li
         for k in range(1, 12 * K + 1):
             face |= np.roll(floor, -k, 0) & ~floor
         top_edge = face & ~np.roll(face, 1, 0)
-        out = walls * 0.42
-        out[face] = walls[face] * 0.9
+        dark = cfg.get("wall_shade", 0.42)
+        out = walls * dark
+        out[face] = walls[face] * min(0.9, dark * 2.2)
         lip = np.zeros_like(floor)
         for k in range(0, 3):
             lip |= np.roll(top_edge, k, 0)
-        out[lip] = np.minimum(1.0, walls[lip] * 1.25)
+        out[lip] = np.minimum(1.0, walls[lip] * min(1.25, dark * 3.0))
         dist = ndimage.distance_transform_edt(floor)
         under = np.clip(1.0 - dist / (6 * K), 0, 1)[..., None]
         floor_col = ground * (1 - under * 0.45)

@@ -121,7 +121,11 @@
     "flour": 3,
     "carrot_pie": 16,
     "egg": 2,
-    "omelette": 8
+    "omelette": 8,
+    "planks": 6,
+    "resin": 7,
+    "resin_torch": 9,
+    "sapling": 1
   },
   "sell_trust_bonus": {
     "trust": 20,

@@ -706,6 +706,62 @@
         "item_id": "omelette",
         "amount": 1
       }
+    },
+    "carp_planks": {
+      "name": "Доски",
+      "description": "Три бревна — две доски.",
+      "gold_cost": 0,
+      "station": "carpentry",
+      "ingredients": [
+        {
+          "item_id": "wood",
+          "amount": 3
+        }
+      ],
+      "output": {
+        "item_id": "planks",
+        "amount": 2
+      }
+    },
+    "carp_torch": {
+      "name": "Смоляной факел",
+      "description": "Бревно и смола.",
+      "gold_cost": 0,
+      "station": "carpentry",
+      "ingredients": [
+        {
+          "item_id": "wood",
+          "amount": 1
+        },
+        {
+          "item_id": "resin",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "item_id": "resin_torch",
+        "amount": 2
+      }
+    },
+    "carp_charm": {
+      "name": "Лесной оберег",
+      "description": "Доски, смола и терпение.",
+      "gold_cost": 40,
+      "station": "carpentry",
+      "ingredients": [
+        {
+          "item_id": "planks",
+          "amount": 4
+        },
+        {
+          "item_id": "resin",
+          "amount": 3
+        }
+      ],
+      "output": {
+        "item_id": "forest_charm",
+        "amount": 1
+      }
     }
   }
 }

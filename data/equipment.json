@@ -1454,6 +1454,49 @@
           "label": "Сытость"
         }
       }
+    },
+    "sapling": {
+      "name": "Саженец",
+      "description": "Посадите на пень срубленного дерева (E): вырастет вдвое быстрее.",
+      "slot": "",
+      "material": true,
+      "value": 2
+    },
+    "resin": {
+      "name": "Янтарная смола",
+      "description": "Находка лесничих. На верстаке — факелы и оберег.",
+      "slot": "",
+      "material": true,
+      "value": 9
+    },
+    "planks": {
+      "name": "Доски",
+      "description": "Струганые на верстаке лесничих. Хорошо продаются.",
+      "slot": "",
+      "material": true,
+      "value": 8
+    },
+    "resin_torch": {
+      "name": "Смоляной факел",
+      "description": "«Жар факела»: урон +10% на 3 минуты.",
+      "slot": "",
+      "value": 16,
+      "use": {
+        "buff": {
+          "type": "power",
+          "value": 0.1,
+          "duration": 180,
+          "label": "Жар факела"
+        }
+      }
+    },
+    "forest_charm": {
+      "name": "Лесной оберег",
+      "description": "+25 здоровья, +10 маны. Вырезан из дуба, залит смолой.",
+      "slot": "amulet",
+      "rarity": "rare",
+      "max_health": 25,
+      "max_mana": 10
     }
   },
   "sets": {

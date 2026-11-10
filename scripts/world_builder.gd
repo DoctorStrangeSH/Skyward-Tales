@@ -64,6 +64,7 @@ func _populate_region() -> void:
 	game.trials.populate()
 	game.cistern.populate()
 	game.hens.populate()
+	game.forestry.populate()
 	game.buildings.reveal_chests()
 	game.guild.spawn_target()
 	if game.current_region == Expeditions.REGION:
@@ -377,7 +378,7 @@ func _spawn_npc(npc_data: Dictionary) -> void:
 		npc.interacted.connect(handler)
 	elif game.settlement.has_settler_npc(npc_id):
 		npc.interacted.connect(func(_source: Node2D) -> void: game.settlement.talk(npc_id))
-	elif game.givers.has_giver(npc_id):
+	elif game.givers.has_giver(npc_id) or game.givers.is_special(npc_id):
 		npc.interacted.connect(func(_source: Node2D) -> void: game.givers.talk(npc_id))
 	else:
 		push_warning("У NPC нет обработчика диалога: " + npc_id)

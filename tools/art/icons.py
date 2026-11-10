@@ -872,6 +872,61 @@ def egg_icon() -> Canvas:
     return _finish(c)
 
 
+def sapling_icon() -> Canvas:
+    c = Canvas(16, 16)
+    leaf = ramp("#c8f080", "#6ab83a", "#2e6a22")
+    c.ellipse(8, 13, 4, 1.6, hex_color("#6a4424"))
+    c.line(8, 13, 8, 6, hex_color("#7a5a30"))
+    c.ellipse(5.5, 6, 2.6, 2.0, leaf[1])
+    c.ellipse(10.5, 5, 2.6, 2.0, leaf[1])
+    c.ellipse(8, 3.5, 2.0, 2.0, leaf[0])
+    c.put(5, 6, leaf[0])
+    c.put(11, 6, leaf[2])
+    return _finish(c)
+
+
+def resin_icon() -> Canvas:
+    c = Canvas(16, 16)
+    amber = ramp("#fff0a0", "#f0a020", "#a05808")
+    c.ellipse(8, 9, 4.6, 5.2, amber[2])
+    c.ellipse(8, 8.6, 3.8, 4.4, amber[1])
+    c.ellipse(6.8, 6.8, 1.6, 2.0, amber[0])
+    return _finish(c)
+
+
+def planks_icon() -> Canvas:
+    c = Canvas(16, 16)
+    wood = ramp("#f0c890", "#c89050", "#7a4e24")
+    for i, y in enumerate((4, 8, 12)):
+        c.rect(2 + i % 2, y - 1, 12, 3, wood[1])
+        c.hline(2 + i % 2, 13 + i % 2, y - 1, wood[0])
+        c.hline(2 + i % 2, 13 + i % 2, y + 1, wood[2])
+    return _finish(c)
+
+
+def torch_icon() -> Canvas:
+    c = Canvas(16, 16)
+    c.line(6, 14, 9, 7, hex_color("#7a4e24"))
+    c.line(7, 14, 10, 7, hex_color("#a8743a"))
+    flame = ramp("#fff6b0", "#ffb030", "#e04a10")
+    c.ellipse(10, 5, 2.8, 3.4, flame[2])
+    c.ellipse(10, 5.4, 2.0, 2.6, flame[1])
+    c.ellipse(10, 6, 1.0, 1.4, flame[0])
+    return _finish(c)
+
+
+def charm_icon() -> Canvas:
+    c = Canvas(16, 16)
+    c.line(4, 2, 8, 6, hex_color("#8a6a40"))
+    c.line(12, 2, 8, 6, hex_color("#8a6a40"))
+    wood = ramp("#e0b070", "#b07838", "#6a421c")
+    c.ellipse(8, 10, 4.2, 4.2, wood[2])
+    c.ellipse(8, 10, 3.4, 3.4, wood[1])
+    c.ellipse(8, 10, 1.6, 1.6, hex_color("#f0a020"))
+    c.put(7, 9, hex_color("#fff0a0"))
+    return _finish(c)
+
+
 def bread_icon() -> Canvas:
     c = Canvas(16, 16)
     crust = ramp("#ffe0a0", "#d89850", "#9a5a2a")
@@ -961,7 +1016,7 @@ def build_misc() -> dict[str, Canvas]:
         "skyfire_blade": sword(ramp("#fff6c8", "#ffb050", "#c8502a"), gem_color="#9cf0ff"),
         "seed_healroot": seed_pouch("#e05a4a"), "seed_bluebell": seed_pouch("#5a8ae0"),
         "seed_wheat": seed_pouch("#f0c860"), "seed_sunberry": seed_pouch("#ff8a3a"),
-        "wheat": wheat_icon(), "trial_seal": seal_icon(), "egg": egg_icon(), "omelette": bowl_icon(ramp("#fff2a0", "#f0c840", "#b08020")),
+        "wheat": wheat_icon(), "trial_seal": seal_icon(), "egg": egg_icon(), "sapling": sapling_icon(), "resin": resin_icon(), "planks": planks_icon(), "resin_torch": torch_icon(), "forest_charm": charm_icon(), "omelette": bowl_icon(ramp("#fff2a0", "#f0c840", "#b08020")),
         "seed_carrot": seed_pouch("#f08030"), "carrot": carrot_icon(), "flour": flour_icon(),
         "carrot_pie": bowl_icon(ramp("#ffd0a0", "#f08a3a", "#b0501a")),
         "sunberry": berries(ramp("#ffe0a0", "#ff8a3a", "#c04a20")),

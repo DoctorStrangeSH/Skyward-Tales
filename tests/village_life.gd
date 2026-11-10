@@ -98,6 +98,11 @@ func _run() -> void:
 	game.day_night.day = 0
 	alaya.interact()
 	await process_frame
+	var offer := ""
+	for button in game.hud.dialogue_choices_container.get_children():
+		offer += (button as Button).text
+	if not offer.contains("Побежали"):
+		return _fail("Alaya offers a run: " + offer)
 	game._on_dialogue_choice_selected("scout_run")
 	if not scout.running or _count(game, "flag") != 5 or scout.route_index != 0:
 		return _fail("the run starts with five flags")

@@ -20,10 +20,41 @@ func _ready() -> void:
 func interact() -> void:
 	used.emit(self)
 
+## Felled trees and worked veins change their look instead of fading:
+## "ready", "cut" (a stump), "young" (a sapling). Art:
+## assets/world_hd/props/tree_<oak|birch>_<stage>.png, vein_<ready|cut>.png.
+var stage: String = "ready"
+
+func staged_art() -> String:
+	if kind == "wood":
+		return "props/tree_%s_%s" % ["oak" if absi(hash(key)) % 2 == 0 else "birch", stage]
+	if kind == "iron":
+		return "props/vein_%s" % ("ready" if stage == "ready" else "cut")
+	return ""
+
+func _has_stages() -> bool:
+	var file := staged_art()
+	return not file.is_empty() and ResourceLoader.exists("res://assets/world_hd/%s.png" % file)
+
+func set_stage(value: String) -> void:
+	if stage != value:
+		stage = value
+		queue_redraw()
+
 func set_ready(value: bool) -> void:
 	available = value
-	modulate = Color.WHITE if available else Color(1, 1, 1, 0.35)
+	if _has_stages():
+		modulate = Color.WHITE
+		if available:
+			stage = "ready"
+		elif stage == "ready":
+			stage = "cut"
+	else:
+		modulate = Color.WHITE if available else Color(1, 1, 1, 0.35)
 	queue_redraw()
 
 func _draw() -> void:
+	if _has_stages():
+		WorldArt.draw_prop(self, "world/%s.png" % staged_art())
+		return
 	WorldArt.draw_prop(self, "world/%s.png" % art)

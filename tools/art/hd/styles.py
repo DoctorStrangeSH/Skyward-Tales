@@ -276,6 +276,22 @@ CISTERN.update({
     "decals": [],
 })
 
+# A house from inside (stage 21): oak boards, darkness beyond the walls.
+# Chosen with terrain "art_style": "lodge".
+_OAK = NEW % "woodland_guild/ground/%s"
+LODGE = dict(CRYPT)
+LODGE.update({
+    "grass": [(_OAK % "oak_floor_00", (0, 0, 128, 128), 1.0), (_OAK % "oak_floor_01", (0, 0, 128, 128), 1.0),
+              (_OAK % "oak_floor_02", (0, 0, 128, 128), 1.0)],
+    "patch": 120, "step": 96,
+    "recolor": (1.0, 1.0, 1.0),
+    "overlays": [],
+    "shade": (0.9, 1.04),
+    "warm": (1.02, 1.0, 0.96), "cool": (0.98, 0.98, 1.0),
+    "wall_shade": 0.06,
+    "decals": [],
+})
+
 MAGMA = dict(CRYPT)
 MAGMA.update({
     "grass": [F_RED, F_BROWN, F_DARK],
@@ -288,4 +304,4 @@ MAGMA.update({
 })
 
 STYLE = {"day": DAY, "haven": HAVEN, "night": NIGHT, "marsh": MARSH, "coast": COAST, "mountain": MOUNTAIN,
-         "sky": SKY, "spires": SPIRES, "rift": RIFT, "ash": ASH, "cave": CAVE, "crypt": CRYPT, "magma": MAGMA, "cistern": CISTERN}
+         "sky": SKY, "spires": SPIRES, "rift": RIFT, "ash": ASH, "cave": CAVE, "crypt": CRYPT, "magma": MAGMA, "cistern": CISTERN, "lodge": LODGE}

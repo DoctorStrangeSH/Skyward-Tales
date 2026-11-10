@@ -34,6 +34,8 @@ func is_ready(key: String) -> bool:
 
 func gather(node: GatherNode) -> bool:
 	if not is_ready(node.key):
+		if game.forestry != null and game.forestry.try_plant(node):
+			return false
 		var left := int(ceil(float(cooldowns[node.key]) - play_time))
 		game.hud.show_message("%s: вырастет снова через %d с." % [node.display_name, left], 2.0)
 		return false
@@ -43,8 +45,12 @@ func gather(node: GatherNode) -> bool:
 	var amount_range: Array = info.get("amount", [1, 1])
 	var amount := game.loot_rng.randi_range(int(amount_range[0]), int(amount_range[1]))
 	var item_id := str(info.get("item", node.kind))
+	var respawn := float(info.get("respawn", 200))
+	if game.forestry != null:
+		amount += game.forestry.on_gathered(node)
+		respawn *= game.forestry.regrow_factor(node)
 	game.player.add_item(item_id, amount)
-	cooldowns[node.key] = play_time + float(info.get("respawn", 200))
+	cooldowns[node.key] = play_time + respawn
 	node.set_ready(false)
 	Vfx.sparkle(game, node.global_position)
 	GameAudio.play("pickup", -5.0, 0.08)
@@ -60,6 +66,8 @@ func refresh_nodes() -> void:
 	for node in game.get_children():
 		if node is GatherNode and not node.available and is_ready(node.key):
 			node.set_ready(true)
+		elif node is GatherNode and not node.available and game.forestry != null:
+			game.forestry.update_stage(node)
 
 # --- Stations --------------------------------------------------------------
 

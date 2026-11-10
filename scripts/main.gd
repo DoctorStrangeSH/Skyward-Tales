@@ -107,6 +107,7 @@ var trials: TrialTower
 var cistern: Cistern
 var hens: VillageHens
 var scout: ScoutTrail
+var forestry: ForestGuild
 var buildings: VillageBuildings
 var guild: AdventurersGuild
 var expeditions: Expeditions
@@ -273,6 +274,10 @@ func _ready() -> void:
 	scout.name = "ScoutTrail"
 	scout.game = self
 	add_child(scout)
+	forestry = ForestGuild.new()
+	forestry.name = "ForestGuild"
+	forestry.game = self
+	add_child(forestry)
 	gear = GearEffects.new()
 	gear.name = "GearEffects"
 	gear.game = self

@@ -50,6 +50,8 @@ func _unlocked(quest_id: String) -> bool:
 func marker_for(npc_id: String) -> String:
 	if game.scout != null and not game.scout.marker(npc_id).is_empty():
 		return game.scout.marker(npc_id)
+	if game.forestry != null and not game.forestry.marker(npc_id).is_empty():
+		return game.forestry.marker(npc_id)
 	if game.bran != null:
 		var bran_marker := game.bran.marker(npc_id)
 		if not bran_marker.is_empty():
@@ -79,9 +81,15 @@ func marker_for(npc_id: String) -> String:
 		return "quest"
 	return ""
 
+## NPCs whose whole talk belongs to their own system (the scout, the forester).
+func is_special(npc_id: String) -> bool:
+	return npc_id in [ScoutTrail.NPC, ForestGuild.NPC]
+
 func talk(npc_id: String) -> void:
 	# Bran's charter at Bruno's comes before the port's own talk.
 	if game.scout != null and game.scout.talk(npc_id):
+		return
+	if game.forestry != null and game.forestry.talk(npc_id):
 		return
 	if game.bran != null and game.bran.talk(npc_id):
 		return
