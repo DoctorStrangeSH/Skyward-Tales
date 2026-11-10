@@ -119,7 +119,9 @@
     "silver_earrings": 50,
     "carrot": 3,
     "flour": 3,
-    "carrot_pie": 16
+    "carrot_pie": 16,
+    "egg": 2,
+    "omelette": 8
   },
   "sell_trust_bonus": {
     "trust": 20,

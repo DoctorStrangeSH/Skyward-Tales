@@ -454,6 +454,13 @@
       "stat": "cistern",
       "goal": 1,
       "gold": 120
+    },
+    "scout_runner": {
+      "title": "Быстрые ноги",
+      "description": "Пройдите тропу разведчицы 5 раз.",
+      "stat": "scout_runs",
+      "goal": 5,
+      "gold": 120
     }
   }
 }

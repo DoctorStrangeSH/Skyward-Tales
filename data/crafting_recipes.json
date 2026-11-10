@@ -690,6 +690,22 @@
         "item_id": "carrot_pie",
         "amount": 1
       }
+    },
+    "cook_omelette": {
+      "name": "Омлет",
+      "description": "Два яйца на сковороде.",
+      "gold_cost": 0,
+      "station": "kitchen",
+      "ingredients": [
+        {
+          "item_id": "egg",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "item_id": "omelette",
+        "amount": 1
+      }
     }
   }
 }

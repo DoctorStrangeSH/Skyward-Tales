@@ -230,6 +230,20 @@
   ],
   "feet": 40
  },
+ "hen": {
+  "anims": {
+   "idle": 1,
+   "walk": 4,
+   "peck": 4
+  },
+  "cell": [
+   64,
+   64
+  ],
+  "feet": 57,
+  "scale": 0.36,
+  "filter": "linear"
+ },
  "herald": {
   "anims": {
    "idle": 6,
@@ -369,6 +383,19 @@
    64
   ],
   "feet": 40
+ },
+ "scout": {
+  "anims": {
+   "idle": 1,
+   "walk": 4
+  },
+  "cell": [
+   64,
+   72
+  ],
+  "feet": 66,
+  "scale": 0.62,
+  "filter": "linear"
  },
  "settler_cook": {
   "anims": {

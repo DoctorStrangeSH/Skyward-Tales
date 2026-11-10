@@ -26,7 +26,7 @@ func _run() -> void:
 	await process_frame
 
 	# Greenreach layout from data.
-	if not _verify(_count(game, func(n: Node) -> bool: return n is WorldNpc) == 7, "greenreach has seven NPCs (with Lira and farmer Gavrila)"):
+	if not _verify(_count(game, func(n: Node) -> bool: return n is WorldNpc) == 8, "greenreach has eight NPCs (with Lira, farmer Gavrila and Alaya the scout)"):
 		return
 	if not _verify(_count(game, func(n: Node) -> bool: return n is TreasureChest) == 7, "greenreach has seven chests"):
 		return

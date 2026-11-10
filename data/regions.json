@@ -49,6 +49,11 @@
         "name": "Фермер Гаврила",
         "look": "settler_woodcutter",
         "position": [1120, 870]
+      },
+      {
+        "id": "scout",
+        "name": "Алая, разведчица",
+        "position": [640, 510]
       }
     ],
     "resource_nodes": [

@@ -63,6 +63,7 @@ func _populate_region() -> void:
 	game.fair.populate()
 	game.trials.populate()
 	game.cistern.populate()
+	game.hens.populate()
 	game.buildings.reveal_chests()
 	game.guild.spawn_target()
 	if game.current_region == Expeditions.REGION:

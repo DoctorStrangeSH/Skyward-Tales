@@ -14,6 +14,7 @@ var quest_label: Label
 var side_quest_label: Label
 var quest_tracker: QuestTracker
 var buff_label: Label
+var buff_bar: BuffBar
 var message_label: Label
 var prompt_label: Label
 var dialogue_panel: PanelContainer
@@ -143,6 +144,11 @@ func _ready() -> void:
 	buff_label.position = Vector2(486, 126)
 	buff_label.size = Vector2(132, 30)
 	root.add_child(buff_label)
+	buff_label.visible = false
+	buff_bar = BuffBar.new()
+	buff_bar.position = Vector2(446, 129)
+	buff_bar.size = Vector2(180, 40)
+	root.add_child(buff_bar)
 
 	minimap = preload("res://scripts/world_minimap.gd").new() as WorldMinimap
 	minimap.position = Vector2(484, 6)
@@ -534,6 +540,7 @@ func update_status(player: PlayerCharacter, quests: QuestManager) -> void:
 		var buff: Dictionary = player.buffs[type]
 		effects.append("%s %d с" % [str(buff.get("label", type)), int(ceil(float(buff.get("time", 0.0))))])
 	buff_label.text = ("✦ " + " · ".join(effects)) if not effects.is_empty() else ""
+	buff_bar.set_buffs(player.buffs)
 	var side := quests.get_side_summaries()
 	side_quest_label.text = "\n".join(side.slice(0, 3).map(func(line: String) -> String: return "◇ " + line))
 	inventory_label.text = "Q  Зелье HP ×%d     R  Зелье MP ×%d" % [int(player.inventory.get("health_potion", 0)), int(player.inventory.get("mana_potion", 0))]

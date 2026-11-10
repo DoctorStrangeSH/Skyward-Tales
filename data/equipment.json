@@ -1432,6 +1432,28 @@
       "slot": "",
       "material": true,
       "value": 0
+    },
+    "egg": {
+      "name": "Яйцо",
+      "description": "Свежее, от деревенских кур. На кухне — омлет.",
+      "slot": "",
+      "material": true,
+      "value": 3
+    },
+    "omelette": {
+      "name": "Омлет",
+      "description": "+45 здоровья и «Сытость»: +1,5 здоровья в секунду на 2 минуты.",
+      "slot": "",
+      "value": 14,
+      "use": {
+        "heal": 45,
+        "buff": {
+          "type": "regen",
+          "value": 1.5,
+          "duration": 120,
+          "label": "Сытость"
+        }
+      }
     }
   },
   "sets": {

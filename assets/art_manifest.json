@@ -155,6 +155,12 @@
    16
   ]
  },
+ "icons/egg.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
  "icons/elm_longbow.png": {
   "size": [
    16,
@@ -438,6 +444,12 @@
   ]
  },
  "icons/old_boot.png": {
+  "size": [
+   16,
+   16
+  ]
+ },
+ "icons/omelette.png": {
   "size": [
    16,
    16
@@ -4921,45 +4933,45 @@
  },
  "world_hd/props/chest_gold_closed.png": {
   "size": [
-   60,
-   50
+   56,
+   45
   ],
   "origin": [
-   30,
-   49
+   28,
+   42
   ],
   "scale": 0.5
  },
  "world_hd/props/chest_gold_open.png": {
-  "size": [
-   60,
-   70
-  ],
-  "origin": [
-   30,
-   69
-  ],
-  "scale": 0.5
- },
- "world_hd/props/chest_iron_closed.png": {
-  "size": [
-   56,
-   44
-  ],
-  "origin": [
-   28,
-   43
-  ],
-  "scale": 0.5
- },
- "world_hd/props/chest_iron_open.png": {
   "size": [
    56,
    65
   ],
   "origin": [
    28,
-   64
+   62
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/chest_iron_closed.png": {
+  "size": [
+   52,
+   42
+  ],
+  "origin": [
+   26,
+   39
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/chest_iron_open.png": {
+  "size": [
+   52,
+   61
+  ],
+  "origin": [
+   26,
+   58
   ],
   "scale": 0.5
  },
@@ -4976,23 +4988,23 @@
  },
  "world_hd/props/chest_wood_closed.png": {
   "size": [
-   52,
-   42
+   48,
+   39
   ],
   "origin": [
-   26,
-   41
+   24,
+   36
   ],
   "scale": 0.5
  },
  "world_hd/props/chest_wood_open.png": {
   "size": [
-   52,
-   61
+   48,
+   56
   ],
   "origin": [
-   26,
-   60
+   24,
+   53
   ],
   "scale": 0.5
  },
