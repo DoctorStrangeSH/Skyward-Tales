@@ -79,35 +79,118 @@ func _done_count(link: Dictionary) -> int:
 			done += 1
 	return done
 
-func link_ready(link: Dictionary) -> bool:
+# Several ways to get ready (the review of 11 November): besides helping the
+# people ("quests"), a gate lists "ways" — {"stat", "min", "text"} checked
+# against the achievement counters (the Tower's floor, contracts, legends,
+# the cistern…). Every finished quest and every finished way is one deed;
+# the gate asks for "count" deeds of any kind. Deeds above the count stand
+# in for missing levels (LEVEL_PER_DEED each, at most MAX_LEVEL_RELIEF).
+const MAX_LEVEL_RELIEF := 2
+
+func _stat(way: Dictionary) -> int:
+	return int(game.achievements.stats.get(str(way.get("stat", "")), 0)) if game.achievements != null else 0
+
+func way_done(way: Dictionary) -> bool:
+	return _stat(way) >= int(way.get("min", 1))
+
+func ways(link: Dictionary) -> Array:
+	return link.get("requires", {}).get("ways", [])
+
+func _ways_done(link: Dictionary) -> int:
+	var done := 0
+	for way in ways(link):
+		if way_done(way):
+			done += 1
+	return done
+
+## Deeds done for this gate: quests helped plus other ways.
+func deeds(link: Dictionary) -> int:
+	return _done_count(link) + _ways_done(link)
+
+func deeds_needed(link: Dictionary) -> int:
 	var req: Dictionary = link.get("requires", {})
-	if game.player.level < int(req.get("level", 0)):
-		return false
 	var quests: Array = req.get("quests", [])
-	return quests.is_empty() or _done_count(link) >= int(req.get("count", quests.size()))
+	if quests.is_empty() and ways(link).is_empty():
+		return 0
+	return int(req.get("count", quests.size()))
+
+## The level the gate asks for now: every deed above the count forgives one
+## level (up to MAX_LEVEL_RELIEF).
+func level_needed(link: Dictionary) -> int:
+	var level := int(link.get("requires", {}).get("level", 0))
+	if level <= 0 or deeds_needed(link) <= 0:
+		return level
+	return level - clampi(deeds(link) - deeds_needed(link), 0, MAX_LEVEL_RELIEF)
+
+func link_ready(link: Dictionary) -> bool:
+	if game.player.level < level_needed(link):
+		return false
+	return deeds(link) >= deeds_needed(link)
 
 ## Lines saying what is still missing, with hints where to get it.
 func missing(link: Dictionary) -> Array[String]:
 	var lines: Array[String] = []
 	var req: Dictionary = link.get("requires", {})
-	var level := int(req.get("level", 0))
+	var need := deeds_needed(link)
+	var have := deeds(link)
+	var level := level_needed(link)
 	if game.player.level < level:
-		lines.append("• Уровень %d (сейчас %d) — сражайтесь, выполняйте поручения." % [level, game.player.level])
+		var relief := ""
+		if need > 0 and int(req.get("level", 0)) - level < MAX_LEVEL_RELIEF:
+			relief = " Или сделайте ещё дело сверх нужного: каждое заменяет уровень (до %d)." % MAX_LEVEL_RELIEF
+		lines.append("• Уровень %d (сейчас %d) — сражайтесь, выполняйте поручения.%s" % [level, game.player.level, relief])
 	var quests: Array = req.get("quests", [])
-	var need := int(req.get("count", quests.size()))
-	var have := _done_count(link)
-	if not quests.is_empty() and have < need:
-		lines.append("• %s (%d из %d):" % [str(req.get("why", "Выполните задания")), have, need])
+	if need > 0 and have < need:
+		lines.append("• %s — любые дела на выбор (%d из %d):" % [str(req.get("why", "Подготовьтесь")), have, need])
+	if need > 0 and (have < need or game.player.level < level):
 		var shown := 0
 		for quest_id in quests:
-			if game.quests.is_completed(str(quest_id)) or shown >= 4:
+			if game.quests.is_completed(str(quest_id)) or shown >= 3:
 				continue
 			shown += 1
 			var title := str(game.quests.definitions.get(quest_id, {}).get("title", quest_id))
 			var source := quest_source(str(quest_id))
 			var state := " — уже взято" if game.quests.is_active(str(quest_id)) else ""
-			lines.append("   – «%s»: %s%s" % [title, source, state])
+			lines.append("   – Помощь: «%s» (%s)%s" % [title, source, state])
+		shown = 0
+		for way in ways(link):
+			if way_done(way) or shown >= 4:
+				continue
+			shown += 1
+			var goal := int(way.get("min", 1))
+			var count := " (%d из %d)" % [_stat(way), goal] if goal > 1 else ""
+			lines.append("   – %s%s" % [str(way.get("text", "")), count])
 	return lines
+
+## The whole gate for the journal: the chapter, its giver, what is done and
+## what is left.
+func gate_text(link: Dictionary) -> String:
+	var title := str(game.quests.definitions.get(str(link.get("start", "")), {}).get("title", "Следующая глава"))
+	if link_ready(link):
+		return "Глава «%s» открыта. Поговорите: %s." % [title, _giver_name(link)]
+	var text := "Глава «%s» начнётся у: %s. Сначала нужно подготовиться — путь выбираете вы.\n" % [title, _giver_name(link)]
+	text += "\n".join(missing(link))
+	var finished: Array[String] = []
+	for way in ways(link):
+		if way_done(way):
+			finished.append(str(way.get("text", "")))
+	for quest_id in link.get("requires", {}).get("quests", []):
+		if game.quests.is_completed(str(quest_id)):
+			finished.append("Помощь: «%s»" % str(game.quests.definitions.get(quest_id, {}).get("title", quest_id)))
+	if not finished.is_empty():
+		text += "\nУже сделано: " + "; ".join(finished) + "."
+	return text
+
+## Pseudo-entries of the journal's story tab for chapters that wait.
+func journal_entries() -> Array:
+	var result: Array = []
+	for link in pending_links():
+		var title := str(game.quests.definitions.get(str(link.get("start", "")), {}).get("title", "Следующая глава"))
+		var need := maxi(1, deeds_needed(link))
+		result.append({"id": "@gate:" + str(link.get("start", "")), "title": "Дальше: " + title, "description": gate_text(link),
+			"progress": mini(deeds(link), need), "target": need,
+			"decision": "", "main": true, "tracked": true, "gate": true, "ready": link_ready(link)})
+	return result
 
 ## Who gives a quest and where: "Мира, Зелёные Пределы".
 func quest_source(quest_id: String) -> String:
@@ -154,14 +237,12 @@ func tracker_entries() -> Array:
 		if link_ready(link):
 			result.append({"title": "Глава «%s»: поговорите — %s" % [title, _giver_name(link)], "main": true, "progress": 0, "target": 1})
 		else:
-			var req: Dictionary = link.get("requires", {})
 			var parts: Array[String] = []
-			if game.player.level < int(req.get("level", 0)):
-				parts.append("ур. %d" % int(req.get("level", 0)))
-			var quests: Array = req.get("quests", [])
-			if not quests.is_empty() and _done_count(link) < int(req.get("count", quests.size())):
-				parts.append("поручения %d/%d" % [_done_count(link), int(req.get("count", quests.size()))])
-			result.append({"title": "Сюжет закрыт: нужно %s" % ", ".join(parts), "main": true, "progress": 0, "target": 1})
+			if game.player.level < level_needed(link):
+				parts.append("ур. %d" % level_needed(link))
+			if deeds(link) < deeds_needed(link):
+				parts.append("дела %d/%d" % [deeds(link), deeds_needed(link)])
+			result.append({"title": "Сюжет закрыт: нужно %s (журнал — J)" % ", ".join(parts), "main": true, "progress": 0, "target": 1})
 	return result
 
 ## The giver's answer: open the chapter, or say what is missing.

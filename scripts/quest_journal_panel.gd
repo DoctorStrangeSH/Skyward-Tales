@@ -15,6 +15,8 @@ const TABS := [["main", "Сюжет"], ["side", "Побочные"], ["done", "�
 ## The game's Achievements node (duck-typed to keep class references simple).
 var achievements: Object
 var lore_book: Object
+## StoryDirector: chapters that wait for preparation show in the story tab.
+var director: Object
 var factions_ref: Object
 ## A quest was switched on or off for the tracker and the map.
 signal tracking_changed
@@ -134,6 +136,8 @@ func populate(quests: QuestManager, player: PlayerCharacter = null) -> void:
 		return
 	var entries := build_entries(quests)
 	var list: Array = entries["completed"] if tab == "done" else (entries["active"] as Array).filter(func(e: Dictionary) -> bool: return e["main"] == (tab == "main"))
+	if tab == "main" and director != null:
+		list = director.journal_entries() + list
 	if list.is_empty():
 		entry_list.add_child(_wrapped({"main": "Поговорите с жителями — история ждёт.", "side": "Нет побочных заданий. Ищите жителей с «!» над головой.", "done": "Пока ничего."}[tab], Color(0.7, 0.75, 0.8)))
 		return
@@ -172,13 +176,18 @@ func _show_detail(entry: Dictionary, quests: QuestManager) -> void:
 	var done := tab == "done"
 	if not done:
 		var target := int(entry["target"])
-		detail_box.add_child(_label("Прогресс: %d / %d%s" % [entry["progress"], target, "  — можно сдать!" if entry["progress"] >= target else ""], 10, Color(0.6, 1.0, 0.6) if entry["progress"] >= target else UiStyle.TEXT))
+		if entry.get("gate", false):
+			detail_box.add_child(_label("Подготовка: %d / %d%s" % [entry["progress"], target, "  — глава открыта!" if entry.get("ready", false) else ""], 10, Color(0.6, 1.0, 0.6) if entry.get("ready", false) else UiStyle.TEXT))
+		else:
+			detail_box.add_child(_label("Прогресс: %d / %d%s" % [entry["progress"], target, "  — можно сдать!" if entry["progress"] >= target else ""], 10, Color(0.6, 1.0, 0.6) if entry["progress"] >= target else UiStyle.TEXT))
 		var bar := ProgressBar.new()
 		bar.custom_minimum_size = Vector2(330, 6)
 		bar.show_percentage = false
 		bar.max_value = target
 		bar.value = int(entry["progress"])
 		detail_box.add_child(bar)
+		if entry.get("gate", false):
+			return
 		var track := Button.new()
 		var tracked: bool = bool(entry.get("tracked", true))
 		track.text = "◉ Отслеживается — на карте и в трекере" if tracked else "○ Не отслеживается — нажмите, чтобы следить"

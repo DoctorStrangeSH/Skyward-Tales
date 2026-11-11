@@ -359,6 +359,7 @@ func _ready() -> void:
 	hud.inventory_view.set_skills(skills)
 	hud.journal_view.achievements = achievements
 	hud.journal_view.lore_book = lore
+	hud.journal_view.director = director
 	hud.journal_view.factions_ref = factions
 	hud.journal_view.tracking_changed.connect(func() -> void:
 		quest_nav.refresh()
