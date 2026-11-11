@@ -28,6 +28,16 @@ func _run() -> void:
 	game._aim_direction()
 	if not game.sword_slash():
 		return _fail("a slash happens")
+	# Phases: the wind-up hits nothing, the blow lands a moment later by
+	# itself, a second press during the swing is ignored.
+	if front.health != front_hp or not game.combat.swinging():
+		return _fail("the wind-up does not hit yet")
+	var waited := 0
+	while game.combat.swinging() and waited < 60:
+		await process_frame
+		waited += 1
+	if waited < 1 or waited >= 60:
+		return _fail("the blow lands after a short wind-up: %d frames" % waited)
 	if front.health >= front_hp or behind.health != behind_hp:
 		return _fail("a slash hits only in front")
 	if not hero.visual.is_playing_action() or hero.visual.hframes != 6:
@@ -37,9 +47,20 @@ func _run() -> void:
 	game.attack_cooldown = 0.0
 	if game._combo_step != 1:
 		return _fail("the second slash continues the combo")
+	# A roll during the wind-up breaks the swing.
+	game.attack_cooldown = 0.0
+	front_hp = front.health
+	game.sword_slash()
+	hero.dodge_time_left = 0.2
+	game.combat._update_swing(0.016)
+	if game.combat.swinging() or front.health != front_hp:
+		return _fail("a roll breaks the swing")
+	hero.dodge_time_left = 0.0
+	game._combo_step = 1
 	behind_hp = behind.health
 	game.attack_cooldown = 0.0
 	game.sword_spin()
+	game.combat.finish_swing()
 	if behind.health >= behind_hp:
 		return _fail("the spin hits all around")
 	var base := hero.get_melee_damage()

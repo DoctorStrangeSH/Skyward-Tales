@@ -43,6 +43,7 @@ func _run() -> void:
 	var far := _enemy(game, hero.global_position + Vector2(44, 0))
 	game.attack_cooldown = 0.0
 	game.sword_slash()
+	game.combat.finish_swing()
 	if far.health >= 9999:
 		return _fail("the spear reaches further than a sword")
 	if not is_equal_approx(game.attack_cooldown, SkywardGame.SLASH_COOLDOWN * 1.15):
@@ -52,6 +53,7 @@ func _run() -> void:
 	hero.equip_item("scout_knife")
 	game.attack_cooldown = 0.0
 	game.sword_slash()
+	game.combat.finish_swing()
 	if game.attack_cooldown >= SkywardGame.SLASH_COOLDOWN:
 		return _fail("daggers strike faster")
 
@@ -120,6 +122,7 @@ func _run() -> void:
 		game.attack_cooldown = 0.0
 		game._combo_step = 0
 		game.sword_slash()
+		game.combat.finish_swing()
 	if side.health >= 9999:
 		return _fail("the hammer's shockwave hits all around")
 	near.queue_free()

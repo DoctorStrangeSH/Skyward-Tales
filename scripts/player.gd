@@ -921,6 +921,9 @@ func reset_transient() -> void:
 	velocity = Vector2.ZERO
 	charge_rooted = false
 	dodge_time_left = 0.0
+	var arena := get_parent()
+	if arena != null and arena.get("combat") != null:
+		arena.combat._swing = {}
 	if blocking:
 		end_guard()
 	if visual != null:

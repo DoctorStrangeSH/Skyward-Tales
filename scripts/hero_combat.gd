@@ -91,6 +91,7 @@ func _attack_released() -> void:
 		game.sword_spin()
 
 func _update_sword(delta: float) -> void:
+	_update_swing(delta)
 	game.attack_cooldown = maxf(0.0, game.attack_cooldown - delta)
 	game._combo_timer = maxf(0.0, game._combo_timer - delta)
 	if game._combo_timer <= 0.0:
@@ -103,52 +104,105 @@ func _update_sword(delta: float) -> void:
 			game.player.visual.play_named("charge", 30.0)
 			Vfx.sparkle(game, game.player.global_position + Vector2(0, -8))
 
-## Two-hit combo in front of the hero (towards the mouse).
+## A swing has three phases: wind-up (the blade goes back, nothing is hit
+## yet), the active moment (the hit, its sound and trail land together) and
+## recovery (the rest of the cooldown). `_swing` is the swing in wind-up.
+const WINDUP_SLASH := 0.08
+const WINDUP_HEAVY := 0.13
+const WINDUP_FINISHER := 0.11
+const WINDUP_SPIN := 0.1
+var _swing: Dictionary = {}
+
+func swinging() -> bool:
+	return not _swing.is_empty()
+
+## Wind-up of the current weapon's plain swing.
+func windup_time() -> float:
+	return WINDUP_HEAVY if game.player.weapon_kind() == "hammer" else WINDUP_SLASH
+
+## Two-hit combo in front of the hero (towards the mouse). The blow lands
+## after the wind-up (see _update_swing).
 func sword_slash() -> bool:
-	if game.attack_cooldown > 0.0 or game.player.health <= 0 or game.player.dodge_time_left > 0.0:
+	if game.attack_cooldown > 0.0 or game.player.health <= 0 or game.player.dodge_time_left > 0.0 or swinging():
 		return false
 	var direction := game._aim_direction()
 	game.player.facing = direction
 	game.player.visual.set_direction_vector(direction)
 	var finisher := game._combo_step == 2
 	var anim := "spin" if finisher else ("slash1" if game._combo_step == 0 else "slash2")
+	var windup := WINDUP_FINISHER if finisher else windup_time()
 	game.player.visual.play_named(anim, 0.36 if finisher else 0.28)
-	var damage := game.player.get_melee_damage() + (2 if game._combo_step == 1 else 0)
+	_swing = {"kind": "finisher" if finisher else "slash", "direction": direction, "time": windup,
+		"damage": game.player.get_melee_damage() + (2 if game._combo_step == 1 else 0)}
+	GameAudio.play("dash", -10.0, 0.15)
+	game._combo_step = (game._combo_step + 1) % (3 if game.player.has_skill("blade_dance") else 2)
+	game._combo_timer = SkywardGame.COMBO_WINDOW + windup
+	game.attack_cooldown = SkywardGame.SLASH_COOLDOWN * float(game.weapon_profile()["cooldown"])
+	return true
+
+## Held attack: a full circle at 1.8x damage (after a short wind-up).
+func sword_spin() -> bool:
+	if game.player.health <= 0 or swinging():
+		return false
+	game.player.visual.play_named("spin", 0.42)
+	_swing = {"kind": "spin", "direction": Vector2.RIGHT, "time": WINDUP_SPIN,
+		"damage": int(round(game.player.get_melee_damage() * (1.8 + 0.45 * float(game.player.talents.get("whirl_master", 0)))))}
+	game.attack_cooldown = SkywardGame.SLASH_COOLDOWN * 2.0
+	return true
+
+## Ticks the wind-up; a roll or a fall breaks the swing before it lands.
+func _update_swing(delta: float) -> void:
+	if _swing.is_empty():
+		return
+	if game.player.health <= 0 or game.player.dodge_time_left > 0.0:
+		_swing = {}
+		return
+	_swing["time"] = float(_swing["time"]) - delta
+	if float(_swing["time"]) <= 0.0:
+		finish_swing()
+
+## The active moment: the blow lands now (also used by tests to skip the
+## wind-up). Returns the number of enemies hit.
+func finish_swing() -> int:
+	if _swing.is_empty():
+		return 0
+	var swing := _swing
+	_swing = {}
+	var origin := game.player.global_position
+	var direction: Vector2 = swing["direction"]
+	var damage := int(swing["damage"])
 	var hits := 0
-	if finisher:
-		# Blade Dance: the third swing is a full circle at double damage.
-		hits = game._melee_hit(game.player.global_position, direction, SkywardGame.SPIN_REACH, 360.0, damage * 2, 150.0)
-		game._ring(game.player.global_position, SkywardGame.SPIN_REACH, Color(1.0, 0.85, 0.5, 0.8))
-	else:
-		var profile := game.weapon_profile()
-		hits = game._melee_hit(game.player.global_position, direction, SkywardGame.SLASH_REACH * float(profile["reach"]), float(profile["arc"]), damage, float(profile["push"]))
-		if game.player.weapon_kind() == "spear":
-			game._streak(game.player.global_position + direction * 8.0, game.player.global_position + direction * SkywardGame.SLASH_REACH * float(profile["reach"]), Color(1, 1, 1, 0.7), 2.0)
-		elif game.player.weapon_kind() == "hammer":
+	match str(swing["kind"]):
+		"spin":
+			hits = game._melee_hit(origin, Vector2.RIGHT, SkywardGame.SPIN_REACH, 360.0, damage, 170.0)
+			GameAudio.play("gust", -4.0, 0.05)
+			Vfx.burst(game, origin, [Color(1, 1, 1), Color(0.8, 0.9, 1.0)], 14, 90.0)
 			if hits > 0:
+				game.shake(2.5, 0.2)
+			return hits
+		"finisher":
+			# Blade Dance: the third swing is a full circle at double damage.
+			hits = game._melee_hit(origin, direction, SkywardGame.SPIN_REACH, 360.0, damage * 2, 150.0)
+			game._ring(origin, SkywardGame.SPIN_REACH, Color(1.0, 0.85, 0.5, 0.8))
+		_:
+			var profile := game.weapon_profile()
+			var reach := SkywardGame.SLASH_REACH * float(profile["reach"])
+			hits = game._melee_hit(origin, direction, reach, float(profile["arc"]), damage, float(profile["push"]))
+			if game.player.weapon_kind() == "spear":
+				game._streak(origin + direction * 8.0, origin + direction * reach, Color(1, 1, 1, 0.7), 2.0)
+			else:
+				# The trail of the blade across the arc.
+				var half := deg_to_rad(float(profile["arc"]) * 0.42)
+				game._streak(origin + direction.rotated(-half) * reach * 0.85, origin + direction.rotated(half) * reach * 0.85, Color(1, 1, 1, 0.55), 2.0)
+			if game.player.weapon_kind() == "hammer" and hits > 0:
 				game.shake(2.0, 0.12)
 				for enemy in game.last_hit_enemies:
 					if is_instance_valid(enemy) and enemy.health > 0 and game.crit_rng.randf() < 0.3:
 						enemy.apply_slow(0.05, 0.6)
 						enemy.combat_feedback.show_reaction("ОГЛУШЁН!")
-	GameAudio.play("dash" if hits == 0 else "hit", -4.0, 0.1)
-	game._combo_step = (game._combo_step + 1) % (3 if game.player.has_skill("blade_dance") else 2)
-	game._combo_timer = SkywardGame.COMBO_WINDOW
-	game.attack_cooldown = SkywardGame.SLASH_COOLDOWN * float(game.weapon_profile()["cooldown"])
-	return true
-
-## Held attack: a full circle at 1.8x damage.
-func sword_spin() -> bool:
-	if game.player.health <= 0:
-		return false
-	game.player.visual.play_named("spin", 0.42)
-	var hits := game._melee_hit(game.player.global_position, Vector2.RIGHT, SkywardGame.SPIN_REACH, 360.0, int(round(game.player.get_melee_damage() * (1.8 + 0.45 * float(game.player.talents.get("whirl_master", 0))))), 170.0)
-	GameAudio.play("gust", -4.0, 0.05)
-	Vfx.burst(game, game.player.global_position, [Color(1, 1, 1), Color(0.8, 0.9, 1.0)], 14, 90.0)
 	if hits > 0:
-		game.shake(2.5, 0.2)
-	game.attack_cooldown = SkywardGame.SLASH_COOLDOWN * 2.0
-	return true
+		GameAudio.play("hit", -4.0, 0.1)
+	return hits
 
 func _living_enemies() -> Array:
 	var result: Array = []
@@ -366,6 +420,7 @@ func _cast_spell() -> void:
 
 ## Sprint or a roll while charged: the charge is lost, nothing fires.
 func cancel_charge() -> void:
+	_swing = {}
 	var was := game._charging or game._bow_holding
 	game._charging = false
 	game._attack_holding = false
