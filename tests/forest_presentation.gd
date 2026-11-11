@@ -63,5 +63,12 @@ func _run() -> void:
 		if resource.growth_sheet != null or resource.position != anchor or resource.scale != Vector2.ONE or resource.stage != "ready":
 			return _fail("growth must finish on the original rooted drawing")
 		resource.queue_free()
+	game.queue_free()
+	var audio := GameAudio.instance()
+	if audio != null:
+		audio._release()
+		audio.queue_free()
+	for frame in 12:
+		await process_frame
 	print("FOREST PRESENTATION OK")
 	quit(0)

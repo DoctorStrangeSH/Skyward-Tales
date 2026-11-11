@@ -17,21 +17,26 @@ def atlas(before, after, origin, mode):
     ox,oy = origin
     # Bottom to top, with branch/facet islands rather than a straight wipe.
     vertical = np.clip((oy-yy)/max(1,oy),0,1)
-    if mode == 'oak':
-        threshold = vertical*.78 + np.abs(xx-ox)/max(1,width)*.25
-        threshold += .08*np.sin(xx/13)*np.sin(yy/17)
-    elif mode == 'birch':
-        threshold = vertical*.86 + .12*np.sin(xx/15+yy/25)
+    # Coherent leaf/facet clusters with broad ramps, without a chopped crown.
+    cluster = ((xx//12*73856093) ^ (yy//12*19349663)) % 101 / 100
+    if mode in ('oak','birch'):
+        green = (new[...,1] > new[...,0]*.93) & (new[...,1] > new[...,2]*1.12)
+        crown = .24 + vertical*.28 + cluster*.22
+        if mode == 'oak':
+            crown += np.abs(xx-ox)/max(1,width)*.15
+        else:
+            crown += ((xx//24)%3)*.035
+        threshold = np.where(green,crown,vertical*.3)
     else:
-        threshold = vertical*.72 + .2*((xx//16+yy//13)%3)/2
-    threshold = np.clip(threshold,.01,.99)
+        threshold = vertical*.4 + cluster*.3
+    threshold = np.clip(threshold,0,.9)
     sheet = Image.new('RGBA',(width*FRAMES,height))
     for frame in range(FRAMES):
         if frame == 0 or frame == FRAMES-1:
             sheet.paste(before if frame == 0 else after,(frame*width,0))
             continue
         t = frame/(FRAMES-1)
-        weight = np.clip((t-threshold)/.12+.5,0,1)[...,None]
+        weight = np.clip((t*1.6-threshold)/.7,0,1)[...,None]
         if frame == 0: weight *= 0
         if frame == FRAMES-1: weight[:] = 1
         # Premultiplied blend avoids dark transparent borders.
