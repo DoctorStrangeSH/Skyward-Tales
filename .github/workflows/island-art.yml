@@ -63,7 +63,7 @@ jobs:
           export LIBGL_ALWAYS_SOFTWARE=1
           ./art-review-godot --headless --version
           timeout 120s xvfb-run -a -s "-screen 0 1920x1080x24 -nolisten tcp" ./art-review-godot --path . --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy --resolution 1920x1080 --max-fps 30 --quit-after 240 --script res://tools/capture_island01.gd -- "$PWD/docs/screenshots"
-          test -s docs/screenshots/greenreach_preview.png
+          test -s docs/screenshots/greenreach_preview.jpg
           test -s docs/screenshots/greenreach_village.png
       - name: Save the single style review
         uses: actions/upload-artifact@v4
@@ -72,7 +72,7 @@ jobs:
           path: |
             docs/screenshots/greenreach_village.png
             docs/screenshots/greenreach_waterfall.png
-            docs/screenshots/greenreach_preview.png
+            docs/screenshots/greenreach_preview.jpg
             assets/world_hd/greenreach_art_build.json
           retention-days: 7
       - name: Commit only rebuilt island art and review captures
@@ -80,7 +80,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/world_hd/greenreach_ground.webp assets/world_hd/greenreach_apron_bottom.webp assets/world_hd/greenreach_art_build.json assets/world/greenreach_mini.png docs/screenshots/greenreach_village.png docs/screenshots/greenreach_waterfall.png docs/screenshots/greenreach_preview.png tests/waterfall_scene.gd.uid tools/capture_island01.gd.uid
+          git add assets/world_hd/greenreach_ground.webp assets/world_hd/greenreach_apron_bottom.webp assets/world_hd/greenreach_art_build.json assets/world/greenreach_mini.png docs/screenshots/greenreach_village.png docs/screenshots/greenreach_waterfall.png docs/screenshots/greenreach_preview.jpg tests/waterfall_scene.gd.uid tools/capture_island01.gd.uid
           if ! git diff --cached --quiet; then
             git commit -m "Rebuild Greenreach ground and clean apron; capture the actual scene"
             git push origin "HEAD:$GITHUB_REF_NAME"

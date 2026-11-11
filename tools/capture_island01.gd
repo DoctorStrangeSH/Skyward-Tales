@@ -46,7 +46,7 @@ func _run() -> void:
 			return
 		if str(entry[0]) == "greenreach_waterfall":
 			screenshot.resize(1280, 720, Image.INTERPOLATE_NEAREST)
-			if screenshot.save_png(out_dir.path_join("greenreach_preview.png")) != OK:
+			if screenshot.save_jpg(out_dir.path_join("greenreach_preview.jpg"), 0.94) != OK:
 				quit(1)
 				return
 		print("Captured actual island: ", path)
