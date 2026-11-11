@@ -18,6 +18,14 @@ func _run() -> void:
 	var variants: Array = terrain.get("tree_variants", [])
 	if variants.size() != trees.size() or trees.size() < 100:
 		return _fail("authored trees and species stay in sync")
+	# Static forest must leave present and future gameplay entrances visible.
+	for point in [TrialTower.GATE, OldAdit.ENTRANCE, Vector2(870,884), Vector2(740,1070)]:
+		for entry in trees:
+			if Vector2(float(entry[0]),float(entry[1])).distance_to(point) < 65.0:
+				return _fail("trees block an entrance or a future building plot")
+	for child in game.get_children():
+		if child is RegionGate and child.kind.begins_with("bridge") and not child.apron_bridge:
+			return _fail("a small gate bridge duplicates the apron bridge")
 	var sky := game.world.get_node("SkyParallax") as SkyParallax
 	if sky.bridge_corridors.size() != 3:
 		return _fail("three outer bridge mouths, no corridors for dungeon entrances")

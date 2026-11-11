@@ -23,6 +23,7 @@ on:
       - "tools/art/forest_composition.py"
       - "tools/art/resource_growth_art.py"
       - "scripts/sky_parallax.gd"
+      - "scripts/region_gate.gd"
       - "scripts/gather_node.gd"
       - "tests/forest_presentation.gd"
   workflow_dispatch:

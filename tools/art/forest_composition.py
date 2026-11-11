@@ -2,6 +2,9 @@
 from __future__ import annotations
 import math
 import random
+import json
+import re
+from pathlib import Path
 
 # centre, radii, species, density. Routes and landmarks take precedence.
 GROVES = [
@@ -24,7 +27,7 @@ def segment_distance(p, a, b):
 def compose(region, force=False):
     terrain = region['terrain']
     terrain['bridge_landings'] = False
-    if terrain.get("forest_composition") == "authored_groves_v2" and not force:
+    if terrain.get("forest_composition") == "authored_groves_v3" and not force:
         return len(terrain["trees"])
     width, height = terrain['size']
     rng = random.Random(110126)
@@ -32,7 +35,27 @@ def compose(region, force=False):
     for key in ('npcs', 'chests', 'gather', 'resource_nodes', 'story_objects', 'gates'):
         landmarks.extend((x['position'], 56 if key == 'gather' else 68) for x in region.get(key, []))
     landmarks.extend((p, 60) for key in ('supply_crates', 'map_fragments') for p in region.get(key, []))
-    landmarks.extend([([1620, 510], 120), ([1120, 870], 100), (region['waystone'], 65)])
+    landmarks.extend([([1120, 870], 100), (region['waystone'], 65)])
+    root = Path(__file__).resolve().parents[2]
+    settlement_path = root/'data/settlement.json'
+    if settlement_path.exists():
+        settlement = json.loads(settlement_path.read_text(encoding='utf-8'))
+        landmarks.extend((p['position'],100) for p in settlement['plots'])
+        landmarks.extend((p['position'],110) for p in settlement['buildings'].values() if 'position' in p)
+    gathering_path = root/'data/gathering.json'
+    if gathering_path.exists():
+        gathering = json.loads(gathering_path.read_text(encoding='utf-8'))
+        landmarks.extend((p,70) for p in gathering.get('placements',{}).get('greenreach',{}).values())
+    # Read gameplay-owned positions so a moved entrance stays clear on rebuild.
+    for script,constant,radius in [('forest_guild','COTTAGE',120),('trial_tower','GATE',105),
+                                   ('old_adit','ENTRANCE',100),('lira_story','STILL_SPOT',80),
+                                   ('lira_story','NOTES_SPOT',60),('farm','CENTER',105)]:
+        source = root/'scripts'/f'{script}.gd'
+        if not source.exists():
+            continue
+        match = re.search(r'const '+constant+r' := Vector2\(([-0-9.]+),\s*([-0-9.]+)\)',source.read_text(encoding='utf-8'))
+        if match:
+            landmarks.append(([float(match[1]),float(match[2])],radius))
     def clear(x, y):
         # Canopy occupies the area above the root. Protect the entire silhouette.
         if not (48 < x < width-48 and 100 < y < height-40):
@@ -69,5 +92,5 @@ def compose(region, force=False):
     chosen.sort(key=lambda p:(p[1],p[0]))
     terrain['trees'] = [[x,y] for x,y,_ in chosen]
     terrain['tree_variants'] = [v for _,_,v in chosen]
-    terrain['forest_composition'] = 'authored_groves_v2'
+    terrain['forest_composition'] = 'authored_groves_v3'
     return len(chosen)

@@ -20,12 +20,14 @@ var kind: String = "bridge_v"
 var outward := Vector2.DOWN
 var edge_distance: float = 0.0
 var destination_label: String = ""
+## The apron already owns the complete bridge; keep only its interaction.
+var apron_bridge: bool = false
 
 func _ready() -> void:
 	add_to_group("interactables")
 	if destination_label.is_empty():
 		destination_label = RegionCatalog.display_name(target_region)
-	if kind.begins_with("bridge") and edge_distance > 4.0:
+	if kind.begins_with("bridge") and edge_distance > 4.0 and not apron_bridge:
 		var planks := Node2D.new()
 		planks.z_index = -50
 		planks.draw.connect(func() -> void: _draw_planks(planks))
@@ -86,6 +88,8 @@ func _add_motes() -> void:
 	add_child(motes)
 
 func _draw() -> void:
+	if apron_bridge and kind.begins_with("bridge"):
+		return
 	var art := "props/gate_%s.png" % kind
 	if not ResourceLoader.exists("res://assets/" + art):
 		art = "props/gate_%s.png" % art_style
