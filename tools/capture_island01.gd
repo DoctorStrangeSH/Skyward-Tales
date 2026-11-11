@@ -22,7 +22,9 @@ func _run() -> void:
 		game.story.skip()
 	game.player.set_physics_process(false)
 	game.hud.set_letterbox(false)
-	game.hud.title_card.visible = false
+	if is_instance_valid(game.hud.title_card):
+		if is_instance_valid(game.hud.title_card):
+			game.hud.title_card.visible = false
 	for entry in [
 		["greenreach_village", Vector2(300, 620)],
 		["greenreach_waterfall", Vector2(1500, 1170)]
@@ -40,5 +42,10 @@ func _run() -> void:
 			push_error("Cannot save scene capture: " + path)
 			quit(1)
 			return
+		if str(entry[0]) == "greenreach_waterfall":
+			screenshot.resize(1280, 720, Image.INTERPOLATE_NEAREST)
+			if screenshot.save_png(out_dir.path_join("greenreach_preview.png")) != OK:
+				quit(1)
+				return
 		print("Captured actual island: ", path)
 	quit(0)

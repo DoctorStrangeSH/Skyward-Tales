@@ -10,7 +10,7 @@ import numpy as np
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from hd import ground, pack
+from hd import ground, pack, minimap
 from hd.build_hd import footprints
 
 ROOT = pack.ROOT
@@ -53,7 +53,8 @@ def main() -> int:
     surface = ground.render("greenreach", terrain, sum(map(ord, "greenreach")) * 31, footprints(terrain, manifest), gates)
     surface.save(OUT / "greenreach_ground.webp", quality=90, method=6)
     southern_sky(terrain, gates).save(OUT / "greenreach_apron_bottom.webp", quality=90, method=6)
-    paths = ["assets/world_hd/greenreach_ground.webp", "assets/world_hd/greenreach_apron_bottom.webp"]
+    minimap.build("greenreach", terrain)
+    paths = ["assets/world_hd/greenreach_ground.webp", "assets/world_hd/greenreach_apron_bottom.webp", "assets/world/greenreach_mini.png"]
     report = {
         "generator": "tools/art/island01_polish.py",
         "source": str(pack.NEW_ZIP.relative_to(ROOT)).replace("\\", "/"),

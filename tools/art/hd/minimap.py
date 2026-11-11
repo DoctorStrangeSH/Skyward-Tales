@@ -51,8 +51,8 @@ def build(region_id: str, terrain: dict) -> Path | None:
     inner = ROOT / "assets" / "world_hd" / f"{region_id}_apron_inner.webp"
     if inner.exists():
         image.alpha_composite(Image.open(inner).convert("RGBA").resize(image.size, Image.LANCZOS))
-    image = ImageEnhance.Contrast(image).enhance(1.08)
-    image = ImageEnhance.Color(image).enhance(1.12)
+    image = ImageEnhance.Contrast(image).enhance(1.04 if style in ("day", "haven") else 1.08)
+    image = ImageEnhance.Color(image).enhance(0.90 if style in ("day", "haven") else 1.12)
     out = ROOT / "assets" / "world" / f"{region_id}_mini.png"
     image.save(out, optimize=True)
     return out

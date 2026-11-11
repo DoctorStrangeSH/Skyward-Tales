@@ -8,6 +8,10 @@ on:
       - "tools/art/island01_polish.py"
       - "tools/art/hd/ground.py"
       - "tools/art/hd/styles.py"
+      - "tools/art/hd/minimap.py"
+      - "scripts/world.gd"
+      - "scripts/cliff_rim.gd"
+      - "data/regions.json"
       - "tools/capture_island01.gd"
       - "scripts/island_waterfall.gd"
       - "assets/shaders/island_waterfall.gdshader"
@@ -62,6 +66,7 @@ jobs:
           path: |
             docs/screenshots/greenreach_village.png
             docs/screenshots/greenreach_waterfall.png
+            docs/screenshots/greenreach_preview.png
             assets/world_hd/greenreach_art_build.json
           retention-days: 7
       - name: Commit only rebuilt island art and review captures
@@ -69,7 +74,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/world_hd/greenreach_ground.webp assets/world_hd/greenreach_apron_bottom.webp assets/world_hd/greenreach_art_build.json docs/screenshots/greenreach_village.png docs/screenshots/greenreach_waterfall.png tests/waterfall_scene.gd.uid tools/capture_island01.gd.uid
+          git add assets/world_hd/greenreach_ground.webp assets/world_hd/greenreach_apron_bottom.webp assets/world_hd/greenreach_art_build.json assets/world/greenreach_mini.png docs/screenshots/greenreach_village.png docs/screenshots/greenreach_waterfall.png docs/screenshots/greenreach_preview.png tests/waterfall_scene.gd.uid tools/capture_island01.gd.uid
           if ! git diff --cached --quiet; then
             git commit -m "Rebuild Greenreach ground and clean apron; capture the actual scene"
             git push origin "HEAD:${GITHUB_REF_NAME}"
