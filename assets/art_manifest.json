@@ -4295,33 +4295,33 @@
  "world_hd/day_tree_1.png": {
   "size": [
    160,
-   151
+   126
   ],
   "origin": [
    80,
-   147
+   123
   ],
   "scale": 0.5
  },
  "world_hd/day_tree_2.png": {
   "size": [
-   164,
-   130
+   144,
+   149
   ],
   "origin": [
-   82,
-   126
+   72,
+   146
   ],
   "scale": 0.5
  },
  "world_hd/day_tree_3.png": {
   "size": [
-   184,
-   213
+   160,
+   165
   ],
   "origin": [
-   92,
-   211
+   80,
+   161
   ],
   "scale": 0.5
  },
@@ -6349,6 +6349,18 @@
   ],
   "scale": 0.5
  },
+ "world_hd/props/tree_birch_growth.png": {
+  "size": [
+   3600,
+   318
+  ],
+  "origin": [
+   148,
+   308
+  ],
+  "scale": 0.5,
+  "frames": 12
+ },
  "world_hd/props/tree_birch_ready.png": {
   "size": [
    300,
@@ -6359,6 +6371,18 @@
    308
   ],
   "scale": 0.5
+ },
+ "world_hd/props/tree_birch_sprout.png": {
+  "size": [
+   3600,
+   318
+  ],
+  "origin": [
+   148,
+   308
+  ],
+  "scale": 0.5,
+  "frames": 12
  },
  "world_hd/props/tree_birch_young.png": {
   "size": [
@@ -6382,6 +6406,18 @@
   ],
   "scale": 0.5
  },
+ "world_hd/props/tree_oak_growth.png": {
+  "size": [
+   3600,
+   318
+  ],
+  "origin": [
+   151,
+   308
+  ],
+  "scale": 0.5,
+  "frames": 12
+ },
  "world_hd/props/tree_oak_ready.png": {
   "size": [
    300,
@@ -6392,6 +6428,18 @@
    308
   ],
   "scale": 0.5
+ },
+ "world_hd/props/tree_oak_sprout.png": {
+  "size": [
+   3600,
+   318
+  ],
+  "origin": [
+   151,
+   308
+  ],
+  "scale": 0.5,
+  "frames": 12
  },
  "world_hd/props/tree_oak_young.png": {
   "size": [
@@ -6414,6 +6462,18 @@
    22
   ],
   "scale": 0.5
+ },
+ "world_hd/props/vein_growth.png": {
+  "size": [
+   816,
+   45
+  ],
+  "origin": [
+   34,
+   44
+  ],
+  "scale": 0.5,
+  "frames": 12
  },
  "world_hd/props/vein_ready.png": {
   "size": [

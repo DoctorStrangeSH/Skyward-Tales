@@ -8,14 +8,19 @@
   ],
   "baked_waterfalls": 0,
   "outputs": {
-    "assets/world_hd/greenreach_ground.webp": "7f1753712dc11c7daa6f11f226b48e024f87041449142547767923c3049cbe2a",
+    "assets/world_hd/greenreach_ground.webp": "9bddf758f028a06d9e87ecd70fc7d5a351e893eea81352585f2973aa29c5cd80",
     "assets/world_hd/greenreach_apron_bottom.webp": "81ca06272a73d4764007495f132d41590bd94b9b7e0992cf592db729c3f9ea31",
-    "assets/world/greenreach_mini.png": "ee502a2db8cc033690982496e3357d47edb3166898f3e576032db08fed60fa92",
+    "assets/world/greenreach_mini.png": "1a342d575055b4e55eb0c17679f65f05b007833b8631f31a9647c47d8bb2a97e",
     "assets/world_hd/day_tree_0.png": "b1193bce2d11ace2108658e413f4462ffb93e3babc6aa4f686898c25ae970290",
-    "assets/world_hd/day_tree_1.png": "866a7d7f06c0222bff40ff55867bae40cbd29dd191fcf09a40796a8318de4fb1",
-    "assets/world_hd/day_tree_2.png": "45eb5221c86243966564a1be9ea47f9f7805371da4aaadb671b98577fcd49df5",
-    "assets/world_hd/day_tree_3.png": "d7e02e2781da4140f5ba9f1722d820dd042c82d8d93a5049981669b19651b3e9",
+    "assets/world_hd/day_tree_1.png": "4d068e2cd54e3fbec4de3525d876f857001d281d5887f8eeb1021736f9e52865",
+    "assets/world_hd/day_tree_2.png": "a121de682470d5a9c55f0b315bb090d4b105d5b068ef810550ad14fad353dc29",
+    "assets/world_hd/day_tree_3.png": "a2e6e20e43046b06d02585d207377d22297e57d4c4e131c13fcb7d29764c5c5f",
     "assets/world_hd/props/waterfall_lip_left.png": "0eefe4214e72cc90b5bac248afac909474dbfd99325a60513ebfe42d3b6e93d4",
-    "assets/world_hd/props/waterfall_lip_right.png": "1d0362ab1dca05f1ab01b9d7718a220552fab1ca19619500d1bc7344fd8d6933"
+    "assets/world_hd/props/waterfall_lip_right.png": "1d0362ab1dca05f1ab01b9d7718a220552fab1ca19619500d1bc7344fd8d6933",
+    "assets/world_hd/props/tree_oak_sprout.png": "7c566441fd812fc24084c11f79b526e9c634fa0bb2aa39368ced6c942bbb51e6",
+    "assets/world_hd/props/tree_oak_growth.png": "5996eeb6ec2d4f44134c53f2d15c73ce0d3894e7940841f5676b783493ba9157",
+    "assets/world_hd/props/tree_birch_sprout.png": "5548f24fa60ca5e8022192463b6e9a902ae1f48c3bf9c886c911e2210686db67",
+    "assets/world_hd/props/tree_birch_growth.png": "ed761e75b63436bda493df27a91e4a7969c721909b6a190a8418f648adeec973",
+    "assets/world_hd/props/vein_growth.png": "06effc2902adc52cec2f7d9c586adb3ea736b5e5ffeb03100a1af2cf7c9a0479"
   }
 }
