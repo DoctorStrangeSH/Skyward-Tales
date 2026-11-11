@@ -16,8 +16,25 @@ const NO_ISLANDS := ["marsh", "ash", "rift"]
 
 var items: Array = []
 var _size := Vector2.ZERO
+var bridge_corridors: Array[Rect2] = []
 
-func setup(map_size: Vector2, region_id: String, style: String) -> void:
+func setup(map_size: Vector2, region_id: String, style: String, gates: Array = []) -> void:
+	for item in items:
+		(item["node"] as Sprite2D).queue_free()
+	items.clear()
+	bridge_corridors.clear()
+	for gate in gates:
+		var point: Array = gate.get("position", [0, 0])
+		var p := Vector2(float(point[0]), float(point[1]))
+		var distances := [p.x, map_size.x - p.x, p.y, map_size.y - p.y]
+		var edge := distances.find(distances.min())
+		if float(distances[edge]) > 120.0:
+			continue
+		match edge:
+			0: bridge_corridors.append(Rect2(-480, p.y - 64, 600, 128))
+			1: bridge_corridors.append(Rect2(map_size.x - 120, p.y - 64, 600, 128))
+			2: bridge_corridors.append(Rect2(p.x - 64, -480, 128, 600))
+			3: bridge_corridors.append(Rect2(p.x - 64, map_size.y - 120, 128, 600))
 	_size = map_size
 	z_index = -109
 	texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
@@ -60,7 +77,31 @@ func _add(art: String, at: Vector2, size: float, depth: float, drift: float, tin
 	sprite.modulate = tint
 	sprite.position = at
 	add_child(sprite)
-	items.append({"node": sprite, "base": at, "depth": depth, "drift": drift})
+	items.append({"node": sprite, "base": at, "depth": depth, "drift": drift, "island": art in ISLANDS})
+
+## Work in world-space sprite bounds, after parallax. A distant island must
+## never cover a near bridge or slide onto the walkable terrain.
+func projected_position(item: Dictionary, view: Vector2) -> Vector2:
+	var base: Vector2 = item["base"]
+	var at := base + (view - base) * float(item["depth"])
+	if not bool(item.get("island", false)):
+		return at
+	var sprite := item["node"] as Sprite2D
+	var half := sprite.texture.get_size() * sprite.scale * 0.5 + Vector2.ONE * 14.0
+	var horizontal := base.x < 0.0 or base.x > _size.x
+	if horizontal:
+		at.x = minf(at.x, -half.x) if base.x < 0.0 else maxf(at.x, _size.x + half.x)
+	else:
+		at.y = minf(at.y, -half.y)
+	for corridor in bridge_corridors:
+		var bounds := Rect2(at - half, half * 2.0)
+		if not bounds.intersects(corridor, true):
+			continue
+		if horizontal:
+			at.y = corridor.position.y - half.y - 1.0 if base.y < corridor.get_center().y else corridor.end.y + half.y + 1.0
+		else:
+			at.x = corridor.position.x - half.x - 1.0 if base.x < corridor.get_center().x else corridor.end.x + half.x + 1.0
+	return at
 
 func _process(delta: float) -> void:
 	var camera := get_viewport().get_camera_2d()
@@ -74,4 +115,5 @@ func _process(delta: float) -> void:
 			if base.x > _size.x + 190.0:
 				base.x = -190.0
 			item["base"] = base
-		(item["node"] as Sprite2D).position = base + (view - base) * float(item["depth"])
+		(item["node"] as Sprite2D).position = projected_position(item, view)
+

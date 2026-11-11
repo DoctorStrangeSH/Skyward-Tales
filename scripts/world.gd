@@ -67,6 +67,9 @@ func _build() -> void:
 		var pos := _vec(trees[index])
 		# Trunk base sits 10 px below the stored canopy position.
 		var variant: int = absi(int(pos.x) * 7 + int(pos.y) * 13) % tree_kinds
+		var authored: Array = terrain.get("tree_variants", [])
+		if index < authored.size():
+			variant = clampi(int(authored[index]), 0, tree_kinds - 1)
 		var before := get_child_count()
 		_add_sprite("%s_tree_%d.png" % [style, variant], pos + Vector2(0, 10), 5.0)
 		if get_child_count() > before:
@@ -296,7 +299,7 @@ func _add_apron() -> void:
 	var sky := SkyParallax.new()
 	sky.name = "SkyParallax"
 	add_child(sky)
-	sky.setup(size, region_id, RegionCatalog.style(region_id))
+	sky.setup(size, region_id, RegionCatalog.style(region_id), RegionCatalog.get_region(region_id).get("gates", []))
 	# Painted cliffs with ivy and waterfalls along the southern rim.
 	var rim_style := RegionCatalog.style(region_id)
 	var whole := not ResourceLoader.exists(HD_DIR + region_id + "_apron_inner.webp")
@@ -608,3 +611,4 @@ static func _load_json(path: String) -> Dictionary:
 		return {}
 	var parsed: Variant = JSON.parse_string(file.get_as_text())
 	return parsed if parsed is Dictionary else {}
+
