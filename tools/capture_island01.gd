@@ -4,6 +4,10 @@ extends SceneTree
 func _initialize() -> void:
 	call_deferred("_run")
 
+func _hide_title(game: SkywardGame) -> void:
+	if is_instance_valid(game.hud.title_card):
+		game.hud.title_card.visible = false
+
 func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	var out_dir := args[0] if not args.is_empty() else "/project/docs/screenshots"
@@ -22,9 +26,7 @@ func _run() -> void:
 		game.story.skip()
 	game.player.set_physics_process(false)
 	game.hud.set_letterbox(false)
-	if is_instance_valid(game.hud.title_card):
-		if is_instance_valid(game.hud.title_card):
-			game.hud.title_card.visible = false
+	_hide_title(game)
 	for entry in [
 		["greenreach_village", Vector2(300, 620)],
 		["greenreach_waterfall", Vector2(1500, 1170)]
@@ -34,7 +36,7 @@ func _run() -> void:
 		camera.reset_smoothing()
 		for frame in 45:
 			await process_frame
-		game.hud.title_card.visible = false
+		_hide_title(game)
 		await RenderingServer.frame_post_draw
 		var screenshot := root.get_texture().get_image()
 		var path := out_dir.path_join(str(entry[0]) + ".png")
