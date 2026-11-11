@@ -38,7 +38,7 @@ jobs:
             for test in tests/*.gd; do
               # Fresh user:// directory for every test so saves cannot leak between tests.
               export HOME="$(mktemp -d)"
-              if godot --headless --path . --script "res://${test}" > "/tmp/$(basename "$test").log" 2>&1; then
+              if godot --headless --path . --script "res://${test}" > "/tmp/$(basename "$test").log" 2>&1 && ! grep -q "SCRIPT ERROR" "/tmp/$(basename "$test").log"; then
                 echo "ok    ${test}"
               else
                 echo "FAIL  ${test}"
@@ -46,8 +46,21 @@ jobs:
                 failed+=("${test}")
               fi
             done
+            # Smoke run: the title screen lives 120 frames and quits cleanly —
+            # no script errors, no leaked objects or resources.
             export HOME="$(mktemp -d)"
-            godot --headless --path . --quit-after 120 || failed+=("smoke run")
+            godot --headless --path . --script res://tools/smoke_run.gd > /tmp/smoke.log 2>&1 || failed+=("smoke run")
+            cat /tmp/smoke.log
+            if grep -qE "SCRIPT ERROR|leaked at exit|still in use at exit" /tmp/smoke.log; then failed+=("smoke run: errors or leaks"); fi
+            # Windowed tests (real mouse clicks on the GUI) under a virtual display.
+            export HOME="$(mktemp -d)"
+            if command -v xvfb-run > /dev/null || (apt-get update -qq > /dev/null 2>&1 && apt-get install -y -qq xvfb libgl1-mesa-dri > /dev/null 2>&1); then
+              timeout 180 xvfb-run -a godot --path . --rendering-driver opengl3 --script res://tests/dialogue_click.gd > /tmp/click.log 2>&1
+              cat /tmp/click.log | tail -5
+              if grep -q "DIALOGUE CLICK OK" /tmp/click.log; then echo "ok    windowed dialogue_click"; else failed+=("windowed dialogue_click"); fi
+            else
+              echo "::warning::xvfb is not available: windowed GUI tests were NOT run"
+            fi
             if [ "${#failed[@]}" -gt 0 ]; then
               echo "Failed: ${failed[*]}"
               exit 1

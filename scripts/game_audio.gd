@@ -103,6 +103,11 @@ func _apply_volumes() -> void:
 
 ## Owner's list №5: silence while the game window is in the background.
 func _notification(what: int) -> void:
+	# The engine may quit without removing nodes from the tree (--quit-after,
+	# closing the window): streams still playing would be reported as leaks.
+	if what == NOTIFICATION_PREDELETE or what == NOTIFICATION_WM_CLOSE_REQUEST:
+		_release()
+		return
 	var master := AudioServer.get_bus_index("Master")
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and GameSettings.get_bool("mute_unfocused"):
 		AudioServer.set_bus_mute(master, true)
@@ -192,11 +197,17 @@ func _set_ambience(bed: String) -> void:
 		fade_in.tween_property(_ambience, "volume_db", -6.0, 1.5))
 
 func _exit_tree() -> void:
-	for player in [_music_a, _music_b]:
-		player.stop()
-		player.stream = null
+	_release()
+
+func _release() -> void:
+	for player in [_music_a, _music_b, _ambience]:
+		if player != null and is_instance_valid(player):
+			player.stop()
+			player.stream = null
 	for voice in _voices:
-		voice.stream = null
+		if is_instance_valid(voice):
+			voice.stop()
+			voice.stream = null
 	_streams.clear()
 	if _instance == self:
 		_instance = null
