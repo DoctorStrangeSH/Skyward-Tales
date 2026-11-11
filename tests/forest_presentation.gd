@@ -47,6 +47,7 @@ func _run() -> void:
 	for kind in ["wood", "stone", "iron", "copper"]:
 		var resource := GatherNode.new()
 		resource.kind = kind
+		resource.growth_enabled = true
 		resource.key = "presentation:" + kind
 		game.add_child(resource)
 		resource.position = Vector2(1100, 800)

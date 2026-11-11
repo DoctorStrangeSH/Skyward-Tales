@@ -12,6 +12,8 @@ var display_name: String = ""
 var art: String = "gather_wood"
 var verb: String = "собрать"
 var available: bool = true
+## Set by WorldBuilder only for the settlement region.
+var growth_enabled: bool = false
 
 func _ready() -> void:
 	add_to_group("interactables")
@@ -29,7 +31,7 @@ var stage: String = "ready"
 func staged_art() -> String:
 	if kind == "wood":
 		return "props/tree_%s_%s" % ["oak" if absi(hash(key)) % 2 == 0 else "birch", stage]
-	if kind in ["stone", "iron", "copper"]:
+	if kind in ["iron", "copper"] or (kind == "stone" and growth_enabled):
 		return "props/vein_%s" % ("ready" if stage == "ready" else "cut")
 	if kind == "echo_crystal":
 		return "props/tower_crystal" if stage == "ready" else "props/vein_cut"
@@ -71,7 +73,7 @@ var growth_origin := Vector2.ZERO
 func _start_growth(before: String) -> void:
 	growth_sheet = null
 	set_process(false)
-	if not is_node_ready():
+	if not is_node_ready() or not growth_enabled:
 		return
 	var file := ""
 	if kind == "wood" and stage in ["young", "ready"]:

@@ -326,6 +326,7 @@ func _spawn_gathering_entries(entries: Array, only_state: String = "") -> void:
 			continue
 		var node := SkywardGame.GATHER_NODE_SCRIPT.new() as GatherNode
 		node.key = "%s:%d" % [game.current_region, index]
+		node.growth_enabled = game.current_region == game.settlement.village_region()
 		node.kind = str(entry.get("kind", ""))
 		node.display_name = str(info.get("name", node.kind))
 		node.art = str(info.get("art", "gather_wood"))

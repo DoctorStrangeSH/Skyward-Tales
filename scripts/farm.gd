@@ -112,6 +112,8 @@ func prompt(index: int) -> String:
 	return "Растёт: %d%%" % roundi(growth(index) * 100.0)
 
 func use_bed(index: int) -> void:
+	if game.current_region != game.settlement.village_region():
+		return
 	if not beds.has(index):
 		if not is_tray(index) and season() == "winter":
 			game.hud.show_message("Зима: земля промёрзла. Сажать можно только в теплице.", 3.0)
@@ -138,7 +140,7 @@ func use_bed(index: int) -> void:
 	game.hud.show_message("Растёт: %d%%. Загляните позже." % roundi(growth(index) * 100.0), 2.0)
 
 func plant(index: int, seed_id: String) -> bool:
-	if beds.has(index) or not usable(index) or not SEEDS.has(seed_id) or (not is_tray(index) and season() == "winter") or not game.player.remove_item(seed_id, 1):
+	if game.current_region != game.settlement.village_region() or beds.has(index) or not usable(index) or not SEEDS.has(seed_id) or (not is_tray(index) and season() == "winter") or not game.player.remove_item(seed_id, 1):
 		return false
 	beds[index] = {"seed": seed_id, "planted": _now(), "watered": false}
 	GameAudio.play("pickup", -8.0, 0.0)
@@ -147,7 +149,7 @@ func plant(index: int, seed_id: String) -> bool:
 	return true
 
 func harvest(index: int) -> bool:
-	if not ripe(index):
+	if game.current_region != game.settlement.village_region() or not ripe(index):
 		return false
 	var info: Array = SEEDS[str(beds[index]["seed"])]
 	var amount := rng.randi_range(int(info[2]), int(info[3])) 

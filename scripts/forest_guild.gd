@@ -84,14 +84,20 @@ func on_gathered(node: GatherNode) -> int:
 func regrow_factor(node: GatherNode) -> float:
 	return 0.5 if node.kind == "wood" and rank() >= 3 else 1.0
 
-## E on a stump with a sapling in the bag: plant it. True if planted.
-func try_plant(node: GatherNode) -> bool:
+## Cultivation belongs to the settlement; other lands keep ordinary respawn.
+func can_plant(node: GatherNode) -> bool:
+	if node == null or node.available or game.current_region != game.settlement.village_region() or not node.growth_enabled:
+		return false
 	if node.kind != "wood" or planted.has(node.key) or int(game.player.inventory.get(SAPLING, 0)) <= 0:
+		return false
+	return float(game.crafting.cooldowns.get(node.key, 0.0)) - game.crafting.play_time > 1.0
+
+## E on a settlement stump with a sapling: halve the remaining wait.
+func try_plant(node: GatherNode) -> bool:
+	if not can_plant(node):
 		return false
 	var crafting := game.crafting
 	var left := float(crafting.cooldowns.get(node.key, 0.0)) - crafting.play_time
-	if left <= 1.0:
-		return false
 	game.player.remove_item(SAPLING, 1)
 	crafting.cooldowns[node.key] = crafting.play_time + left * 0.5
 	planted[node.key] = true
@@ -106,6 +112,9 @@ func try_plant(node: GatherNode) -> bool:
 ## The look of a resting node: a stump, later (or when planted) a sapling.
 func update_stage(node: GatherNode) -> void:
 	if node.kind != "wood":
+		return
+	if not node.growth_enabled:
+		node.set_stage("cut")
 		return
 	var crafting := game.crafting
 	var left := float(crafting.cooldowns.get(node.key, 0.0)) - crafting.play_time
@@ -257,7 +266,7 @@ func handle_choice(choice_id: String) -> bool:
 		talk(NPC)
 	elif choice_id == "forest_how":
 		var choices: Array[Dictionary] = [{"id": "forest_back", "label": "Понятно"}]
-		game._show_dialogue_choices("Орвин, старший лесничий", "Дерево на дрова рубится — остаётся пень. Подойди к пню с саженцем и нажми E: вырастет вдвое быстрее. За срубленное — очко, за посаженное — два. Саженцы даю я, по три в день, да и с деревьев порой падают. Из брёвен на верстаке — доски, из смолы — факелы и оберег.", choices)
+		game._show_dialogue_choices("Орвин, старший лесничий", "На острове нашего поселения дерево на дрова рубится — остаётся пень. Подойди к пню с саженцем и нажми E: вырастет вдвое быстрее. За срубленное — очко, за посаженное — два. Саженцы даю я, по три в день, да и с деревьев порой падают. Из брёвен на верстаке — доски, из смолы — факелы и оберег.", choices)
 	elif choice_id == "forest_back":
 		talk(NPC)
 	else:

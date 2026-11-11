@@ -11,6 +11,8 @@ func _init(owner_game: SkywardGame) -> void:
 
 func _interaction_prompt(target: Node2D) -> String:
 	if target is GatherNode:
+		if not target.available and game.forestry != null and game.forestry.can_plant(target):
+			return "E — посадить саженец"
 		return "E — " + target.verb if target.available else "E — пусто"
 	if target is CraftStation:
 		return "E — " + ("готовить" if target.station_id == "kitchen" else "мастерить")
