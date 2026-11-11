@@ -14,7 +14,7 @@ func _run() -> void:
 	await process_frame
 	if fall.stream == null or fall.stream_width < 48.0:
 		return _fail("the editable scene starts with a broad visible stream")
-	for field in ["stream_width", "drop_length", "flow_speed", "water_tint", "cloud_fade", "animate_in_editor"]:
+	for field in ["stream_width", "drop_length", "flow_speed", "water_tint", "cloud_fade", "show_lip", "animate_in_editor"]:
 		var exposed := false
 		for property in fall.get_property_list():
 			if property.name == field and int(property.usage) & PROPERTY_USAGE_EDITOR:
@@ -26,6 +26,8 @@ func _run() -> void:
 	fall.flow_speed = 1.5
 	await process_frame
 	await process_frame
+	if fall.left_cap == null or fall.right_cap == null or fall.left_cap.position.x != -67.0 or fall.right_cap.position.x != 67.0:
+		return _fail("the bank stones follow live width changes")
 	if fall.stream.size != Vector2(128, 420) or fall.stream.position != Vector2(-64, 0):
 		return _fail("inspector edits update the existing stream without moving its mouth")
 	if not is_equal_approx(float(fall.flow_material.get_shader_parameter("stream_width")), 128.0):
@@ -50,7 +52,7 @@ func _run() -> void:
 	if authored == null or authored.get_child_count() != 1:
 		return _fail("the first island uses the authored scene without duplicate data outlets")
 	var source := authored.get_node("EastLakeSource") as IslandWaterfall
-	if source == null or source.position != Vector2(1556, 1274) or source.stream_width != 64.0:
+	if source == null or source.position != Vector2(1556, 1274) or source.stream_width != 64.0 or source.drop_length != 160.0:
 		return _fail("the game and editor use the same authored source")
 	print("WATERFALL SCENE OK")
 	quit(0)

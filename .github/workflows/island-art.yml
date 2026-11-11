@@ -10,6 +10,8 @@ on:
       - "tools/art/hd/styles.py"
       - "tools/art/hd/minimap.py"
       - "scripts/world.gd"
+      - "scripts/world_builder.gd"
+      - "tests/look_polish.gd"
       - "scripts/cliff_rim.gd"
       - "data/regions.json"
       - "tools/capture_island01.gd"
@@ -47,10 +49,10 @@ jobs:
         run: |
           mkdir -p docs/screenshots
           docker run --rm -v "$PWD:/project" -w /project "$GODOT_IMAGE" bash -euc '
-            export HOME="$(mktemp -d)"
             timeout 300s godot --headless --path . --editor --import --quit
             timeout 90s godot --headless --path . --script res://tests/island_style.gd
             timeout 90s godot --headless --path . --script res://tests/waterfall_scene.gd
+            timeout 90s godot --headless --path . --script res://tests/look_polish.gd
             cp -L "$(command -v godot)" /project/art-review-godot
             chmod +x /project/art-review-godot
           '
@@ -59,7 +61,6 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y xvfb libgl1-mesa-dri
-          export HOME="$(mktemp -d)"
           export LIBGL_ALWAYS_SOFTWARE=1
           ./art-review-godot --headless --version
           timeout 120s xvfb-run -a -s "-screen 0 1920x1080x24 -nolisten tcp" ./art-review-godot --path . --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy --resolution 1920x1080 --max-fps 30 --quit-after 240 --script res://tools/capture_island01.gd -- "$PWD/docs/screenshots"
@@ -80,7 +81,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/world_hd/greenreach_ground.webp assets/world_hd/greenreach_apron_bottom.webp assets/world_hd/greenreach_art_build.json assets/world/greenreach_mini.png docs/screenshots/greenreach_village.png docs/screenshots/greenreach_waterfall.png docs/screenshots/greenreach_preview.jpg tests/waterfall_scene.gd.uid tools/capture_island01.gd.uid
+          git add assets/art_manifest.json assets/world_hd/day_tree_0.png assets/world_hd/day_tree_1.png assets/world_hd/day_tree_2.png assets/world_hd/day_tree_3.png assets/world_hd/props/waterfall_lip_left.png assets/world_hd/props/waterfall_lip_right.png assets/world_hd/greenreach_ground.webp assets/world_hd/greenreach_apron_bottom.webp assets/world_hd/greenreach_art_build.json assets/world/greenreach_mini.png docs/screenshots/greenreach_village.png docs/screenshots/greenreach_waterfall.png docs/screenshots/greenreach_preview.jpg tests/waterfall_scene.gd.uid tools/capture_island01.gd.uid
           if ! git diff --cached --quiet; then
             git commit -m "Rebuild Greenreach ground and clean apron; capture the actual scene"
             git push origin "HEAD:$GITHUB_REF_NAME"

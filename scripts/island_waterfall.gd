@@ -29,6 +29,10 @@ const FLOW := preload("res://assets/shaders/island_waterfall.gdshader")
 	set(value):
 		cloud_fade = clampf(value, 0.0, 0.8)
 		_request_refresh()
+@export var show_lip: bool = true:
+	set(value):
+		show_lip = value
+		_request_refresh()
 @export_group("Предпросмотр")
 @export var animate_in_editor: bool = false:
 	set(value):
@@ -37,6 +41,8 @@ const FLOW := preload("res://assets/shaders/island_waterfall.gdshader")
 
 var stream: ColorRect
 var flow_material: ShaderMaterial
+var left_cap: Sprite2D
+var right_cap: Sprite2D
 var clock: float = 0.0
 
 ## Legacy/data-driven outlets still use this; scene instances use the exports.
@@ -61,7 +67,23 @@ func _ready() -> void:
 	flow_material.shader = FLOW
 	flow_material.set_shader_parameter("atlas", load(ATLAS))
 	stream.material = flow_material
+	left_cap = _cap("res://assets/world_hd/props/waterfall_lip_left.png", "LeftBank")
+	right_cap = _cap("res://assets/world_hd/props/waterfall_lip_right.png", "RightBank")
 	_refresh()
+
+func _cap(path: String, child_name: String) -> Sprite2D:
+	if not ResourceLoader.exists(path):
+		return null
+	var cap := get_node_or_null(NodePath(child_name)) as Sprite2D
+	if cap == null:
+		cap = Sprite2D.new()
+		cap.name = child_name
+		add_child(cap)
+	cap.texture = load(path)
+	cap.scale = Vector2.ONE * 0.5
+	cap.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	cap.z_index = 1
+	return cap
 
 func _request_refresh() -> void:
 	if is_inside_tree():
@@ -72,6 +94,12 @@ func _refresh() -> void:
 		return
 	stream.position = Vector2(-stream_width * 0.5, 0.0)
 	stream.size = Vector2(stream_width, drop_length)
+	if is_instance_valid(left_cap):
+		left_cap.position = Vector2(-stream_width * 0.5 - 3.0, -2.0)
+		left_cap.visible = show_lip
+	if is_instance_valid(right_cap):
+		right_cap.position = Vector2(stream_width * 0.5 + 3.0, -2.0)
+		right_cap.visible = show_lip
 	flow_material.set_shader_parameter("stream_width", stream_width)
 	flow_material.set_shader_parameter("drop_length", drop_length)
 	flow_material.set_shader_parameter("water_tint", water_tint)

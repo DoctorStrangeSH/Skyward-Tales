@@ -10,7 +10,8 @@ import numpy as np
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from hd import ground, pack, minimap
+from hd import ground, pack, minimap, sprites
+from hd.styles import STYLE
 from hd.build_hd import footprints
 
 ROOT = pack.ROOT
@@ -50,11 +51,28 @@ def main() -> int:
     manifest = json.loads((ROOT / "assets/art_manifest.json").read_text(encoding="utf-8"))
     gates = [gate["position"] for gate in region.get("gates", [])]
     OUT.mkdir(parents=True, exist_ok=True)
+    generated = []
+    for index, (source, width) in enumerate(STYLE["day"]["trees"]):
+        image, origin = sprites.make(source, width)
+        name = f"day_tree_{index}.png"
+        image.save(OUT / name, optimize=True)
+        manifest["world_hd/" + name] = {"size": list(image.size), "origin": list(origin), "scale": 1.0 / K}
+        generated.append("assets/world_hd/" + name)
+    (OUT / "props").mkdir(exist_ok=True)
+    for name, source in [
+        ("waterfall_lip_left", "new:green_reach/base/rocks.png"),
+        ("waterfall_lip_right", "new:hd/greenreach/nature/mossy_rocks.png"),
+    ]:
+        image, origin = sprites.make(source, 20)
+        image.save(OUT / "props" / (name + ".png"), optimize=True)
+        manifest["world_hd/props/" + name + ".png"] = {"size": list(image.size), "origin": list(origin), "scale": 1.0 / K}
+        generated.append("assets/world_hd/props/" + name + ".png")
+    (ROOT / "assets/art_manifest.json").write_text(json.dumps(dict(sorted(manifest.items())), indent=1) + "\n", encoding="utf-8")
     surface = ground.render("greenreach", terrain, sum(map(ord, "greenreach")) * 31, footprints(terrain, manifest), gates)
     surface.save(OUT / "greenreach_ground.webp", quality=90, method=6)
     southern_sky(terrain, gates).save(OUT / "greenreach_apron_bottom.webp", quality=90, method=6)
     minimap.build("greenreach", terrain)
-    paths = ["assets/world_hd/greenreach_ground.webp", "assets/world_hd/greenreach_apron_bottom.webp", "assets/world/greenreach_mini.png"]
+    paths = ["assets/world_hd/greenreach_ground.webp", "assets/world_hd/greenreach_apron_bottom.webp", "assets/world/greenreach_mini.png"] + generated
     report = {
         "generator": "tools/art/island01_polish.py",
         "source": str(pack.NEW_ZIP.relative_to(ROOT)).replace("\\", "/"),

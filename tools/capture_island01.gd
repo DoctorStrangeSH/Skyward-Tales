@@ -29,7 +29,7 @@ func _run() -> void:
 	_hide_title(game)
 	for entry in [
 		["greenreach_village", Vector2(300, 620)],
-		["greenreach_waterfall", Vector2(1500, 1170)]
+		["greenreach_waterfall", Vector2(1240, 1230)]
 	]:
 		game.player.global_position = entry[1]
 		var camera := game.hero_camera()
