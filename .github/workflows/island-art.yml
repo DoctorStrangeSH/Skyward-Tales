@@ -45,14 +45,14 @@ jobs:
           docker run --rm -v "${PWD}:/project" -w /project "$GODOT_IMAGE" bash -euc '
             export HOME="$(mktemp -d)"
             export LIBGL_ALWAYS_SOFTWARE=1
-            godot --headless --path . --editor --import --quit
-            godot --headless --path . --script res://tests/island_style.gd
-            godot --headless --path . --script res://tests/waterfall_scene.gd
+            timeout 300s godot --headless --path . --editor --import --quit
+            timeout 90s godot --headless --path . --script res://tests/island_style.gd
+            timeout 90s godot --headless --path . --script res://tests/waterfall_scene.gd
             if ! command -v xvfb-run >/dev/null; then
               apt-get update
               apt-get install -y xvfb libgl1-mesa-dri
             fi
-            xvfb-run -a -s "-screen 0 1920x1080x24" godot --path . --rendering-driver opengl3 --audio-driver Dummy --resolution 1920x1080 --script res://tools/capture_island01.gd -- /project/docs/screenshots
+            timeout 120s xvfb-run -a -s "-screen 0 1920x1080x24" godot --path . --rendering-driver opengl3 --audio-driver Dummy --resolution 1920x1080 --script res://tools/capture_island01.gd -- /project/docs/screenshots
           '
           sudo chown -R "$USER" docs/screenshots assets/world_hd .godot tests tools || true
       - name: Save the single style review
