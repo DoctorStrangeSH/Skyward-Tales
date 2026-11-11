@@ -9,11 +9,11 @@ class_name UiStyle
 const PANEL := "res://assets/ui/panel.png"
 const PANEL_GOLD := "res://assets/ui/panel_gold.png"
 const TEXT := Color(0.96, 0.92, 0.82)
-const TITLE := Color(1.0, 0.84, 0.5)
+const TITLE := Color(0.9, 0.79, 0.55)
 const MUTED := Color(0.78, 0.7, 0.6)
-const GOLD := Color(1.0, 0.82, 0.42)
-const SLOT_BG := Color(0.055, 0.06, 0.12, 0.94)
-const SLOT_EDGE := Color(0.5, 0.38, 0.2)
+const GOLD := Color(0.84, 0.71, 0.44)
+const SLOT_BG := Color(0.045, 0.04, 0.065, 0.98)
+const SLOT_EDGE := Color(0.39, 0.32, 0.22)
 
 static var _cache: Dictionary = {}
 
@@ -23,11 +23,13 @@ static func _box(path: String, margin: int, content: int) -> StyleBox:
 		return _cache[key]
 	if not ResourceLoader.exists(path):
 		var flat := StyleBoxFlat.new()
-		flat.bg_color = Color(0.13, 0.09, 0.08, 0.96)
+		flat.bg_color = Color(0.055, 0.045, 0.065, 0.98)
 		flat.set_content_margin_all(content)
 		return flat
 	var box := StyleBoxTexture.new()
 	box.texture = load(path)
+	# Keep the approved ornate frames; quiet their bright navy/gold colours.
+	box.modulate_color = Color(0.84, 0.81, 0.88, 1.0)
 	box.texture_margin_left = margin
 	box.texture_margin_top = margin
 	box.texture_margin_right = margin
@@ -67,8 +69,8 @@ static func small_toggle(button: Button) -> void:
 		box.set_content_margin_all(1)
 		box.set_border_width_all(1)
 		var on: bool = state.contains("pressed")
-		box.bg_color = Color(0.52, 0.36, 0.14) if on else (Color(0.15, 0.16, 0.3) if state == "hover" else Color(0.09, 0.09, 0.18))
-		box.border_color = Color(1.0, 0.84, 0.45) if on else Color(0.55, 0.4, 0.2)
+		box.bg_color = Color(0.25, 0.19, 0.11) if on else (Color(0.1, 0.085, 0.13) if state == "hover" else SLOT_BG)
+		box.border_color = GOLD if on else SLOT_EDGE
 		button.add_theme_stylebox_override(state, box)
 	button.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
 	button.add_theme_color_override("font_color", MUTED)

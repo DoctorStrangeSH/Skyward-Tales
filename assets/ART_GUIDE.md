@@ -1,6 +1,14 @@
 # Skyward Tales — Art Guide
 
-## Visual target
+## Approved direction (11 November 2026)
+
+The owner has locked ONE visual style: detailed floating-forest-island pixel art,
+slightly more muted daylight and a darker graphite/plum UI with aged gold.
+Do not generate alternate styles or multiple versions for selection.
+The previous cosy/bright description below is historical; follow
+[the current direction and remaining work](../docs/ART_DIRECTION.md).
+
+## Previous visual target
 
 Cosy, readable fantasy pixel art in the spirit of modern 16-bit-inspired RPGs:
 warm sunlit greens by day, cool teal/violet moonlight at night, deep violet
