@@ -1,0 +1,21 @@
+{
+  "generator": "tools/art/island01_polish.py",
+  "source": "assets/New Sprites/Skyward_Tales_All_Sprites.zip",
+  "source_sha256": "e609748fe6e4420ee33d4766119629f382bc5c9c8c03e2697bd3dfdde7cb8e24",
+  "ground_size": [
+    3840,
+    2560
+  ],
+  "baked_waterfalls": 0,
+  "outputs": {
+    "assets/world_hd/greenreach_ground.webp": "7f1753712dc11c7daa6f11f226b48e024f87041449142547767923c3049cbe2a",
+    "assets/world_hd/greenreach_apron_bottom.webp": "81ca06272a73d4764007495f132d41590bd94b9b7e0992cf592db729c3f9ea31",
+    "assets/world/greenreach_mini.png": "ee502a2db8cc033690982496e3357d47edb3166898f3e576032db08fed60fa92",
+    "assets/world_hd/day_tree_0.png": "b1193bce2d11ace2108658e413f4462ffb93e3babc6aa4f686898c25ae970290",
+    "assets/world_hd/day_tree_1.png": "866a7d7f06c0222bff40ff55867bae40cbd29dd191fcf09a40796a8318de4fb1",
+    "assets/world_hd/day_tree_2.png": "45eb5221c86243966564a1be9ea47f9f7805371da4aaadb671b98577fcd49df5",
+    "assets/world_hd/day_tree_3.png": "d7e02e2781da4140f5ba9f1722d820dd042c82d8d93a5049981669b19651b3e9",
+    "assets/world_hd/props/waterfall_lip_left.png": "0eefe4214e72cc90b5bac248afac909474dbfd99325a60513ebfe42d3b6e93d4",
+    "assets/world_hd/props/waterfall_lip_right.png": "1d0362ab1dca05f1ab01b9d7718a220552fab1ca19619500d1bc7344fd8d6933"
+  }
+}

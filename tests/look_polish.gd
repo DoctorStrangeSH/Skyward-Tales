@@ -29,8 +29,8 @@ func _run() -> void:
 	var rim := game.world.get_node_or_null("CliffRim")
 	if rim == null or rim.get_child_count() < 12:
 		return _fail("painted cliffs line the southern rim")
-	if camera.limit_bottom > int(size.y) + 78:
-		return _fail("the camera does not look under the cliffs")
+	if camera.limit_bottom != int(size.y) + 148 or camera.limit_bottom > int(size.y) + 160:
+		return _fail("the authored waterfall has room above the HUD without revealing unpainted space")
 	if game.world.shadows._casts.size() < 100:
 		return _fail("trees and houses cast shadows: %d" % game.world.shadows._casts.size())
 	# A room: closer, centred.

@@ -194,8 +194,11 @@ func _apply_camera_limits() -> void:
 	var left := -float(view)
 	var top := -float(view)
 	var right := size.x + view
-	# The painted southern cliffs are 76 px tall: do not look under them.
-	var bottom := size.y + (mini(view, 78) if game.world.get_node_or_null("CliffRim") != null else view)
+	# Leave room to see authored water above the HUD, within the painted sky.
+	var south_view := mini(view, 78) if game.world.get_node_or_null("CliffRim") != null else view
+	if view > 0:
+		south_view = int(clampf(float(RegionCatalog.terrain(game.current_region).get("camera_bottom_margin", south_view)), 0.0, 160.0))
+	var bottom := size.y + south_view
 	# A land smaller than the screen sits in the middle of it.
 	var seen := Vector2(640, 360) / zoom
 	if right - left < seen.x:

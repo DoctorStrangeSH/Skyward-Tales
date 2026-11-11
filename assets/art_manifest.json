@@ -4283,45 +4283,45 @@
  },
  "world_hd/day_tree_0.png": {
   "size": [
-   156,
-   123
+   172,
+   199
   ],
   "origin": [
-   78,
-   120
+   86,
+   197
   ],
   "scale": 0.5
  },
  "world_hd/day_tree_1.png": {
   "size": [
-   140,
-   132
+   160,
+   151
   ],
   "origin": [
-   70,
-   129
+   80,
+   147
   ],
   "scale": 0.5
  },
  "world_hd/day_tree_2.png": {
   "size": [
-   140,
-   162
+   164,
+   130
   ],
   "origin": [
-   70,
-   160
+   82,
+   126
   ],
   "scale": 0.5
  },
  "world_hd/day_tree_3.png": {
   "size": [
-   172,
-   136
+   184,
+   213
   ],
   "origin": [
-   86,
-   132
+   92,
+   211
   ],
   "scale": 0.5
  },
@@ -6423,6 +6423,28 @@
   "origin": [
    34,
    44
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/waterfall_lip_left.png": {
+  "size": [
+   40,
+   24
+  ],
+  "origin": [
+   20,
+   23
+  ],
+  "scale": 0.5
+ },
+ "world_hd/props/waterfall_lip_right.png": {
+  "size": [
+   40,
+   28
+  ],
+  "origin": [
+   20,
+   27
   ],
   "scale": 0.5
  },

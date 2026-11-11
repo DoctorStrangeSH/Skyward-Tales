@@ -1,0 +1,88 @@
+name: Island art review
+
+on:
+  push:
+    branches: [art/island01-scene-polish]
+    paths:
+      - ".github/workflows/island-art.yml"
+      - "tools/art/island01_polish.py"
+      - "tools/art/hd/ground.py"
+      - "tools/art/hd/styles.py"
+      - "tools/art/hd/minimap.py"
+      - "scripts/world.gd"
+      - "scripts/world_builder.gd"
+      - "tests/look_polish.gd"
+      - "scripts/cliff_rim.gd"
+      - "data/regions.json"
+      - "tools/capture_island01.gd"
+      - "scripts/island_waterfall.gd"
+      - "assets/shaders/island_waterfall.gdshader"
+      - "scenes/props/island_waterfall.tscn"
+      - "scenes/regions/greenreach_waterfalls.tscn"
+      - "tests/waterfall_scene.gd"
+  workflow_dispatch:
+
+concurrency:
+  group: island-art-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  GODOT_IMAGE: barichello/godot-ci:4.7.2
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install art dependencies
+        run: python3 -m pip install Pillow==11.3.0 numpy==2.2.6 scipy==1.15.3
+      - name: Rebuild the first island from approved sources
+        run: python3 tools/art/island01_polish.py
+      - name: Import and test editable water
+        run: |
+          mkdir -p docs/screenshots
+          docker run --rm -v "$PWD:/project" -w /project "$GODOT_IMAGE" bash -euc '
+            timeout 300s godot --headless --path . --editor --import --quit
+            timeout 90s godot --headless --path . --script res://tests/island_style.gd
+            timeout 90s godot --headless --path . --script res://tests/waterfall_scene.gd
+            timeout 90s godot --headless --path . --script res://tests/look_polish.gd
+            cp -L "$(command -v godot)" /project/art-review-godot
+            chmod +x /project/art-review-godot
+          '
+          sudo chown -R "$USER" docs/screenshots assets/world_hd assets/world .godot tests tools art-review-godot
+      - name: Capture the actual game with software rendering
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y xvfb libgl1-mesa-dri
+          export LIBGL_ALWAYS_SOFTWARE=1
+          ./art-review-godot --headless --version
+          timeout 120s xvfb-run -a -s "-screen 0 1920x1080x24 -nolisten tcp" ./art-review-godot --path . --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy --resolution 1920x1080 --max-fps 30 --quit-after 240 --script res://tools/capture_island01.gd -- "$PWD/docs/screenshots"
+          test -s docs/screenshots/greenreach_preview.jpg
+          test -s docs/screenshots/greenreach_village.png
+      - name: Save the single style review
+        uses: actions/upload-artifact@v4
+        with:
+          name: Greenreach-style-review
+          path: |
+            docs/screenshots/greenreach_village.png
+            docs/screenshots/greenreach_waterfall.png
+            docs/screenshots/greenreach_preview.jpg
+            assets/world_hd/greenreach_art_build.json
+          retention-days: 7
+      - name: Commit only rebuilt island art and review captures
+        if: github.ref == 'refs/heads/art/island01-scene-polish'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/art_manifest.json assets/world_hd/day_tree_0.png assets/world_hd/day_tree_1.png assets/world_hd/day_tree_2.png assets/world_hd/day_tree_3.png assets/world_hd/props/waterfall_lip_left.png assets/world_hd/props/waterfall_lip_right.png assets/world_hd/greenreach_ground.webp assets/world_hd/greenreach_apron_bottom.webp assets/world_hd/greenreach_art_build.json assets/world/greenreach_mini.png docs/screenshots/greenreach_village.png docs/screenshots/greenreach_waterfall.png docs/screenshots/greenreach_preview.jpg tests/waterfall_scene.gd.uid tools/capture_island01.gd.uid
+          if ! git diff --cached --quiet; then
+            git commit -m "Rebuild Greenreach ground and clean apron; capture the actual scene"
+            git push origin "HEAD:$GITHUB_REF_NAME"
+          fi

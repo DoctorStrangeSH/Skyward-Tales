@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/props/island_waterfall.tscn" id="1_water"]
+
+[node name="GreenreachWaterfalls" type="Node2D"]
+
+[node name="EastLakeSource" parent="." instance=ExtResource("1_water")]
+position = Vector2(1556, 1274)
+stream_width = 64.0
+drop_length = 160.0
+flow_speed = 1.0

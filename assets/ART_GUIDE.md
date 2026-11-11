@@ -1,75 +1,50 @@
 # Skyward Tales — Art Guide
 
-## Approved direction (11 November 2026)
+## One approved style
 
-The owner has locked ONE visual style: detailed floating-forest-island pixel art,
-slightly more muted daylight and a darker graphite/plum UI with aged gold.
-Do not generate alternate styles or multiple versions for selection.
-The previous cosy/bright description below is historical; follow
-[the current direction and remaining work](../docs/ART_DIRECTION.md).
+The owner's floating forest-island reference is the fixed master: detailed
+three-quarter top-down fantasy pixel art, rich foliage, mossy grey/violet
+stone, restrained daylight and warm windows. The look is slightly more
+subdued than the reference, with dark graphite/plum UI and aged gold.
+Do not generate alternative styles or several options unless requested.
 
-## Previous visual target
+Current direction: [ART_DIRECTION](../docs/ART_DIRECTION.md).
+Godot editing: [ISLAND01_EDITING](../docs/ISLAND01_EDITING.md).
 
-Cosy, readable fantasy pixel art in the spirit of modern 16-bit-inspired RPGs:
-warm sunlit greens by day, cool teal/violet moonlight at night, deep violet
-caves lit by glowing crystals, tinted
-outlines (never pure black), light from the top-left, soft blue-purple
-shadows, chibi characters (~26 px tall) and 3/4 top-down scenery.
-All art is original.
+## Sources and reproducible builds
 
-## How the art is made
+Approved original PNGs are retained in assets/New Sprites archives.
+Do not replace detailed approved art with primitive placeholders.
 
-Everything under `assets/world`, `assets/props` and `assets/sprites` is generated
-by code — no hand-edited PNGs:
+The first island is rebuilt with:
 
-```bash
-python3 tools/art/build.py              # everything
-python3 tools/art/build.py --only world # or: characters | props
-```
+    python3 tools/art/island01_polish.py
 
-Requires Python 3 with Pillow, numpy and scipy. Output is deterministic.
-`assets/art_manifest.json` records every sprite's size and anchor ("origin").
+Pinned dependencies: Pillow 11.3.0, numpy 2.2.6, scipy 1.15.3.
+This rebuild uses the tracked approved archive, existing cloud art and region
+geometry. It needs no untracked assets/incoming pack. It writes the Greenreach
+ground, clean southern sky, minimap, four oak variants, bank stones and an input/output checksum manifest. Decorative trees form a lakeside clearing; pond banks have stones, ferns and restrained ripples.
 
-| Module | What it draws |
-| --- | --- |
-| `tools/art/palettes.py` | Day, night and cave colour ramps |
-| `tools/art/terrain.py` | Region ground: grass, trails (from `data/regions.json`), ponds, flowers |
-| `tools/art/flora.py` | Trees, bushes, crystal clusters, rock piles, the border around each map |
-| `tools/art/props.py` | Ruins, standing stones, crystal altar, chests, herbs, crystals, ore, crates, potions, gates, quest markers |
-| `tools/art/characters.py` | Chibi humanoid rig: hero, NPCs, forest shaman |
-| `tools/art/creatures.py` | Slime, wolf, grove guardian (48 px), spell projectiles |
-| `tools/art/icons.py` | 16×16 inventory icons (`assets/icons/<item_id>.png`) |
+The broader legacy HD generator still requires its original local incoming
+pack. Do not confuse that older requirement with the self-contained first-island
+rebuild. Generated art changes must include the recipe and resulting assets.
 
-To change a character, edit its `Look` in `characters.py` (colours, hair
-style, hat, robe, staff…) and rebuild. To move scenery, edit the `terrain`
-section of `data/regions.json` and rebuild: collisions and art read the same data.
+## Runtime and scenes
 
-## Runtime rules
+- Base viewport 640×360. HD world textures use two texture pixels per world
+  pixel and are displayed at half scale. Preserve source detail and anchors.
+- World scenery and actors are y-sorted. Ground is at z -100.
+- Final screen grading samples with Nearest and stays on CanvasLayer 1;
+  HUD is on layer 2, preserving text and status-bar readability.
+- Greenreach's southern sky has no baked waterfalls. CliffRim owns cliffs;
+  scenes/regions/greenreach_waterfalls.tscn owns its editable water.
+- scenes/props/island_waterfall.tscn is tool-enabled. Keep texture grain at
+  world scale when resizing. Animation pauses with gameplay.
+- Directional actors require eight actual views, including proper backs.
+  Do not rotate a flat front-facing drawing into eight directions.
 
-- Nearest-neighbour filtering, no mipmaps, 1 world pixel = 1 viewport pixel.
-- `Main` and `World` are y-sorted: actors walk behind trees and ruins.
-- Ground is drawn at z −100, the foliage border at z 60 (above actors).
-- Directional sheets: 4 frames × 8 rows. Row order: down, down-right, right,
-  up-right, up, up-left, left, down-left. Left-facing rows mirror right-facing
-  ones. Back views (`up`, `up_right`) never show a face.
-- Cell size is 32×32 (guardian 48×48); feet sit at y=30 (guardian y=43).
+## Review
 
-## Sheets
-
-| File | Cell | Notes |
-| --- | --- | --- |
-| `sprites/characters/hero_8dir_walk.png` | 32 | Walk cycle |
-| `sprites/characters/hero_8dir_cast.png` | 32 | Casting pose, played via `DirectionalSprite.play_action()` |
-| `sprites/npcs/<npc_id>.png` | 32 | Idle breathing (NPC ids from `data/regions.json`) |
-| `sprites/enemies/forest_slime_true8.png` | 32 | Squash-and-stretch hop |
-| `sprites/enemies/forest_wolf_8dir.png` | 32 | Trot |
-| `sprites/enemies/forest_shaman_8dir.png` | 32 | Robed walk |
-| `sprites/enemies/grove_guardian_8dir.png` | 48 | Boss walk |
-| `sprites/enemies/cave_bat_8dir.png` | 32 | Hovering flap (body floats above its shadow) |
-| `sprites/magic/{fireball,frostbolt,chain_lightning}_8dir.png` | 32 | Flight |
-
-## Next steps for art
-
-- Enemy attack and death animations.
-- Swaying grass via a shader.
-- A pixel font for the interface.
+Rebuild, import, run relevant checks and capture the actual game at 1920×1080.
+Use the same camera and time of day when comparing. Do not label a mockup as
+an in-game capture. Keep one current style, rather than accumulating alternatives.

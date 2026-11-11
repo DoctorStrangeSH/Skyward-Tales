@@ -191,7 +191,7 @@ def _pebbles(ground: np.ndarray, edge: np.ndarray, stone_pal: list, seed: int) -
 def _walkways(ground: np.ndarray, gates: list, ww: int, wh: int) -> np.ndarray:
     h, w = ground.shape[:2]
     mask = np.zeros((h, w), np.float32)
-    deck = pack.content(pack.image("props/prop_018.png"))
+    deck = pack.content(pack.image("new:hd/redrawn/islands/rope_bridge.png"))
     mid = deck.crop((int(deck.width * 0.3), 0, int(deck.width * 0.7), deck.height))
     for gx, gy in gates:
         edges = {"left": gx, "right": ww - gx, "top": gy, "bottom": wh - gy}
@@ -235,17 +235,18 @@ def _liquid(ground: np.ndarray, water: np.ndarray, cfg: dict, w: int, h: int, se
     col = wp[0] * (1 - depth[..., None]) + wp[1] * depth[..., None]
     waves = _noise(w, h, 10.0, seed + 19, 2)
     streak = np.clip(1.0 - np.abs(np.sin((np.arange(h)[:, None] / (5.0 * K)) + waves * 9.0)) * 6.0, 0, 1)
-    shine = 0.10 if kind != "murk" else 0.05
+    shine = cfg.get("water_shine", 0.10 if kind != "murk" else 0.05)
     col = col + (streak * shine * (0.3 + depth))[..., None]
     foam_c = np.array([0.86, 0.96, 1.0]) if kind != "murk" else np.array([0.5, 0.56, 0.42])
-    foam = np.clip(1.0 - np.abs(water - 3.0) / 1.2, 0, 1) * (0.55 if kind != "murk" else 0.3)
+    foam = np.clip(1.0 - np.abs(water - 3.0) / 1.2, 0, 1) * cfg.get("water_foam", 0.55 if kind != "murk" else 0.3)
     col = col * (1 - foam[..., None]) + foam_c * foam[..., None]
     if kind == "glow":
         col = col + np.array([0.1, 0.35, 0.45]) * (np.clip(depth * 1.5, 0, 1) ** 2)[..., None]
     ground[:] = ground * (1 - inside) + col * inside
     bank = np.clip(1.0 - np.abs(water - 1.2) / 1.4, 0, 1)
     darkbank = np.array(cfg["dirt"][0], dtype=np.float32) / 255.0
-    ground[:] = ground * (1 - bank[..., None] * 0.65) + darkbank * bank[..., None] * 0.65
+    bank_strength = cfg.get("water_bank", 0.65)
+    ground[:] = ground * (1 - bank[..., None] * bank_strength) + darkbank * bank[..., None] * bank_strength
     shore = np.clip(1.0 - np.abs(water + 2.5) / 2.5, 0, 1) * (water < 0)
     ground *= (1.0 - shore * 0.18)[..., None]
     if kind == "glow":
@@ -274,6 +275,25 @@ def _float_decals(ground: np.ndarray, water: np.ndarray, cfg: dict, rng: random.
             _paste(ground, sp, x, y, 0.9)
             target -= 1
 
+
+
+def _shore_decals(ground: np.ndarray, water: np.ndarray, path: np.ndarray, cfg: dict, seed: int) -> None:
+    """Approved stones and ferns break up the bank; no continuous glowing ring."""
+    rng = random.Random(seed + 501)
+    h, w = water.shape
+    for rel, size, count in cfg.get("shore_decals", []):
+        sprite = _sprite(rel, size)
+        sh, sw = sprite.shape[:2]
+        placed = 0
+        for _ in range(count * 500):
+            if placed >= count:
+                break
+            x, y = rng.randint(0, w - sw), rng.randint(0, h - sh)
+            cx, cy = x + sw // 2, y + sh // 2
+            if not (-14.0 < water[cy, cx] < -4.0) or path[cy, cx] > 0.1:
+                continue
+            _paste(ground, sprite, x, y)
+            placed += 1
 
 def _rooms(terrain: dict, w: int, h: int) -> np.ndarray:
     sw, sh = w // K, h // K
@@ -390,6 +410,8 @@ def render(region_id: str, terrain: dict, seed: int, footprints: list, gates: li
     # 5. Shadows of trees and houses.
     for x, y, half in footprints:
         _shadow(ground, x * K, (y + 2) * K, half * K * 1.05, half * K * 0.42, cfg.get("shadow", 0.42))
+
+    _shore_decals(ground, water, path, cfg, seed)
 
     # 6. Decals on open ground.
     free = path < 0.05

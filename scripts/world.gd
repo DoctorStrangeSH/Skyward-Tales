@@ -154,9 +154,11 @@ func _add_ambient() -> void:
 		points.append_array(_pond_points(pond))
 	if points.is_empty():
 		return
+	if bool(terrain.get("water_ripples", false)):
+		_add_pond_ripples(points)
 	var glints := CPUParticles2D.new()
 	glints.name = "WaterGlints"
-	glints.amount = maxi(6, points.size() / 3)
+	glints.amount = maxi(4, points.size() / 10) if bool(terrain.get("water_ripples", false)) else maxi(6, points.size() / 3)
 	glints.lifetime = 1.6
 	glints.preprocess = 2.0
 	glints.emission_shape = CPUParticles2D.EMISSION_SHAPE_POINTS
@@ -174,6 +176,43 @@ func _add_ambient() -> void:
 	glints.color_ramp = shine
 	glints.z_index = -90
 	add_child(glints)
+
+
+## Quiet expanding elliptical ripples. CPUParticles pauses with the scene tree.
+func _add_pond_ripples(points: PackedVector2Array) -> void:
+	var rings := CPUParticles2D.new()
+	rings.name = "PondRipples"
+	rings.amount = clampi(points.size() / 12, 4, 12)
+	rings.lifetime = 3.8
+	rings.preprocess = 3.8
+	rings.emission_shape = CPUParticles2D.EMISSION_SHAPE_POINTS
+	rings.emission_points = points
+	rings.gravity = Vector2.ZERO
+	rings.initial_velocity_min = 0.0
+	rings.initial_velocity_max = 0.0
+	rings.scale_amount_min = 0.22
+	rings.scale_amount_max = 0.38
+	var expansion := Curve.new()
+	expansion.add_point(Vector2(0, 0.35))
+	expansion.add_point(Vector2(1, 1))
+	rings.scale_amount_curve = expansion
+	var ink := Gradient.new()
+	ink.offsets = PackedFloat32Array([0.0, 0.48, 0.60, 0.72, 1.0])
+	ink.colors = PackedColorArray([Color(0.72, 0.84, 0.82, 0), Color(0.72, 0.84, 0.82, 0), Color(0.72, 0.84, 0.82, 0.4), Color(0.72, 0.84, 0.82, 0), Color(0.72, 0.84, 0.82, 0)])
+	var texture := GradientTexture2D.new()
+	texture.width = 48
+	texture.height = 24
+	texture.gradient = ink
+	texture.fill = GradientTexture2D.FILL_RADIAL
+	texture.fill_from = Vector2(0.5, 0.5)
+	texture.fill_to = Vector2(1.0, 0.5)
+	rings.texture = texture
+	var fade := Gradient.new()
+	fade.offsets = PackedFloat32Array([0.0, 0.25, 0.65, 1.0])
+	fade.colors = PackedColorArray([Color(1, 1, 1, 0), Color(1, 1, 1, 0.55), Color(1, 1, 1, 0.3), Color(1, 1, 1, 0)])
+	rings.color_ramp = fade
+	rings.z_index = -91
+	add_child(rings)
 
 func _pond_points(pond: Dictionary) -> PackedVector2Array:
 	var result := PackedVector2Array()
@@ -270,7 +309,11 @@ func _add_apron() -> void:
 		var rim := CliffRim.new()
 		rim.name = "CliffRim"
 		add_child(rim)
-		rim.setup(size, region_id, gaps, terrain.get("waterfalls", []))
+		var outlet_scene: PackedScene
+		var outlet_path := str(terrain.get("waterfall_scene", ""))
+		if not outlet_path.is_empty() and ResourceLoader.exists(outlet_path):
+			outlet_scene = load(outlet_path) as PackedScene
+		rim.setup(size, region_id, gaps, terrain.get("waterfalls", []), outlet_scene)
 		if rim_style == "night":
 			rim.modulate = Color(0.55, 0.7, 0.95)
 	# Sky islands smaller than the map: the sky and cliffs inside the map edge.
