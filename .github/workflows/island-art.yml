@@ -2,7 +2,7 @@ name: Island art review
 
 on:
   push:
-    branches: [art/island01-scene-polish]
+    branches: [art/island01-scene-polish, fix/island01-lake-outlet]
     paths:
       - ".github/workflows/island-art.yml"
       - "tools/art/island01_polish.py"
@@ -17,6 +17,7 @@ on:
       - "tools/capture_island01.gd"
       - "scripts/island_waterfall.gd"
       - "assets/shaders/island_waterfall.gdshader"
+      - "assets/shaders/waterfall_approach.gdshader"
       - "scenes/props/island_waterfall.tscn"
       - "scenes/regions/greenreach_waterfalls.tscn"
       - "tests/waterfall_scene.gd"
