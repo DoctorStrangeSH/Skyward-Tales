@@ -27,12 +27,12 @@ def southern_sky(terrain: dict, gates: list) -> Image.Image:
     rgb = np.broadcast_to((top * (1 - t[:, None]) + bottom * t[:, None])[:, None, :], (th, tw, 3))
     sky = Image.fromarray(np.clip(rgb, 0, 255).astype(np.uint8), "RGB").convert("RGBA")
     rng = random.Random(31017)
-    clouds = [OUT / "sky" / (name + ".png") for name in ("cloud_bank", "cloud_tower", "cloud_wisp")]
-    for i, x in enumerate(range(-M + 20, width + M, 190)):
+    clouds = [OUT / f"cloud_puff_day_{index}.png" for index in range(3)]
+    for i, x in enumerate(range(-M + 20, width + M, 160)):
         image = pack.content(Image.open(clouds[i % len(clouds)]).convert("RGBA"))
-        target = round(rng.uniform(200, 285) * K)
+        target = round(rng.uniform(240, 310) * K)
         image = image.resize((target, max(1, round(image.height * target / image.width))), Image.Resampling.LANCZOS)
-        sky.alpha_composite(image, (round((x + M) * K), round(rng.uniform(55, 105) * K)))
+        sky.alpha_composite(image, (round((x + M) * K), round(rng.uniform(25, 55) * K)))
     # CliffRim owns all southern cliffs and animated water. Only bridges are baked.
     deck = pack.content(pack.image("new:hd/redrawn/islands/rope_bridge.png"))
     for gx, gy in gates:
