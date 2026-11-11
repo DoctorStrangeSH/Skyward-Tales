@@ -12,7 +12,7 @@ func _fail(reason: String) -> void:
 func _trees(game: SkywardGame, word: String) -> int:
 	var count := 0
 	for node in game.world.get_children():
-		if node is Sprite2D and node.has_meta("season_tree") and (node as Sprite2D).texture.resource_path.contains(word):
+		if node is Sprite2D and node.has_meta("season_tree") and (word.is_empty() or (node as Sprite2D).texture.resource_path.contains(word)):
 			count += 1
 	return count
 
