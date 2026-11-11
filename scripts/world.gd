@@ -258,6 +258,21 @@ func _add_apron() -> void:
 	sky.name = "SkyParallax"
 	add_child(sky)
 	sky.setup(size, region_id, RegionCatalog.style(region_id))
+	# Painted cliffs with ivy and waterfalls along the southern rim.
+	var rim_style := RegionCatalog.style(region_id)
+	var whole := not ResourceLoader.exists(HD_DIR + region_id + "_apron_inner.webp")
+	if whole and CliffRim.available() and rim_style in ["day", "haven", "sky", "spires", "night"]:
+		var gaps: Array = []
+		for gate in RegionCatalog.get_region(region_id).get("gates", []):
+			var spot: Array = gate.get("position", [0, 0])
+			if float(spot[1]) > size.y - 80.0:
+				gaps.append(float(spot[0]))
+		var rim := CliffRim.new()
+		rim.name = "CliffRim"
+		add_child(rim)
+		rim.setup(size, region_id, gaps)
+		if rim_style == "night":
+			rim.modulate = Color(0.55, 0.7, 0.95)
 	# Sky islands smaller than the map: the sky and cliffs inside the map edge.
 	var inner_file := HD_DIR + region_id + "_apron_inner.webp"
 	if ResourceLoader.exists(inner_file):
@@ -370,6 +385,8 @@ func _add_sprite(file: String, base: Vector2, sway: float = 0.0) -> void:
 			flat = flat or file.contains(word)
 		if not flat:
 			shadows.add_object(base, size, file.contains("_tree_"))
+			if hd and not RegionCatalog.is_underground(RegionCatalog.style(region_id)):
+				shadows.add_cast(texture, base, sprite.scale.x, -sprite.offset)
 
 ## Lamps and torches cast warm light (seen at night and underground).
 const LIGHT_PROPS := {"village_lamp": 26, "crypt_torch": 18, "decor_harbor_mooring_beacon": 24}

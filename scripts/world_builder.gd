@@ -67,6 +67,7 @@ func _populate_region() -> void:
 	game.forestry.populate()
 	game.adit.populate()
 	game.home.populate()
+	_apply_camera_limits()
 	game.buildings.reveal_chests()
 	game.guild.spawn_target()
 	if game.current_region == Expeditions.REGION:
@@ -182,13 +183,33 @@ func _apply_camera_limits() -> void:
 	var camera := game.player.get_node_or_null("Camera2D") as Camera2D
 	if camera == null or game.world == null or not game.world.has_method("map_size"):
 		return
+	# The art is drawn at twice the world scale: at zoom 0.75 a 1080p screen
+	# shows it almost pixel for pixel (crisp, and far more of the world in
+	# view). Rooms and dungeons stay closer.
+	var zoom := game.camera_zoom()
+	camera.zoom = Vector2(zoom, zoom)
 	var size: Vector2 = game.world.map_size()
 	# On floating islands the camera may look past the rim into the sky.
 	var view := 110 if game.world.has_method("has_apron") and game.world.has_apron() else 0
-	camera.limit_left = -view
-	camera.limit_top = -view
-	camera.limit_right = int(size.x) + view
-	camera.limit_bottom = int(size.y) + view
+	var left := -float(view)
+	var top := -float(view)
+	var right := size.x + view
+	# The painted southern cliffs are 76 px tall: do not look under them.
+	var bottom := size.y + (mini(view, 78) if game.world.get_node_or_null("CliffRim") != null else view)
+	# A land smaller than the screen sits in the middle of it.
+	var seen := Vector2(640, 360) / zoom
+	if right - left < seen.x:
+		var pad := (seen.x - (right - left)) * 0.5
+		left -= pad
+		right += pad
+	if bottom - top < seen.y:
+		var pad := (seen.y - (bottom - top)) * 0.5
+		top -= pad
+		bottom += pad
+	camera.limit_left = int(floor(left))
+	camera.limit_top = int(floor(top))
+	camera.limit_right = int(ceil(right))
+	camera.limit_bottom = int(ceil(bottom))
 
 func _spawn_waystone(layout: Dictionary) -> void:
 	var spot: Variant = layout.get("waystone", null)

@@ -12,6 +12,11 @@ const SUN := Vector2(0.55, 0.22)
 static var _blob: GradientTexture2D
 
 var _spots: Array = []
+## [texture, foot, scale, origin] — silhouettes laid on the ground by the sun.
+var _casts: Array = []
+## How a point `h` above the foot is thrown: right and a little down.
+const CAST := Vector2(0.62, 0.2)
+const CAST_COLOR := Color(0.02, 0.03, 0.12, 0.36)
 
 static func blob() -> Texture2D:
 	if _blob == null:
@@ -43,7 +48,18 @@ func add_object(foot: Vector2, size: Vector2, tree: bool = false) -> void:
 		_spots.append([foot + Vector2(size.x * 0.1 * tall, -size.x * 0.02), Vector2(size.x * (0.92 + 0.12 * tall), maxf(5.0, size.x * 0.3)), 1.0])
 	queue_redraw()
 
+## The object's own outline as a long shadow (trees, houses, posts).
+func add_cast(texture: Texture2D, foot: Vector2, scale: float, origin: Vector2) -> void:
+	_casts.append([texture, foot, scale, origin])
+	queue_redraw()
+
 func _draw() -> void:
+	for cast in _casts:
+		var s: float = cast[2]
+		# Sprite space → ground: x stays, height leans along the sun.
+		draw_set_transform_matrix(Transform2D(Vector2(s, 0), Vector2(-CAST.x * s, -CAST.y * s), cast[1]))
+		draw_texture(cast[0], -(cast[3] as Vector2), CAST_COLOR)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	var tex := blob()
 	for spot in _spots:
 		var at: Vector2 = spot[0]

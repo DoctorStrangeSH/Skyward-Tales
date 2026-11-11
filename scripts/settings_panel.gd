@@ -22,6 +22,7 @@ func _ready() -> void:
 	damage_toggle = _toggle(game_column, "Числа урона над врагами", "damage_numbers")
 	shake_toggle = _toggle(game_column, "Тряска экрана", "screen_shake")
 	_toggle(game_column, "Цветокоррекция и виньетка", "color_grade")
+	_toggle(game_column, "Камера ближе к герою", "close_camera")
 	var resolutions: Array = []
 	for index in GameSettings.RESOLUTIONS.size():
 		resolutions.append(GameSettings.resolution_label(index))
@@ -83,7 +84,9 @@ func _toggle(parent: VBoxContainer, title: String, key: String) -> CheckButton:
 		GameSettings.set_bool(key, on)
 		GameAudio.apply_volumes()
 		for grade in get_tree().get_nodes_in_group("screen_grade"):
-			grade.apply())
+			grade.apply()
+		for node in get_tree().get_nodes_in_group("camera_owner"):
+			node.call("apply_camera"))
 	parent.add_child(toggle)
 	return toggle
 

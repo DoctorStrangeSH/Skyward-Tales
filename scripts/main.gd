@@ -166,6 +166,7 @@ func _ready() -> void:
 	region_layouts = catalogs.regions
 	world = get_node("World") as Node2D
 	# Actors and scenery share one y-sorted space: walk behind trees and ruins.
+	add_to_group("camera_owner")
 	y_sort_enabled = true
 	quests = QuestManager.new()
 	quests.quest_started.connect(_on_quest_started)
@@ -506,6 +507,19 @@ func shake(strength: float, duration: float) -> void:
 
 ## Where a story scene points the camera (stage 20), relative to the hero.
 var cinema_offset := Vector2.ZERO
+
+## How close the camera stands in the current land.
+func camera_zoom() -> float:
+	if GameSettings.get_bool("close_camera"):
+		return 1.5
+	if is_indoors():
+		return 1.25
+	if RegionCatalog.is_underground(RegionCatalog.style(current_region)):
+		return 1.0
+	return 0.75
+
+func apply_camera() -> void:
+	builder._apply_camera_limits()
 
 func hero_camera() -> Camera2D:
 	return player.get_node_or_null("Camera2D") as Camera2D if player != null else null
