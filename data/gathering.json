@@ -87,6 +87,28 @@
       "respawn": 900,
       "art": "gather_iron",
       "verb": "добыть"
+    },
+    "echo_crystal": {
+      "name": "Друза эхо-кристаллов",
+      "item": "echo_crystal",
+      "amount": [
+        1,
+        1
+      ],
+      "respawn": 600,
+      "art": "gather_iron",
+      "verb": "отколоть"
+    },
+    "memory_crystal": {
+      "name": "Друза кристаллов памяти",
+      "item": "memory_crystal",
+      "amount": [
+        1,
+        1
+      ],
+      "respawn": 600,
+      "art": "gather_iron",
+      "verb": "отколоть"
     }
   },
   "stations": {

@@ -190,8 +190,27 @@ func _melee_hit(origin: Vector2, direction: Vector2, reach: float, arc: float, d
 			continue
 		if arc < 360.0 and offset.length() > 4.0 and rad_to_deg(absf(direction.angle_to(offset))) > arc * 0.5:
 			continue
+		if wall_between(origin, enemy.global_position):
+			continue
 		game._strike(enemy, damage, offset.normalized() if offset.length() > 0.1 else direction, push)
 	return game.last_hit_enemies.size()
+
+## True when a wall of a hall or a tunnel stands between two points: a blade
+## does not reach through it. Only bodies marked "wall" count (world.gd).
+func wall_between(from: Vector2, to: Vector2) -> bool:
+	var space := game.get_world_2d().direct_space_state
+	var query := PhysicsRayQueryParameters2D.create(from, to, 4)
+	var excluded: Array[RID] = []
+	for i in 6:
+		query.exclude = excluded
+		var hit := space.intersect_ray(query)
+		if hit.is_empty():
+			return false
+		var body: Object = hit.get("collider")
+		if body != null and body.has_meta("wall"):
+			return true
+		excluded.append(hit["rid"])
+	return false
 
 ## Damages enemies in a strip in front of origin (lunge, blade wave).
 func _line_hit(origin: Vector2, direction: Vector2, length: float, width: float, damage: int, push: float) -> int:
@@ -202,6 +221,8 @@ func _line_hit(origin: Vector2, direction: Vector2, length: float, width: float,
 		if along < -6.0 or along > length:
 			continue
 		if absf(offset.cross(direction)) > width * 0.5 + 8.0:
+			continue
+		if wall_between(origin, enemy.global_position):
 			continue
 		game._strike(enemy, damage, direction, push)
 	return game.last_hit_enemies.size()

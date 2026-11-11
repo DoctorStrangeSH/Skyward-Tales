@@ -1641,6 +1641,14 @@
       {
         "kind": "stone",
         "position": [799, 519]
+      },
+      {
+        "kind": "echo_crystal",
+        "position": [452, 272]
+      },
+      {
+        "kind": "echo_crystal",
+        "position": [932, 712]
       }
     ],
     "map_pos": [0.58, 0.55]
@@ -1926,6 +1934,14 @@
       {
         "kind": "bluebell",
         "position": [607, 608]
+      },
+      {
+        "kind": "memory_crystal",
+        "position": [292, 272]
+      },
+      {
+        "kind": "memory_crystal",
+        "position": [1032, 482]
       }
     ],
     "map_pos": [0.6, 0.18],

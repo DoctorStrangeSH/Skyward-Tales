@@ -43,14 +43,14 @@ static func capture(game: SkywardGame) -> Dictionary:
 	for node in game.get_children():
 		if node.is_queued_for_deletion():
 			continue
-		if node is SlimeEnemy and not node.has_meta("legend") and not node.has_meta("rift_echo") and not node.has_meta("event_foe") and not node.has_meta("bounty") and not node is LootImp:
+		if node is SlimeEnemy and not node.has_meta("legend") and not node.has_meta("rift_echo") and not node.has_meta("event_foe") and not node.has_meta("bounty") and not node.has_meta("special_encounter") and not node.has_meta("trial_foe") and not node.has_meta("fair_target") and not node is LootImp:
 			alive_enemies.append({
 				"position": _position_array(node.global_position), "hp": node.health,
 				"home": _position_array(node.home_position), "kind": SkywardGame.enemy_kind(node), "elite": node.elite_id,
 				"burn_remaining": node.burn_time_left, "burn_tick": node.burn_tick_timer, "burn_damage": node.burn_damage
 			})
 		elif node is WorldCollectible:
-			herbs.append({"position": _position_array(node.global_position), "id": node.item_id, "name": node.display_name})
+			herbs.append({"position": _position_array(node.global_position), "id": node.item_id, "name": node.display_name, "quest": node.quest_id})
 		elif node is WorldLoot:
 			loot_items.append({"position": _position_array(node.global_position), "id": node.item_id, "amount": node.amount})
 	return {
@@ -217,6 +217,7 @@ static func _apply_player(player: PlayerCharacter, character: Dictionary) -> voi
 	var recipes: Variant = character.get("learned_recipes", {})
 	player.learned_recipes = recipes.duplicate() if recipes is Dictionary else {}
 	player.buffs = {}
+	player.reset_transient()
 	player.bonus_skill_points = maxi(0, int(character.get("bonus_skill_points", 0)))
 	player.starlight_essence_used = maxi(0, int(character.get("starlight_essence_used", 0)))
 	# Saves from before character creation default to Арен.
@@ -225,21 +226,26 @@ static func _apply_player(player: PlayerCharacter, character: Dictionary) -> voi
 static func _restore_world_actors(game: SkywardGame, world_data: Dictionary) -> void:
 	# Queued old nodes must leave the scene tree immediately.
 	for node in game.get_children():
+		# Special encounters (the Keeper, the Guardian…) were just placed anew
+		# by their own systems with their rewards wired: they stay.
+		if node is SlimeEnemy and node.has_meta("special_encounter"):
+			continue
 		if node is SlimeEnemy or node is WorldCollectible or node is WorldLoot or node is MagicBolt or node is EnemyMagicOrb:
 			game.remove_child(node)
 			node.queue_free()
 	for herb_data in world_data["herbs"]:
 		if herb_data is Dictionary:
-			game._spawn_herb(read_position(herb_data.get("position"), Vector2.ZERO), str(herb_data.get("id", "moonleaf")), str(herb_data.get("name", "Лунный лист")))
+			game._spawn_herb(read_position(herb_data.get("position"), Vector2.ZERO), str(herb_data.get("id", "moonleaf")), str(herb_data.get("name", "Лунный лист")), str(herb_data.get("quest", "")))
 		else:
 			game._spawn_herb(read_position(herb_data, Vector2.ZERO))
 	for enemy_data in world_data["enemies"]:
 		if not enemy_data is Dictionary:
 			continue
 		var kind: String = str(enemy_data.get("kind", "slime"))
-		if not FALLBACK_ENEMY_POSITIONS.has(kind):
-			kind = "slime"
-		var enemy := game.spawn_enemy(kind, read_position(enemy_data.get("position"), FALLBACK_ENEMY_POSITIONS[kind]), str(enemy_data.get("elite", "")))
+		if not SkywardGame.ENEMY_SCRIPTS.has(kind):
+			push_warning("Сохранение: неизвестный враг «%s» пропущен" % kind)
+			continue
+		var enemy := game.spawn_enemy(kind, read_position(enemy_data.get("position"), FALLBACK_ENEMY_POSITIONS.get(kind, Vector2(475, 350))), str(enemy_data.get("elite", "")))
 		if enemy == null:
 			continue
 		enemy.health = clampi(int(enemy_data.get("hp", enemy.max_health)), 1, enemy.max_health)

@@ -30,6 +30,10 @@ func staged_art() -> String:
 		return "props/tree_%s_%s" % ["oak" if absi(hash(key)) % 2 == 0 else "birch", stage]
 	if kind == "iron" or kind == "copper":
 		return "props/vein_%s" % ("ready" if stage == "ready" else "cut")
+	if kind == "echo_crystal":
+		return "props/tower_crystal" if stage == "ready" else "props/vein_cut"
+	if kind == "memory_crystal":
+		return "props/tower_amethyst" if stage == "ready" else "props/vein_cut"
 	if kind == "amethyst":
 		return "props/tower_amethyst" if stage == "ready" else "props/vein_cut"
 	return ""

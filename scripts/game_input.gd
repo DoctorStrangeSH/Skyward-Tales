@@ -82,6 +82,14 @@ func _input(event: InputEvent) -> void:
 		else:
 			game._try_interact()
 		game.get_viewport().set_input_as_handled()
+	elif event.is_action_released("attack") and (game._attack_holding or game._charging or game._bow_holding):
+		# A hold begun in the world ends wherever the cursor is now.
+		if game._bow_holding and game.get_viewport().gui_get_hovered_control() == null and not game.hud.overlay_visible() and not game.hud.inventory_open:
+			game._bow_release()
+		elif game._charging and game.get_viewport().gui_get_hovered_control() == null and not game.get_tree().paused and not game.hud.dialogue_visible and not game.hud.inventory_open and not game.hud.overlay_visible():
+			game._attack_released()
+		else:
+			game.combat.cancel_charge()
 	elif event.is_action_pressed("attack") or event.is_action_released("attack"):
 		if game.get_viewport().gui_get_hovered_control() != null:
 			return

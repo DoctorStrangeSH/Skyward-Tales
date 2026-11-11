@@ -508,6 +508,11 @@ func shake(strength: float, duration: float) -> void:
 ## Where a story scene points the camera (stage 20), relative to the hero.
 var cinema_offset := Vector2.ZERO
 
+## The window lost focus: a held attack must not stay held.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and combat != null and player != null:
+		combat.cancel_charge()
+
 ## How close the camera stands in the current land.
 func camera_zoom() -> float:
 	if GameSettings.get_bool("close_camera"):
@@ -1047,7 +1052,19 @@ func minimap_markers() -> Array:
 func _discover_nearby_enemies() -> void:
 	maps._discover_nearby_enemies()
 
+## The kind of an enemy: the one it was spawned as (spawn_enemy stamps it),
+## else the entry of ENEMY_SCRIPTS with its script — one registry for
+## spawning, saving and loading.
 static func enemy_kind(enemy: SlimeEnemy) -> String:
+	if enemy.has_meta("kind"):
+		return str(enemy.get_meta("kind"))
+	var script: Variant = enemy.get_script()
+	for kind in ENEMY_SCRIPTS:
+		if ENEMY_SCRIPTS[kind] == script:
+			return str(kind)
+	return _kind_by_class(enemy)
+
+static func _kind_by_class(enemy: SlimeEnemy) -> String:
 	if enemy is LootImp:
 		return "loot_imp"
 	if enemy is PatternShade:
@@ -1134,6 +1151,7 @@ func spawn_enemy(kind: String, spawn_position: Vector2, elite: String = "") -> S
 			if actor is SlimeEnemy and enemy_kind(actor) == kind and not actor.is_queued_for_deletion():
 				return null
 	var enemy := (ENEMY_SCRIPTS[kind] as GDScript).new() as SlimeEnemy
+	enemy.set_meta("kind", kind)
 	enemy.position = spawn_position
 	enemy.magic_attacks = kind in MAGIC_FOES
 	if elite == "?":

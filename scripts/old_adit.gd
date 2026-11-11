@@ -209,6 +209,7 @@ func _spawn_guardian() -> void:
 	if foe == null:
 		return
 	foe.set_meta("adit_guardian", true)
+	foe.set_meta("special_encounter", true)
 	foe.max_health = roundi(foe.max_health * 5.0)
 	foe.health = foe.max_health
 	foe.attack_damage = roundi(foe.attack_damage * 1.2)

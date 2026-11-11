@@ -478,8 +478,13 @@ func _create_world_collisions() -> void:
 		_add_wall(Vector2(size.x * 0.5, size.y - margin * 0.5), Vector2(size.x, margin))
 		_add_wall(Vector2(margin * 0.5, size.y * 0.5), Vector2(margin, size.y))
 		_add_wall(Vector2(size.x - margin * 0.5, size.y * 0.5), Vector2(margin, size.y))
+	var walled := RegionCatalog.is_underground(RegionCatalog.style(region_id))
 	for blocker in terrain.get("blockers", []):
-		_add_wall(_vec(blocker.get("center")), _vec(blocker.get("size"), Vector2(16, 16)))
+		var wall := _add_wall(_vec(blocker.get("center")), _vec(blocker.get("size"), Vector2(16, 16)))
+		# Walls of halls and tunnels stop blades (scripts/hero_combat.gd);
+		# posts, fences and ponds outdoors do not.
+		if walled:
+			wall.set_meta("wall", true)
 	_add_water_walls()
 
 ## Owner's list №39: nobody walks on lakes, bogs or lava. Each pool is cut
@@ -577,7 +582,7 @@ func _bake_navigation() -> void:
 	navigation.navigation_polygon = polygon
 	add_child(navigation)
 
-func _add_wall(center: Vector2, size: Vector2) -> void:
+func _add_wall(center: Vector2, size: Vector2) -> StaticBody2D:
 	_wall_rects.append(Rect2(center - size * 0.5, size))
 	var body := StaticBody2D.new()
 	body.collision_layer = COLLISION_WORLD
@@ -589,6 +594,7 @@ func _add_wall(center: Vector2, size: Vector2) -> void:
 	collider.shape = shape
 	body.add_child(collider)
 	add_child(body)
+	return body
 
 static func _vec(value: Variant, fallback: Vector2 = Vector2.ZERO) -> Vector2:
 	if value is Array and value.size() == 2:

@@ -914,6 +914,18 @@ func displaced_by(item_id: String, slot: String) -> Array[String]:
 		result.append("blade")
 	return result
 
+## Clears everything that lasts only a moment (a ride, a charge, a block, a
+## roll, a control lock): called when a save is loaded.
+func reset_transient() -> void:
+	set_physics_process(true)
+	velocity = Vector2.ZERO
+	charge_rooted = false
+	dodge_time_left = 0.0
+	if blocking:
+		end_guard()
+	if visual != null:
+		visual.stop_action()
+
 func equip_item(item_id: String, wanted_slot: String = "") -> bool:
 	var slot: String = target_slot(item_id, wanted_slot)
 	if slot.is_empty() or not equipment.has(slot) or int(inventory.get(item_id, 0)) <= 0:
@@ -931,10 +943,11 @@ func equip_item(item_id: String, wanted_slot: String = "") -> bool:
 		inventory[previous] = int(inventory.get(previous, 0)) + 1
 	equipment[slot] = item_id
 	max_mana = maxi(1, max_mana + mana_delta)
-	mana = clampi(mana + maxi(0, mana_delta), 0, max_mana)
+	# The pool grows, what is in it does not: re-dressing heals nothing.
+	mana = clampi(mana, 0, max_mana)
 	var health_delta: int = _equipment_stat(item_id, "max_health") - _equipment_stat(previous, "max_health")
 	max_health = maxi(1, max_health + health_delta)
-	health = clampi(health + maxi(0, health_delta), 1, max_health)
+	health = clampi(health, 1, max_health)
 	if not has_shield():
 		end_guard()
 	stats_changed.emit()
