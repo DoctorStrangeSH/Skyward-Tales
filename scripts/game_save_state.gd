@@ -68,6 +68,7 @@ static func capture(game: SkywardGame) -> Dictionary:
 			"generated_items": player.generated_items.duplicate(true), "generated_counter": player._generated_counter,
 			"hero_name": player.hero_name, "hero_gender": player.hero_gender,
 			"learned_recipes": player.learned_recipes.duplicate(),
+			"item_marks": player.item_marks.duplicate(),
 			"bag_order": player.bag_order.duplicate()
 		},
 		"quest": {"states": game.quests.states.duplicate(true), "active": game.quests.active_quest_id},
@@ -83,7 +84,7 @@ static func capture(game: SkywardGame) -> Dictionary:
 			"visited": game.visited_regions.duplicate(),
 			"doors": game.opened_doors.duplicate(),
 			"day": game.day_night.make_snapshot(), "treasure": game.treasure.make_snapshot(), "contracts": game.contracts.make_snapshot(),
-			"legends": game.legends.make_snapshot(), "achievements": game.achievements.make_snapshot(), "lore": game.lore.make_snapshot(), "epilogue": game.epilogue.make_snapshot(), "world_state": game.world_state.make_snapshot(), "mine": game.mine.make_snapshot(), "combos": game.combos.make_snapshot(), "farm": game.farm.make_snapshot(), "lira": game.lira.make_snapshot(), "fair": game.fair.make_snapshot(), "trials": game.trials.make_snapshot(), "cistern": game.cistern.make_snapshot(), "hens": game.hens.make_snapshot(), "scout": game.scout.make_snapshot(), "forestry": game.forestry.make_snapshot(), "adit": game.adit.make_snapshot(), "bran": game.bran.make_snapshot(), "buildings": game.buildings.make_snapshot(), "guild": game.guild.make_snapshot(), "expeditions": game.expeditions.make_snapshot(), "ship": game.ship.make_snapshot(), "factions": game.factions.make_snapshot(), "fates": game.fates.make_snapshot(), "party": game.party.make_snapshot(), "crew": game.crew.make_snapshot(), "deep_rifts": game.deep_rifts.make_snapshot(), "ng_plus": game.ng_plus
+			"legends": game.legends.make_snapshot(), "achievements": game.achievements.make_snapshot(), "lore": game.lore.make_snapshot(), "epilogue": game.epilogue.make_snapshot(), "world_state": game.world_state.make_snapshot(), "mine": game.mine.make_snapshot(), "combos": game.combos.make_snapshot(), "farm": game.farm.make_snapshot(), "lira": game.lira.make_snapshot(), "fair": game.fair.make_snapshot(), "trials": game.trials.make_snapshot(), "cistern": game.cistern.make_snapshot(), "hens": game.hens.make_snapshot(), "scout": game.scout.make_snapshot(), "forestry": game.forestry.make_snapshot(), "adit": game.adit.make_snapshot(), "pin": game.pin.make_snapshot(), "bran": game.bran.make_snapshot(), "buildings": game.buildings.make_snapshot(), "guild": game.guild.make_snapshot(), "expeditions": game.expeditions.make_snapshot(), "ship": game.ship.make_snapshot(), "factions": game.factions.make_snapshot(), "fates": game.fates.make_snapshot(), "party": game.party.make_snapshot(), "crew": game.crew.make_snapshot(), "deep_rifts": game.deep_rifts.make_snapshot(), "ng_plus": game.ng_plus
 		},
 		"magic": game.selected_spell_id
 	}
@@ -129,6 +130,7 @@ static func apply(game: SkywardGame, data: Dictionary) -> bool:
 	game.scout.restore_snapshot(world_data.get("scout", {}))
 	game.forestry.restore_snapshot(world_data.get("forestry", {}))
 	game.adit.restore_snapshot(world_data.get("adit", {}))
+	game.pin.restore_snapshot(world_data.get("pin", {}))
 	game.bran.restore_snapshot(world_data.get("bran", {}))
 	game.buildings.restore_snapshot(world_data.get("buildings", {}))
 	game.guild.restore_snapshot(world_data.get("guild", {}))
@@ -216,6 +218,8 @@ static func _apply_player(player: PlayerCharacter, character: Dictionary) -> voi
 		player.skill_slots = (slots as Array).duplicate()
 	var recipes: Variant = character.get("learned_recipes", {})
 	player.learned_recipes = recipes.duplicate() if recipes is Dictionary else {}
+	var marks: Variant = character.get("item_marks", {})
+	player.item_marks = marks.duplicate() if marks is Dictionary else {}
 	player.buffs = {}
 	player.reset_transient()
 	player.bonus_skill_points = maxi(0, int(character.get("bonus_skill_points", 0)))

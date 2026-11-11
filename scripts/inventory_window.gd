@@ -19,6 +19,7 @@ signal assign_requested(slot_index: int, skill_id: String)
 signal equip_to_requested(item_id: String, slot: String)
 ## The bag was rearranged by hand.
 signal reordered
+signal mark_changed(item_id: String, mark: String)
 
 ## Left of the hero: hands and rings; right: armour, cloak and jewellery.
 const SLOT_POSITIONS := {"blade": Vector2(4, 4), "offhand": Vector2(4, 36), "ring1": Vector2(4, 82), "ring2": Vector2(4, 114),
@@ -357,6 +358,9 @@ func populate(player: PlayerCharacter, filter_index: int, sort_index: int, prefe
 		# The item card (tooltip) now shows the comparison itself.
 		button.unequip_requested.connect(func(slot: String) -> void: unequip_requested.emit(slot))
 		button.reorder_requested.connect(_reorder)
+		button.mark_requested.connect(func(marked_id: String) -> void:
+			var mark := player.cycle_item_mark(marked_id)
+			mark_changed.emit(marked_id, mark))
 		var line := button.summary
 		var hints := button.tooltip_text.split("\n")
 		var hint: String = hints[mini(hints.size() - 1, 1)] if hints.size() > 1 else hints[0]

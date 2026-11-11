@@ -110,6 +110,7 @@ var scout: ScoutTrail
 var forestry: ForestGuild
 var adit: OldAdit
 var home: HeroHome
+var pin: GoalPin
 var buildings: VillageBuildings
 var guild: AdventurersGuild
 var expeditions: Expeditions
@@ -285,6 +286,7 @@ func _ready() -> void:
 	adit.name = "OldAdit"
 	adit.game = self
 	add_child(adit)
+	pin = GoalPin.new(self)
 	home = HeroHome.new()
 	home.name = "HeroHome"
 	home.game = self
@@ -559,7 +561,7 @@ func _process(delta: float) -> void:
 	_tick_autosave(delta)
 	_update_spell_hud()
 	hud.update_hotbar(skills.hotbar_entries())
-	hud.quest_tracker.extra = director.tracker_entries() + contracts.tracker_entries()
+	hud.quest_tracker.extra = pin.tracker_entries() + director.tracker_entries() + contracts.tracker_entries()
 	director.update()
 	# The finale choice comes back until the hero makes it.
 	if quests.is_completed("main_heart") and not director.has_flag("ending_restore") and not director.has_flag("ending_lower"):

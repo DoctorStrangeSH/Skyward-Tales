@@ -31,6 +31,7 @@ var detail_text: Label
 var needs_box: VBoxContainer
 var make_button: Button
 var make_all_button: Button
+var pin_button: Button
 var status_label: Label
 
 func _ready() -> void:
@@ -146,6 +147,14 @@ func _ready() -> void:
 	buttons.add_theme_constant_override("separation", 6)
 	buttons.alignment = BoxContainer.ALIGNMENT_END
 	right.add_child(buttons)
+	pin_button = Button.new()
+	pin_button.focus_mode = Control.FOCUS_NONE
+	pin_button.custom_minimum_size = Vector2(76, 20)
+	pin_button.add_theme_font_size_override("font_size", UiFont.px(9))
+	pin_button.tooltip_text = "Держать список нужного на экране"
+	UiStyle.style_button(pin_button)
+	pin_button.pressed.connect(toggle_pin)
+	buttons.add_child(pin_button)
 	make_all_button = Button.new()
 	make_all_button.focus_mode = Control.FOCUS_NONE
 	make_all_button.custom_minimum_size = Vector2(100, 20)
@@ -283,6 +292,7 @@ func _show_detail() -> void:
 		detail_icon.texture = null
 		make_button.disabled = true
 		make_all_button.visible = false
+		pin_button.visible = false
 		return
 	var recipe: Dictionary = game.crafting_service.recipes[selected]
 	var output := _output_id(selected)
@@ -301,9 +311,19 @@ func _show_detail() -> void:
 		var need := int(ingredient.get("amount", 1))
 		var have := int(game.player.inventory.get(item_id, 0))
 		needs_box.add_child(_need_row(_icon_path(item_id), game.player.get_item_name(item_id), have, need))
+		if have < need:
+			# Where to get what is missing.
+			var source := ItemSources.describe(game, item_id)
+			if not source.is_empty():
+				var hint := UiStyle.label("   ↳ " + source, 8, Color(0.72, 0.8, 0.95))
+				hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+				hint.custom_minimum_size = Vector2(150, 0)
+				needs_box.add_child(hint)
 	var gold := int(recipe.get("gold_cost", 0))
 	if gold > 0:
 		needs_box.add_child(_need_row("props/loot_coins.png", "Золото", game.player.gold, gold))
+	pin_button.visible = true
+	pin_button.text = "Открепить" if game.pin.is_pinned("recipe", selected) else "Закрепить"
 	var times := craftable_times(selected)
 	make_button.disabled = times <= 0
 	make_all_button.visible = times > 1
@@ -319,6 +339,16 @@ func _need_row(icon_path: String, item_name: String, have: int, need: int) -> Co
 	row.add_child(name_label)
 	row.add_child(UiStyle.label("%d / %d" % [have, need], 9, Color(0.6, 1.0, 0.6) if have >= need else Color(1.0, 0.5, 0.45)))
 	return row
+
+## Pins / unpins the selected recipe to the quest tracker.
+func toggle_pin() -> void:
+	if selected.is_empty():
+		return
+	if game.pin.is_pinned("recipe", selected):
+		game.pin.clear()
+	else:
+		game.pin.pin("recipe", selected)
+	_show_detail()
 
 func set_status(text: String) -> void:
 	status_label.text = text

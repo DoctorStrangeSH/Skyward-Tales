@@ -13,6 +13,7 @@ signal unhovered
 signal unequip_requested(slot: String)
 ## Owner's list №22: an item dropped on another moves before it.
 signal reorder_requested(item_id: String, before_id: String)
+signal mark_requested(item_id: String)
 
 const CELL := Vector2(34, 34)
 const RARITY_COLORS := {
@@ -58,6 +59,8 @@ func configure(player: PlayerCharacter, id: String, fallback_names: Dictionary, 
 	text = str(count) if count > 1 else ""
 	tooltip_text = (description + "\n" if not description.is_empty() else "") + action_hint
 	_hint = "ЛКМ — надеть · перетащите на слот героя" if can_equip else ("ЛКМ — использовать · перетащите — переложить" if can_consume else "Перетащите, чтобы переложить")
+	if not quest_item:
+		_hint += " · колёсико — метка ★ / ✕"
 	rarity_color = RARITY_COLORS.get(rarity, Color(0.6, 0.5, 0.4)) if not rarity.is_empty() else Color(0.55, 0.45, 0.35)
 	if quest_item:
 		rarity_color = QUEST_COLOR
@@ -108,10 +111,20 @@ func _draw() -> void:
 		draw_colored_polygon(star, QUEST_COLOR)
 	if equipped:
 		draw_rect(Rect2(Vector2(2, 2), Vector2(6, 6)), Color(0.5, 1.0, 0.5))
+	# The player's marks: a gold star — kept, a grey cross — junk.
+	var mark := _player.item_mark(item_id) if _player != null else ""
+	if mark == "fav":
+		draw_string(UiFont.font(), Vector2(2, size.y - 3), "★", HORIZONTAL_ALIGNMENT_LEFT, -1, UiFont.px(9), Color(1.0, 0.85, 0.3))
+	elif mark == "junk":
+		draw_line(Vector2(3, size.y - 9), Vector2(9, size.y - 3), Color(0.75, 0.75, 0.8), 1.5)
+		draw_line(Vector2(9, size.y - 9), Vector2(3, size.y - 3), Color(0.75, 0.75, 0.8), 1.5)
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
 		_on_item_pressed()
+		accept_event()
+	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_MIDDLE:
+		mark_requested.emit(item_id)
 		accept_event()
 
 func _on_item_pressed() -> void:

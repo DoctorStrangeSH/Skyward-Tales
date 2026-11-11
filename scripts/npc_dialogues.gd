@@ -572,10 +572,13 @@ func open_bran_shop() -> void:
 func _show_sell_menu() -> void:
 	var bran_trust: int = game.relationships.get_score("bran")
 	var choices: Array[Dictionary] = []
+	var junk: Dictionary = game.merchant_shop.junk_total(game.player, bran_trust)
+	if int(junk["count"]) > 0:
+		choices.append({"id": "merchant_sell:junk", "label": "Продать весь хлам (%d шт.) — %d золота" % [int(junk["count"]), int(junk["gold"])]})
 	for offer in game.merchant_shop.get_sell_offers(game.player, bran_trust):
 		choices.append({"id": "merchant_sell:" + str(offer["id"]), "label": "Продать %s (×%d) — %d золота" % [offer["name"], offer["count"], offer["price"]]})
 	choices.append({"id": "merchant_sell:back", "label": "Назад к товарам"})
-	var message := "Что продашь? Надетые вещи я не возьму." if choices.size() > 1 else "Продавать больше нечего."
+	var message := "Что продашь? Надетые и избранные (★) вещи я не возьму." if choices.size() > 1 else "Продавать больше нечего."
 	if bran_trust >= int(game.merchant_shop.sell_trust_bonus.get("trust", 999)):
 		message += "\nДругу поселения плачу на 10% больше."
 	_ask("Торговец Бран", message, choices)
@@ -586,6 +589,13 @@ func _sell_to_merchant(item_id: String) -> void:
 		return
 	if item_id == "back":
 		open_bran_shop()
+		return
+	if item_id == "junk":
+		var sold: Dictionary = game.merchant_shop.sell_junk(game.player, game.relationships.get_score("bran"))
+		game.hud.show_message("Хлам продан: %d шт. за %d золота." % [int(sold["count"]), int(sold["gold"])], 3.0)
+		GameAudio.play("chest", -6.0, 0.1)
+		_show_sell_menu()
+		game._refresh_hud()
 		return
 	var result: Dictionary = game.merchant_shop.sell(game.player, item_id, game.relationships.get_score("bran"))
 	if bool(result.get("success", false)):

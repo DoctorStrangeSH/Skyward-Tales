@@ -241,6 +241,9 @@ func _ready() -> void:
 		inventory_sort_index = 0
 		inventory_sort.select(0)
 		refresh_inventory(inventory_player))
+	inventory_view.mark_changed.connect(func(id: String, mark: String) -> void:
+		refresh_inventory(inventory_player)
+		show_message({"fav": "★ Избранное: «%s» не продаётся.", "junk": "✕ Хлам: «%s» уйдёт торговцу одной кнопкой.", "": "Метка с «%s» снята."}[mark] % inventory_player.get_item_name(id), 2.5))
 	inventory_view.compare_requested.connect(func(id: String) -> void: _show_equipment_comparison(inventory_player, id))
 	inventory_view.unequip_requested.connect(func(slot: String) -> void: inventory_unequip_requested.emit(slot))
 	inventory_view.craft_requested.connect(func() -> void: handcraft_requested.emit())

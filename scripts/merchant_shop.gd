@@ -59,7 +59,7 @@ func get_sell_price(item_id: String, bran_trust: int = 0, player: PlayerCharacte
 ## Copies the player can sell: what lies in the bag (a worn item is not in
 ## the bag, so a spare copy of it is free to sell).
 func sellable_count(player: PlayerCharacter, item_id: String) -> int:
-	if player.is_quest_item(item_id) or bool(player.get_item_definition(item_id).get("tool", false)):
+	if player.is_quest_item(item_id) or bool(player.get_item_definition(item_id).get("tool", false)) or player.item_mark(item_id) == "fav":
 		return 0
 	return maxi(0, int(player.inventory.get(item_id, 0)))
 
@@ -75,6 +75,33 @@ func get_sell_offers(player: PlayerCharacter, bran_trust: int = 0) -> Array[Dict
 			continue
 		result.append({"id": str(item_id), "name": player.get_item_name(str(item_id)), "price": get_sell_price(str(item_id), bran_trust, player), "count": count})
 	return result
+
+## Everything the player marked as junk: {"count": items, "gold": coins}.
+func junk_total(player: PlayerCharacter, bran_trust: int = 0) -> Dictionary:
+	var count := 0
+	var gold := 0
+	for item_id in player.item_marks:
+		if str(player.item_marks[item_id]) != "junk":
+			continue
+		var amount := sellable_count(player, str(item_id))
+		var price := get_sell_price(str(item_id), bran_trust, player)
+		if amount > 0 and price > 0:
+			count += amount
+			gold += amount * price
+	return {"count": count, "gold": gold}
+
+## Sells every junk-marked item at once.
+func sell_junk(player: PlayerCharacter, bran_trust: int = 0) -> Dictionary:
+	var total := junk_total(player, bran_trust)
+	for item_id in player.item_marks.keys():
+		if str(player.item_marks[item_id]) != "junk":
+			continue
+		var amount := sellable_count(player, str(item_id))
+		var price := get_sell_price(str(item_id), bran_trust, player)
+		if amount > 0 and price > 0 and player.remove_item(str(item_id), amount):
+			player.gold += amount * price
+	player.stats_changed.emit()
+	return total
 
 func sell(player: PlayerCharacter, item_id: String, bran_trust: int = 0) -> Dictionary:
 	var price := get_sell_price(item_id, bran_trust, player)

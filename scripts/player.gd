@@ -702,6 +702,24 @@ func assign_skill(slot_index: int, skill_id: String) -> bool:
 signal recipe_learned(recipe_item: String)
 ## Recipes taught by scrolls ("recipe_*" items).
 var learned_recipes: Dictionary = {}
+## The player's own marks on items: item_id → "fav" (kept: never sold) or
+## "junk" (sold in one go at the merchant).
+var item_marks: Dictionary = {}
+
+func item_mark(item_id: String) -> String:
+	return str(item_marks.get(item_id, ""))
+
+## none → favourite → junk → none. Quest items take no marks.
+func cycle_item_mark(item_id: String) -> String:
+	if is_quest_item(item_id):
+		return ""
+	var next: String = {"": "fav", "fav": "junk", "junk": ""}[item_mark(item_id)]
+	if next.is_empty():
+		item_marks.erase(item_id)
+	else:
+		item_marks[item_id] = next
+	stats_changed.emit()
+	return next
 ## type ("power", "armor", "speed", "regen") -> {value, time, label}
 var buffs: Dictionary = {}
 var _regen_accumulator: float = 0.0

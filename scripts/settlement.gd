@@ -244,7 +244,8 @@ func upgrade(id: String) -> bool:
 	var mats := upgrade_materials(id)
 	for item_id in mats:
 		if int(game.player.inventory.get(item_id, 0)) < int(mats[item_id]):
-			game.hud.show_message("Не хватает: %s (нужно %d)." % [game.player.get_item_name(item_id), int(mats[item_id])], 3.0)
+			game.pin.pin("building", id)
+			game.hud.show_message("Не хватает: %s (нужно %d). Список закреплён на экране." % [game.player.get_item_name(item_id), int(mats[item_id])], 3.5)
 			return false
 	for item_id in mats:
 		game.player.remove_item(item_id, int(mats[item_id]))
@@ -318,7 +319,8 @@ func build(id: String) -> bool:
 	var mats := house_materials(id)
 	for item_id in mats:
 		if int(game.player.inventory.get(item_id, 0)) < int(mats[item_id]):
-			game.hud.show_message("Не хватает: %s (нужно %d). Рубите брёвна и дробите камень в округе." % [game.player.get_item_name(item_id), int(mats[item_id])], 3.0)
+			game.pin.pin("house", id)
+			game.hud.show_message("Не хватает: %s (нужно %d). Список закреплён на экране." % [game.player.get_item_name(item_id), int(mats[item_id])], 3.5)
 			return false
 	for item_id in mats:
 		game.player.remove_item(item_id, int(mats[item_id]))
