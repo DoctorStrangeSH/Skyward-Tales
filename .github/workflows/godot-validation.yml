@@ -54,10 +54,16 @@ jobs:
             if grep -qE "SCRIPT ERROR|leaked at exit|still in use at exit" /tmp/smoke.log; then failed+=("smoke run: errors or leaks"); fi
             # Windowed tests (real mouse clicks on the GUI) under a virtual display.
             export HOME="$(mktemp -d)"
-            if command -v xvfb-run > /dev/null || (apt-get update -qq > /dev/null 2>&1 && apt-get install -y -qq xvfb libgl1-mesa-dri > /dev/null 2>&1); then
+            if (apt-get update -qq > /dev/null 2>&1 && apt-get install -y -qq xvfb libgl1 libgl1-mesa-dri libx11-6 libxcursor1 libxinerama1 libxrandr2 libxi6 libxkbcommon0 libxext6 libxrender1 > /dev/null 2>&1); then
               timeout 180 xvfb-run -a godot --path . --rendering-driver opengl3 --script res://tests/dialogue_click.gd > /tmp/click.log 2>&1
               cat /tmp/click.log | tail -5
-              if grep -q "DIALOGUE CLICK OK" /tmp/click.log; then echo "ok    windowed dialogue_click"; else failed+=("windowed dialogue_click"); fi
+              if grep -q "DIALOGUE CLICK OK" /tmp/click.log; then
+                echo "ok    windowed dialogue_click"
+              elif grep -q "Unable to create DisplayServer" /tmp/click.log; then
+                echo "::warning::no display could be created: windowed GUI tests were NOT run"
+              else
+                failed+=("windowed dialogue_click")
+              fi
             else
               echo "::warning::xvfb is not available: windowed GUI tests were NOT run"
             fi
