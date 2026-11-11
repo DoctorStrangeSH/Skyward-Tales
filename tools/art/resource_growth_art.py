@@ -27,6 +27,9 @@ def atlas(before, after, origin, mode):
     threshold = np.clip(threshold,.01,.99)
     sheet = Image.new('RGBA',(width*FRAMES,height))
     for frame in range(FRAMES):
+        if frame == 0 or frame == FRAMES-1:
+            sheet.paste(before if frame == 0 else after,(frame*width,0))
+            continue
         t = frame/(FRAMES-1)
         weight = np.clip((t-threshold)/.12+.5,0,1)[...,None]
         if frame == 0: weight *= 0
@@ -37,6 +40,8 @@ def atlas(before, after, origin, mode):
         rgb = (a[...,:3]*a[...,3:4]*(1-weight)+b[...,:3]*b[...,3:4]*weight)/np.maximum(alpha,1/255)
         rgba = np.concatenate([rgb,alpha],axis=2)
         sheet.paste(Image.fromarray(np.round(np.clip(rgba,0,1)*255).astype('uint8')),(frame*width,0))
+    assert np.array_equal(np.array(sheet.crop((0,0,width,height))), old)
+    assert np.array_equal(np.array(sheet.crop(((FRAMES-1)*width,0,FRAMES*width,height))), new)
     return sheet
 
 def build(root,manifest):
@@ -63,4 +68,26 @@ def build(root,manifest):
     atlas(aligned,after,origin,'rock').save(out/'vein_growth.png',optimize=True)
     manifest['world_hd/props/vein_growth.png'] = {'size':[after.width*FRAMES,after.height],'origin':origin,'scale':.5,'frames':FRAMES}
     generated.append('assets/world_hd/props/vein_growth.png')
+    # A playback of the exact exported frames, not a separate concept drawing.
+    previews = []
+    sheets = [Image.open(out/name).convert('RGBA') for name in
+              ('tree_oak_sprout.png','tree_oak_growth.png','tree_birch_sprout.png','tree_birch_growth.png','vein_growth.png')]
+    for tick in range(32):
+        canvas = Image.new('RGBA',(840,350),(27,34,37,255))
+        phase = min(tick,23)
+        for species,x,offset in [('oak',170,0),('birch',490,2)]:
+            sheet = sheets[offset+(phase//12)]
+            width = sheet.width//FRAMES
+            frame = sheet.crop(((phase%12)*width,0,(phase%12+1)*width,sheet.height))
+            origin = manifest[f'world_hd/props/tree_{species}_ready.png']['origin']
+            canvas.alpha_composite(frame,(x-origin[0],330-origin[1]))
+        sheet = sheets[4]; width = sheet.width//FRAMES
+        index = min(11,max(0,phase-12))
+        frame = sheet.crop((index*width,0,(index+1)*width,sheet.height))
+        origin = manifest['world_hd/props/vein_ready.png']['origin']
+        canvas.alpha_composite(frame,(740-origin[0],330-origin[1]))
+        previews.append(canvas.convert('RGB'))
+    folder = root/'docs/screenshots'
+    folder.mkdir(parents=True,exist_ok=True)
+    previews[0].save(folder/'resource_growth.gif',save_all=True,append_images=previews[1:],duration=100,loop=0,optimize=True,disposal=2)
     return generated

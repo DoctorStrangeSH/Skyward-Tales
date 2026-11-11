@@ -51,7 +51,7 @@ def main() -> int:
     regions_path = ROOT / "data/regions.json"
     regions = json.loads(regions_path.read_text(encoding="utf-8"))
     region = regions["greenreach"]
-    print("Authored grove trees:", compose(region))
+    print("Authored grove trees:", compose(region, force="--replant" in sys.argv))
     regions_path.write_text(json.dumps(regions, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     terrain = region["terrain"]
     manifest = json.loads((ROOT / "assets/art_manifest.json").read_text(encoding="utf-8"))

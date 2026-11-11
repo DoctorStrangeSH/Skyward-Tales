@@ -19,8 +19,10 @@ def segment_distance(p, a, b):
     t = max(0, min(1, ((p[0]-a[0])*vx + (p[1]-a[1])*vy) / max(1, vx*vx+vy*vy)))
     return math.hypot(p[0]-a[0]-t*vx, p[1]-a[1]-t*vy)
 
-def compose(region):
+def compose(region, force=False):
     terrain = region['terrain']
+    if terrain.get("forest_composition") == "authored_groves_v1" and not force:
+        return len(terrain["trees"])
     width, height = terrain['size']
     rng = random.Random(110126)
     landmarks = []
