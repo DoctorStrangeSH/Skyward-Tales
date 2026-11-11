@@ -5,6 +5,40 @@ const ORB_SCRIPT := preload("res://scripts/enemy_magic_orb.gd")
 @export var preferred_distance: float = 145.0
 @export var retreat_distance: float = 90.0
 @export var shooting_distance: float = 240.0
+## Support: every WARD_EVERY seconds the shaman wards the nearest fighting
+## ally within WARD_RANGE (two blows glance off it). Kill the shaman first.
+const WARD_EVERY := 7.0
+const WARD_RANGE := 150.0
+var ward_cooldown: float = 2.5
+
+## The nearest ally without a ward (not a shaman).
+func ward_target() -> SlimeEnemy:
+	var best: SlimeEnemy = null
+	for node in get_tree().get_nodes_in_group("enemies"):
+		if node == self or not (node is SlimeEnemy) or node is ForestShaman or node.is_queued_for_deletion():
+			continue
+		var ally := node as SlimeEnemy
+		if ally.health <= 0 or ally.ward_hits > 0 or not ally.visible:
+			continue
+		var distance := ally.global_position.distance_to(global_position)
+		if distance <= WARD_RANGE and (best == null or distance < best.global_position.distance_to(global_position)):
+			best = ally
+	return best
+
+func cast_ward() -> bool:
+	var ally := ward_target()
+	if ally == null:
+		return false
+	ally.receive_ward(2)
+	ward_cooldown = WARD_EVERY
+	Vfx.flash(visual, Color(0.6, 1.0, 0.8), 0.3)
+	_pose("lunge")
+	combat_feedback.show_reaction("ОБЕРЕГАЕТ")
+	GameAudio.play("pickup", -6.0, -0.2)
+	var arena := get_parent()
+	if arena != null and arena.has_method("_streak"):
+		arena._streak(global_position + Vector2(0, -10), ally.global_position + Vector2(0, -8), Color(0.5, 1.0, 0.6, 0.8), 2.0)
+	return true
 
 func _ready() -> void:
 	max_health = 38
@@ -39,7 +73,10 @@ func _physics_process(delta: float) -> void:
 	var distance: float = to_player.length()
 	_choose_state(distance)
 	var desired: Vector2 = Vector2.ZERO
+	ward_cooldown = maxf(0.0, ward_cooldown - delta)
 	if brain_state == BrainState.CHASE:
+		if ward_cooldown <= 0.0 and not cast_ward():
+			ward_cooldown = 1.0
 		if distance < retreat_distance:
 			desired = -to_player.normalized()
 		elif distance > preferred_distance:

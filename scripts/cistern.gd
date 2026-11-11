@@ -172,6 +172,8 @@ func press(index: int) -> void:
 		var crab := game.spawn_enemy("crab", at)
 		if crab != null:
 			crab.set_meta("cistern_crab", true)
+			if crab.has_method("emerge"):
+				crab.emerge()
 			Vfx.sparkle(game, at)
 	_pool_chest(index)
 	var where: String = ["к западному залу", "к восточному залу", "к залу Хозяина"][index]

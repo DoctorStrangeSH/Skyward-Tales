@@ -53,6 +53,23 @@ var invulnerable: bool = false
 var magic_attacks: bool = false
 ## A companion who shot this foe may draw it away from the hero for a while
 ## (owner's list №18).
+## True while a blade (not a spell) is striking: set by HeroCombat._strike.
+var melee_hit: bool = false
+## A shaman's ward: the next blows glance off (see ForestShaman).
+var ward_hits: int = 0
+
+func receive_ward(hits: int = 2) -> void:
+	ward_hits = maxi(ward_hits, hits)
+	if combat_feedback != null:
+		combat_feedback.show_reaction("ОБЕРЕГ")
+	queue_redraw()
+
+func _draw() -> void:
+	if ward_hits > 0:
+		# A green ring of the shaman's ward.
+		draw_arc(Vector2(0, -8), 13.0, 0.0, TAU, 28, Color(0.5, 1.0, 0.6, 0.85), 1.5)
+		draw_arc(Vector2(0, -8), 15.0, 0.0, TAU, 28, Color(0.5, 1.0, 0.6, 0.3), 1.0)
+
 var taunt: Node2D = null
 var taunt_left: float = 0.0
 
@@ -537,6 +554,15 @@ func take_damage(amount: int) -> void:
 		# A boss shield (BossMechanics): the blow glances off.
 		if combat_feedback != null:
 			combat_feedback.show_damage(0)
+		return
+	if ward_hits > 0:
+		# The ward takes the blow instead.
+		ward_hits -= 1
+		queue_redraw()
+		if combat_feedback != null:
+			combat_feedback.show_damage(0)
+			combat_feedback.show_reaction("ОБЕРЕГ" if ward_hits > 0 else "ОБЕРЕГ СНЯТ")
+		GameAudio.play("ui_tick", -4.0, 0.3)
 		return
 	health -= amount
 	if combat_feedback != null:

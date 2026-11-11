@@ -225,7 +225,10 @@ func _strike(enemy: SlimeEnemy, damage: int, push_direction: Vector2, push: floa
 		enemy.combat_feedback.show_reaction("КОНТРАТАКА!")
 		Vfx.sparkle(game, enemy.global_position)
 		game.shake(3.0, 0.15)
+	enemy.melee_hit = true
 	enemy.take_damage(damage)
+	if is_instance_valid(enemy):
+		enemy.melee_hit = false
 	enemy.apply_knockback(push_direction, push)
 	game.last_hit_enemies.append(enemy)
 	game.combos.on_strike(enemy, damage)

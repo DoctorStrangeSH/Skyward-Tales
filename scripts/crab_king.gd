@@ -31,6 +31,8 @@ func take_damage(amount: int) -> void:
 			var crab := CRAB_SCRIPT.new() as SlimeEnemy
 			crab.position = global_position + offset
 			parent.add_child(crab)
+			# Called to the fight: they come running, not buried.
+			crab.call("emerge")
 			if parent.has_method("_on_enemy_defeated"):
 				crab.defeated.connect(func(xp: int) -> void: parent._on_enemy_defeated(xp, crab.global_position))
 			Vfx.sparkle(parent, crab.global_position)
