@@ -27,8 +27,10 @@ def build(region_id: str, terrain: dict) -> Path | None:
     things = []
     trees = terrain.get("trees", [])
     n_trees = max(1, len(cfg.get("trees", [])) or 3)
-    for x, y in trees:
+    for index, (x, y) in enumerate(trees):
         variant = abs(int(x) * 7 + int(y) * 13) % n_trees
+        if index < len(terrain.get("tree_variants", [])):
+            variant = terrain["tree_variants"][index]
         things.append((y + 10, f"{style}_tree_{variant}", x, y + 10))
     n_bush = max(1, len(cfg.get("bushes", [])) or 2)
     for index, (x, y) in enumerate(terrain.get("bushes", [])):
@@ -56,3 +58,4 @@ def build(region_id: str, terrain: dict) -> Path | None:
     out = ROOT / "assets" / "world" / f"{region_id}_mini.png"
     image.save(out, optimize=True)
     return out
+

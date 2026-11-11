@@ -461,6 +461,7 @@ func _spawn_gate(target_region: String, gate_position: Vector2, arrival: Vector2
 	var size: Vector2 = game.world.map_size() if game.world != null and game.world.has_method("map_size") else Vector2(1280, 864)
 	var look := RegionGate.pick_kind(gate.art_style, RegionCatalog.style(target_region), gate_position, size)
 	gate.kind = str(look["kind"])
+	gate.apron_bridge = not bool(RegionCatalog.terrain(game.current_region).get("bridge_landings", true))
 	gate.outward = look["outward"]
 	gate.edge_distance = float(look["edge_distance"])
 	# HD ground has the walkway to the rim painted in.

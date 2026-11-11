@@ -404,7 +404,7 @@ def render(region_id: str, terrain: dict, seed: int, footprints: list, gates: li
         ground[np.abs(border - reach) < 1.6] *= 0.5
         path = np.maximum(path, wall.astype(np.float32))
 
-    if gates and cfg.get("walkways", True):
+    if gates and cfg.get("walkways", True) and terrain.get("bridge_landings", True):
         path = np.maximum(path, _walkways(ground, gates, ww, wh))
 
     # 5. Shadows of trees and houses.
@@ -436,3 +436,4 @@ def render(region_id: str, terrain: dict, seed: int, footprints: list, gates: li
 
     out = (np.clip(ground, 0, 1) * 255).astype(np.uint8)
     return Image.fromarray(out, "RGB")
+

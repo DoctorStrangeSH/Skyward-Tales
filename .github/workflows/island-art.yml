@@ -20,6 +20,12 @@ on:
       - "scenes/props/island_waterfall.tscn"
       - "scenes/regions/greenreach_waterfalls.tscn"
       - "tests/waterfall_scene.gd"
+      - "tools/art/forest_composition.py"
+      - "tools/art/resource_growth_art.py"
+      - "scripts/sky_parallax.gd"
+      - "scripts/region_gate.gd"
+      - "scripts/gather_node.gd"
+      - "tests/forest_presentation.gd"
   workflow_dispatch:
 
 concurrency:
@@ -53,14 +59,19 @@ jobs:
             timeout 90s godot --headless --path . --script res://tests/island_style.gd
             timeout 90s godot --headless --path . --script res://tests/waterfall_scene.gd
             timeout 90s godot --headless --path . --script res://tests/look_polish.gd
+            timeout 90s godot --headless --path . --script res://tests/forest_presentation.gd
+            timeout 90s godot --headless --path . --script res://tests/forest_guild.gd
+            timeout 90s godot --headless --path . --script res://tests/sky_parallax.gd
             cp -L "$(command -v godot)" /project/art-review-godot
             chmod +x /project/art-review-godot
           '
           sudo chown -R "$USER" docs/screenshots assets/world_hd assets/world .godot tests tools art-review-godot
       - name: Capture the actual game with software rendering
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y xvfb libgl1-mesa-dri
+          if ! command -v xvfb-run >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y xvfb libgl1-mesa-dri
+          fi
           export LIBGL_ALWAYS_SOFTWARE=1
           ./art-review-godot --headless --version
           timeout 120s xvfb-run -a -s "-screen 0 1920x1080x24 -nolisten tcp" ./art-review-godot --path . --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy --resolution 1920x1080 --max-fps 30 --quit-after 240 --script res://tools/capture_island01.gd -- "$PWD/docs/screenshots"
@@ -74,6 +85,8 @@ jobs:
             docs/screenshots/greenreach_village.png
             docs/screenshots/greenreach_waterfall.png
             docs/screenshots/greenreach_preview.jpg
+            docs/screenshots/greenreach_grove.jpg
+            docs/screenshots/resource_growth.gif
             assets/world_hd/greenreach_art_build.json
           retention-days: 7
       - name: Commit only rebuilt island art and review captures
@@ -81,8 +94,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/art_manifest.json assets/world_hd/day_tree_0.png assets/world_hd/day_tree_1.png assets/world_hd/day_tree_2.png assets/world_hd/day_tree_3.png assets/world_hd/props/waterfall_lip_left.png assets/world_hd/props/waterfall_lip_right.png assets/world_hd/greenreach_ground.webp assets/world_hd/greenreach_apron_bottom.webp assets/world_hd/greenreach_art_build.json assets/world/greenreach_mini.png docs/screenshots/greenreach_village.png docs/screenshots/greenreach_waterfall.png docs/screenshots/greenreach_preview.jpg tests/waterfall_scene.gd.uid tools/capture_island01.gd.uid
+          git add docs/screenshots/resource_growth.gif data/regions.json assets/world_hd/props/*_growth.png assets/world_hd/props/tree_*_sprout.png tests/forest_presentation.gd.uid assets/art_manifest.json assets/world_hd/day_tree_0.png assets/world_hd/day_tree_1.png assets/world_hd/day_tree_2.png assets/world_hd/day_tree_3.png assets/world_hd/props/waterfall_lip_left.png assets/world_hd/props/waterfall_lip_right.png assets/world_hd/greenreach_ground.webp assets/world_hd/greenreach_apron_bottom.webp assets/world_hd/greenreach_art_build.json assets/world/greenreach_mini.png docs/screenshots/greenreach_village.png docs/screenshots/greenreach_waterfall.png docs/screenshots/greenreach_preview.jpg docs/screenshots/greenreach_grove.jpg tests/waterfall_scene.gd.uid tools/capture_island01.gd.uid
           if ! git diff --cached --quiet; then
             git commit -m "Rebuild Greenreach ground and clean apron; capture the actual scene"
             git push origin "HEAD:$GITHUB_REF_NAME"
           fi
+

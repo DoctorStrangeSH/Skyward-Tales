@@ -13,6 +13,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from hd import ground, pack, minimap, sprites
 from hd.styles import STYLE
 from hd.build_hd import footprints
+from forest_composition import compose
+from resource_growth_art import build as build_growth
 
 ROOT = pack.ROOT
 OUT = ROOT / "assets" / "world_hd"
@@ -46,7 +48,11 @@ def southern_sky(terrain: dict, gates: list) -> Image.Image:
     return sky
 
 def main() -> int:
-    region = json.loads((ROOT / "data/regions.json").read_text(encoding="utf-8"))["greenreach"]
+    regions_path = ROOT / "data/regions.json"
+    regions = json.loads(regions_path.read_text(encoding="utf-8"))
+    region = regions["greenreach"]
+    print("Authored grove trees:", compose(region, force="--replant" in sys.argv))
+    regions_path.write_text(json.dumps(regions, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     terrain = region["terrain"]
     manifest = json.loads((ROOT / "assets/art_manifest.json").read_text(encoding="utf-8"))
     gates = [gate["position"] for gate in region.get("gates", [])]
@@ -67,6 +73,7 @@ def main() -> int:
         image.save(OUT / "props" / (name + ".png"), optimize=True)
         manifest["world_hd/props/" + name + ".png"] = {"size": list(image.size), "origin": list(origin), "scale": 1.0 / K}
         generated.append("assets/world_hd/props/" + name + ".png")
+    generated += build_growth(ROOT, manifest)
     (ROOT / "assets/art_manifest.json").write_text(json.dumps(dict(sorted(manifest.items())), indent=1) + "\n", encoding="utf-8")
     surface = ground.render("greenreach", terrain, sum(map(ord, "greenreach")) * 31, footprints(terrain, manifest), gates)
     surface.save(OUT / "greenreach_ground.webp", quality=90, method=6)
@@ -87,3 +94,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

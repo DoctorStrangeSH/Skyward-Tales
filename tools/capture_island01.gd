@@ -29,6 +29,7 @@ func _run() -> void:
 	_hide_title(game)
 	for entry in [
 		["greenreach_village", Vector2(300, 620)],
+		["greenreach_grove", Vector2(1040, 300)],
 		["greenreach_waterfall", Vector2(1240, 1230)]
 	]:
 		game.player.global_position = entry[1]
@@ -44,10 +45,11 @@ func _run() -> void:
 			push_error("Cannot save scene capture: " + path)
 			quit(1)
 			return
-		if str(entry[0]) == "greenreach_waterfall":
+		if str(entry[0]) in ["greenreach_waterfall", "greenreach_grove"]:
 			screenshot.resize(1280, 720, Image.INTERPOLATE_NEAREST)
-			if screenshot.save_jpg(out_dir.path_join("greenreach_preview.jpg"), 0.94) != OK:
+			if screenshot.save_jpg(out_dir.path_join("greenreach_preview.jpg" if str(entry[0]) == "greenreach_waterfall" else "greenreach_grove.jpg"), 0.94) != OK:
 				quit(1)
 				return
 		print("Captured actual island: ", path)
 	quit(0)
+

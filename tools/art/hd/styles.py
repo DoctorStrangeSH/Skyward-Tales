@@ -74,7 +74,7 @@ DAY = {
     "water_bank": 0.45,
     "shore_decals": [(NEW % "green_reach/base/rocks", 18, 20), (NEW % "hd/sky_harbor/flora/wild_fern", 16, 20), (NEW % "woodland_guild/exterior/bluebells", 12, 10)],
     "decals": [(rel, size, round(count * 0.65)) for rel, size, count in NEW_FLOWERS] + NEW_STONES,
-    "trees": [(NEW % "green_reach/base/oak_dark", 86), (NEW % "hd/greenreach/nature/tree_summer", 80), (NEW % "green_reach/base/oak", 82), (NEW % "green_reach/base/oak_dark", 92)],
+    "trees": [(NEW % "green_reach/base/oak_dark", 86), (NEW % "green_reach/base/oak", 80), (NEW % "woodland_guild/resources/birch_intact", 72), (NEW % "woodland_guild/resources/birch_intact", 80)],
     "bushes": [(NEW % "green_reach/base/bush_berry", 28), (NEW % "green_reach/base/bush_yellow", 28), (NEW % "hd/greenreach/nature/flowering_shrub", 26), (NEW % "hd/sky_harbor/flora/wild_fern", 22)],
     "sky": "day",
 }
@@ -325,3 +325,4 @@ MAGMA.update({
 
 STYLE = {"day": DAY, "haven": HAVEN, "night": NIGHT, "marsh": MARSH, "coast": COAST, "mountain": MOUNTAIN,
          "sky": SKY, "spires": SPIRES, "rift": RIFT, "ash": ASH, "cave": CAVE, "crypt": CRYPT, "magma": MAGMA, "cistern": CISTERN, "lodge": LODGE, "mine": MINE}
+
