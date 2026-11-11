@@ -12,6 +12,8 @@ GROVES = [
     (130, 965, 90, 220, 0, .85), (530, 1165, 235, 80, 1, .8),
     (1040, 1115, 235, 100, 0, .8), (1280, 940, 100, 135, 1, .7),
     (1810, 1165, 70, 75, 0, .7),
+    (275, 495, 65, 85, 0, .75), (880, 865, 115, 120, 0, .65),
+    (430, 1045, 145, 80, 1, .7), (815, 1020, 100, 100, 0, .65),
 ]
 
 def segment_distance(p, a, b):
@@ -21,7 +23,8 @@ def segment_distance(p, a, b):
 
 def compose(region, force=False):
     terrain = region['terrain']
-    if terrain.get("forest_composition") == "authored_groves_v1" and not force:
+    terrain['bridge_landings'] = False
+    if terrain.get("forest_composition") == "authored_groves_v2" and not force:
         return len(terrain["trees"])
     width, height = terrain['size']
     rng = random.Random(110126)
@@ -66,5 +69,5 @@ def compose(region, force=False):
     chosen.sort(key=lambda p:(p[1],p[0]))
     terrain['trees'] = [[x,y] for x,y,_ in chosen]
     terrain['tree_variants'] = [v for _,_,v in chosen]
-    terrain['forest_composition'] = 'authored_groves_v1'
+    terrain['forest_composition'] = 'authored_groves_v2'
     return len(chosen)
