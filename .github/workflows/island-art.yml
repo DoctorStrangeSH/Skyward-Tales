@@ -43,22 +43,28 @@ jobs:
         run: python3 -m pip install Pillow==11.3.0 numpy==2.2.6 scipy==1.15.3
       - name: Rebuild the first island from approved sources
         run: python3 tools/art/island01_polish.py
-      - name: Import, test editable water and capture the game
+      - name: Import and test editable water
         run: |
           mkdir -p docs/screenshots
-          docker run --rm -v "${PWD}:/project" -w /project "$GODOT_IMAGE" bash -euc '
+          docker run --rm -v "$PWD:/project" -w /project "$GODOT_IMAGE" bash -euc '
             export HOME="$(mktemp -d)"
-            export LIBGL_ALWAYS_SOFTWARE=1
             timeout 300s godot --headless --path . --editor --import --quit
             timeout 90s godot --headless --path . --script res://tests/island_style.gd
             timeout 90s godot --headless --path . --script res://tests/waterfall_scene.gd
-            if ! command -v xvfb-run >/dev/null; then
-              apt-get update
-              apt-get install -y xvfb libgl1-mesa-dri
-            fi
-            timeout 120s xvfb-run -a -s "-screen 0 1920x1080x24" godot --path . --rendering-driver opengl3 --audio-driver Dummy --resolution 1920x1080 --script res://tools/capture_island01.gd -- /project/docs/screenshots
+            cp -L "$(command -v godot)" /project/art-review-godot
+            chmod +x /project/art-review-godot
           '
-          sudo chown -R "$USER" docs/screenshots assets/world_hd .godot tests tools || true
+          sudo chown -R "$USER" docs/screenshots assets/world_hd assets/world .godot tests tools art-review-godot
+      - name: Capture the actual game with software rendering
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y xvfb libgl1-mesa-dri
+          export HOME="$(mktemp -d)"
+          export LIBGL_ALWAYS_SOFTWARE=1
+          ./art-review-godot --headless --version
+          timeout 120s xvfb-run -a -s "-screen 0 1920x1080x24 -nolisten tcp" ./art-review-godot --path . --display-driver x11 --rendering-driver opengl3 --audio-driver Dummy --resolution 1920x1080 --max-fps 30 --quit-after 240 --script res://tools/capture_island01.gd -- "$PWD/docs/screenshots"
+          test -s docs/screenshots/greenreach_preview.png
+          test -s docs/screenshots/greenreach_village.png
       - name: Save the single style review
         uses: actions/upload-artifact@v4
         with:
@@ -77,5 +83,5 @@ jobs:
           git add assets/world_hd/greenreach_ground.webp assets/world_hd/greenreach_apron_bottom.webp assets/world_hd/greenreach_art_build.json assets/world/greenreach_mini.png docs/screenshots/greenreach_village.png docs/screenshots/greenreach_waterfall.png docs/screenshots/greenreach_preview.png tests/waterfall_scene.gd.uid tools/capture_island01.gd.uid
           if ! git diff --cached --quiet; then
             git commit -m "Rebuild Greenreach ground and clean apron; capture the actual scene"
-            git push origin "HEAD:${GITHUB_REF_NAME}"
+            git push origin "HEAD:$GITHUB_REF_NAME"
           fi
