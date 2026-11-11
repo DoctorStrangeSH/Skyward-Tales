@@ -1,0 +1,15 @@
+{
+  "generator": "tools/art/island01_polish.py",
+  "source": "assets/New Sprites/Skyward_Tales_All_Sprites.zip",
+  "source_sha256": "e609748fe6e4420ee33d4766119629f382bc5c9c8c03e2697bd3dfdde7cb8e24",
+  "ground_size": [
+    3840,
+    2560
+  ],
+  "baked_waterfalls": 0,
+  "outputs": {
+    "assets/world_hd/greenreach_ground.webp": "1b0f0aee86d9b9f3d2825931bb6e282d3f040388d9aea47258cdd032e21294e7",
+    "assets/world_hd/greenreach_apron_bottom.webp": "d79fc1a0c19e5683da2a7bfa7d005b05e245c3759a84fa0df9e69b054cb0199c",
+    "assets/world/greenreach_mini.png": "b8a12353c0411864adebd096df3d9fb74e267e061c7ca17ebca35127d777aab0"
+  }
+}
