@@ -13,6 +13,8 @@ var label: String = ""
 var wall_width: float = 0.0
 var glow: Color = Color(0, 0, 0, 0)
 var flat: bool = false
+## Shown on the minimap and the map as a way in/out with this name.
+var map_label: String = ""
 ## An animated prop: a sheet in assets/world_hd/props with frames.
 var sheet: String = ""
 var sheet_frames := Vector2i(4, 2)

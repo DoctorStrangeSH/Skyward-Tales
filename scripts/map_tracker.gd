@@ -85,6 +85,8 @@ func minimap_markers() -> Array:
 		var id := "%s_%d_%d" % [game._landmark_kind(actor), int(at.x), int(at.y)]
 		if actor is RegionGate:
 			result.append({"kind": "gate", "position": at, "label": RegionCatalog.display_name(actor.target_region)})
+		elif actor is TowerObject and not actor.map_label.is_empty():
+			result.append({"kind": "gate", "position": at, "label": actor.map_label})
 		elif actor is WorldNpc and known.has(id):
 			var marker := str(actor.marker)
 			result.append({"kind": marker if marker in ["quest", "ready", "service"] else "npc", "position": at})
@@ -95,7 +97,7 @@ func minimap_markers() -> Array:
 				result.append({"kind": "item", "position": at})
 		elif actor is SlimeEnemy and actor.health > 0 and game.player.global_position.distance_squared_to(at) < 260.0 * 260.0:
 			var kind := "enemy"
-			if SkywardGame.enemy_kind(actor) in SkywardGame.STORY_BOSSES:
+			if SkywardGame.enemy_kind(actor) in SkywardGame.STORY_BOSSES or actor.has_meta("cistern_keeper") or actor.has_meta("adit_guardian"):
 				kind = "boss"
 			elif actor.has_meta("legend"):
 				kind = "boss"

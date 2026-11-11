@@ -183,9 +183,9 @@ func _spawn_boss() -> void:
 	if boss == null:
 		return
 	boss.set_meta("cistern_keeper", true)
-	boss.max_health = roundi(boss.max_health * 8.0)
+	boss.max_health = roundi(boss.max_health * 14.0)
 	boss.health = boss.max_health
-	boss.attack_damage = roundi(boss.attack_damage * 1.5)
+	boss.attack_damage = roundi(boss.attack_damage * 1.8)
 	boss.xp_reward = roundi(boss.xp_reward * 8.0)
 	boss.knockback_resist = maxf(boss.knockback_resist, 0.85)
 	boss.visual.scale *= 1.9

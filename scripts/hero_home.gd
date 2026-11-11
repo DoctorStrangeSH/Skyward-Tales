@@ -85,7 +85,9 @@ func populate() -> void:
 		_object(Vector2(r.position.x + 32 + 64 * i, r.end.y + 6), "lodge_wall_front").z_index = 40
 	var door := Vector2(r.get_center().x, r.end.y - 2)
 	_object(door, "lodge_threshold", "", 0.0, Color(0, 0, 0, 0), true)
-	_object(door + Vector2(0, -6), "", "E — выйти").used.connect(func(_o: TowerObject) -> void: leave())
+	var way_out := _object(door + Vector2(0, -6), "", "E — выйти")
+	way_out.map_label = "Выход"
+	way_out.used.connect(func(_o: TowerObject) -> void: leave())
 	_object(r.get_center() + Vector2(0, 22), "lodge_rug", "", 0.0, Color(0, 0, 0, 0), true)
 	var bed := _object(Vector2(r.position.x + 24, r.position.y + 58), "lodge_bed", "E — лечь спать до утра", 22.0)
 	bed.used.connect(func(_o: TowerObject) -> void: game.buildings.sleep())

@@ -453,6 +453,12 @@ func _exit_tree() -> void:
 const MUSIC_BY_STYLE := {"night": "night", "cave": "caves", "sky": "sky", "spires": "sky", "rift": "rift", "marsh": "marsh",
 	"coast": "coast", "mountain": "caves", "crypt": "caves", "ash": "ash", "magma": "ash"}
 
+## Rooms of houses: calm music and a crackling hearth instead of cave drips.
+const INDOORS := ["guild_lodge", "hero_home"]
+
+func is_indoors() -> bool:
+	return current_region in INDOORS
+
 func update_music() -> void:
 	for actor in get_children():
 		if actor is GroveGuardian and not actor.is_queued_for_deletion() and actor.health > 0:
@@ -463,11 +469,16 @@ func update_music() -> void:
 	if fair != null and fair.open_here():
 		GameAudio.music("fair")
 		return
+	if is_indoors():
+		GameAudio.music("night")
+		return
 	GameAudio.music(MUSIC_BY_STYLE.get(style, "meadow"))
 
 ## The background bed of the land: wind on the islands, waves on the coast,
 ## birds by day and crickets by night, drips in caves, crackling in ash.
 func ambience_for(region_id: String, night: bool) -> String:
+	if region_id in INDOORS:
+		return "fire"
 	match RegionCatalog.style(region_id):
 		"cave", "crypt":
 			return "cave"

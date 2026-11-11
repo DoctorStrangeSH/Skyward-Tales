@@ -139,7 +139,9 @@ func _animated(at: Vector2, sheet: String, glow: Color, wall: float = 0.0, label
 func populate() -> void:
 	if game.current_region == HOME:
 		_object(COTTAGE, "lodge_cottage", "", 70.0)
-		_object(COTTAGE + Vector2(0, 8), "", "E — войти в дом лесничих").used.connect(func(_o: TowerObject) -> void: enter())
+		var way := _object(COTTAGE + Vector2(0, 8), "", "E — войти в дом лесничих")
+		way.map_label = "Дом лесничих"
+		way.used.connect(func(_o: TowerObject) -> void: enter())
 		_object(COTTAGE + Vector2(-66, -6), "lodge_firewood", "", 22.0)
 		for i in 3:
 			_object(COTTAGE + Vector2(52 + i * 32, 22), "lodge_fence", "", 30.0)
@@ -163,7 +165,9 @@ func populate() -> void:
 		_object(Vector2(r.position.x + 32 + 64 * i, r.end.y + 6), "lodge_wall_front").z_index = 40
 	var door := Vector2(r.get_center().x, r.end.y - 2)
 	_object(door, "lodge_threshold", "", 0.0, Color(0, 0, 0, 0), true)
-	_object(door + Vector2(0, -6), "", "E — выйти").used.connect(func(_o: TowerObject) -> void: leave())
+	var way_out := _object(door + Vector2(0, -6), "", "E — выйти")
+	way_out.map_label = "Выход"
+	way_out.used.connect(func(_o: TowerObject) -> void: leave())
 	_object(r.get_center() + Vector2(0, 26), "lodge_rug", "", 0.0, Color(0, 0, 0, 0), true)
 	# Hearth, bench, bed, table, shelf, chest.
 	var hearth := _animated(Vector2(r.position.x + 40, r.position.y + 22), "lodge_hearth", Color(1.0, 0.62, 0.3, 0.45), 38.0, "E — погреться у очага")

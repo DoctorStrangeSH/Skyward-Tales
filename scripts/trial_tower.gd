@@ -46,6 +46,8 @@ const BLESSINGS := {
 	"vigor": ["Живица", "+1,5 здоровья в секунду", "regen", 1.5],
 }
 ## [item, amount, seals, label]
+## A blessing stacks no more than this many times in one climb.
+const BLESSING_CAP := 3
 const PRIZES := [
 	["health_potion", 4, 1, "4 зелья здоровья"],
 	["starlight_essence", 1, 3, "Звёздная эссенция"],
@@ -102,7 +104,9 @@ func populate() -> void:
 	_foes.clear()
 	if game.current_region == HOME:
 		_object(GATE, "tower_gate_open", "", 44.0, Color(0.7, 0.45, 1.0, 1.0))
-		_object(GATE + Vector2(0, 8), "", "E — Башня испытаний").used.connect(func(_o: TowerObject) -> void: open_gate())
+		var way := _object(GATE + Vector2(0, 8), "", "E — Башня испытаний")
+		way.map_label = "Башня испытаний"
+		way.used.connect(func(_o: TowerObject) -> void: open_gate())
 		_object(GATE + Vector2(-40, 4), "tower_banner")
 		_object(GATE + Vector2(40, 4), "tower_banner")
 		return
@@ -231,7 +235,9 @@ func _tier_kinds() -> Array:
 	return kinds
 
 func health_mult() -> float:
-	return 0.7 + 0.16 * float(floor_no - 1)
+	# Past floor 20 the climb steepens, so there is always a ceiling to push.
+	var late := maxf(0.0, float(floor_no - 20))
+	return 0.7 + 0.16 * float(floor_no - 1) + 0.012 * late * late
 
 func damage_mult() -> float:
 	return 0.8 + 0.07 * float(floor_no - 1)
@@ -339,7 +345,7 @@ func _on_cleared() -> void:
 		checkpoint = maxi(checkpoint, floor_no)
 	game.achievements.set_max("trial_tower", best)
 	# Offer three different blessings.
-	var ids := BLESSINGS.keys()
+	var ids := BLESSINGS.keys().filter(func(id: Variant) -> bool: return int(blessings.get(id, 0)) < BLESSING_CAP)
 	ids.shuffle()
 	offered = ids.slice(0, 3)
 	_rebuild()
@@ -373,13 +379,16 @@ func open_coffer() -> void:
 func open_altar() -> void:
 	if state != "cleared" or blessed:
 		return
+	if offered.is_empty():
+		game.hud.show_message("Алтарь молчит: все благословения уже с вами в полной силе.", 3.5)
+		return
 	var choices: Array[Dictionary] = []
 	for id in offered:
 		var info: Array = BLESSINGS[id]
 		var have := int(blessings.get(id, 0))
 		choices.append({"id": "trial_bless:%s" % id, "label": "%s: %s%s" % [str(info[0]), str(info[1]), " (уже ×%d)" % have if have > 0 else ""]})
 	choices.append({"id": "trial_close", "label": "Позже"})
-	game._show_dialogue_choices("Алтарь благословений", "Выберите одно благословение. Оно действует, пока вы в башне, и складывается с прежними.", choices)
+	game._show_dialogue_choices("Алтарь благословений", "Выберите одно благословение. Оно действует, пока вы в башне, и складывается с прежними (до трёх раз каждое).", choices)
 
 func bless(id: String) -> void:
 	if state != "cleared" or blessed or not offered.has(id):

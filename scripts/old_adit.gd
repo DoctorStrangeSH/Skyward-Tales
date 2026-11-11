@@ -94,7 +94,9 @@ func populate() -> void:
 	_rubble = [[], []]
 	if game.current_region == HOME:
 		_object(ENTRANCE, "mine_timber", "", 0.0, Color(1.0, 0.75, 0.4, 0.5))
-		_object(ENTRANCE + Vector2(0, -4), "", "E — спуститься в штольню").used.connect(func(_o: TowerObject) -> void: enter())
+		var way := _object(ENTRANCE + Vector2(0, -4), "", "E — спуститься в штольню")
+		way.map_label = "Старая штольня"
+		way.used.connect(func(_o: TowerObject) -> void: enter())
 		_object(ENTRANCE + Vector2(0, 14), "mine_track", "", 0.0, Color(0, 0, 0, 0), true).rotation = PI / 2.0
 		_object(ENTRANCE + Vector2(44, 10), "vein_cut")
 		return
@@ -102,7 +104,9 @@ func populate() -> void:
 		return
 	# The way out and the rails.
 	_object(INSIDE + Vector2(0, 36), "mine_timber", "", 0.0, Color(1.0, 0.75, 0.4, 0.4))
-	_object(INSIDE + Vector2(0, 30), "", "E — выйти наружу").used.connect(func(_o: TowerObject) -> void: leave())
+	var way_out := _object(INSIDE + Vector2(0, 30), "", "E — выйти наружу")
+	way_out.map_label = "Выход"
+	way_out.used.connect(func(_o: TowerObject) -> void: leave())
 	var from: Vector2 = CART_STOPS[0]
 	var to: Vector2 = CART_STOPS[1]
 	var x := from.x - 20.0
@@ -205,7 +209,7 @@ func _spawn_guardian() -> void:
 	if foe == null:
 		return
 	foe.set_meta("adit_guardian", true)
-	foe.max_health = roundi(foe.max_health * 2.2)
+	foe.max_health = roundi(foe.max_health * 5.0)
 	foe.health = foe.max_health
 	foe.attack_damage = roundi(foe.attack_damage * 1.2)
 	foe.xp_reward = roundi(foe.xp_reward * 3.0)
