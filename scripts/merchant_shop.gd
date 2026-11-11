@@ -58,7 +58,7 @@ func get_sell_price(item_id: String, bran_trust: int = 0, player: PlayerCharacte
 
 ## Copies the player can sell: equipped items keep one copy on the hero.
 func sellable_count(player: PlayerCharacter, item_id: String) -> int:
-	if player.is_quest_item(item_id):
+	if player.is_quest_item(item_id) or bool(player.get_item_definition(item_id).get("tool", false)):
 		return 0
 	var count := int(player.inventory.get(item_id, 0))
 	if item_id in player.equipment.values():

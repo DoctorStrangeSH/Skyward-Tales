@@ -1,6 +1,8 @@
 # AI HANDOFF — Skyward Tales
 
-Последнее обновление: 10 ноября 2026 года (этап 21, шаг 9: Старая штольня — вагонетка, медь, завалы, инструменты).
+Последнее обновление: 10 ноября 2026 года (этап 21, шаг 10: дом героини изнутри, стена памяти).
+
+**Этап 21, шаг 10 (кратко):** `scripts/hero_home.gd` (`game.home`): земля `hero_home` (как `guild_lodge`: скрытая, мирная, `art_style: lodge`; `tools/home_layout.py`). `VillageBuildings.use_door("home")` теперь вызывает `home.enter()` (старое меню сна осталось запасным, выбор `home_sleep` работает); постель зовёт `buildings.sleep()`. `TROPHIES` + `earned(id)` — памятные вещи по достижениям других систем; `change_look()` меняет пол героя через `player.set_identity`. Предметы с `"tool": true` не продаются (`MerchantShop.sellable_count`). Тест `tests/hero_home.gd`.
 
 **Этап 21, шаг 9 (кратко):** `scripts/old_adit.gd` (`game.adit`): `ENTRANCE` в `greenreach`, земля `old_adit` (скрытая, стиль `crypt` + `art_style: mine`; раскладка, жилы и враги — `tools/adit_layout.py`). `OldAdit.Cart` — вагонетка между `CART_STOPS` (`ride()`, на время поездки физика героя выключена), `RUBBLE` — два завала (`clear_rubble(i)` требует `copper_pickaxe`; `cleared`), страж — усиленный `golem` (мета `adit_guardian`), сундук `adit_geode`. `tool_bonus(node)` вызывается из `crafting_menu.gd::gather`: кирка +1 к `iron/copper/stone/amethyst`, топор +1 к `wood`. Новые виды узлов `copper`, `amethyst` в `gathering.json` (вид — `GatherNode.staged_art()`), предметы `copper_ore`, `amethyst`, `copper_pickaxe`, `copper_axe`, рецепты `carp_pickaxe`, `carp_axe`. Графика: `tools/art/mine_art.py`; стиль `MINE`. Сохранение: `world.adit`. Тест `tests/old_adit.gd`.
 

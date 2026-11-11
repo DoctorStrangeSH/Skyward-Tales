@@ -1517,14 +1517,16 @@
       "description": "Работает из сумки: +1 с каждой жилы и глыбы, разбирает завалы в штольне.",
       "slot": "",
       "material": true,
-      "value": 0
+      "value": 0,
+      "tool": true
     },
     "copper_axe": {
       "name": "Медный топор",
       "description": "Работает из сумки: +1 бревно с каждого дерева.",
       "slot": "",
       "material": true,
-      "value": 0
+      "value": 0,
+      "tool": true
     }
   },
   "sets": {

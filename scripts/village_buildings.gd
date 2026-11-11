@@ -124,6 +124,9 @@ func use_door(building_id: String) -> void:
 		return
 	if building_id != HOME:
 		return
+	if game.home != null:
+		game.home.enter()
+		return
 	var choices: Array[Dictionary] = [
 		{"id": "home_sleep", "label": "Лечь спать до утра"},
 		{"id": "home_close", "label": "Выйти"},
