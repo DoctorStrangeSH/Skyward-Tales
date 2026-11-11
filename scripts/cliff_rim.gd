@@ -27,8 +27,17 @@ func _sprite(file: String, at: Vector2, z: int = 0) -> Sprite2D:
 
 ## `gaps` — x positions of bridges on the southern edge.
 ## Outlets are authored in terrain.waterfalls. No random streams from dry grass.
-func setup(map_size: Vector2, region_id: String, gaps: Array = [], outlets: Array = [], outlet_scene: PackedScene = null) -> void:
+func setup(map_size: Vector2, region_id: String, gaps: Array = [], outlets: Array = [], outlet_scene: PackedScene = null, varied_depth: bool = false) -> void:
 	z_index = -99
+	var authored: Node2D
+	var mouths: Array = outlets
+	if outlet_scene != null:
+		authored = outlet_scene.instantiate() as Node2D
+		mouths = []
+		if authored != null:
+			for child in authored.get_children():
+				if child is IslandWaterfall and _outlet_clear(child.position.x, child.stream_width, map_size.x, gaps):
+					mouths.append({"x": child.position.x, "width": child.stream_width})
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash(region_id + "rim")
 	var count := int(ceil((map_size.x + 80.0) / (TILE - 12.0)))
@@ -36,6 +45,21 @@ func setup(map_size: Vector2, region_id: String, gaps: Array = [], outlets: Arra
 		var x := -40.0 + i * (TILE - 12.0)
 		var tile := _sprite("cliff_high.png" if rng.randf() < 0.75 else "cliff_low.png", Vector2(x, map_size.y - LIP))
 		tile.flip_h = rng.randf() < 0.5
+		if varied_depth:
+			var depth := rng.randf_range(0.78, 1.30)
+			tile.scale.y *= depth
+			# Anchor the grass lip while the lower silhouette changes depth.
+			tile.position.y = map_size.y - LIP * depth
+			for outlet in mouths:
+				var mouth := float(outlet.get("x", -1000.0))
+				var width := float(outlet.get("width", 64.0))
+				if mouth + width * 0.5 > x and mouth - width * 0.5 < x + TILE:
+					var cut := ShaderMaterial.new()
+					cut.shader = load("res://assets/shaders/cliff_outlet.gdshader")
+					cut.set_shader_parameter("outlet_x", mouth)
+					cut.set_shader_parameter("outlet_width", width)
+					cut.set_shader_parameter("rim_y", map_size.y)
+					tile.material = cut
 	# Greenery over the edge.
 	var x := rng.randf_range(10.0, 60.0)
 	while x < map_size.x - 30.0:
@@ -44,7 +68,6 @@ func setup(map_size: Vector2, region_id: String, gaps: Array = [], outlets: Arra
 		x += rng.randf_range(70.0, 170.0)
 	# The authored scene is the source of truth when present, never an extra layer.
 	if outlet_scene != null:
-		var authored := outlet_scene.instantiate() as Node2D
 		if authored != null:
 			authored.name = "AuthoredWaterfalls"
 			authored.z_index = 2

@@ -20,6 +20,9 @@ on:
       - "scenes/props/island_waterfall.tscn"
       - "scenes/regions/greenreach_waterfalls.tscn"
       - "tests/waterfall_scene.gd"
+      - "tests/lake_outlet.gd"
+      - "assets/shaders/cliff_outlet.gdshader"
+      - "tools/art/terrain.py"
       - "tools/art/forest_composition.py"
       - "tools/art/resource_growth_art.py"
       - "scripts/sky_parallax.gd"
@@ -56,6 +59,7 @@ jobs:
           mkdir -p docs/screenshots
           docker run --rm -v "$PWD:/project" -w /project "$GODOT_IMAGE" bash -euc '
             timeout 300s godot --headless --path . --editor --import --quit
+            timeout 90s godot --headless --path . --script res://tests/lake_outlet.gd
             timeout 90s godot --headless --path . --script res://tests/island_style.gd
             timeout 90s godot --headless --path . --script res://tests/waterfall_scene.gd
             timeout 90s godot --headless --path . --script res://tests/look_polish.gd

@@ -222,7 +222,12 @@ func _pond_points(pond: Dictionary) -> PackedVector2Array:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 4242
 	for i in range(40):
-		if pond.has("rect"):
+		if pond.has("polygon"):
+			var box := _pond_box(pond)
+			var point := box.position + Vector2(rng.randf(), rng.randf()) * box.size
+			if _deep_water(pond, point):
+				result.append(point)
+		elif pond.has("rect"):
 			var r: Array = pond["rect"]
 			result.append(Vector2(float(r[0]) + float(r[2]) * rng.randf_range(0.15, 0.85), float(r[1]) + float(r[3]) * rng.randf_range(0.25, 0.85)))
 		elif pond.has("circle"):
@@ -316,7 +321,7 @@ func _add_apron() -> void:
 		var outlet_path := str(terrain.get("waterfall_scene", ""))
 		if not outlet_path.is_empty() and ResourceLoader.exists(outlet_path):
 			outlet_scene = load(outlet_path) as PackedScene
-		rim.setup(size, region_id, gaps, terrain.get("waterfalls", []), outlet_scene)
+		rim.setup(size, region_id, gaps, terrain.get("waterfalls", []), outlet_scene, bool(terrain.get("varied_cliff_depth", false)))
 		if rim_style == "night":
 			rim.modulate = Color(0.55, 0.7, 0.95)
 	# Sky islands smaller than the map: the sky and cliffs inside the map edge.
@@ -539,6 +544,16 @@ func _pond_box(pond: Dictionary) -> Rect2:
 
 ## True a little inside the shore (the art wobbles the edge a few pixels).
 func _deep_water(pond: Dictionary, at: Vector2) -> bool:
+	if pond.has("polygon"):
+		var points := PackedVector2Array()
+		for point in pond["polygon"]:
+			points.append(_vec(point))
+		if not Geometry2D.is_point_in_polygon(at, points):
+			return false
+		for i in points.size():
+			if Geometry2D.get_closest_point_to_segment(at, points[i], points[(i + 1) % points.size()]).distance_to(at) < WATER_INSET:
+				return false
+		return true
 	if pond.has("rect"):
 		var r: Array = pond["rect"]
 		var half := Vector2(float(r[2]), float(r[3])) * 0.5
