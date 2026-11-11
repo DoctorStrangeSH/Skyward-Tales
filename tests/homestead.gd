@@ -30,12 +30,16 @@ func _run() -> void:
 	if Seasons.season_of(0) != "summer" or Seasons.season_of(4) != "autumn" or Seasons.season_of(8) != "winter" or Seasons.season_of(12) != "spring" or Seasons.season_of(16) != "summer":
 		return _fail("four seasons of four days")
 	await process_frame
+	var tree_count := _trees(game, "")
+	if tree_count == 0:
+		return _fail("the authored forest is present")
+
 	if not seasons.here() or _trees(game, "season_") != 0:
 		return _fail("summer keeps the land's own trees")
 	game.day_night.day = 4
 	await process_frame
 	await process_frame
-	if _trees(game, "season_autumn") < 100:
+	if _trees(game, "season_autumn") < int(tree_count * 0.8):
 		return _fail("autumn turns the trees: %d" % _trees(game, "season_autumn"))
 	for i in 40:
 		await process_frame
@@ -44,7 +48,7 @@ func _run() -> void:
 	game.day_night.day = 8
 	await process_frame
 	await process_frame
-	if _trees(game, "season_winter") < 200 or _trees(game, "season_autumn") != 0:
+	if _trees(game, "season_winter") != tree_count or _trees(game, "season_autumn") != 0:
 		return _fail("winter trees")
 
 	# Garden in winter: no planting outdoors; the greenhouse works.

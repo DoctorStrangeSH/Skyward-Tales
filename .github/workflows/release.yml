@@ -1,8 +1,8 @@
 name: Build game
 
 # Builds Windows and Linux versions. Every push to main leaves a downloadable
-# artifact on the run page: the Windows installer (SkywardTales-Setup.exe) and
-# zip archives for Windows and Linux. A Release is published either by pushing
+# artifact on the run page: portable zip archives for Windows and Linux,
+# plus SkywardTales-Setup.exe when NSIS is available. Tagged releases require it. A Release is published either by pushing
 # a tag like v0.3.0 or by running the workflow manually with "release_tag".
 
 on:
@@ -48,8 +48,6 @@ jobs:
             godot --headless --path . --editor --import --quit
             godot --headless --path . --export-release "Windows Desktop" build/windows/SkywardTales.exe
             godot --headless --path . --export-release "Linux" build/linux/SkywardTales.x86_64
-            # The stock template, to check below that the game icon replaced Godot'"'"'s.
-            find / -name "windows_release_x86_64.exe" -path "*export_templates*" 2>/dev/null | head -1 | xargs -r -I{} cp {} build/stock_template.exe
           '
           sudo chown -R "$USER" build .godot
           ls -la build/windows build/linux
@@ -58,14 +56,7 @@ jobs:
 
       - name: The game icon is inside the .exe
         run: |
-          sudo apt-get install -y -qq icoutils > /dev/null
-          wrestool -x -t14 build/windows/SkywardTales.exe > game_icon.ico
-          test -s game_icon.ico
-          if [ -s build/stock_template.exe ]; then
-            wrestool -x -t14 build/stock_template.exe > stock_icon.ico || true
-            if cmp -s game_icon.ico stock_icon.ico; then echo "The .exe still has Godot's icon"; exit 1; fi
-          fi
-          rm -f build/stock_template.exe game_icon.ico stock_icon.ico
+          python3 tools/verify_windows_icon.py build/windows/SkywardTales.exe assets/icon.ico
 
       - name: Smoke-run the exported Linux build
         run: |
@@ -84,8 +75,14 @@ jobs:
           (cd build/linux && chmod +x SkywardTales.x86_64 && zip -9 -r ../SkywardTales-linux.zip .)
 
       - name: Windows installer
+        id: installer
+        timeout-minutes: 2
+        # Main always provides portable builds; tagged releases require the installer.
+        continue-on-error: ${{ !startsWith(github.ref, 'refs/tags/v') && inputs.release_tag == '' }}
         run: |
-          sudo apt-get install -y -qq nsis > /dev/null
+          if ! command -v makensis >/dev/null; then
+            timeout 60s sudo apt-get -o Acquire::Retries=0 -o Acquire::http::Timeout=10 install -y -qq nsis > /dev/null
+          fi
           version="$(sed -n 's/^config\/version="\(.*\)"/\1/p' project.godot).${{ github.run_number }}"
           makensis -V2 -NOCD -DVERSION="$version" -DSRC=build/windows -DOUT=build/SkywardTales-Setup.exe installer/skyward_tales.nsi
           test -s build/SkywardTales-Setup.exe
