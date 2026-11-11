@@ -191,7 +191,7 @@ def _pebbles(ground: np.ndarray, edge: np.ndarray, stone_pal: list, seed: int) -
 def _walkways(ground: np.ndarray, gates: list, ww: int, wh: int) -> np.ndarray:
     h, w = ground.shape[:2]
     mask = np.zeros((h, w), np.float32)
-    deck = pack.content(pack.image("props/prop_018.png"))
+    deck = pack.content(pack.image("new:hd/redrawn/islands/rope_bridge.png"))
     mid = deck.crop((int(deck.width * 0.3), 0, int(deck.width * 0.7), deck.height))
     for gx, gy in gates:
         edges = {"left": gx, "right": ww - gx, "top": gy, "bottom": wh - gy}

@@ -990,10 +990,12 @@
       "waterfalls": [
         {
           "x": 1556,
-          "width": 20,
-          "drop": 220
+          "width": 64,
+          "drop": 240,
+          "speed": 1.0
         }
-      ]
+      ],
+      "waterfall_scene": "res://scenes/regions/greenreach_waterfalls.tscn"
     },
     "story_objects": [
       {

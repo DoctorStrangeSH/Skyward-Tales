@@ -27,7 +27,7 @@ func _sprite(file: String, at: Vector2, z: int = 0) -> Sprite2D:
 
 ## `gaps` — x positions of bridges on the southern edge.
 ## Outlets are authored in terrain.waterfalls. No random streams from dry grass.
-func setup(map_size: Vector2, region_id: String, gaps: Array = [], outlets: Array = []) -> void:
+func setup(map_size: Vector2, region_id: String, gaps: Array = [], outlets: Array = [], outlet_scene: PackedScene = null) -> void:
 	z_index = -99
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash(region_id + "rim")
@@ -42,6 +42,17 @@ func setup(map_size: Vector2, region_id: String, gaps: Array = [], outlets: Arra
 		var file: String = ["ivy_a.png", "ivy_b.png", "moss.png", "ivy_a.png"][rng.randi() % 4]
 		_sprite(file, Vector2(x, map_size.y - 8.0 + rng.randf_range(0.0, 6.0)), 1).flip_h = rng.randf() < 0.5
 		x += rng.randf_range(70.0, 170.0)
+	# The authored scene is the source of truth when present, never an extra layer.
+	if outlet_scene != null:
+		var authored := outlet_scene.instantiate() as Node2D
+		if authored != null:
+			authored.name = "AuthoredWaterfalls"
+			authored.z_index = 2
+			add_child(authored)
+			for child in authored.get_children():
+				if child is IslandWaterfall and not _outlet_clear(child.position.x, child.stream_width, map_size.x, gaps):
+					child.queue_free()
+			return
 	# Explicit springs in the cliff face; the stream disappears into the clouds.
 	for outlet in outlets:
 		var fx := float(outlet.get("x", map_size.x * 0.5))
@@ -56,5 +67,13 @@ func setup(map_size: Vector2, region_id: String, gaps: Array = [], outlets: Arra
 		fall.name = "Waterfall_%d" % get_child_count()
 		fall.position = Vector2(fx, map_size.y - 6.0)
 		fall.z_index = 2
-		fall.setup(float(outlet.get("width", 20.0)), float(outlet.get("drop", 180.0)), rng.randf_range(0.0, 2.0))
+		fall.setup(float(outlet.get("width", 64.0)), float(outlet.get("drop", 240.0)), rng.randf_range(0.0, 2.0), float(outlet.get("speed", 1.0)))
 		add_child(fall)
+
+func _outlet_clear(x: float, width: float, map_width: float, gaps: Array) -> bool:
+	if x - width * 0.5 < 0.0 or x + width * 0.5 > map_width:
+		return false
+	for gap in gaps:
+		if absf(float(gap) - x) < maxf(90.0, width * 0.5 + 32.0):
+			return false
+	return true

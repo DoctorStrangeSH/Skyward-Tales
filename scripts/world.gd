@@ -270,7 +270,11 @@ func _add_apron() -> void:
 		var rim := CliffRim.new()
 		rim.name = "CliffRim"
 		add_child(rim)
-		rim.setup(size, region_id, gaps, terrain.get("waterfalls", []))
+		var outlet_scene: PackedScene
+		var outlet_path := str(terrain.get("waterfall_scene", ""))
+		if not outlet_path.is_empty() and ResourceLoader.exists(outlet_path):
+			outlet_scene = load(outlet_path) as PackedScene
+		rim.setup(size, region_id, gaps, terrain.get("waterfalls", []), outlet_scene)
 		if rim_style == "night":
 			rim.modulate = Color(0.55, 0.7, 0.95)
 	# Sky islands smaller than the map: the sky and cliffs inside the map edge.

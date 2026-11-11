@@ -1,0 +1,76 @@
+name: Island art review
+
+on:
+  push:
+    branches: [art/island01-scene-polish]
+    paths:
+      - ".github/workflows/island-art.yml"
+      - "tools/art/island01_polish.py"
+      - "tools/art/hd/ground.py"
+      - "tools/art/hd/styles.py"
+      - "tools/capture_island01.gd"
+      - "scripts/island_waterfall.gd"
+      - "assets/shaders/island_waterfall.gdshader"
+      - "scenes/props/island_waterfall.tscn"
+      - "scenes/regions/greenreach_waterfalls.tscn"
+      - "tests/waterfall_scene.gd"
+  workflow_dispatch:
+
+concurrency:
+  group: island-art-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  GODOT_IMAGE: barichello/godot-ci:4.7.2
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install art dependencies
+        run: python3 -m pip install Pillow==11.3.0 numpy==2.2.6 scipy==1.15.3
+      - name: Rebuild the first island from approved sources
+        run: python3 tools/art/island01_polish.py
+      - name: Import, test editable water and capture the game
+        run: |
+          mkdir -p docs/screenshots
+          docker run --rm -v "${PWD}:/project" -w /project "$GODOT_IMAGE" bash -euc '
+            export HOME="$(mktemp -d)"
+            export LIBGL_ALWAYS_SOFTWARE=1
+            godot --headless --path . --editor --import --quit
+            godot --headless --path . --script res://tests/island_style.gd
+            godot --headless --path . --script res://tests/waterfall_scene.gd
+            if ! command -v xvfb-run >/dev/null; then
+              apt-get update
+              apt-get install -y xvfb libgl1-mesa-dri
+            fi
+            xvfb-run -a -s "-screen 0 1920x1080x24" godot --path . --rendering-driver opengl3 --audio-driver Dummy --resolution 1920x1080 --script res://tools/capture_island01.gd -- /project/docs/screenshots
+          '
+          sudo chown -R "$USER" docs/screenshots assets/world_hd .godot tests tools || true
+      - name: Save the single style review
+        uses: actions/upload-artifact@v4
+        with:
+          name: Greenreach-style-review
+          path: |
+            docs/screenshots/greenreach_village.png
+            docs/screenshots/greenreach_waterfall.png
+            assets/world_hd/greenreach_art_build.json
+          retention-days: 7
+      - name: Commit only rebuilt island art and review captures
+        if: github.ref == 'refs/heads/art/island01-scene-polish'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/world_hd/greenreach_ground.webp assets/world_hd/greenreach_apron_bottom.webp assets/world_hd/greenreach_art_build.json docs/screenshots/greenreach_village.png docs/screenshots/greenreach_waterfall.png tests/waterfall_scene.gd.uid tools/capture_island01.gd.uid
+          if ! git diff --cached --quiet; then
+            git commit -m "Rebuild Greenreach ground and clean apron; capture the actual scene"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
