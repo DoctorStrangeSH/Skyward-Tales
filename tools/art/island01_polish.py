@@ -15,6 +15,7 @@ from hd.styles import STYLE
 from hd.build_hd import footprints
 from forest_composition import compose
 from resource_growth_art import build as build_growth
+import jsonfmt
 
 ROOT = pack.ROOT
 OUT = ROOT / "assets" / "world_hd"
@@ -52,7 +53,7 @@ def main() -> int:
     regions = json.loads(regions_path.read_text(encoding="utf-8"))
     region = regions["greenreach"]
     print("Authored grove trees:", compose(region, force="--replant" in sys.argv))
-    regions_path.write_text(json.dumps(regions, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    regions_path.write_text(jsonfmt.dumps(regions), encoding="utf-8")
     terrain = region["terrain"]
     manifest = json.loads((ROOT / "assets/art_manifest.json").read_text(encoding="utf-8"))
     gates = [gate["position"] for gate in region.get("gates", [])]
