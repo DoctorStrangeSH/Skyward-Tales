@@ -106,13 +106,13 @@ jobs:
             assets/world_hd/greenreach_art_build.json
           retention-days: 7
       - name: Commit only rebuilt island art and review captures
-        if: github.ref == 'refs/heads/art/island01-scene-polish'
+        if: github.ref == 'refs/heads/art/island01-scene-polish' || github.ref == 'refs/heads/fix/island01-lake-outlet'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add docs/screenshots/resource_growth.gif data/regions.json assets/world_hd/props/*_growth.png assets/world_hd/props/tree_*_sprout.png tests/forest_presentation.gd.uid assets/art_manifest.json assets/world_hd/day_tree_0.png assets/world_hd/day_tree_1.png assets/world_hd/day_tree_2.png assets/world_hd/day_tree_3.png assets/world_hd/props/waterfall_lip_left.png assets/world_hd/props/waterfall_lip_right.png assets/world_hd/greenreach_ground.webp assets/world_hd/greenreach_apron_bottom.webp assets/world_hd/greenreach_art_build.json assets/world/greenreach_mini.png docs/screenshots/greenreach_village.png docs/screenshots/greenreach_waterfall.png docs/screenshots/greenreach_preview.jpg docs/screenshots/greenreach_grove.jpg tests/waterfall_scene.gd.uid tools/capture_island01.gd.uid
           if ! git diff --cached --quiet; then
-            git commit -m "Rebuild Greenreach ground and clean apron; capture the actual scene"
+            git commit -m "Rebuild Greenreach art and save actual island review captures"
             git push origin "HEAD:$GITHUB_REF_NAME"
           fi
 
