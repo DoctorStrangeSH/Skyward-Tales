@@ -1775,8 +1775,11 @@ func reset_skills() -> bool:
 	if SkillTree.spent_points(player) <= 0 and player.keystones.is_empty():
 		hud.show_message("Навыки ещё не изучены.", 2.0)
 		return false
+	if SkillTree.tomes(player) <= 0:
+		hud.show_message("Нужна Книга забвения: первая победа над легендой ночи, чемпионы 10-го и 20-го этажей Башни, 14 печатей испытаний.", 5.0)
+		return false
 	if not SkillTree.reset(player):
-		hud.show_message("Сброс стоит %d золота." % SkillTree.reset_cost(player), 2.5)
+		hud.show_message("Сброс стоит Книгу забвения и %d золота." % SkillTree.reset_cost(player), 2.5)
 		return false
 	hud.show_message("Навыки сброшены: очков — %d. Соберите новый билд!" % SkillTree.available_points(player), 3.0)
 	hud.refresh_skill_tree(player)

@@ -8,6 +8,7 @@ class_name QuestNav
 ## Also routes between lands over the gates (for the "next gate" marker and
 ## the path on the world map).
 
+const HIDDEN_DOORS := {"old_adit": ["greenreach", OldAdit.ENTRANCE]}
 const COLLECT_QUESTS := {"bran_supply_run": "supply_crates", "lost_cartographer_notes": "map_fragments"}
 
 var game: SkywardGame
@@ -71,7 +72,7 @@ func _collect() -> Array:
 ## [region, position-or-null] pairs for one open quest.
 func _objectives(quest_id: String, definition: Dictionary) -> Array:
 	var found: Array = []
-	for region_id in RegionCatalog.ids():
+	for region_id in RegionCatalog.all_ids():
 		var layout := RegionCatalog.get_region(region_id)
 		var here: bool = region_id == game.current_region
 		for item in layout.get("story_objects", []):
@@ -136,6 +137,12 @@ func _objectives(quest_id: String, definition: Dictionary) -> Array:
 			found.append([str(trigger.get("region", "")), null])
 	if quest_id == BorinStory.DREAM and game.mine.overrun():
 		found.append([PassMine.REGION, PassMine.ENTRANCE + Vector2(0, 50)])
+	# Lands without gates (the Old Adit) are reached through a door in
+	# another land: away from them, pin the door.
+	for index in found.size():
+		var region := str(found[index][0])
+		if region != game.current_region and HIDDEN_DOORS.has(region):
+			found[index] = HIDDEN_DOORS[region]
 	if quest_id == Epilogue.RIFT_QUEST:
 		for region_id in game.epilogue.open_rift_regions():
 			var pos: Array = game.epilogue.rifts[region_id]

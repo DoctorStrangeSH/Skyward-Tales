@@ -81,7 +81,7 @@ func marker_for(npc_id: String) -> String:
 		if quests.is_ready_to_complete(quest_id):
 			return "ready"
 		var started: bool = bool(quests.states.get(quest_id, {}).get("started", false))
-		var unlocked: bool = npc_id in ["elder", "grove_warden", "miner"] or village_helped
+		var unlocked: bool = (npc_id in ["elder", "grove_warden", "miner"] or village_helped) and not (npc_id == "grove_warden" and _grove_waits())
 		# Side quests (Mira, Toren, Bran) can be taken alongside the story.
 		var can_take: bool = free or quests.is_side(quest_id) or (npc_id in ["grove_warden", "miner"] and quests.active_quest_id == quest_id)
 		if not started and not quests.is_completed(quest_id) and unlocked and can_take:
@@ -315,6 +315,10 @@ func _complete_cartographer_quest_choice(choice_id: String) -> void:
 
 # --- Warden Ilara --------------------------------------------------------
 
+## In the story, the grove's chapter follows the star map.
+func _grove_waits() -> bool:
+	return game.director != null and game.director.story_mode() and not game.quests.is_completed("main_star_map") and not bool(game.quests.states.get("grove_spirits", {}).get("started", false))
+
 func on_grove_warden() -> void:
 	var quests := game.quests
 	if quests.is_completed("grove_spirits"):
@@ -322,6 +326,9 @@ func on_grove_warden() -> void:
 			_say("Хранительница Илара", "Лес доверяет тебе, а он редко ошибается. Я отметила древний тайник у камней — там припасы для тех, кто защищает рощу. Теперь это ты.")
 		else:
 			_say("Хранительница Илара", "%s. Лес запомнит твою доброту. Деревья помнят дольше людей — и прощают реже." % game.relationships.get_reaction("ilara"))
+	elif not quests.states["grove_spirits"]["started"] and _grove_waits():
+		# The story goes in order: the star map first (Mira's pages), then the grove.
+		_say("Хранительница Илара", "Ты пришл{ёл|а} рано, {hero}. Звёзды упали не только в лес — сперва узнай у Миры, что за карта их ведёт. Тогда и духи откроются тебе.")
 	elif quests.active_quest_id.is_empty() or quests.active_quest_id == "grove_spirits":
 		if not quests.states["grove_spirits"]["started"]:
 			quests.start_quest("grove_spirits")

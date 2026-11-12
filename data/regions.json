@@ -1616,6 +1616,12 @@
         "id": "memory_crystal",
         "name": "Кристалл памяти",
         "position": [420, 640]
+      },
+      {
+        "id": "chant_scroll",
+        "name": "Свиток песнопения",
+        "position": [470, 150],
+        "quest": "key_wind_chant"
       }
     ],
     "enemies": [
@@ -1906,6 +1912,24 @@
         "id": "wind_rune",
         "name": "Руна ветра",
         "position": [1040, 470]
+      },
+      {
+        "id": "storm_spark",
+        "name": "Искра бури",
+        "position": [247, 165],
+        "quest": "key_rift_sparks"
+      },
+      {
+        "id": "storm_spark",
+        "name": "Искра бури",
+        "position": [1019, 240],
+        "quest": "key_rift_sparks"
+      },
+      {
+        "id": "storm_spark",
+        "name": "Искра бури",
+        "position": [483, 700],
+        "quest": "key_rift_sparks"
       }
     ],
     "story_objects": [
@@ -9353,7 +9377,14 @@
     "hidden": true,
     "npcs": [],
     "chests": [],
-    "herbs": [],
+    "herbs": [
+      {
+        "id": "foreman_key",
+        "name": "Ключ бригадира",
+        "position": [790, 150],
+        "quest": "key_lower_shaft"
+      }
+    ],
     "story_objects": [],
     "enemies": [
       {

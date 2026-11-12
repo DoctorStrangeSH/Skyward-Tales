@@ -1,9 +1,9 @@
 extends SceneTree
 
-## Review item 3: several ways to get ready for a story chapter. A gate
-## counts deeds of any kind — help to the people (quests) or other ways
-## (the Tower, the cistern, contracts, the scout's trail…); extra deeds stand
-## in for missing levels; the journal explains what is left.
+## Story gates (review item 3, reworked in Этап 23): a gate has a key — one
+## errand the story needs (Mira's pages, the chant scroll…), handed out and
+## taken back by the chapter's giver; other deeds (quests, the Tower, the
+## cistern…) forgive missing levels; the journal explains what is left.
 
 func _initialize() -> void:
 	call_deferred("_run")
@@ -48,19 +48,23 @@ func _run() -> void:
 			if not known.has(str(way["stat"])) or str(way["text"]).is_empty():
 				return _fail("way reads a known counter: %s" % str(way))
 
-	# The first gate: no side quest at all — a run with Alaya opens the story.
+	# Этап 23: the first gate has a key — Mira's lost pages. Other deeds do
+	# not open it.
 	var first := _link(game, "main_star_map")
-	if director.link_ready(first) or director.deeds(first) != 0:
+	if director.link_ready(first) or director.key_done(first):
 		return _fail("the first gate is closed")
 	var lines := "\n".join(director.missing(first))
-	if not lines.contains("Помощь: «") or not lines.contains("тропу разведчицы") or not lines.contains("Башни испытаний"):
-		return _fail("the giver lists help and other ways:\n" + lines)
+	if not lines.contains("Без этого никак") or not lines.contains("Страницы, унесённые ветром"):
+		return _fail("the giver names the key errand:\n" + lines)
 	game.achievements.set_max("scout_runs", 1)
+	if director.link_ready(first):
+		return _fail("the scout's trail alone does not open the chapter")
+	_done(game, "lost_cartographer_notes")
 	if not director.link_ready(first) or director.chapter_marker("elder") != "quest":
-		return _fail("the scout's trail opens the chapter without a side quest")
+		return _fail("Mira's pages open the chapter")
 	_done(game, "main_star_map")
 
-	# A later gate: three deeds, level 10; mixed ways count together.
+	# The spires: the key errand is handed out by Orien, brought back to him.
 	for link in director.chain:
 		if str(link.get("start", "")) == "main_spires":
 			break
@@ -68,56 +72,52 @@ func _run() -> void:
 			_done(game, str(link["after"]))
 	_done(game, "main_archive")
 	var spires := _link(game, "main_spires")
-	if director.deeds_needed(spires) != 3:
-		return _fail("the spires ask for three deeds")
+	if director.deeds_needed(spires) != 0 or director.key_quest(spires) != "key_wind_chant":
+		return _fail("the spires have a key, deeds are optional")
 	hero.level = 10
-	game.achievements.stats.erase("trial_tower")
-	var base := director.deeds(spires)
-	_done(game, "coast_crabs")
-	game.achievements.set_max("trial_tower", 8)
-	game.achievements.set_max("cistern", 1)
-	if director.deeds(spires) != base + 3 or (base == 0 and not director.link_ready(spires)):
-		return _fail("a quest, the Tower and the cistern are three deeds: %d" % director.deeds(spires))
-	if not director.link_ready(spires):
-		return _fail("three mixed deeds open the chapter")
-
+	if director.link_ready(spires) or director.chapter_marker("archivist") != "quest":
+		return _fail("'!' over Orien: he hands out the key errand")
+	if not director.try_talk("archivist") or not game.quests.is_active("key_wind_chant"):
+		return _fail("talking to Orien starts the chant errand")
+	game.story.skip()
+	game.hud.close_dialogue()
+	if director.chapter_marker("archivist") != "":
+		return _fail("no marker while the errand is on")
+	game.quests.add_progress("key_wind_chant", 1)
+	if director.chapter_marker("archivist") != "ready":
+		return _fail("'?' over Orien when the scroll is found")
 	# Extra deeds stand in for levels (up to two).
 	hero.level = 8
-	if director.link_ready(spires) and director.deeds(spires) < director.deeds_needed(spires) + 2:
-		return _fail("two levels short need two extra deeds")
 	var text := "\n".join(director.missing(spires))
-	if director.deeds(spires) < director.deeds_needed(spires) + 2 and (not text.contains("Уровень") or not text.contains("заменяет уровень")):
+	if not text.contains("Уровень") or not text.contains("сокращает путь"):
 		return _fail("the giver explains the level and the way around it:\n" + text)
+	game.achievements.stats.erase("trial_tower")
+	game.achievements.stats.erase("cistern")
+	game.achievements.stats.erase("scout_runs")
+	_done(game, "coast_crabs")
+	game.achievements.set_max("cistern", 1)
+	if director.level_needed(spires) != 8:
+		return _fail("two deeds forgive two levels: needs %d" % director.level_needed(spires))
 	game.achievements.set_max("contracts", 5)
-	game.achievements.set_max("legends", 1)
-	if director.level_needed(spires) != 8 or not director.link_ready(spires):
-		return _fail("five deeds forgive two levels: needs %d" % director.level_needed(spires))
-	hero.level = 7
-	if director.link_ready(spires):
+	if director.level_needed(spires) != 8:
 		return _fail("no more than two levels are forgiven")
-
 	# The journal explains the gate.
+	hero.level = 7
 	var entries: Array = director.journal_entries()
 	if entries.size() != 1 or not bool(entries[0]["gate"]) or not str(entries[0]["title"]).begins_with("Дальше: "):
 		return _fail("the journal lists the waiting chapter")
 	var page := str(entries[0]["description"])
-	if not page.contains("Уровень 8") or not page.contains("Уже сделано") or not page.contains("начнётся у"):
+	if not page.contains("Уровень 8") or not page.contains("начнётся у"):
 		return _fail("the journal page explains the gate:\n" + page)
-	game.input_handler.open_tab("journal")
-	await process_frame
-	await process_frame
-	var seen := false
-	for button in game.hud.journal_view.entry_list.get_children():
-		if button is Button and (button as Button).text.contains("Дальше: "):
-			seen = true
-	if not seen:
-		return _fail("the story tab shows the waiting chapter")
-	game.input_handler.toggle_tab("journal")
 	var tracker := str(director.tracker_entries()[0]["title"])
 	if not tracker.contains("ур. 8") or not tracker.contains("журнал"):
 		return _fail("the tracker points to the journal: " + tracker)
+	# Bringing the scroll back: the errand completes and the chapter opens.
 	hero.level = 8
-	if not str(director.journal_entries()[0]["description"]).contains("открыта"):
-		return _fail("an open chapter reads as open")
+	if not director.try_talk("archivist") or not game.quests.is_completed("key_wind_chant"):
+		return _fail("Orien takes the scroll")
+	game.story.skip()
+	if not bool(game.quests.states["main_spires"]["started"]):
+		return _fail("and the chapter begins")
 	print("CHAPTER WAYS OK")
 	quit(0)

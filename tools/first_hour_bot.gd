@@ -51,6 +51,7 @@ var _ignored_targets: Dictionary = {}
 var _read_text := ""
 var _snapshot: Dictionary = {}
 var _gear_clock: float = 0.0
+var _skill_clock: float = 0.0
 var _avoid: Dictionary = {}
 var _empty_land: float = 0.0
 var _wander := Vector2.INF
@@ -174,8 +175,10 @@ func _gear_score(item_id: String) -> float:
 ## A player spends talent points, learns passives at trainers and keeps a
 ## few potions (shortcuts: no walk to the trainer or the shop is simulated,
 ## the gold is paid all the same).
-const TALENT_ORDER := ["blade_mastery", "vitality", "keen_edge", "iron_skin", "bloodthirst", "blade_mastery", "vitality", "keen_edge", "iron_skin", "blade_dance", "whirl_master", "bloodthirst", "unbreakable", "battle_rhythm", "second_wind", "vitality", "keen_edge", "iron_skin", "blade_mastery", "whirl_master", "battle_rhythm", "battle_rhythm"]
+const TALENT_ORDER := ["blade_mastery", "vitality", "keen_edge", "herbalist", "iron_skin", "bloodthirst", "executioner", "blade_mastery", "vitality", "light_step", "keen_edge", "iron_skin", "cleave", "blade_dance", "executioner", "whirl_master", "bloodthirst", "unbreakable", "battle_rhythm", "second_wind", "vitality", "keen_edge", "iron_skin", "blade_mastery", "herbalist", "light_step", "whirl_master", "battle_rhythm", "battle_rhythm", "static_blade", "static_blade"]
 const PASSIVES := ["toughness", "lifeblood", "keen_eye", "steady_hand", "fleet"]
+## Active skills the bot learns and casts in fights with strong foes.
+const ACTIVES := ["lunge", "shockwave", "war_cry", "blade_wave"]
 
 func _grow() -> void:
 	for talent in TALENT_ORDER:
@@ -185,6 +188,11 @@ func _grow() -> void:
 			SkillTree.learn(hero, str(talent))
 			_note("talent", "%s → %d" % [talent, SkillTree.rank(hero, str(talent))])
 	for skill_id in PASSIVES:
+		if not hero.knows(skill_id) and game.trainers.lock_reason(skill_id).is_empty() and hero.gold >= Trainers.price_of(skill_id) + 60:
+			hero.gold -= Trainers.price_of(skill_id)
+			hero.learn_skill(skill_id)
+			_note("skill", "%s за %d" % [skill_id, Trainers.price_of(skill_id)])
+	for skill_id in ACTIVES:
 		if not hero.knows(skill_id) and game.trainers.lock_reason(skill_id).is_empty() and hero.gold >= Trainers.price_of(skill_id) + 60:
 			hero.gold -= Trainers.price_of(skill_id)
 			hero.learn_skill(skill_id)
@@ -532,6 +540,14 @@ func _fight(foe: SlimeEnemy) -> void:
 		return
 	_release_keys()
 	hero.facing = offset.normalized()
+	# Skills 1–4 on strong foes (and on packs), like a player would.
+	_skill_clock -= STEP
+	var strong := foe.combat_feedback.elite or SkywardGame.STORY_BOSSES.has(SkywardGame.enemy_kind(foe)) or foe.max_health > hero.get_melee_damage() * 8
+	if _skill_clock <= 0.0 and (strong or game._living_enemies().size() >= 3):
+		_skill_clock = 0.6
+		for slot in 4:
+			if game.skills.use_slot(slot):
+				break
 	game.sword_slash()
 
 # --- Watching the screen ------------------------------------------------------------

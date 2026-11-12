@@ -64,14 +64,23 @@ static func learn(player: PlayerCharacter, skill_id: String) -> bool:
 		return false
 	return player.apply_talent(skill_id)
 
+## Этап 23: unlearning takes a Book of Forgetting (rare: a first win over a
+## legend of the night, Tower champions of the 10th and 20th floors, 14
+## Seals of Trials, the Keeper of the Abyss) — and gold on top.
+const RESET_TOME := "tome_of_forgetting"
+
+static func tomes(player: PlayerCharacter) -> int:
+	return int(player.inventory.get(RESET_TOME, 0))
+
 ## Gold to unlearn everything (a mentor's lesson grows dearer with level).
 static func reset_cost(player: PlayerCharacter) -> int:
 	return 30 * maxi(1, player.level)
 
 ## Unlearns every skill: points come back, sky seals too.
 static func reset(player: PlayerCharacter) -> bool:
-	if (spent_points(player) <= 0 and player.keystones.is_empty()) or player.gold < reset_cost(player):
+	if (spent_points(player) <= 0 and player.keystones.is_empty()) or player.gold < reset_cost(player) or tomes(player) <= 0:
 		return false
+	player.remove_item(RESET_TOME, 1)
 	player.add_gold(-reset_cost(player))
 	var defs := definitions()
 	var seals_back := 0

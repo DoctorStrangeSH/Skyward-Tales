@@ -265,6 +265,9 @@ func take_damage(amount: int, source: Node = null) -> void:
 	if blocking:
 		var kept := roundi(amount * (1.0 - get_block()))
 		blocked.emit(amount - kept)
+		# Reflect (talent): a quarter of what the shield stopped goes back.
+		if int(talents.get("reflect", 0)) > 0 and source != null and is_instance_valid(source) and source != self and source.has_method("take_damage") and amount - kept > 0:
+			source.call_deferred("take_damage", maxi(1, roundi(float(amount - kept) * 0.25)))
 		amount = kept
 	if oath_left > 0.0:
 		if source != null and is_instance_valid(source) and source.has_method("take_damage") and source != self:
@@ -412,7 +415,7 @@ func has_shield() -> bool:
 func get_block() -> float:
 	if not has_shield():
 		return 0.0
-	return clampf(0.01 * float(_equipped_stat("block")), 0.0, 0.8)
+	return clampf(0.01 * float(_equipped_stat("block")) + 0.05 * float(talents.get("stone_stance", 0)), 0.0, 0.85)
 
 ## 1 or 2: how many hands the weapon takes (staves, bows, spears, mauls — 2).
 func hands(item_id: String) -> int:
@@ -430,7 +433,7 @@ func has_staff() -> bool:
 
 ## Agility: −2% dodge cooldown per point (to 50%) and +1% speed (to +25%).
 func get_dodge_cooldown() -> float:
-	return dodge_cooldown * maxf(0.5, 1.0 - 0.02 * float(get_stat("agility")))
+	return dodge_cooldown * maxf(0.5, 1.0 - 0.02 * float(get_stat("agility"))) * (1.0 - 0.12 * float(talents.get("light_step", 0)))
 
 func get_move_speed() -> float:
 	return move_speed * (1.0 + minf(0.25, 0.01 * float(get_stat("agility")))) * (1.0 + buff_value("speed")) * (1.08 if has_passive("fleet") else 1.0) * (0.5 if blocking else 1.0)
@@ -766,7 +769,7 @@ func get_melee_lifesteal() -> int:
 
 ## Gold multiplier from Treasure Sense.
 func get_gold_multiplier() -> float:
-	return (1.15 if has_passive("treasure_sense") else 1.0) * (1.35 if has_keystone("fortune") else 1.0)
+	return (1.15 if has_passive("treasure_sense") else 1.0) * (1.35 if has_keystone("fortune") else 1.0) * (1.0 + 0.1 * float(talents.get("treasure_hunter", 0)))
 
 ## Cooldown multiplier of the hotbar skills (Battle Rhythm).
 func get_skill_cooldown_multiplier() -> float:
@@ -1141,7 +1144,7 @@ func use_item(item_id: String) -> bool:
 		"health_potion":
 			if health >= max_health:
 				return false
-			health = mini(max_health, health + (17 if has_keystone("vampire") else 35))
+			health = mini(max_health, health + roundi((17 if has_keystone("vampire") else 35) * (1.0 + 0.2 * float(talents.get("herbalist", 0)))))
 		"starlight_essence":
 			max_mana += 5
 			mana += 5
@@ -1149,7 +1152,7 @@ func use_item(item_id: String) -> bool:
 		"mana_potion":
 			if mana >= max_mana:
 				return false
-			mana = mini(max_mana, mana + 25)
+			mana = mini(max_mana, mana + roundi(25 * (1.0 + 0.2 * float(talents.get("herbalist", 0)))))
 		_:
 			if not _use_generic(item_id):
 				return false

@@ -107,6 +107,11 @@ func _process(delta: float) -> void:
 func strike_mult(enemy: SlimeEnemy) -> float:
 	var mult := 1.0
 	var hero := _player()
+	# Mechanical talents (Этап 23) live here too.
+	if enemy != null and enemy.health < enemy.max_health * 0.3:
+		mult *= 1.0 + 0.15 * float(hero.talents.get("executioner", 0))
+	if enemy != null and enemy.shock_time_left > 0.0:
+		mult *= 1.0 + 0.1 * float(hero.talents.get("static_blade", 0))
 	if has("berserk"):
 		mult *= 1.0 + 0.5 * clampf(1.0 - float(hero.health) / float(maxi(1, hero.max_health)), 0.0, 1.0)
 	if has("spellblade") and _empowered:
@@ -131,9 +136,22 @@ func on_spell_hit() -> void:
 	if has("spellblade"):
 		_empowered = true
 
+func on_crit(enemy: SlimeEnemy) -> void:
+	if int(_player().talents.get("static_blade", 0)) > 0 and is_instance_valid(enemy) and enemy.health > 0:
+		enemy.apply_shock(2.0)
+
 func on_strike(enemy: SlimeEnemy, damage: int) -> void:
 	var hero := _player()
 	_strikes += 1
+	var flame := int(hero.talents.get("kindling", 0))
+	if flame > 0 and is_instance_valid(enemy) and enemy.health > 0 and game.crit_rng.randf() < 0.15 * flame:
+		enemy.apply_burning(3 + hero.level / 2, 3.0)
+	if int(hero.talents.get("cleave", 0)) > 0 and is_instance_valid(enemy):
+		for other in game._living_enemies():
+			if other != enemy and not game.last_hit_enemies.has(other) and other.global_position.distance_to(enemy.global_position) < 36.0:
+				other.take_damage(maxi(1, roundi(float(damage) * 0.4)))
+				game._streak(enemy.global_position + Vector2(0, -8), other.global_position + Vector2(0, -8), Color(1, 1, 1, 0.6), 2.0)
+				break
 	if has("spellblade") and hero.mana < hero.max_mana:
 		hero.mana = mini(hero.max_mana, hero.mana + 2)
 		hero.stats_changed.emit()

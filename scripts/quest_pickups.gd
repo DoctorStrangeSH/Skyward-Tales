@@ -133,6 +133,11 @@ const OLD_GIVERS := {"moonleaf_gathering": "elder", "grove_spirits": "grove_ward
 func return_line(quest_id: String) -> String:
 	var definition: Dictionary = game.quests.definitions.get(quest_id, {})
 	var npc_id := str(definition.get("talk_to", OLD_GIVERS.get(quest_id, "")))
+	if npc_id.is_empty():
+		# A key errand goes back to the giver of the chapter it opens.
+		for link in game.director.chain:
+			if game.director.key_quest(link) == quest_id:
+				npc_id = str(link.get("giver", ""))
 	var who := RegionCatalog.npc_name(npc_id) if not npc_id.is_empty() else QuestJournalPanel.giver_name(quest_id)
 	if who.is_empty():
 		return "Вернитесь к тому, кто дал задание."

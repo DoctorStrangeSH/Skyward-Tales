@@ -104,6 +104,7 @@ func _run() -> void:
 	if game.player.max_health != health + 15 or SkillTree.available_points(game.player) != 5:
 		return _fail("skills learned")
 	game.player.gold = 500
+	game.player.add_item(SkillTree.RESET_TOME, 1)
 	if not game.reset_skills():
 		return _fail("reset works")
 	if game.player.max_health != health or SkillTree.available_points(game.player) != 7 or game.player.gold != 500 - 240:

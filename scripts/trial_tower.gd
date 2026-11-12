@@ -53,6 +53,7 @@ const PRIZES := [
 	["starlight_essence", 1, 3, "Звёздная эссенция"],
 	["@epic", 1, 4, "Эпическая вещь по уровню"],
 	["@legendary", 1, 9, "Легендарная вещь по уровню"],
+	["tome_of_forgetting", 1, 14, "Книга забвения (сброс навыков)"],
 ]
 
 var game: SkywardGame
@@ -343,6 +344,9 @@ func _on_cleared() -> void:
 		game.player.add_item(SEAL, gained)
 	if champion_floor():
 		checkpoint = maxi(checkpoint, floor_no)
+	if record and floor_no in [10, 20]:
+		game.player.add_item(SkillTree.RESET_TOME, 1)
+		game.hud.show_message("Чемпион оставил Книгу забвения — ею сбрасывают навыки (T).", 4.5)
 	game.achievements.set_max("trial_tower", best)
 	# Offer three different blessings.
 	var ids := BLESSINGS.keys().filter(func(id: Variant) -> bool: return int(blessings.get(id, 0)) < BLESSING_CAP)

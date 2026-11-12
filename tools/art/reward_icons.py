@@ -101,3 +101,24 @@ RIVETS = [
     "....ooo.........",
 ]
 draw("copper_rivets", RIVETS, {"o": O, "K": (210, 126, 72, 255), "k": (244, 176, 116, 255), "w": (255, 226, 190, 255), "D": (150, 80, 46, 255)})
+
+BOOK = [
+    "................",
+    "...oooooooooo...",
+    "..oPPPPPPPPPPo..",
+    "..oPpPPPPPPPPoW.",
+    "..oPpPPGGPPPPoW.",
+    "..oPpPGggGPPPoW.",
+    "..oPpPGggGPPPoW.",
+    "..oPpPPGGPPPPoW.",
+    "..oPpPPPPPPPPoW.",
+    "..oPpPPPPPPPPoW.",
+    "..oPpPPPPPPPPoW.",
+    "..oPpPPPPPPPPoW.",
+    "..oDDDDDDDDDDoW.",
+    "...oWWWWWWWWWWo.",
+    "....ooooooooooo.",
+    "................",
+]
+draw("tome_of_forgetting", BOOK, {"o": O, "P": (88, 64, 140, 255), "p": (128, 98, 190, 255), "D": (60, 40, 100, 255),
+    "G": (240, 200, 90, 255), "g": (255, 240, 170, 255), "W": (230, 222, 200, 255)})

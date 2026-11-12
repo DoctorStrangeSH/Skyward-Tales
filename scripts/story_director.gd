@@ -107,7 +107,29 @@ func _ways_done(link: Dictionary) -> int:
 func deeds(link: Dictionary) -> int:
 	return _done_count(link) + _ways_done(link)
 
+# Этап 23, the owner: "smart side quests that open the way, not just any
+# deeds". A gate may name a key ("requires.key"): one particular errand
+# whose outcome the story needs (a key, a chant, a compass). {"quest": id}
+# — a quest; {"flag": id} — a world flag; "start": true — the giver hands
+# the errand out himself; "intro" — his lines when he does; "hint" — where
+# to look. Other deeds then only forgive levels (each one, up to 2).
+func key(link: Dictionary) -> Dictionary:
+	return link.get("requires", {}).get("key", {})
+
+func key_done(link: Dictionary) -> bool:
+	var k := key(link)
+	if k.is_empty():
+		return true
+	if k.has("flag"):
+		return has_flag(str(k["flag"]))
+	return game.quests.is_completed(str(k.get("quest", "")))
+
+func key_quest(link: Dictionary) -> String:
+	return str(key(link).get("quest", ""))
+
 func deeds_needed(link: Dictionary) -> int:
+	if not key(link).is_empty():
+		return 0
 	var req: Dictionary = link.get("requires", {})
 	var quests: Array = req.get("quests", [])
 	if quests.is_empty() and ways(link).is_empty():
@@ -118,12 +140,14 @@ func deeds_needed(link: Dictionary) -> int:
 ## level (up to MAX_LEVEL_RELIEF).
 func level_needed(link: Dictionary) -> int:
 	var level := int(link.get("requires", {}).get("level", 0))
+	if not key(link).is_empty():
+		return level - clampi(deeds(link), 0, MAX_LEVEL_RELIEF)
 	if level <= 0 or deeds_needed(link) <= 0:
 		return level
 	return level - clampi(deeds(link) - deeds_needed(link), 0, MAX_LEVEL_RELIEF)
 
 func link_ready(link: Dictionary) -> bool:
-	if game.player.level < level_needed(link):
+	if game.player.level < level_needed(link) or not key_done(link):
 		return false
 	return deeds(link) >= deeds_needed(link)
 
@@ -134,15 +158,27 @@ func missing(link: Dictionary) -> Array[String]:
 	var need := deeds_needed(link)
 	var have := deeds(link)
 	var level := level_needed(link)
+	var k := key(link)
+	if not k.is_empty() and not key_done(link):
+		var quest_id := key_quest(link)
+		var state := ""
+		if not quest_id.is_empty() and game.quests.is_ready_to_complete(quest_id):
+			state = " — готово, поговорите: %s" % _giver_name(link)
+		elif not quest_id.is_empty() and game.quests.is_active(quest_id):
+			state = " — в пути (%d из %d)" % [int(game.quests.states[quest_id].get("progress", 0)), int(game.quests.definitions[quest_id].get("target", 1))]
+		var title := str(game.quests.definitions.get(quest_id, {}).get("title", "")) if not quest_id.is_empty() else ""
+		lines.append("• Без этого никак: %s%s%s" % [("«%s» — " % title) if not title.is_empty() else "", str(k.get("hint", "")), state])
 	if game.player.level < level:
 		var relief := ""
+		if not k.is_empty() and deeds(link) < MAX_LEVEL_RELIEF:
+			relief = " Каждое доброе дело ниже сокращает путь на уровень (до %d)." % MAX_LEVEL_RELIEF
 		if need > 0 and int(req.get("level", 0)) - level < MAX_LEVEL_RELIEF:
 			relief = " Или сделайте ещё дело сверх нужного: каждое заменяет уровень (до %d)." % MAX_LEVEL_RELIEF
 		lines.append("• Уровень %d (сейчас %d) — сражайтесь, выполняйте поручения.%s" % [level, game.player.level, relief])
 	var quests: Array = req.get("quests", [])
 	if need > 0 and have < need:
 		lines.append("• %s — любые дела на выбор (%d из %d):" % [str(req.get("why", "Подготовьтесь")), have, need])
-	if need > 0 and (have < need or game.player.level < level):
+	if (need > 0 and (have < need or game.player.level < level)) or (not k.is_empty() and game.player.level < level):
 		var shown := 0
 		for quest_id in quests:
 			if game.quests.is_completed(str(quest_id)) or shown >= 3:
@@ -220,7 +256,15 @@ func _giver_name(link: Dictionary) -> String:
 func chapter_marker(npc_id: String) -> String:
 	for link in pending_links():
 		if str(link.get("giver", "")) == npc_id:
-			return "quest" if link_ready(link) else ""
+			if link_ready(link):
+				return "quest"
+			# A key errand to hand out or to take back shows over the giver.
+			var quest_id := key_quest(link)
+			if not quest_id.is_empty() and game.quests.is_ready_to_complete(quest_id):
+				return "ready"
+			if not quest_id.is_empty() and bool(key(link).get("start", false)) and not bool(game.quests.states.get(quest_id, {}).get("started", false)):
+				return "quest"
+			return ""
 	return ""
 
 func chapter_quest(npc_id: String) -> String:
@@ -238,6 +282,9 @@ func tracker_entries() -> Array:
 			result.append({"title": "Глава «%s»: поговорите — %s" % [title, _giver_name(link)], "main": true, "progress": 0, "target": 1})
 		else:
 			var parts: Array[String] = []
+			if not key_done(link):
+				var key_title := str(game.quests.definitions.get(key_quest(link), {}).get("title", ""))
+				parts.append("«%s»" % key_title if not key_title.is_empty() else str(key(link).get("short", "ключ к главе")))
 			if game.player.level < level_needed(link):
 				parts.append("ур. %d" % level_needed(link))
 			if deeds(link) < deeds_needed(link):
@@ -251,6 +298,27 @@ func _offer_chapter(link: Dictionary) -> bool:
 		if bool(link.get("npc_starts", false)):
 			return false
 		_begin_link(link)
+		return true
+	var k := key(link)
+	var quest_id := key_quest(link)
+	if not quest_id.is_empty() and game.quests.is_ready_to_complete(quest_id):
+		# The errand is done: the giver takes what was brought.
+		_complete(quest_id)
+		if link_ready(link):
+			if bool(link.get("npc_starts", false)):
+				_begin_link(link)
+			else:
+				_begin_link(link)
+			return true
+	elif not quest_id.is_empty() and bool(k.get("start", false)) and not bool(game.quests.states.get(quest_id, {}).get("started", false)) and not game.quests.is_completed(quest_id):
+		game.quests.start_quest(quest_id)
+		var intro: Array = k.get("intro", [])
+		if not intro.is_empty():
+			game.talk_line(str(link.get("giver", "")), _giver_name(link), intro)
+		else:
+			game._show_dialogue(_giver_name(link), str(game.quests.definitions[quest_id].get("description", "")))
+		game.hud.show_message("Ключ к главе: " + str(game.quests.definitions[quest_id].get("title", "")), 3.5)
+		game.update_npc_markers()
 		return true
 	var lines := missing(link)
 	var text := str(link.get("locked", "Ещё рано, {hero}. Сначала —")) + "\n" + "\n".join(lines)

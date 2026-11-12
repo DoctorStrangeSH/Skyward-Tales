@@ -119,6 +119,8 @@ func _on_defeated(legend_id: String, at: Vector2) -> void:
 		game.spawn_generated_loot(at + Vector2(18, -10), "rare", "elite")
 		game.achievements.add("legend_hunts")
 	game._spawn_loot(at + Vector2(-14, 6), VillageBuildings.TOME)
+	# A first win over a legend leaves a Book of Forgetting (the skill reset).
+	game._spawn_loot(at + Vector2(0, 22), SkillTree.RESET_TOME)
 	var coins := game._spawn_loot(at + Vector2(14, 6), "gold")
 	coins.amount = 60 * maxi(1, RegionCatalog.level(game.current_region))
 	game.shake(5.0, 0.4)

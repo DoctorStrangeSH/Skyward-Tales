@@ -79,7 +79,7 @@ func modify_strike(damage: int) -> Dictionary:
 	var riposte := riposte_left > 0.0
 	if riposte:
 		riposte_left = 0.0
-		damage = roundi(damage * 2.5)
+		damage = roundi(damage * (2.5 + 0.5 * float(_player().talents.get("counter", 0))))
 	return {"damage": roundi(damage * streak_mult()), "riposte": riposte}
 
 ## A sword blow landed.
@@ -154,6 +154,9 @@ func on_hurt(_amount: int, source: Node) -> void:
 		game.hud.show_message("Серия прервана (×%d)." % streak, 1.2)
 	streak = 0
 	game.hud.set_streak(0, 0.0)
+	var chill := int(_player().talents.get("frost_armor", 0))
+	if chill > 0 and source != null and is_instance_valid(source) and source.has_method("apply_slow") and game.crit_rng.randf() < 0.2 * chill:
+		source.apply_slow(0.5, 2.0)
 	if wears("toad_crown") and source != null and is_instance_valid(source) and source.has_method("apply_burning"):
 		source.apply_burning(4 + _player().level / 2, 3.0)
 

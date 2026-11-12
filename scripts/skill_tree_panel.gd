@@ -70,7 +70,7 @@ func _ready() -> void:
 	reset_button.add_theme_font_size_override("font_size", UiFont.px(9))
 	reset_button.focus_mode = Control.FOCUS_NONE
 	reset_button.pressed.connect(func() -> void: reset_requested.emit())
-	reset_button.mouse_entered.connect(func() -> void: detail.text = "Сброс навыков: все очки и Печати Неба вернутся — можно собрать новый билд.")
+	reset_button.mouse_entered.connect(func() -> void: detail.text = "Сброс навыков и ключевых талантов: нужна Книга забвения (первая победа над легендой ночи, чемпионы 10-го и 20-го этажей Башни, 14 печатей испытаний у входа в Башню, Хранитель Бездны). Очки и Печати Неба вернутся.")
 	group_bar.add_child(reset_button)
 	# Key talents (levels 5/10/15): what was chosen and a button for a choice due.
 	var keystone_row := HBoxContainer.new()
@@ -105,8 +105,8 @@ func populate(player: PlayerCharacter) -> void:
 	for index in SkillTree.GROUPS.size():
 		(group_bar.get_child(index) as Button).button_pressed = str(SkillTree.GROUPS[index]["id"]) == group
 	(group_bar.get_child(SkillTree.GROUPS.size()) as Button).button_pressed = group == "combos"
-	reset_button.text = "Сбросить навыки — %d зол." % SkillTree.reset_cost(player)
-	reset_button.disabled = SkillTree.spent_points(player) <= 0 and player.keystones.is_empty()
+	reset_button.text = "Сброс: книга (%d) + %d зол." % [SkillTree.tomes(player), SkillTree.reset_cost(player)]
+	reset_button.disabled = (SkillTree.spent_points(player) <= 0 and player.keystones.is_empty()) or SkillTree.tomes(player) <= 0
 	for child in columns.get_children():
 		columns.remove_child(child)
 		child.queue_free()
@@ -134,15 +134,17 @@ func populate(player: PlayerCharacter) -> void:
 			continue
 		var column := VBoxContainer.new()
 		column.custom_minimum_size = Vector2(192, 0)
-		column.add_theme_constant_override("separation", 3)
+		column.add_theme_constant_override("separation", 2)
 		columns.add_child(column)
-		column.add_child(_label(str(branch["name"]), 12, branch["color"]))
+		column.add_child(_label(str(branch["name"]), 11, branch["color"]))
 		var last_tier := 0
 		for skill_id in SkillTree.branch_skills(str(branch["id"])):
 			var definition: Dictionary = defs[skill_id]
 			var tier := int(definition.get("tier", 1))
 			if last_tier != 0 and tier != last_tier:
-				column.add_child(_label("  ↓", 9, Color(0.6, 0.6, 0.7)))
+				var arrow := _label("  ↓", 7, Color(0.6, 0.6, 0.7))
+				arrow.custom_minimum_size = Vector2(0, 6)
+				column.add_child(arrow)
 			last_tier = tier
 			column.add_child(_skill_button(player, skill_id, definition, branch["color"]))
 
@@ -169,11 +171,13 @@ func _skill_button(player: PlayerCharacter, skill_id: String, definition: Dictio
 	button.text = "%s%s  %d/%d" % ["✦ " if seal else "", str(definition.get("name", skill_id)), rank, max_rank]
 	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.add_theme_font_size_override("font_size", UiFont.px(9))
-	button.custom_minimum_size = Vector2(192, 22)
+	button.custom_minimum_size = Vector2(192, 16)
 	var reason := SkillTree.block_reason(player, skill_id)
 	var style := StyleBoxFlat.new()
 	style.set_corner_radius_all(3)
 	style.content_margin_left = 5
+	style.content_margin_top = 1
+	style.content_margin_bottom = 1
 	if rank >= max_rank:
 		style.bg_color = color.darkened(0.45)
 		style.border_color = color

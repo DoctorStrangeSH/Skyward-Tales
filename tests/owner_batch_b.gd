@@ -38,10 +38,15 @@ func _run() -> void:
 	if not game.director.try_talk("elder") or not game.hud.dialogue_label.text.contains("Мира"):
 		return _fail("the elder says where to find work (Mira's pages): " + game.hud.dialogue_label.text)
 	game.hud.close_dialogue()
+	# Этап 23: the key of this chapter is Mira's lost pages, not any deed.
 	quests.states["toren_wolf_hunt"]["started"] = true
 	quests.states["toren_wolf_hunt"]["completed"] = true
+	if game.director.link_ready(links[0]):
+		return _fail("another deed does not replace Mira's pages")
+	quests.states["lost_cartographer_notes"]["started"] = true
+	quests.states["lost_cartographer_notes"]["completed"] = true
 	if not game.director.link_ready(links[0]) or game.director.chapter_marker("elder") != "quest":
-		return _fail("one good deed opens the chapter")
+		return _fail("Mira's pages open the chapter")
 	game.director.try_talk("elder")
 	for i in 600:
 		if not game.story.active:
@@ -57,14 +62,17 @@ func _run() -> void:
 		quests.states[id]["completed"] = true
 	quests.active_quest_id = ""
 	game._on_miner_interacted(null)
+	game.story.skip()
 	game.hud.close_dialogue()
-	if quests.is_active("crystal_heart"):
-		return _fail("Dorn waits for a stronger hero")
+	if quests.is_active("crystal_heart") or not quests.is_active("key_lower_shaft"):
+		return _fail("Dorn hands out the foreman's key errand first")
 	hero.level = 6
-	quests.states["farm_slimes"]["started"] = true
-	quests.states["farm_slimes"]["completed"] = true
+	quests.add_progress("key_lower_shaft", 1)
 	game._on_miner_interacted(null)
+	game.story.skip()
 	game.hud.close_dialogue()
+	if not quests.is_completed("key_lower_shaft"):
+		return _fail("Dorn takes the key")
 	if not quests.is_active("crystal_heart"):
 		return _fail("Dorn gives the crystal chapter once it is open")
 	hero.level = 1

@@ -382,6 +382,11 @@ func _refresh_elemental_feedback() -> void:
 
 func take_elemental_damage(amount: int, element: String) -> void:
 	var multiplier: float = clampf(float(elemental_multipliers.get(element, 1.0)), 0.25, 2.0)
+	# Overcharge (talent): spells hit harder while the foe is shocked.
+	if shock_time_left > 0.0:
+		var hero := get_tree().get_first_node_in_group("player")
+		if hero != null and hero.get("talents") is Dictionary:
+			multiplier *= 1.0 + 0.1 * float(hero.talents.get("overcharge", 0))
 	take_damage(maxi(1, int(round(float(amount) * multiplier))))
 
 func get_status_duration_multiplier(element: String) -> float:

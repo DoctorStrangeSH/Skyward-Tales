@@ -320,6 +320,7 @@ func _on_warden_down(at: Vector2) -> void:
 	elif difficulty == 2:
 		legendary_done += 1
 		game.achievements.add("abyss")
+		game._spawn_loot(at + Vector2(20, -16), SkillTree.RESET_TOME)
 		game.spawn_generated_loot(at + Vector2(-20, -16), "legendary")
 	var mult := reward_mult()
 	game._spawn_loot(at + Vector2(-16, 8), "gold").amount = roundi((150 + 30 * level) * mult)

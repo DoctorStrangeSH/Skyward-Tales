@@ -64,7 +64,10 @@ func _run() -> void:
 	foe.free()
 	# Duelist after a reset: the blow after a roll is a sure crit.
 	hero.gold = 5000
-	if not game.reset_skills() or not hero.keystones.is_empty():
+	if game.reset_skills():
+		return _fail("no reset without a Book of Forgetting")
+	hero.add_item(SkillTree.RESET_TOME, 1)
+	if not game.reset_skills() or not hero.keystones.is_empty() or SkillTree.tomes(hero) != 0:
 		return _fail("the reset returns key talents")
 	keys.choose(5, "duelist")
 	keys.on_dodge()
