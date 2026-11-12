@@ -1609,6 +1609,16 @@
       "rarity": "epic",
       "value": 0,
       "material": true
+    },
+    "reaches_charm": {
+      "name": "Оберег Пределов",
+      "description": "Подарок деревни за отданную награду. +20 здоровья, +2 брони.",
+      "slot": "amulet",
+      "rarity": "rare",
+      "max_health": 20,
+      "armor": 2,
+      "value": 40,
+      "icon": "forest_charm"
     }
   },
   "sets": {

@@ -109,6 +109,7 @@ var hens: VillageHens
 var scout: ScoutTrail
 var forestry: ForestGuild
 var keystones: Keystones
+var consequences: Consequences
 var adit: OldAdit
 var home: HeroHome
 var pin: GoalPin
@@ -172,7 +173,10 @@ func _ready() -> void:
 	y_sort_enabled = true
 	quests = QuestManager.new()
 	quests.quest_started.connect(_on_quest_started)
-	quests.quest_completed.connect(func(_id: String) -> void: _progress_unsaved = true)
+	quests.quest_completed.connect(func(_id: String) -> void:
+		_progress_unsaved = true
+		if consequences != null:
+			consequences.check.call_deferred())
 	quests.quest_completed.connect(func(quest_id: String) -> void:
 		GameAudio.play("quest", -2.0, 0.0)
 		_refresh_dynamic_props.call_deferred()
@@ -280,6 +284,10 @@ func _ready() -> void:
 	scout.name = "ScoutTrail"
 	scout.game = self
 	add_child(scout)
+	consequences = Consequences.new()
+	consequences.name = "Consequences"
+	consequences.game = self
+	add_child(consequences)
 	keystones = Keystones.new()
 	keystones.name = "Keystones"
 	keystones.game = self

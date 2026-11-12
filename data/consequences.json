@@ -1,0 +1,26 @@
+{
+  "_comment": "Этап 23: решения в поручениях возвращаются позже. quest+choice — что выбрал герой; after — после какой главы это всплывает; speaker и text — кто и что говорит; items/gold/learn/xp — что приходит.",
+  "consequences": [
+    {"id": "village_gift", "quest": "moonleaf_gathering", "choice": "village", "after": "main_guardian", "speaker": "Старейшина Элиан",
+     "text": "Элиан догнал вас у ворот: «Ты отдал{|а} деревне свою награду за листья — люди помнят. Кузнец и травница сложились: вот Оберег Пределов. Носи — он греет».",
+     "items": {"reaches_charm": 1}},
+    {"id": "clinic_thanks", "quest": "bran_supply_run", "choice": "clinic", "after": "crystal_heart", "speaker": "Торговец Бран",
+     "text": "Бран: «Лечебница, которой ты отдал{|а} припасы, пережила зиму без потерь. Знахарка передала тебе зелья — сказала, ты знаешь, за что».",
+     "items": {"health_potion": 5}},
+    {"id": "fair_profit", "quest": "bran_supply_run", "choice": "fair", "after": "crystal_heart", "speaker": "Торговец Бран",
+     "text": "Бран: «Те припасы ушли на ярмарке втридорога. Я торговец, но не жулик — вот твоя доля».",
+     "gold": 150},
+    {"id": "toren_trail", "quest": "toren_wolf_hunt", "choice": "supplies", "after": "main_echo", "speaker": "Торен, охотник",
+     "text": "Торен: «Ты взял{|а} тогда зелья, а не золото — значит, думаешь о дороге. Слушай: я научу тебя видеть слабое место зверя». Пассивный навык «Зоркий глаз» изучен.",
+     "learn": "keen_eye"},
+    {"id": "toren_pelts", "quest": "toren_wolf_hunt", "choice": "gold", "after": "main_echo", "speaker": "Торен, охотник",
+     "text": "Торен: «Стая больше не возвращалась. Держи шкуры — они от тех волков, что ты прогнал{|а}».",
+     "items": {"wolf_pelt": 3}},
+    {"id": "lens_reads", "quest": "crystal_heart", "choice": "lens", "after": "main_archive", "speaker": "Ориэн, архивариус",
+     "text": "Ориэн взял вашу хрустальную линзу и поднёс к кристаллу памяти: «Огранка Дорна! Через неё видно то, что записано между строк». Опыт +250.",
+     "xp": 250},
+    {"id": "guild_contract", "quest": "crystal_heart", "choice": "guild", "after": "main_archive", "speaker": "Дорн, рудокоп",
+     "text": "Письмо от Дорна: «Гильдия заплатила за кристаллы вдвое больше, чем обещала. Половина — твоя, я так решил».",
+     "gold": 200}
+  ]
+}

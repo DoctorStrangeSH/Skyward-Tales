@@ -50,6 +50,8 @@ var _last_interact: float = -10.0
 var _ignored_targets: Dictionary = {}
 var _read_text := ""
 var _snapshot: Dictionary = {}
+var _resume_path := ""
+var _milestone_path := ""
 var _gear_clock: float = 0.0
 var _skill_clock: float = 0.0
 var _avoid: Dictionary = {}
@@ -73,6 +75,12 @@ func _initialize() -> void:
 		limit = float(args[0]) * 60.0
 	if args.size() > 1:
 		report_path = str(args[1])
+	# [3]: a save to start from; every finished quest saves to [4] (both
+	# optional) — long runs can resume from a milestone.
+	if args.size() > 2:
+		_resume_path = str(args[2])
+	if args.size() > 3:
+		_milestone_path = str(args[3])
 	call_deferred("_run")
 
 func _note(kind: String, text: String) -> void:
@@ -88,6 +96,11 @@ func _run() -> void:
 	await process_frame
 	# The game's own autosaves (HOME is a fresh temp folder for the bot).
 	game.autosave_enabled = true
+	if not _resume_path.is_empty() and FileAccess.file_exists(_resume_path):
+		var saved := SkywardGame.SAVE_SCRIPT.load_snapshot(_resume_path)
+		if not saved.is_empty() and game.restore_save_snapshot(saved):
+			clock = float(saved.get("bot_clock", 0.0))
+			print("RESUMED at ", int(clock / 60.0), " min")
 	hero = game.player
 	game.quests.quest_started.connect(func(id: String) -> void:
 		_quest_started[id] = clock
@@ -164,6 +177,10 @@ func _tick() -> void:
 func _save_later() -> void:
 	if not game.story.active and not game.game_over:
 		_snapshot = game.make_save_snapshot()
+		if not _milestone_path.is_empty():
+			var copy := _snapshot.duplicate(true)
+			copy["bot_clock"] = clock
+			SkywardGame.SAVE_SCRIPT.save_snapshot(copy, _milestone_path)
 
 ## A player puts on whatever is plainly better (the bag shows ▲/▼).
 func _gear_score(item_id: String) -> float:
@@ -276,18 +293,107 @@ func _on_death() -> void:
 
 const PRIORITY := {"turnin": 0, "main": 1, "side": 2, "offer": 3}
 
+## Tools a hint asks for (a player reads "нужна кирка" and makes one).
+const TOOL_HINTS := {"кирк": "copper_pickaxe"}
+const TOOL_PLANS := {"copper_pickaxe": {"copper_ore": 4, "wood": 3}}
+const GATHER_KIND := {"copper_ore": "copper", "wood": "wood"}
+var _tool_needed := ""
+var _gather_used: Dictionary = {}
+
+func _tool_goal() -> Dictionary:
+	if _tool_needed.is_empty():
+		return {}
+	if int(hero.inventory.get(_tool_needed, 0)) > 0:
+		_tool_needed = ""
+		return {}
+	var plan: Dictionary = TOOL_PLANS[_tool_needed]
+	var missing: Array = []
+	for item in plan:
+		if int(hero.inventory.get(item, 0)) < int(plan[item]):
+			missing.append(str(item))
+	if missing.is_empty():
+		# Shortcut: the bench of the foresters (planks, then the pickaxe).
+		game.crafting_service.craft(hero, "carp_planks")
+		var made: Dictionary = game.crafting_service.craft(hero, "carp_pickaxe")
+		_note("craft", "%s: %s" % [_tool_needed, str(made.get("message", ""))])
+		if bool(made.get("success", false)):
+			_tool_needed = ""
+		elif hero.gold < 20:
+			hero.add_gold(20)
+		return {}
+	# Any missing material with a node at hand, then elsewhere.
+	for item in missing:
+		var kind := str(GATHER_KIND[item])
+		var best: Dictionary = {}
+		var best_d := INF
+		for node in game.get_children():
+			if node is GatherNode and node.kind == kind and node.available and float(_gather_used.get(node.key, -100.0)) < clock - 30.0 and float(_ignored_targets.get("gather|" + node.key, -1.0)) < clock:
+				if not _reachable(node.global_position):
+					continue
+				var d := hero.global_position.distance_to(node.global_position)
+				if d < best_d:
+					best_d = d
+					best = {"region": game.current_region, "position": node.global_position, "text": "добыть: %s" % item, "key": "gather|" + node.key, "gather": node.key}
+		if not best.is_empty():
+			return best
+	for item in missing:
+		var kind := str(GATHER_KIND[item])
+		for region_id in RegionCatalog.all_ids():
+			if str(region_id) == game.current_region or float(_ignored_targets.get("gatherland|" + str(region_id) + kind, -1.0)) > clock:
+				continue
+			for entry in RegionCatalog.get_region(str(region_id)).get("gather", []):
+				if str(entry.get("kind", "")) == kind and _route(game.current_region, str(region_id)).size() > 0:
+					return {"region": str(region_id), "position": SkywardGame._vec(entry.get("position")), "text": "добыть: %s" % item, "key": "gatherland|" + str(region_id) + kind}
+	# Nothing grown back yet: wait it out doing other things.
+	return {}
+
+func _reachable(point: Vector2) -> bool:
+	var map := game.world.get_world_2d().navigation_map
+	var path := NavigationServer2D.map_get_path(map, hero.global_position, point, true)
+	return not path.is_empty() and path[path.size() - 1].distance_to(point) < 24.0
+
+const INTERIORS := {"old_adit": "greenreach", "guild_lodge": "greenreach", "hero_home": "greenreach"}
+const SHIP_ONLY := ["storm_isle", "mirage_isle", "free_port"]
+const DOORS := {"old_adit": OldAdit.ENTRANCE + Vector2(0, -4), "guild_lodge": ForestGuild.COTTAGE + Vector2(0, 8)}
+
+## Lands between two places, counting doors of rooms and the ship.
+func _route(from: String, to: String) -> Array:
+	if from == to:
+		return [from]
+	if INTERIORS.has(from):
+		var rest := _route(str(INTERIORS[from]), to)
+		return ([from] + rest) if not rest.is_empty() else []
+	if SHIP_ONLY.has(to) or SHIP_ONLY.has(from):
+		if not game.ship.is_ready() or (SHIP_ONLY.has(to) and not game.ship.blocked(to).is_empty()):
+			return []
+		return [from, to]
+	if INTERIORS.has(to):
+		var way := QuestNav.route(from, str(INTERIORS[to]))
+		return (way + [to]) if not way.is_empty() else []
+	return QuestNav.route(from, to)
+
+func _exit_door() -> Node2D:
+	for node in game.get_children():
+		if node is TowerObject and (node.map_label == "Выход" or node.label.contains("выйти")):
+			return node
+	return null
+
 func _choose_goal() -> Dictionary:
+	var tool := _tool_goal()
+	if not tool.is_empty():
+		return tool
 	game.quest_nav.refresh()
 	var best: Dictionary = {}
 	var best_score := INF
 	for target in game.quest_nav.targets:
-		var key := "%s|%s|%s" % [target["region"], str(target["position"]), target["title"]]
+		# One key per errand, wherever its pin stands (a door, or inside).
+		var key := "%s|%s|%s" % [target["kind"], target["title"], str(target["position"]) if str(target["region"]) == game.current_region and target["kind"] != "main" else ""]
 		if float(_ignored_targets.get(key, -1.0)) > clock:
 			continue
 		var kind := str(target["kind"])
 		if not PRIORITY.has(kind):
 			continue
-		var hops := QuestNav.route(game.current_region, str(target["region"])).size()
+		var hops := _route(game.current_region, str(target["region"])).size()
 		if hops == 0:
 			continue
 		if kind != "main" and kind != "turnin" and not bool(target.get("main", false)) and _too_dangerous(str(target["region"])):
@@ -316,7 +422,7 @@ func _nearest_offer() -> Dictionary:
 			var npc_id := str(npc.get("id", ""))
 			if game.dialogues.marker_for(npc_id) not in ["quest", "ready"]:
 				continue
-			var hops := QuestNav.route(game.current_region, str(region_id)).size()
+			var hops := _route(game.current_region, str(region_id)).size()
 			if _too_dangerous(str(region_id)):
 				continue
 			if hops == 0 or (not game.visited_regions.has(str(region_id)) and str(region_id) != game.current_region and hops > 2):
@@ -338,7 +444,7 @@ func _nearest_offer() -> Dictionary:
 ## A player reads "Рекомендуемый уровень" and does not go far beyond it for
 ## a side errand; every land on the way counts.
 func _too_dangerous(region_id: String) -> bool:
-	for step in QuestNav.route(game.current_region, region_id):
+	for step in _route(game.current_region, region_id):
 		if RegionCatalog.level(str(step)) > hero.level + 1:
 			return true
 	return false
@@ -358,11 +464,33 @@ func _walk_to(goal: Dictionary) -> void:
 	var region := str(goal["region"])
 	var point: Variant = goal["position"]
 	var gate_hop := false
-	if region != game.current_region:
-		var path := QuestNav.route(game.current_region, region)
+	if region != game.current_region and INTERIORS.has(game.current_region):
+		# Rooms and the adit have a door, not a gate.
+		var door := _exit_door()
+		if door == null:
+			_note("problem", "нет выхода из %s" % game.current_region)
+			return
+		point = door.global_position
+		gate_hop = true
+	elif region != game.current_region and (SHIP_ONLY.has(region) or SHIP_ONLY.has(game.current_region)):
+		# Shortcut for the dock and Mira's map: the «Ветрокрыл» flies.
+		var to := region if SHIP_ONLY.has(region) else "haven"
+		if game.ship.fly_now(to):
+			_note("region", "на «Ветрокрыле» → %s" % to)
+		else:
+			_ignored_targets[str(goal["key"])] = clock + 300.0
+			_note("problem", "не долететь до %s: %s" % [to, game.ship.blocked(to)])
+		return
+	elif INTERIORS.has(region) and game.current_region == str(INTERIORS[region]) and DOORS.has(region):
+		point = DOORS[region]
+		gate_hop = true
+	elif region != game.current_region:
+		var path := _route(game.current_region, region)
+		if path.size() >= 2 and INTERIORS.has(str(path[1])):
+			path = QuestNav.route(game.current_region, str(INTERIORS[str(path[1])]))
 		var gate := RegionCatalog.gate(game.current_region, str(path[1])) if path.size() >= 2 else {}
 		if gate.is_empty():
-			_ignored_targets[str(goal["key"])] = true
+			_ignored_targets[str(goal["key"])] = clock + 300.0
 			_note("problem", "нет ворот к %s (%s)" % [region, goal["text"]])
 			return
 		point = SkywardGame._vec(gate.get("position"))
@@ -375,7 +503,7 @@ func _walk_to(goal: Dictionary) -> void:
 			_empty_land += STEP
 			if _empty_land > 90.0:
 				_empty_land = 0.0
-				_ignored_targets[str(goal["key"])] = true
+				_ignored_targets[str(goal["key"])] = clock + 300.0
 				_note("problem", "цель «%s» без места: полторы минуты в этой земле никого" % goal["text"])
 				return
 			if _wander == Vector2.INF or hero.global_position.distance_to(_wander) < 24.0:
@@ -419,11 +547,24 @@ func _walk_to(goal: Dictionary) -> void:
 		_stuck_clock += STEP
 		if _stuck_clock > STUCK_TIME:
 			_stuck_clock = 0.0
-			_stuck_points.append([game.current_region, Vector2i(hero.global_position), str(goal["text"])])
+			# A player presses E on whatever blocks the way (rubble, a cart, a door).
+			var blocker := game._find_nearest_interactable()
+			if blocker != null and not blocker is WorldNpc and not blocker is RegionGate:
+				game._try_interact()
+			elif game.adit != null and game.adit._cart != null and is_instance_valid(game.adit._cart) and not game.adit._cart.riding:
+				# The adit's chasm: the cart rides across.
+				var cart: Node2D = game.adit._cart
+				if hero.global_position.distance_to(cart.global_position) < 26.0:
+					cart.interact()
+					_note("cart", "поездка на вагонетке")
+				elif hero.global_position.distance_to(cart.global_position) < 400.0:
+					_detour = cart.global_position + Vector2(0, 12)
+					_detour_left = 5.0
+			_stuck_points.append([game.current_region, Vector2i(hero.global_position), str(goal["text"]), clock])
 			_note("stuck", "%s у %s, цель %s" % [game.current_region, str(Vector2i(hero.global_position)), goal["text"]])
-			var count := _stuck_points.filter(func(p: Array) -> bool: return str(p[2]) == str(goal["text"])).size()
+			var count := _stuck_points.filter(func(p: Array) -> bool: return str(p[2]) == str(goal["text"]) and float(p[3]) > clock - 60.0).size()
 			if count >= 3:
-				_ignored_targets[str(goal["key"])] = true
+				_ignored_targets[str(goal["key"])] = clock + 300.0
 				_note("problem", "не дойти до «%s» (%s %s)" % [goal["text"], region, str(point)])
 			_path = PackedVector2Array()
 			_best_near = near
@@ -444,6 +585,10 @@ func _arrive(goal: Dictionary, gate_hop: bool) -> void:
 		# Something else is closer to the hero than the goal: step nearer.
 		_step_in = goal["position"]
 		return
+	if target == null and game.companion != null and is_instance_valid(game.companion) and hero.global_position.distance_to(game.companion.global_position) < 40.0:
+		# E with nothing around talks to the companion (Mira walks along).
+		game._try_interact()
+		return
 	if target == null:
 		# Nothing to press here: maybe a land goal or a moving NPC.
 		if not gate_hop and goal["position"] != null:
@@ -454,6 +599,8 @@ func _arrive(goal: Dictionary, gate_hop: bool) -> void:
 				_note("problem", "у «%s» нечего нажать (%s %s)" % [goal["text"], game.current_region, str(goal["position"])])
 		return
 	game._try_interact()
+	if goal.has("gather"):
+		_gather_used[str(goal["gather"])] = clock
 	if gate_hop:
 		await process_frame
 		if game.current_region != before_region:
@@ -557,6 +704,10 @@ func _watch_messages() -> void:
 	if text != _last_message and not text.is_empty():
 		_last_message = text
 		_note("msg", text.replace("\n", " "))
+		for hint in TOOL_HINTS:
+			if text.to_lower().contains(str(hint)) and text.contains("Нужна") and _tool_needed.is_empty() and int(hero.inventory.get(TOOL_HINTS[hint], 0)) == 0:
+				_tool_needed = str(TOOL_HINTS[hint])
+				_note("plan", "нужно сделать: %s" % _tool_needed)
 
 # --- Report ---------------------------------------------------------------------------
 
