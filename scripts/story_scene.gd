@@ -77,6 +77,7 @@ func play(id: String, on_finished: Callable = Callable()) -> bool:
 	_index = -1
 	_on_finished = on_finished
 	active = true
+	game.player.scene_hold = true
 	game.player.set_physics_process(false)
 	if scene.has("title"):
 		game.hud.show_title_card(str(scene["title"]))
@@ -147,6 +148,9 @@ func _finish() -> void:
 	_choices = []
 	active = false
 	scene_id = ""
+	game.player.scene_hold = false
+	# A short breath after the scene before the foes around strike again.
+	game.player.dodge_grace(0.8)
 	game.hud.close_dialogue()
 	game.player.set_physics_process(true)
 	_restore_camera(0.6)
@@ -168,11 +172,15 @@ func _speaker_name(speaker_id: String) -> String:
 
 func _portrait(speaker_id: String) -> String:
 	var face_id := ("hero_f" if StoryText.hero_gender == "f" else "hero_m") if speaker_id == "hero" else speaker_id
+	if speaker_id != "hero" and not ResourceLoader.exists("res://assets/sprites/portraits/%s.png" % face_id):
+		var own := RegionCatalog.portrait_id(speaker_id)
+		if not own.is_empty():
+			face_id = own
 	if not face_id.is_empty() and ResourceLoader.exists("res://assets/sprites/portraits/%s.png" % face_id):
 		return "sprites/portraits/%s.png" % face_id
 	if speaker_id == "hero":
 		return "sprites/characters/%s.png" % ("hero_f_8dir_walk" if StoryText.hero_gender == "f" else "hero_8dir_walk")
-	if speaker_id.is_empty():
+	if speaker_id.is_empty() or not ResourceLoader.exists("res://assets/sprites/npcs/%s.png" % speaker_id):
 		return ""
 	return "sprites/npcs/%s.png" % speaker_id
 

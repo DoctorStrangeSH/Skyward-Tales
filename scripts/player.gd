@@ -74,6 +74,14 @@ var gear_sets: Dictionary = {}
 var phoenix_ready_in: float = 0.0
 const PHOENIX_COOLDOWN := 180.0
 signal phoenix_triggered
+## A story scene is playing: the frozen hero cannot be hurt, and foes hold
+## still (the first-hour bot was killed during the 30-second scene after the
+## Guardian by the wolves around it).
+var scene_hold: bool = false
+var _grace_left: float = 0.0
+
+func dodge_grace(seconds: float) -> void:
+	_grace_left = maxf(_grace_left, seconds)
 ## A trail ration (fishing): the buff "ration" saved the hero from a lethal blow.
 signal ration_saved
 ## Gear fittings from the mine (see GEAR_MODS): a message for the HUD.
@@ -138,6 +146,7 @@ func start_dodge() -> bool:
 func _physics_process(_delta: float) -> void:
 	_update_buffs(_delta)
 	dodge_cooldown_left = maxf(0.0, dodge_cooldown_left - _delta)
+	_grace_left = maxf(0.0, _grace_left - _delta)
 	guard_cooldown_left = maxf(0.0, guard_cooldown_left - _delta)
 	if oath_left > 0.0:
 		oath_left = maxf(0.0, oath_left - _delta)
@@ -238,7 +247,7 @@ func play_cast(direction: Vector2) -> void:
 		visual.play_action(_cast_sheet(), 0.32)
 
 func take_damage(amount: int, source: Node = null) -> void:
-	if dodge_time_left > 0.0 or health <= 0:
+	if dodge_time_left > 0.0 or health <= 0 or scene_hold or _grace_left > 0.0:
 		return
 	last_attacker = source
 	if parry_left > 0.0:
@@ -1017,6 +1026,7 @@ func displaced_by(item_id: String, slot: String) -> Array[String]:
 ## roll, a control lock): called when a save is loaded.
 func reset_transient() -> void:
 	set_physics_process(true)
+	scene_hold = false
 	velocity = Vector2.ZERO
 	charge_rooted = false
 	dodge_time_left = 0.0

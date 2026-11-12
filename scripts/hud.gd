@@ -695,7 +695,7 @@ func _set_speaker(speaker: String) -> void:
 	for key in PORTRAITS:
 		if speaker.contains(key):
 			var face: Texture2D = WorldArt.texture("sprites/portraits/%s.png" % PORTRAITS[key]) if ResourceLoader.exists("res://assets/sprites/portraits/%s.png" % PORTRAITS[key]) else null
-			var sheet := WorldArt.texture("sprites/npcs/%s.png" % PORTRAITS[key])
+			var sheet: Texture2D = WorldArt.texture("sprites/npcs/%s.png" % PORTRAITS[key]) if face == null and ResourceLoader.exists("res://assets/sprites/npcs/%s.png" % PORTRAITS[key]) else null
 			if face != null:
 				portrait = face
 			elif sheet != null:
@@ -704,6 +704,11 @@ func _set_speaker(speaker: String) -> void:
 				atlas.region = Rect2(4, 0, 24, 24)  # head and shoulders of the idle frame
 				portrait = atlas
 			break
+	if portrait == null and not speaker.is_empty():
+		# Newer villagers: the portrait of their own look (regions.json).
+		var face_id := RegionCatalog.portrait_id(speaker)
+		if not face_id.is_empty():
+			portrait = WorldArt.texture("sprites/portraits/%s.png" % face_id)
 	dialogue_portrait.texture = portrait
 	dialogue_portrait.get_parent().visible = portrait != null
 

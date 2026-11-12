@@ -231,6 +231,9 @@ func _physics_process(delta: float) -> void:
 	blind_time_left = maxf(0.0, blind_time_left - delta)
 	attack_cooldown = maxf(0.0, attack_cooldown - delta)
 	var player := get_tree().get_first_node_in_group("player") as Node2D
+	if player != null and player.get("scene_hold") == true:
+		velocity = Vector2.ZERO
+		return
 	if player == null or not player.is_physics_processing():
 		_cancel_special_attack()
 		velocity = Vector2.ZERO

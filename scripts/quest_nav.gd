@@ -99,6 +99,16 @@ func _objectives(quest_id: String, definition: Dictionary) -> Array:
 			kill = str(boss_kind)
 	if quest_id == "main_guardian":
 		kill = "guardian"
+	# A foe of the quest standing here right now (a boss called up by a
+	# story scene, e.g. the Echo at the altar) is pinned where it is.
+	if not kill.is_empty() and found.is_empty():
+		for node in game.get_children():
+			if node is SlimeEnemy and not node.is_queued_for_deletion() and node.health > 0 and SkywardGame.enemy_kind(node) == kill:
+				found.append([game.current_region, node.global_position])
+				if kill in SkywardGame.STORY_BOSSES:
+					break
+		if found.size() > 1 and not kill in SkywardGame.STORY_BOSSES:
+			found.clear()
 	if not kill.is_empty() and found.is_empty():
 		for region_id in RegionCatalog.ids():
 			var layout := RegionCatalog.get_region(region_id)

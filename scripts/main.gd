@@ -171,6 +171,7 @@ func _ready() -> void:
 	y_sort_enabled = true
 	quests = QuestManager.new()
 	quests.quest_started.connect(_on_quest_started)
+	quests.quest_completed.connect(func(_id: String) -> void: _progress_unsaved = true)
 	quests.quest_completed.connect(func(quest_id: String) -> void:
 		GameAudio.play("quest", -2.0, 0.0)
 		_refresh_dynamic_props.call_deferred()
@@ -648,11 +649,27 @@ var _play_clock: float = 0.0
 func _spawn_layout_enemy(enemy_data: Dictionary) -> SlimeEnemy:
 	return builder._spawn_layout_enemy(enemy_data)
 
+const HUNT_RESPAWN := 10.0
+
+## Kinds an active "defeat N" quest still needs.
+func _hunted_kinds() -> Dictionary:
+	var result := {}
+	for quest_id in quests.definitions:
+		var kind := str(quests.definitions[quest_id].get("kill_kind", "wolf" if quest_id == "toren_wolf_hunt" else ""))
+		if not kind.is_empty() and quests.is_active(str(quest_id)) and not quests.is_ready_to_complete(str(quest_id)):
+			result[kind] = true
+	return result
+
 func _process_respawns(delta: float) -> void:
 	_play_clock += delta
 	if _respawns.is_empty():
 		return
+	var hunted := _hunted_kinds()
 	for entry in _respawns.duplicate():
+		# A hunt in progress: its quarry comes back sooner (the first hour
+		# showed hunts taken after the hero had cleared the land stalling).
+		if hunted.has(str(entry["data"].get("kind", ""))):
+			entry["at"] = minf(float(entry["at"]), _play_clock + HUNT_RESPAWN)
 		if float(entry["at"]) > _play_clock:
 			continue
 		if str(entry["region"]) != current_region:
@@ -1958,6 +1975,8 @@ var _autosave_clock: float = 0.0
 
 func _tick_autosave(delta: float) -> void:
 	_autosave_clock += delta
+	if _autosave_waiting and int(_autosave_clock * 4.0) != int((_autosave_clock - delta) * 4.0) and not in_danger():
+		request_autosave()
 	if _autosave_clock < AUTOSAVE_INTERVAL:
 		return
 	if hud.dialogue_visible or story.active or fishing.active():
@@ -1965,10 +1984,34 @@ func _tick_autosave(delta: float) -> void:
 	_autosave_clock = 0.0
 	request_autosave()
 
+## An autosave in the middle of a fight is a trap: after a defeat the load
+## puts the hero back into the same fight, often wounded (the first-hour
+## bot died sixty times in a row at the Guardian that way). Saves wait until
+## the danger is over.
+var _autosave_waiting: bool = false
+var _progress_unsaved: bool = false
+
+func in_danger() -> bool:
+	if player == null or player.health < player.max_health * 0.4:
+		return player != null
+	for node in get_children():
+		if node is SlimeEnemy and not node.is_queued_for_deletion() and node.health > 0:
+			var reach := 420.0 if STORY_BOSSES.has(enemy_kind(node)) or node.combat_feedback.elite else 170.0
+			if node.global_position.distance_to(player.global_position) < reach:
+				return true
+	return false
+
 func autosave() -> bool:
 	_autosave_pending = false
 	if not autosave_enabled or game_over or player == null or not is_inside_tree():
 		return false
+	# Finished quests are saved at once even mid-fight: losing a won boss
+	# to the next stray blow is worse than loading near a few wolves.
+	if in_danger() and not _progress_unsaved:
+		_autosave_waiting = true
+		return false
+	_autosave_waiting = false
+	_progress_unsaved = false
 	var success: bool = SAVE_SCRIPT.save_snapshot(make_save_snapshot(), autosave_path())
 	if success:
 		_autosave_clock = 0.0

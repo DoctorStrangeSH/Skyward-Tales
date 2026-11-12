@@ -39,6 +39,29 @@ static func get_region(region_id: String) -> Dictionary:
 	var region: Variant = all().get(region_id, {})
 	return region if region is Dictionary else {}
 
+## The portrait of an NPC (assets/sprites/portraits/<id>.png): its own, or
+## the one of the character whose look it wears; "" when there is none.
+## Found by id or by the name shown in dialogue ("Сеня, молодой рудокоп").
+static var _portraits: Dictionary = {}
+
+static func portrait_id(npc_id_or_name: String) -> String:
+	if _portraits.is_empty():
+		for region_id in all_ids():
+			for npc in get_region(str(region_id)).get("npcs", []):
+				var id := str(npc.get("id", ""))
+				var face := str(npc.get("look", id))
+				for candidate in [id, face]:
+					if ResourceLoader.exists("res://assets/sprites/portraits/%s.png" % candidate):
+						_portraits[id] = candidate
+						_portraits[str(npc.get("name", id))] = candidate
+						break
+	if _portraits.has(npc_id_or_name):
+		return str(_portraits[npc_id_or_name])
+	for key in _portraits:
+		if str(key).length() > 3 and npc_id_or_name.begins_with(str(key)):
+			return str(_portraits[key])
+	return ""
+
 static func resolve(region_id: String) -> String:
 	return region_id if has(region_id) else DEFAULT_REGION
 
