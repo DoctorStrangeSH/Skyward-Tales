@@ -93,15 +93,29 @@ func projected_position(item: Dictionary, view: Vector2) -> Vector2:
 		at.x = minf(at.x, -half.x) if base.x < 0.0 else maxf(at.x, _size.x + half.x)
 	else:
 		at.y = minf(at.y, -half.y)
+	# Try every boundary from the original projected position. Sequential pushes
+	# can move an island back into an earlier corridor when bridges are close.
+	var candidates: Array[Vector2] = [at]
 	for corridor in bridge_corridors:
-		var bounds := Rect2(at - half, half * 2.0)
-		if not bounds.intersects(corridor, true):
-			continue
 		if horizontal:
-			at.y = corridor.position.y - half.y - 1.0 if base.y < corridor.get_center().y else corridor.end.y + half.y + 1.0
+			candidates.append(Vector2(at.x, corridor.position.y - half.y - 1.0))
+			candidates.append(Vector2(at.x, corridor.end.y + half.y + 1.0))
 		else:
-			at.x = corridor.position.x - half.x - 1.0 if base.x < corridor.get_center().x else corridor.end.x + half.x + 1.0
-	return at
+			candidates.append(Vector2(corridor.position.x - half.x - 1.0, at.y))
+			candidates.append(Vector2(corridor.end.x + half.x + 1.0, at.y))
+	var best := at
+	var distance := INF
+	for candidate in candidates:
+		var bounds := Rect2(candidate - half, half * 2.0)
+		var clear := true
+		for corridor in bridge_corridors:
+			if bounds.intersects(corridor, true):
+				clear = false
+				break
+		if clear and candidate.distance_squared_to(at) < distance:
+			best = candidate
+			distance = candidate.distance_squared_to(at)
+	return best
 
 func _process(delta: float) -> void:
 	var camera := get_viewport().get_camera_2d()

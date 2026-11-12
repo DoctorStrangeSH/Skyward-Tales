@@ -10,6 +10,7 @@ from PIL import Image, ImageEnhance
 
 from hd import pack
 from hd.styles import STYLE
+from shore_profile import clip_minimap
 
 ROOT = pack.ROOT
 SCALE = 3  # world px per minimap px
@@ -55,6 +56,7 @@ def build(region_id: str, terrain: dict) -> Path | None:
         image.alpha_composite(Image.open(inner).convert("RGBA").resize(image.size, Image.LANCZOS))
     image = ImageEnhance.Contrast(image).enhance(1.04 if style in ("day", "haven") else 1.08)
     image = ImageEnhance.Color(image).enhance(0.90 if style in ("day", "haven") else 1.12)
+    image = clip_minimap(image, terrain)
     out = ROOT / "assets" / "world" / f"{region_id}_mini.png"
     image.save(out, optimize=True)
     return out

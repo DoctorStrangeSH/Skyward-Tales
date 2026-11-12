@@ -232,6 +232,8 @@ func water_point(from: Vector2) -> Vector2:
 	var best := from + Vector2(0, -14)
 	var best_distance := INF
 	for pond in game._layout().get("terrain", {}).get("ponds", []):
+		if not bool(pond.get("fishable", true)):
+			continue
 		var target: Vector2
 		var center: Vector2
 		if pond.has("circle"):

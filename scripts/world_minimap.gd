@@ -80,6 +80,13 @@ func _texture() -> Texture2D:
 		_thumb_region = region_id
 		var path := "world/%s_mini.png" % region_id
 		_thumb = WorldArt.texture(path) if ResourceLoader.exists("res://assets/" + path) else null
+		var profile := ShoreProfile.points(RegionCatalog.terrain(region_id))
+		if _thumb != null and not profile.is_empty():
+			var image := _thumb.get_image()
+			if image.is_compressed():
+				image.decompress()
+			ShoreProfile.clip_thumbnail(image, profile, _world_size())
+			_thumb = ImageTexture.create_from_image(image)
 	return _thumb
 
 func _draw() -> void:
@@ -112,7 +119,7 @@ func _draw() -> void:
 		draw_texture_rect_region(texture, visible, source)
 	elif visible.has_area():
 		draw_rect(visible, RegionCatalog.map_color(region_id))
-	if visible.has_area() and not cave:
+	if visible.has_area() and not cave and ShoreProfile.points(RegionCatalog.terrain(region_id)).is_empty():
 		# The island rim.
 		draw_rect(world_rect.intersection(area.grow(1)), Color(0.3, 0.24, 0.2, 0.9), false, 1.0)
 	for marker in _all_markers():

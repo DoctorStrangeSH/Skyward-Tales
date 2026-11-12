@@ -9,3 +9,4 @@ position = Vector2(1556, 1274)
 stream_width = 64.0
 drop_length = 160.0
 flow_speed = 1.0
+approach_length = 38.0

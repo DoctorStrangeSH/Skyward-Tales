@@ -12,6 +12,14 @@ from pixel import Canvas, bayer, fbm, polyline_distance
 
 def _pond_mask(w: int, h: int, pond: dict, seed: int) -> np.ndarray:
     ys, xs = np.mgrid[0:h, 0:w].astype(np.float32) + 0.5
+    if "polygon" in pond:
+        # Authoritative shore shared with the HD renderer and runtime walls.
+        points = pond["polygon"]
+        inside = np.zeros((h, w), dtype=bool)
+        for (ax, ay), (bx, by) in zip(points, points[1:] + points[:1]):
+            if ay != by:
+                inside ^= ((ay > ys) != (by > ys)) & (xs < (bx-ax)*(ys-ay)/(by-ay)+ax)
+        return inside
     wobble = fbm(w, h, 14.0, seed, 2) - 0.5
     if "rect" in pond:
         x, y, rw, rh = pond["rect"]

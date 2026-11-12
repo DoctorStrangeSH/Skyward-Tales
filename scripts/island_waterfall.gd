@@ -6,6 +6,7 @@ class_name IslandWaterfall
 ## is used by the game. Grain keeps its world scale when the stream is widened.
 const ATLAS := "res://assets/world_hd/cliffs/waterfall.png"
 const FLOW := preload("res://assets/shaders/island_waterfall.gdshader")
+const APPROACH := preload("res://assets/shaders/waterfall_approach.gdshader")
 
 @export_group("Размер потока")
 @export_range(8.0, 384.0, 1.0) var stream_width: float = 64.0:
@@ -17,6 +18,11 @@ const FLOW := preload("res://assets/shaders/island_waterfall.gdshader")
 		drop_length = clampf(value, 64.0, 1024.0)
 		_request_refresh()
 @export_group("Вода")
+## Length of visible surface flow before a lake-fed outlet; zero for springs.
+@export_range(0.0, 64.0, 1.0) var approach_length: float = 0.0:
+	set(value):
+		approach_length = clampf(value, 0.0, 64.0)
+		_request_refresh()
 @export_range(0.0, 4.0, 0.05) var flow_speed: float = 1.0:
 	set(value):
 		flow_speed = clampf(value, 0.0, 4.0)
@@ -41,6 +47,8 @@ const FLOW := preload("res://assets/shaders/island_waterfall.gdshader")
 
 var stream: ColorRect
 var flow_material: ShaderMaterial
+var approach: ColorRect
+var approach_material: ShaderMaterial
 var left_cap: Sprite2D
 var right_cap: Sprite2D
 var clock: float = 0.0
@@ -67,6 +75,15 @@ func _ready() -> void:
 	flow_material.shader = FLOW
 	flow_material.set_shader_parameter("atlas", load(ATLAS))
 	stream.material = flow_material
+	approach = get_node_or_null("Approach") as ColorRect
+	if approach == null:
+		approach = ColorRect.new()
+		approach.name = "Approach"
+		approach.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		add_child(approach)
+	approach_material = ShaderMaterial.new()
+	approach_material.shader = APPROACH
+	approach.material = approach_material
 	left_cap = _cap("res://assets/world_hd/props/waterfall_lip_left.png", "LeftBank")
 	right_cap = _cap("res://assets/world_hd/props/waterfall_lip_right.png", "RightBank")
 	_refresh()
@@ -94,6 +111,14 @@ func _refresh() -> void:
 		return
 	stream.position = Vector2(-stream_width * 0.5, 0.0)
 	stream.size = Vector2(stream_width, drop_length)
+	if approach != null:
+		approach.visible = approach_length > 0.0
+		approach.position = Vector2(-stream_width * 0.5, -approach_length)
+		# A slight overlap hides the planar seam at the brink.
+		approach.size = Vector2(stream_width, approach_length + 3.0)
+		approach_material.set_shader_parameter("surface_size", approach.size)
+		approach_material.set_shader_parameter("water_tint", water_tint)
+		approach_material.set_shader_parameter("clock", clock)
 	if is_instance_valid(left_cap):
 		left_cap.position = Vector2(-stream_width * 0.5 - 3.0, -2.0)
 		left_cap.visible = show_lip
@@ -113,3 +138,5 @@ func _process(delta: float) -> void:
 	# 120 is a common period of the atlas and flow phases, at every speed.
 	clock = fposmod(clock + delta * flow_speed, 120.0)
 	flow_material.set_shader_parameter("clock", clock)
+	if approach_material != null:
+		approach_material.set_shader_parameter("clock", clock)

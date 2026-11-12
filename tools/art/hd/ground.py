@@ -58,7 +58,10 @@ def _pond_field(terrain: dict, w: int, h: int, seed: int) -> np.ndarray:
     ys, xs = np.mgrid[0:sh, 0:sw].astype(np.float32) + 0.5
     wobble = pixel.fbm(sw, sh, 14.0, seed, 2) - 0.5
     for pond in terrain.get("ponds", []):
-        if "rect" in pond:
+        if "polygon" in pond:
+            from terrain import _pond_mask
+            mask |= _pond_mask(sw, sh, pond, seed)
+        elif "rect" in pond:
             x, y, rw, rh = pond["rect"]
             cx, cy, ax, ay = x + rw / 2, y + rh / 2, rw / 2, rh / 2
             d = np.abs((xs - cx) / ax) ** 3.2 + np.abs((ys - cy) / ay) ** 3.2

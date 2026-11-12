@@ -51,5 +51,12 @@ func _run() -> void:
 				quit(1)
 				return
 		print("Captured actual island: ", path)
+	game.queue_free()
+	var audio := GameAudio.instance()
+	if audio != null:
+		audio._release()
+		audio.queue_free()
+	for frame in 12:
+		await process_frame
 	quit(0)
 
