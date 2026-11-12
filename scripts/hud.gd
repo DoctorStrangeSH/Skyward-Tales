@@ -92,6 +92,7 @@ signal handcraft_requested
 signal hero_assign_requested(slot_index: int, skill_id: String)
 signal skill_learn_requested(skill_id: String)
 signal skills_reset_requested
+signal keystone_requested
 var journal_visible: bool = false
 ## «Занятия» (owner's list №33) and the tab strip over every window (№28).
 var activities_view: ActivitiesPanel
@@ -297,6 +298,7 @@ func _ready() -> void:
 	root.add_child(skills_view)
 	skills_view.learn_requested.connect(func(id: String) -> void: skill_learn_requested.emit(id))
 	skills_view.reset_requested.connect(func() -> void: skills_reset_requested.emit())
+	skills_view.keystone_requested.connect(func() -> void: keystone_requested.emit())
 	activities_view = ActivitiesPanel.new()
 	root.add_child(activities_view)
 	# Owner's list №28: one window with tabs — every book takes the same
@@ -535,7 +537,7 @@ func update_status(player: PlayerCharacter, quests: QuestManager) -> void:
 	if vitals != null:
 		vitals.set_values(player)
 	if action_bar != null:
-		action_bar.set_experience(player.level, player.experience, player.experience_to_next)
+		action_bar.set_experience(player.level, player.experience, player.experience_to_next, SkillTree.available_points(player) + (1 if game_keystone_due(player) else 0))
 	quest_label.text = "◆ " + quests.get_active_summary()
 	quest_tracker.refresh(quests)
 	var effects: Array[String] = []
@@ -628,6 +630,12 @@ func toggle_journal(quests: QuestManager, player: PlayerCharacter = null) -> voi
 	journal_view.visible = journal_visible
 	if journal_visible:
 		journal_view.populate(quests, player)
+
+static func game_keystone_due(player: PlayerCharacter) -> bool:
+	for tier in Keystones.TIERS:
+		if player.level >= int(tier) and not player.keystones.has(str(tier)):
+			return true
+	return false
 
 func show_talent_choices(choices: Array[Dictionary]) -> void:
 	talent_view.populate(choices)

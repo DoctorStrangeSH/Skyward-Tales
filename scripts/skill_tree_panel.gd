@@ -5,10 +5,13 @@ class_name SkillTreePanel
 
 signal learn_requested(skill_id: String)
 signal reset_requested
+signal keystone_requested
 
 ## Codex of elemental combos (ElementalCombos), shown on its own tab.
 var combos: Object
 var reset_button: Button
+var keystone_button: Button
+var keystone_line: Label
 
 var header: Label
 var columns: HBoxContainer
@@ -69,6 +72,20 @@ func _ready() -> void:
 	reset_button.pressed.connect(func() -> void: reset_requested.emit())
 	reset_button.mouse_entered.connect(func() -> void: detail.text = "Сброс навыков: все очки и Печати Неба вернутся — можно собрать новый билд.")
 	group_bar.add_child(reset_button)
+	# Key talents (levels 5/10/15): what was chosen and a button for a choice due.
+	var keystone_row := HBoxContainer.new()
+	keystone_row.add_theme_constant_override("separation", 8)
+	box.add_child(keystone_row)
+	keystone_line = _label("", 9, Color(1.0, 0.82, 0.5))
+	keystone_line.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	keystone_line.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	keystone_row.add_child(keystone_line)
+	keystone_button = Button.new()
+	keystone_button.custom_minimum_size = Vector2(170, 20)
+	keystone_button.add_theme_font_size_override("font_size", UiFont.px(9))
+	keystone_button.focus_mode = Control.FOCUS_NONE
+	keystone_button.pressed.connect(func() -> void: keystone_requested.emit())
+	keystone_row.add_child(keystone_button)
 	columns = HBoxContainer.new()
 	columns.add_theme_constant_override("separation", 6)
 	box.add_child(columns)
@@ -89,12 +106,25 @@ func populate(player: PlayerCharacter) -> void:
 		(group_bar.get_child(index) as Button).button_pressed = str(SkillTree.GROUPS[index]["id"]) == group
 	(group_bar.get_child(SkillTree.GROUPS.size()) as Button).button_pressed = group == "combos"
 	reset_button.text = "Сбросить навыки — %d зол." % SkillTree.reset_cost(player)
-	reset_button.disabled = SkillTree.spent_points(player) <= 0
+	reset_button.disabled = SkillTree.spent_points(player) <= 0 and player.keystones.is_empty()
 	for child in columns.get_children():
 		columns.remove_child(child)
 		child.queue_free()
 	buttons.clear()
 	header.text = "Очки навыков: %d     Печати Неба: %d" % [SkillTree.available_points(player), SkillTree.seals(player)]
+	var chosen: Array[String] = []
+	var tiers := Keystones.TIERS.keys()
+	tiers.sort()
+	var due := 0
+	for tier in tiers:
+		var id := str(player.keystones.get(str(tier), ""))
+		if not id.is_empty():
+			chosen.append("%s (ур. %d)" % [Keystones.name_of(id), int(tier)])
+		elif player.level >= int(tier) and due == 0:
+			due = int(tier)
+	keystone_line.text = ("Ключевые таланты: " + ", ".join(chosen)) if not chosen.is_empty() else "Ключевые таланты: на 5, 10 и 15 уровне — один из трёх, меняет стиль боя."
+	keystone_button.visible = due > 0
+	keystone_button.text = "Выбрать ключевой талант (ур. %d)" % due
 	if group == "combos":
 		_populate_combos()
 		return

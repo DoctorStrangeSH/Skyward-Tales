@@ -214,11 +214,12 @@ func _living_enemies() -> Array:
 
 ## One sword blow: crit roll, lifesteal, knockback.
 func _strike(enemy: SlimeEnemy, damage: int, push_direction: Vector2, push: float) -> void:
-	var crit := game.crit_rng.randf() < game.player.get_crit_chance()
+	var crit := game.keystones.take_sure_crit() or game.crit_rng.randf() < game.player.get_crit_chance()
 	if crit:
 		damage = roundi(float(damage) * game.player.get_crit_multiplier())
 		Vfx.sparkle(game, enemy.global_position)
 		game.gear.on_crit(enemy)
+	damage = roundi(float(damage) * game.keystones.strike_mult(enemy))
 	var shaped := game.gear.modify_strike(damage)
 	damage = int(shaped["damage"])
 	if bool(shaped["riposte"]):
@@ -233,6 +234,7 @@ func _strike(enemy: SlimeEnemy, damage: int, push_direction: Vector2, push: floa
 	game.last_hit_enemies.append(enemy)
 	game.combos.on_strike(enemy, damage)
 	game.gear.on_strike(enemy, damage)
+	game.keystones.on_strike(enemy, damage)
 	var heal := game.player.get_melee_lifesteal()
 	if heal > 0 and game.player.health < game.player.max_health:
 		game.player.health = mini(game.player.max_health, game.player.health + heal)

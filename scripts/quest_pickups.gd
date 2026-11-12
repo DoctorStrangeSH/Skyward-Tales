@@ -122,6 +122,21 @@ func _collect_quest_herb(herb: WorldCollectible) -> void:
 		return
 	quests.add_progress(required_quest, 1)
 	_collect(herb)
-	game.hud.show_message(str(PICK_LINES.get(herb.item_id, herb.display_name + " собран.")), 2.0)
+	game.hud.show_message(str(PICK_LINES.get(herb.item_id, "Подобрано: %s." % herb.display_name)), 2.0)
 	if quests.is_ready_to_complete(required_quest):
-		game.hud.show_message("Все предметы собраны! Вернитесь к хранителю.", 3.0)
+		game.hud.show_message("Всё собрано! %s" % return_line(required_quest), 3.5)
+
+## "Поговорите с Мирой" — whom to go back to (the bot found "Вернитесь к
+## хранителю" when the one to talk to was Mira, walking beside the hero).
+const OLD_GIVERS := {"moonleaf_gathering": "elder", "grove_spirits": "grove_warden", "lost_cartographer_notes": "cartographer", "bran_supply_run": "merchant", "crystal_heart": "miner"}
+
+func return_line(quest_id: String) -> String:
+	var definition: Dictionary = game.quests.definitions.get(quest_id, {})
+	var npc_id := str(definition.get("talk_to", OLD_GIVERS.get(quest_id, "")))
+	var who := RegionCatalog.npc_name(npc_id) if not npc_id.is_empty() else QuestJournalPanel.giver_name(quest_id)
+	if who.is_empty():
+		return "Вернитесь к тому, кто дал задание."
+	who = who.get_slice(",", 0)
+	if npc_id == "cartographer" and game.companion != null:
+		return "Поговорите с %s — она идёт рядом с вами (E)." % ("Мирой" if who == "Мира" else who)
+	return "Возвращайтесь: %s ждёт." % who

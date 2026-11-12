@@ -17,7 +17,7 @@ static func entries(game: SkywardGame) -> Array[Dictionary]:
 			chapter = str(q.definitions.get(str(quest_id), {}).get("title", ""))
 	var gate := game.director.tracker_entries()
 	rows.append(_row("story", "Главная история", "Сюжет", true,
-		("Глава: «%s»" % chapter) if not chapter.is_empty() else (str(gate[0].get("progress", "")) if not gate.is_empty() else "—"),
+		("Глава: «%s»" % chapter) if not chapter.is_empty() else (str(gate[0].get("title", "")) if not gate.is_empty() else "все главы пройдены" if game.quests.is_completed("main_heart") else "—"),
 		"Журнал (J), золотые ◆ на карте", "Следующие главы открываются уровнем и добрыми делами."))
 	var side_done := 0
 	var side_active := 0
@@ -29,7 +29,7 @@ static func entries(game: SkywardGame) -> Array[Dictionary]:
 				side_active += 1
 	rows.append(_row("side", "Поручения жителей", "Сюжет", true, "выполнено %d, в работе %d" % [side_done, side_active], "Жители с «!» над головой", "Опыт, золото — и ключ к следующим главам."))
 	# Hunts and fights.
-	var legend_total := (game.legends.data.get("legends", {}) as Dictionary).size()
+	var legend_total := game.legends.data.size()
 	rows.append(_row("legends", "Легендарные звери", "Охота", true, "повержено %d из %d" % [game.legends.defeated.size(), legend_total], "Ночью в каждой земле", "Огромные светящиеся звери с трофеями. Торен поможет выследить."))
 	var guild_open := game.guild.level() >= 1
 	rows.append(_row("guild", "Гильдия искателей", "Охота", guild_open, ("ранг «%s», заказов %d" % [game.guild.rank_name(), game.guild.finished]) if guild_open else "", "Деревня, здание гильдии", "Постройте гильдию на доске поселения." if not guild_open else "Именные чудовища за награду."))

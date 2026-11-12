@@ -70,7 +70,7 @@ static func reset_cost(player: PlayerCharacter) -> int:
 
 ## Unlearns every skill: points come back, sky seals too.
 static func reset(player: PlayerCharacter) -> bool:
-	if spent_points(player) <= 0 or player.gold < reset_cost(player):
+	if (spent_points(player) <= 0 and player.keystones.is_empty()) or player.gold < reset_cost(player):
 		return false
 	player.add_gold(-reset_cost(player))
 	var defs := definitions()
@@ -87,6 +87,9 @@ static func reset(player: PlayerCharacter) -> bool:
 				player.max_mana = maxi(1, player.max_mana - 12 * rank_now)
 				player.mana = mini(player.mana, player.max_mana)
 	player.talents.clear()
+	# Key talents come back too: they are offered again.
+	player.keystones.clear()
+	player.keystone_offered.clear()
 	if seals_back > 0:
 		player.add_item(SEAL_ITEM, seals_back)
 	player.stats_changed.emit()

@@ -108,6 +108,7 @@ var cistern: Cistern
 var hens: VillageHens
 var scout: ScoutTrail
 var forestry: ForestGuild
+var keystones: Keystones
 var adit: OldAdit
 var home: HeroHome
 var pin: GoalPin
@@ -279,6 +280,10 @@ func _ready() -> void:
 	scout.name = "ScoutTrail"
 	scout.game = self
 	add_child(scout)
+	keystones = Keystones.new()
+	keystones.name = "Keystones"
+	keystones.game = self
+	add_child(keystones)
 	forestry = ForestGuild.new()
 	forestry.name = "ForestGuild"
 	forestry.game = self
@@ -336,7 +341,9 @@ func _ready() -> void:
 	player.recipe_learned.connect(func(recipe_item: String) -> void:
 		hud.show_message("Выучен рецепт: " + player.get_item_name(recipe_item).trim_prefix("Рецепт: "), 3.0)
 		GameAudio.play("quest", -4.0, 0.0))
-	player.parried.connect(func(source: Node) -> void: gear.on_parry(source))
+	player.parried.connect(func(source: Node) -> void:
+		gear.on_parry(source)
+		keystones.on_parry())
 	player.blocked.connect(func(_amount: int) -> void:
 		GameAudio.play("hit", -8.0, 0.4)
 		Vfx.sparkle(self, player.global_position + player.facing * 12.0))
@@ -386,6 +393,11 @@ func _ready() -> void:
 	hud.defeat_menu_requested.connect(_go_to_title)
 	hud.skill_learn_requested.connect(learn_skill)
 	hud.skills_reset_requested.connect(reset_skills)
+	hud.keystone_requested.connect(func() -> void:
+		var due := keystones.pending()
+		if not due.is_empty():
+			hud.close_top_window()
+			keystones.offer(int(due[0])))
 	hud.dialogue_dismissed.connect(func() -> void: player.set_physics_process(true))
 	hud.can_dismiss_dialogue = func() -> bool: return not story.active
 	hud.menu_key_requested.connect(func(keycode: int) -> void: _handle_key(keycode as Key))
@@ -1275,6 +1287,8 @@ func _on_hunter_interacted(_source: Node2D) -> void:
 func on_spell_hit(enemy: Node) -> void:
 	if gear != null:
 		gear.on_spell_hit(enemy)
+	if keystones != null:
+		keystones.on_spell_hit()
 
 ## Enemies report elemental combos here (enemy.gd → _announce_reaction).
 func on_reaction(reaction_id: String, at: Vector2) -> void:
@@ -1550,8 +1564,9 @@ func _on_wolf_defeated(xp_reward: int, death_position: Vector2, elite: bool = fa
 	_on_enemy_defeated(xp_reward, death_position, "wolf", elite)
 
 func _on_enemy_defeated(xp_reward: int, death_position: Vector2, kind: String = "", elite: bool = false) -> void:
-	player.add_experience(xp_reward)
+	player.add_experience(roundi(float(xp_reward) * keystones.xp_mult()))
 	gear.on_kill()
+	keystones.on_kill(elite, death_position)
 	defeated_enemies += 1
 	contracts.on_kill(kind)
 	achievements.add("kills")
@@ -1757,7 +1772,7 @@ func learn_skill(skill_id: String) -> bool:
 
 ## A new build: all skill points (and sky seals) come back for gold.
 func reset_skills() -> bool:
-	if SkillTree.spent_points(player) <= 0:
+	if SkillTree.spent_points(player) <= 0 and player.keystones.is_empty():
 		hud.show_message("Навыки ещё не изучены.", 2.0)
 		return false
 	if not SkillTree.reset(player):
@@ -1945,7 +1960,39 @@ func _on_player_died() -> void:
 	if hud != null:
 		hud.hide_talent_choices()
 		hud.show_defeat(not SAVE_SCRIPT.load_latest(save_path).is_empty())
+		var tip := defeat_tip()
+		if not tip.is_empty():
+			hud.set_defeat_message(tip)
 	get_tree().paused = true
+
+## Defeats by the same foe in a row: after the second one the defeat screen
+## gives a hint (its tactic from the bestiary, unspent points, potions).
+var _defeats_by: Dictionary = {}
+
+func defeat_tip() -> String:
+	var source := player.last_attacker
+	var kind := enemy_kind(source) if source is SlimeEnemy and is_instance_valid(source) else ""
+	if kind.is_empty():
+		return ""
+	var tough: bool = STORY_BOSSES.has(kind) or (source as SlimeEnemy).combat_feedback.elite
+	_defeats_by[kind] = int(_defeats_by.get(kind, 0)) + 1
+	if not tough or int(_defeats_by[kind]) < 2:
+		return ""
+	var lines: Array[String] = []
+	var entry: Dictionary = GameCatalogs.shared().bestiary.get(kind, {})
+	if not entry.is_empty():
+		lines.append("%s: %s" % [str(entry.get("name", kind)), str(entry.get("attack", ""))])
+		if not str(entry.get("weakness", "")).begins_with("Нет"):
+			lines.append("Слабость: %s" % str(entry.get("weakness", "")))
+	if SkillTree.available_points(player) > 0:
+		lines.append("Неистраченные очки навыков: %d — откройте дерево (T)." % SkillTree.available_points(player))
+	if int(player.inventory.get("health_potion", 0)) < 2:
+		lines.append("Зелий здоровья мало — у Брана и Лиры они есть.")
+	var level_need := RegionCatalog.level(current_region)
+	if player.level < level_need:
+		lines.append("Рекомендуемый уровень этих мест — %d (у вас %d): поручения жителей дадут опыт." % [level_need, player.level])
+	lines.append("Перекат (Пробел) проходит сквозь удары.")
+	return "Совет после поражений:\n" + "\n".join(lines)
 
 func _restart_run() -> void:
 	get_tree().paused = false

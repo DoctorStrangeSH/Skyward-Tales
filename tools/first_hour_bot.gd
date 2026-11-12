@@ -140,6 +140,7 @@ func _tick() -> void:
 	if _gear_clock <= 0.0:
 		_gear_clock = 10.0
 		_dress_up()
+		_grow()
 	if hero.health < hero.max_health * 0.35 and int(hero.inventory.get("health_potion", 0)) > 0:
 		game._use_consumable("health_potion")
 	var foe := _nearest_foe(FIGHT_RANGE)
@@ -169,6 +170,29 @@ func _gear_score(item_id: String) -> float:
 		return 0.0
 	var d := hero.get_item_definition(item_id)
 	return float(d.get("melee", 0)) * 2.0 + float(d.get("armor", 0)) * 2.0 + float(d.get("max_health", 0)) * 0.25 + float(d.get("crit", 0)) + float(d.get("melee_pct", 0)) * 0.6 + float(d.get("agility", 0)) + float(d.get("power", 0)) * 0.5 + float(d.get("lifesteal", 0)) * 2.0
+
+## A player spends talent points, learns passives at trainers and keeps a
+## few potions (shortcuts: no walk to the trainer or the shop is simulated,
+## the gold is paid all the same).
+const TALENT_ORDER := ["blade_mastery", "vitality", "keen_edge", "iron_skin", "bloodthirst", "blade_mastery", "vitality", "keen_edge", "iron_skin", "blade_dance", "whirl_master", "bloodthirst", "unbreakable", "battle_rhythm", "second_wind", "vitality", "keen_edge", "iron_skin", "blade_mastery", "whirl_master", "battle_rhythm", "battle_rhythm"]
+const PASSIVES := ["toughness", "lifeblood", "keen_eye", "steady_hand", "fleet"]
+
+func _grow() -> void:
+	for talent in TALENT_ORDER:
+		if SkillTree.available_points(hero) <= 0:
+			break
+		if SkillTree.can_learn(hero, str(talent)):
+			SkillTree.learn(hero, str(talent))
+			_note("talent", "%s → %d" % [talent, SkillTree.rank(hero, str(talent))])
+	for skill_id in PASSIVES:
+		if not hero.knows(skill_id) and game.trainers.lock_reason(skill_id).is_empty() and hero.gold >= Trainers.price_of(skill_id) + 60:
+			hero.gold -= Trainers.price_of(skill_id)
+			hero.learn_skill(skill_id)
+			_note("skill", "%s за %d" % [skill_id, Trainers.price_of(skill_id)])
+	var potions := int(hero.inventory.get("health_potion", 0))
+	if potions < 4 and hero.gold >= 120:
+		hero.gold -= 25 * (4 - potions)
+		hero.add_item("health_potion", 4 - potions)
 
 func _dress_up() -> void:
 	for item_id in hero.inventory.keys():
@@ -258,7 +282,7 @@ func _choose_goal() -> Dictionary:
 		var hops := QuestNav.route(game.current_region, str(target["region"])).size()
 		if hops == 0:
 			continue
-		if kind != "main" and _too_dangerous(str(target["region"])):
+		if kind != "main" and kind != "turnin" and not bool(target.get("main", false)) and _too_dangerous(str(target["region"])):
 			continue
 		var distance := 0.0
 		if str(target["region"]) == game.current_region and target["position"] != null:

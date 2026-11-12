@@ -30,6 +30,9 @@ func _collect() -> Array:
 		for npc in RegionCatalog.get_region(region_id).get("npcs", []):
 			var npc_id := str(npc.get("id", ""))
 			if npc_id == "cartographer" and game.companion != null:
+				# Mira walks with the hero: pin her when she ends the chapter.
+				if game.dialogues.marker_for(npc_id) == "ready" and is_instance_valid(game.companion):
+					_add(result, game.current_region, game.companion.global_position, "turnin", str(npc.get("name", "")), true)
 				continue
 			if str(npc.get("requires_flag", "")) == "ending" and game.epilogue.ending().is_empty():
 				continue

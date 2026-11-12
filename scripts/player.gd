@@ -78,6 +78,12 @@ signal phoenix_triggered
 ## still (the first-hour bot was killed during the 30-second scene after the
 ## Guardian by the wolves around it).
 var scene_hold: bool = false
+## Key talents chosen at levels 5/10/15: {"5": id, ...} (scripts/keystones.gd).
+var keystones: Dictionary = {}
+var keystone_offered: Dictionary = {}
+
+func has_keystone(id: String) -> bool:
+	return keystones.values().has(id)
 var _grace_left: float = 0.0
 
 func dodge_grace(seconds: float) -> void:
@@ -109,7 +115,7 @@ func start_guard() -> bool:
 	# No shield — no block and no parry (owner's list №25).
 	if not has_shield() or guard_cooldown_left > 0.0 or health <= 0 or dodge_time_left > 0.0:
 		return false
-	parry_left = PARRY_WINDOW + (0.1 if wears_base("crab_aegis") else 0.0)
+	parry_left = PARRY_WINDOW + (0.1 if wears_base("crab_aegis") else 0.0) + (0.15 if has_keystone("guardian") else 0.0)
 	blocking = true
 	guard_cooldown_left = GUARD_COOLDOWN
 	queue_redraw()
@@ -746,6 +752,9 @@ func get_crit_chance() -> float:
 ## Part of incoming damage that is ignored (Unbreakable).
 func get_damage_reduction() -> float:
 	var reduction := 0.15 if has_skill("unbreakable") else 0.0
+	var arena := get_parent()
+	if arena != null and arena.get("keystones") != null:
+		reduction += float(arena.keystones.damage_reduction())
 	# Golem heart: stone skin when the hero is close to falling.
 	if wears_base("golem_heart") and health < max_health * 0.3:
 		reduction += 0.3
@@ -757,7 +766,7 @@ func get_melee_lifesteal() -> int:
 
 ## Gold multiplier from Treasure Sense.
 func get_gold_multiplier() -> float:
-	return 1.15 if has_passive("treasure_sense") else 1.0
+	return (1.15 if has_passive("treasure_sense") else 1.0) * (1.35 if has_keystone("fortune") else 1.0)
 
 ## Cooldown multiplier of the hotbar skills (Battle Rhythm).
 func get_skill_cooldown_multiplier() -> float:
@@ -1132,7 +1141,7 @@ func use_item(item_id: String) -> bool:
 		"health_potion":
 			if health >= max_health:
 				return false
-			health = mini(max_health, health + 35)
+			health = mini(max_health, health + (17 if has_keystone("vampire") else 35))
 		"starlight_essence":
 			max_mana += 5
 			mana += 5

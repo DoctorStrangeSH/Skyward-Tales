@@ -110,5 +110,10 @@ func _run() -> void:
 	game.hud._set_speaker("Сеня, молодой рудокоп")
 	if game.hud.dialogue_portrait.texture == null:
 		return _fail("the dialogue shows Senya's portrait")
+	# 6. "Всё собрано" names whom to go back to.
+	if not game.pickups.return_line("main_spires").contains("Мир"):
+		return _fail("runes collected: talk to Mira — " + game.pickups.return_line("main_spires"))
+	if not game.pickups.return_line("moonleaf_gathering").contains("Элиан"):
+		return _fail("moonleaves: back to Elian — " + game.pickups.return_line("moonleaf_gathering"))
 	print("FIRST HOUR OK")
 	quit()

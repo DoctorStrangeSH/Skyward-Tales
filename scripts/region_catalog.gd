@@ -62,6 +62,14 @@ static func portrait_id(npc_id_or_name: String) -> String:
 			return str(_portraits[key])
 	return ""
 
+## The name an NPC is shown with ("" when unknown).
+static func npc_name(npc_id: String) -> String:
+	for region_id in all_ids():
+		for npc in get_region(str(region_id)).get("npcs", []):
+			if str(npc.get("id", "")) == npc_id:
+				return str(npc.get("name", npc_id))
+	return ""
+
 static func resolve(region_id: String) -> String:
 	return region_id if has(region_id) else DEFAULT_REGION
 
