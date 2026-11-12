@@ -31,6 +31,13 @@ on:
       - "scripts/gather_node.gd"
       - "tests/forest_presentation.gd"
       - "tests/parallax_corridors.gd"
+      - "scripts/shore_profile.gd"
+      - "scripts/world_minimap.gd"
+      - "assets/shaders/shore_ground.gdshader"
+      - "assets/shaders/cliff_coast.gdshader"
+      - "tools/art/shore_profile.py"
+      - "tests/shore_profile.gd"
+      - "tests/shore_world.gd"
   workflow_dispatch:
 
 concurrency:
@@ -67,6 +74,8 @@ jobs:
             timeout 90s godot --headless --path . --script res://tests/look_polish.gd
             timeout 90s godot --headless --path . --script res://tests/forest_presentation.gd
             timeout 90s godot --headless --path . --script res://tests/forest_guild.gd
+            timeout 90s godot --headless --path . --script res://tests/shore_profile.gd
+            timeout 90s godot --headless --path . --script res://tests/shore_world.gd
             timeout 90s godot --headless --path . --script res://tests/parallax_corridors.gd
             timeout 90s godot --headless --path . --script res://tests/sky_parallax.gd
             cp -L "$(command -v godot)" /project/art-review-godot

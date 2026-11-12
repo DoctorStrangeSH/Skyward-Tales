@@ -301,6 +301,25 @@ func _add_apron() -> void:
 		if hd:
 			sprite.scale = Vector2.ONE / HD_K
 		add_child(sprite)
+		# Continue the existing painted sky behind the shallow coastal inlets.
+		# Bridge mouths remain flat, so the deck pixels in this row stay covered.
+		if side == "bottom" and hd:
+			var profile := ShoreProfile.points(terrain)
+			var reach := 0.0
+			for point in profile:
+				reach = maxf(reach, size.y - point.y)
+			if reach > 0.0:
+				var backing := Sprite2D.new()
+				backing.name = "ShoreSky"
+				backing.texture = texture
+				backing.centered = false
+				backing.region_enabled = true
+				backing.region_rect = Rect2(0, 0, texture.get_width(), 1)
+				backing.region_filter_clip_enabled = true
+				backing.position = Vector2(-APRON, size.y - reach)
+				backing.scale = Vector2(1.0 / HD_K, reach + 1.0)
+				backing.z_index = -110
+				add_child(backing)
 	var sky := SkyParallax.new()
 	sky.name = "SkyParallax"
 	add_child(sky)
@@ -321,7 +340,7 @@ func _add_apron() -> void:
 		var outlet_path := str(terrain.get("waterfall_scene", ""))
 		if not outlet_path.is_empty() and ResourceLoader.exists(outlet_path):
 			outlet_scene = load(outlet_path) as PackedScene
-		rim.setup(size, region_id, gaps, terrain.get("waterfalls", []), outlet_scene, bool(terrain.get("varied_cliff_depth", false)))
+		rim.setup(size, region_id, gaps, terrain.get("waterfalls", []), outlet_scene, bool(terrain.get("varied_cliff_depth", false)), ShoreProfile.points(terrain))
 		if rim_style == "night":
 			rim.modulate = Color(0.55, 0.7, 0.95)
 	# Sky islands smaller than the map: the sky and cliffs inside the map edge.
@@ -383,6 +402,12 @@ func _add_hd_layer(file: String, layer_z: int) -> void:
 		return
 	var sprite := Sprite2D.new()
 	sprite.name = "GroundHD"
+	var profile := ShoreProfile.points(terrain)
+	if not profile.is_empty():
+		var coast := ShaderMaterial.new()
+		coast.shader = load("res://assets/shaders/shore_ground.gdshader")
+		ShoreProfile.apply(coast, profile, map_size().y)
+		sprite.material = coast
 	sprite.texture = texture
 	sprite.centered = false
 	sprite.scale = Vector2.ONE / HD_K
@@ -493,6 +518,8 @@ func _create_world_collisions() -> void:
 		# posts, fences and ponds outdoors do not.
 		if walled:
 			wall.set_meta("wall", true)
+	for rect in ShoreProfile.walls(ShoreProfile.points(terrain), size):
+		_add_wall(rect.get_center(), rect.size)
 	_add_water_walls()
 
 ## Owner's list №39: nobody walks on lakes, bogs or lava. Each pool is cut

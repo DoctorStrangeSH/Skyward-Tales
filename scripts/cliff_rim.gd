@@ -27,7 +27,7 @@ func _sprite(file: String, at: Vector2, z: int = 0) -> Sprite2D:
 
 ## `gaps` — x positions of bridges on the southern edge.
 ## Outlets are authored in terrain.waterfalls. No random streams from dry grass.
-func setup(map_size: Vector2, region_id: String, gaps: Array = [], outlets: Array = [], outlet_scene: PackedScene = null, varied_depth: bool = false) -> void:
+func setup(map_size: Vector2, region_id: String, gaps: Array = [], outlets: Array = [], outlet_scene: PackedScene = null, varied_depth: bool = false, shore: PackedVector2Array = PackedVector2Array()) -> void:
 	z_index = -99
 	var authored: Node2D
 	var mouths: Array = outlets
@@ -50,21 +50,44 @@ func setup(map_size: Vector2, region_id: String, gaps: Array = [], outlets: Arra
 			tile.scale.y *= depth
 			# Anchor the grass lip while the lower silhouette changes depth.
 			tile.position.y = map_size.y - LIP * depth
+		# The same authored contour clips the ground and moves the painted face.
+		# Each mouth is kept, including multiple streams over one cliff module.
+		if not shore.is_empty() or not mouths.is_empty():
+			var cut := ShaderMaterial.new()
+			cut.shader = load("res://assets/shaders/cliff_coast.gdshader")
+			ShoreProfile.apply(cut, shore, map_size.y)
+			cut.set_shader_parameter("grass_lip", LIP * tile.scale.y * 2.0)
+			cut.set_shader_parameter("face_height", tile.texture.get_height() * tile.scale.y)
+			var reach := 0.0
+			for point in shore:
+				reach = maxf(reach, map_size.y - point.y)
+			cut.set_shader_parameter("headroom", reach / tile.scale.y)
+			var openings := PackedVector2Array()
 			for outlet in mouths:
-				var mouth := float(outlet.get("x", -1000.0))
-				var width := float(outlet.get("width", 64.0))
-				if mouth + width * 0.5 > x and mouth - width * 0.5 < x + TILE:
-					var cut := ShaderMaterial.new()
-					cut.shader = load("res://assets/shaders/cliff_outlet.gdshader")
-					cut.set_shader_parameter("outlet_x", mouth)
-					cut.set_shader_parameter("outlet_width", width)
-					cut.set_shader_parameter("rim_y", map_size.y)
-					tile.material = cut
+				if openings.size() >= 16:
+					break
+				openings.append(Vector2(float(outlet.get("x", -1000.0)), float(outlet.get("width", 64.0))))
+			cut.set_shader_parameter("outlet_count", openings.size())
+			openings.resize(16)
+			cut.set_shader_parameter("outlets", openings)
+			tile.material = cut
 	# Greenery over the edge.
 	var x := rng.randf_range(10.0, 60.0)
 	while x < map_size.x - 30.0:
 		var file: String = ["ivy_a.png", "ivy_b.png", "moss.png", "ivy_a.png"][rng.randi() % 4]
-		_sprite(file, Vector2(x, map_size.y - 8.0 + rng.randf_range(0.0, 6.0)), 1).flip_h = rng.randf() < 0.5
+		var vegetation := _sprite(file, Vector2(x, ShoreProfile.height_at(shore, x, map_size.y) - 8.0 + rng.randf_range(0.0, 6.0)), 1)
+		vegetation.flip_h = rng.randf() < 0.5
+		var width := vegetation.texture.get_width() * vegetation.scale.x
+		var clear := true
+		for gap in gaps:
+			if absf(x + width * 0.5 - float(gap)) < width * 0.5 + 40.0:
+				clear = false
+		for outlet in mouths:
+			if absf(x + width * 0.5 - float(outlet.get("x", 0))) < width * 0.5 + float(outlet.get("width", 64)) * 0.5 + 8.0:
+				clear = false
+		if not clear:
+			remove_child(vegetation)
+			vegetation.free()
 		x += rng.randf_range(70.0, 170.0)
 	# The authored scene is the source of truth when present, never an extra layer.
 	if outlet_scene != null:
