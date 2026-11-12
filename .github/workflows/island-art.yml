@@ -30,6 +30,7 @@ on:
       - "scripts/region_gate.gd"
       - "scripts/gather_node.gd"
       - "tests/forest_presentation.gd"
+      - "tests/parallax_corridors.gd"
   workflow_dispatch:
 
 concurrency:
@@ -66,6 +67,7 @@ jobs:
             timeout 90s godot --headless --path . --script res://tests/look_polish.gd
             timeout 90s godot --headless --path . --script res://tests/forest_presentation.gd
             timeout 90s godot --headless --path . --script res://tests/forest_guild.gd
+            timeout 90s godot --headless --path . --script res://tests/parallax_corridors.gd
             timeout 90s godot --headless --path . --script res://tests/sky_parallax.gd
             cp -L "$(command -v godot)" /project/art-review-godot
             chmod +x /project/art-review-godot
