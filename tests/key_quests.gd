@@ -62,5 +62,15 @@ func _run() -> void:
 		game.quests.complete_quest(quest_id)
 	if not game.pickups.return_line("key_lower_shaft").contains("Дорн"):
 		return _fail("the key goes back to Dorn: " + game.pickups.return_line("key_lower_shaft"))
+	# An early visit to the Sky Heart does not burn the ascent's arrival.
+	game.quests.states["main_prologue"]["started"] = true
+	game.director.on_region_entered("sky_heart")
+	if game.director.has_flag("arrived_heart"):
+		return _fail("an early visit leaves the arrival for later")
+	game.director.set_flag("arrived_heart")
+	game.quests.start_quest("main_ascent")
+	game.director.on_region_entered("sky_heart")
+	if not game.quests.is_completed("main_ascent"):
+		return _fail("a save with a burnt arrival finishes the ascent on entry")
 	print("KEY QUESTS OK")
 	quit()

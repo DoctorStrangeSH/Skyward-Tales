@@ -1384,7 +1384,7 @@ func update_npc_markers() -> void:
 		if actor is WorldNpc and not actor.is_queued_for_deletion():
 			var marker := dialogues.marker_for(actor.npc_id)
 			# The companion is always at hand: mark her only when she advances the story.
-			if actor.is_companion and marker != "ready":
+			if actor.is_companion and marker != "ready" and director.chapter_marker(actor.npc_id) != "quest":
 				marker = ""
 			actor.set_marker(dialogues.marker_style(actor.npc_id, marker))
 

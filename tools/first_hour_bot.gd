@@ -53,6 +53,8 @@ var _snapshot: Dictionary = {}
 var _resume_path := ""
 var _milestone_path := ""
 var _gear_clock: float = 0.0
+var _sticky: Dictionary = {}
+var _sticky_at: float = -100.0
 var _skill_clock: float = 0.0
 var _avoid: Dictionary = {}
 var _empty_land: float = 0.0
@@ -90,7 +92,8 @@ func _note(kind: String, text: String) -> void:
 	print("%s  %-8s %s" % [stamp, kind, text])
 
 func _run() -> void:
-	set_meta("skyward_new_hero", {"name": "Арина", "gender": "f"})
+	if _resume_path.is_empty():
+		set_meta("skyward_new_hero", {"name": "Арина", "gender": "f"})
 	game = load("res://scenes/main.tscn").instantiate()
 	root.add_child(game)
 	await process_frame
@@ -126,7 +129,37 @@ func _run() -> void:
 
 # --- One tick of the bot ------------------------------------------------------
 
+var _watch_pos := Vector2.ZERO
+var _watch_clock: float = 0.0
+
+## A watchdog: nothing moved for two minutes — say what the screen shows
+## and shake things loose (close windows, give the hero back control).
+func _watchdog() -> void:
+	if hero.global_position.distance_to(_watch_pos) > 4.0 or _fight_time != _watch_fight:
+		_watch_pos = hero.global_position
+		_watch_fight = _fight_time
+		_watch_clock = 0.0
+		return
+	_watch_clock += STEP
+	if _watch_clock < 120.0:
+		return
+	_watch_clock = 0.0
+	_note("freeze", "2 мин без движения: цель «%s», диалог=%s, сцена=%s, пауза=%s, управление=%s, окна=%s" % [_goal_text, game.hud.dialogue_visible, game.story.active, game.get_tree().paused, hero.is_physics_processing(), game.hud.overlay_visible() or game.hud.inventory_open or game.hud.crafting_visible])
+	if game.hud.dialogue_visible:
+		var labels: Array = game.hud.dialogue_choices_container.get_children().map(func(b: Node) -> String: return (b as Button).text if b is Button else "?")
+		_note("freeze", "диалог: «%s» %s, wait=%.1f read=%s" % [game.hud.dialogue_label.text.left(90), str(labels), _wait, _read_text.left(20)])
+	game.hud.close_top_window()
+	if game.story.active:
+		game.story.skip()
+	game.get_tree().paused = false
+	hero.set_physics_process(true)
+	_wait = 0.0
+	_path = PackedVector2Array()
+
+var _watch_fight: float = 0.0
+
 func _tick() -> void:
+	_watchdog()
 	if game.game_over or hero.health <= 0:
 		_on_death()
 		return
@@ -161,13 +194,25 @@ func _tick() -> void:
 	if foe != null:
 		_fight(foe)
 		return
+	# Gear on the ground: walk over and pick it up (E).
+	var drop := _nearest_drop()
+	if drop != null:
+		_set_goal_text("подобрать: %s" % hero.get_item_name(drop.item_id))
+		if hero.global_position.distance_to(drop.global_position) < 18.0:
+			_release_keys()
+			drop.interact()
+		else:
+			_steer(drop.global_position)
+		return
 	var goal := _choose_goal()
+	if goal.is_empty():
+		goal = _grind_goal()
 	if goal.is_empty():
 		_release_keys()
 		_idle_time += STEP
 		var hint := ""
 		for entry in game.director.tracker_entries():
-			hint += " " + str(entry.get("progress", entry.get("title", "")))
+			hint += " " + str(entry.get("title", ""))
 		_set_goal_text("нечего делать." + hint)
 		return
 	_set_goal_text(str(goal["text"]))
@@ -251,7 +296,14 @@ func _answer_dialogue() -> void:
 		hero.set_physics_process(true)
 		return
 	var pick: Button = null
+	# A ready errand ("✓ …") first; then the first that is not "later".
 	for button in buttons:
+		if (button as Button).text.contains("✓"):
+			pick = button
+			break
+	for button in buttons:
+		if pick != null:
+			break
 		var label := (button as Button).text.to_lower()
 		if label.contains("позже") or label.contains("уйти") or label.contains("до встречи") or label.contains("выйти") or label.contains("закрыть") or label.contains("остаться") or label.contains("нет"):
 			continue
@@ -296,7 +348,7 @@ const PRIORITY := {"turnin": 0, "main": 1, "side": 2, "offer": 3}
 ## Tools a hint asks for (a player reads "нужна кирка" and makes one).
 const TOOL_HINTS := {"кирк": "copper_pickaxe"}
 const TOOL_PLANS := {"copper_pickaxe": {"copper_ore": 4, "wood": 3}}
-const GATHER_KIND := {"copper_ore": "copper", "wood": "wood"}
+const GATHER_KIND := {"copper_ore": "copper", "wood": "wood", "iron_ore": "iron", "stone": "stone"}
 var _tool_needed := ""
 var _gather_used: Dictionary = {}
 
@@ -321,8 +373,16 @@ func _tool_goal() -> Dictionary:
 		elif hero.gold < 20:
 			hero.add_gold(20)
 		return {}
-	# Any missing material with a node at hand, then elsewhere.
+	return _gather_goal(missing)
+
+## The nearest way to get one of these materials: a node here, a node in
+## another land, or foes that drop it (wind essence — wisps).
+const HUNT_FOR := {"wind_essence": ["wisp", "windtail"], "shadow_essence": ["shade"], "gear_cog": ["sentinel"]}
+
+func _gather_goal(missing: Array) -> Dictionary:
 	for item in missing:
+		if not GATHER_KIND.has(item):
+			continue
 		var kind := str(GATHER_KIND[item])
 		var best: Dictionary = {}
 		var best_d := INF
@@ -337,6 +397,22 @@ func _tool_goal() -> Dictionary:
 		if not best.is_empty():
 			return best
 	for item in missing:
+		if HUNT_FOR.has(item):
+			var kinds: Array = HUNT_FOR[item]
+			var best_region := ""
+			for region_id in RegionCatalog.ids():
+				var has_it := false
+				for enemy in RegionCatalog.get_region(str(region_id)).get("enemies", []):
+					if str(enemy.get("kind", "")) in kinds:
+						has_it = true
+				if has_it and RegionCatalog.level(str(region_id)) <= hero.level + 1 and _route(game.current_region, str(region_id)).size() > 0:
+					best_region = str(region_id)
+					if best_region == game.current_region:
+						break
+			if not best_region.is_empty():
+				return {"region": best_region, "position": null, "text": "добыть: %s (охота)" % item, "key": "hunt|" + str(item)}
+		if not GATHER_KIND.has(item):
+			continue
 		var kind := str(GATHER_KIND[item])
 		for region_id in RegionCatalog.all_ids():
 			if str(region_id) == game.current_region or float(_ignored_targets.get("gatherland|" + str(region_id) + kind, -1.0)) > clock:
@@ -346,6 +422,71 @@ func _tool_goal() -> Dictionary:
 					return {"region": str(region_id), "position": SkywardGame._vec(entry.get("position")), "text": "добыть: %s" % item, "key": "gatherland|" + str(region_id) + kind}
 	# Nothing grown back yet: wait it out doing other things.
 	return {}
+
+## Unopened chests nearby: a player opens them (one of them holds the key
+## to a locked door).
+func _chest_goal() -> Dictionary:
+	var best: Dictionary = {}
+	var best_d := 700.0
+	for node in game.get_children():
+		if node is TreasureChest and not node.is_opened and not game.opened_chests.has(node.chest_id) and float(_ignored_targets.get("chest|" + node.chest_id, -1.0)) < clock:
+			var d := hero.global_position.distance_to(node.global_position)
+			if d < best_d and _reachable(node.global_position):
+				best_d = d
+				best = {"region": game.current_region, "position": node.global_position, "text": "сундук", "key": "chest|" + node.chest_id}
+	return best
+
+## A dungeon with a closed seal: pull the levers that are left (a player
+## reads "Печать… рычаги" on the door and looks for them).
+func _lever_goal() -> Dictionary:
+	var closed := false
+	for node in game.get_children():
+		if node is DungeonDoor and not node.is_open and not node.levers.is_empty():
+			closed = true
+	if not closed:
+		return {}
+	var best: Dictionary = {}
+	var best_d := INF
+	for node in game.get_children():
+		if node is DungeonLever and not node.pulled and float(_ignored_targets.get("lever|" + node.lever_id, -1.0)) < clock:
+			var d := hero.global_position.distance_to(node.global_position)
+			if d < best_d and _reachable(node.global_position):
+				best_d = d
+				best = {"region": game.current_region, "position": node.global_position, "text": "рычаг %s" % node.lever_id, "key": "lever|" + node.lever_id}
+	return best
+
+## The «Ветрокрыл»: repair it, then the storm engine, then the storm warden
+## (the key to the ascent). A player learns this from Sol, Yar and Mira.
+func _ship_goal() -> Dictionary:
+	var ship := game.ship
+	var q := game.quests
+	if q.is_active(SkyShip.REPAIR):
+		var missing: Array = []
+		for item in SkyShip.REPAIR_MATERIALS:
+			if int(hero.inventory.get(item, 0)) < int(SkyShip.REPAIR_MATERIALS[item]):
+				missing.append(str(item))
+		return _gather_goal(missing) if not missing.is_empty() else {}
+	var ascent_waits := not game.director.has_flag(SkyShip.WARDEN_FLAG) and q.is_completed("main_echoes")
+	if not ship.is_ready() or not ascent_waits:
+		return {}
+	if not ship.has_upgrade(SkyShip.ENGINE):
+		var cost: Dictionary = SkyShip.ENGINE_COST
+		var missing: Array = []
+		for item in cost["materials"]:
+			if int(hero.inventory.get(item, 0)) < int(cost["materials"][item]):
+				missing.append(str(item))
+		if missing.is_empty() and hero.gold >= int(cost["gold"]):
+			# Shortcut for the talk with Yar in Haven.
+			if ship.upgrade("engine"):
+				_note("ship", "двигатель бурь установлен")
+			return {}
+		return _gather_goal(missing)
+	if game.current_region != "storm_isle":
+		if ship.weather() == "storm" and ship.fly_now("storm_isle"):
+			_note("ship", "летим на Грозовой остров")
+		else:
+			return {}
+	return {"region": "storm_isle", "position": null, "text": "Грозовой страж", "key": "storm_warden"}
 
 func _reachable(point: Vector2) -> bool:
 	var map := game.world.get_world_2d().navigation_map
@@ -378,10 +519,45 @@ func _exit_door() -> Node2D:
 			return node
 	return null
 
+## Nothing to do: a player goes where foes match the level and fights for
+## experience (the story asks for a level).
+var _grind_region := ""
+var _grind_since: float = -1000.0
+
+func _grind_goal() -> Dictionary:
+	if _grind_region.is_empty() or clock - _grind_since > 240.0:
+		_grind_since = clock
+		var best := ""
+		var best_level := -1
+		for region_id in RegionCatalog.ids():
+			var level := RegionCatalog.level(str(region_id))
+			var layout := RegionCatalog.get_region(str(region_id))
+			if (layout.get("enemies", []) as Array).size() < 5 or level > hero.level or level <= best_level:
+				continue
+			if _route(game.current_region, str(region_id)).is_empty():
+				continue
+			best = str(region_id)
+			best_level = level
+		if best != _grind_region and not best.is_empty():
+			_note("grind", "набираю опыт: %s (ур. %d)" % [best, best_level])
+		_grind_region = best
+	if _grind_region.is_empty():
+		return {}
+	return {"region": _grind_region, "position": null, "text": "охота за опытом: %s" % _grind_region, "key": "grind|" + _grind_region}
+
 func _choose_goal() -> Dictionary:
 	var tool := _tool_goal()
 	if not tool.is_empty():
 		return tool
+	var sky := _ship_goal()
+	if not sky.is_empty():
+		return sky
+	var chest := _chest_goal()
+	if not chest.is_empty():
+		return chest
+	var lever := _lever_goal()
+	if not lever.is_empty():
+		return lever
 	game.quest_nav.refresh()
 	var best: Dictionary = {}
 	var best_score := INF
@@ -405,7 +581,16 @@ func _choose_goal() -> Dictionary:
 		if score < best_score:
 			best_score = score
 			best = {"region": str(target["region"]), "position": target["position"], "text": "%s: %s" % [kind, str(target["title"])], "key": key}
+	# Stick to a goal for a while: no ping-pong between two lands.
+	if not _sticky.is_empty() and clock - _sticky_at < 30.0:
+		for target in game.quest_nav.targets:
+			var same := "%s|%s|%s" % [target["kind"], target["title"], str(target["position"]) if str(target["region"]) == game.current_region and target["kind"] != "main" else ""]
+			if same == str(_sticky.get("key", "")) and float(_ignored_targets.get(same, -1.0)) < clock:
+				return {"region": str(target["region"]), "position": target["position"], "text": _sticky["text"], "key": same}
 	if not best.is_empty() and best_score < 200000.0:
+		if str(best["key"]) != str(_sticky.get("key", "")):
+			_sticky = best
+			_sticky_at = clock
 		return best
 	# Side offers ("!" over heads) are not pinned on the map: look for them
 	# the way a player would — in the land the hero is in first.
@@ -523,6 +708,9 @@ func _walk_to(goal: Dictionary) -> void:
 			return
 		_step_in = Vector2.INF
 		_step_clock = 0.0
+	if goal["position"] == null and not gate_hop and near <= REACH:
+		# Hunting: the fight starts by itself when the foe is close.
+		return
 	if near <= REACH or (near <= 27.0 and game._find_nearest_interactable() != null):
 		_release_keys()
 		_arrive(goal, gate_hop)
@@ -666,6 +854,17 @@ func _release_keys() -> void:
 		Input.action_release(action)
 
 # --- Fighting ---------------------------------------------------------------------
+
+func _nearest_drop() -> WorldLoot:
+	var best: WorldLoot = null
+	var best_d := 160.0
+	for node in game.get_children():
+		if node is WorldLoot and not node.is_queued_for_deletion() and node.item_id != "gold" and node.settle_time <= 0.0:
+			var d := hero.global_position.distance_to(node.global_position)
+			if d < best_d and _reachable(node.global_position):
+				best_d = d
+				best = node
+	return best
 
 func _nearest_foe(range: float) -> SlimeEnemy:
 	var best: SlimeEnemy = null

@@ -400,12 +400,23 @@ func on_region_entered(region_id: String) -> void:
 		return
 	for trigger in on_enter:
 		var flag := str(trigger.get("flag", ""))
-		if str(trigger.get("region", "")) == region_id and not has_flag(flag):
-			set_flag(flag)
-			var completes := str(trigger.get("completes", ""))
-			queue_scene(str(trigger.get("scene", "")), func() -> void:
-				if not completes.is_empty() and game.quests.active_quest_id == completes:
-					_complete(completes))
+		var completes := str(trigger.get("completes", ""))
+		if str(trigger.get("region", "")) != region_id:
+			continue
+		# An arrival that ends a chapter waits for that chapter: coming here
+		# early (the full-game bot hunted in the Sky Heart before the ascent)
+		# used to burn the trigger and lock the story for good.
+		if not completes.is_empty() and not game.quests.is_active(completes):
+			continue
+		if has_flag(flag):
+			# Old saves where the trigger burned early: finish it now.
+			if not completes.is_empty():
+				_complete(completes)
+			continue
+		set_flag(flag)
+		queue_scene(str(trigger.get("scene", "")), func() -> void:
+			if not completes.is_empty() and game.quests.is_active(completes):
+				_complete(completes))
 
 func on_boss_defeated(kind: String) -> void:
 	if not story_mode() or not bosses.has(kind):

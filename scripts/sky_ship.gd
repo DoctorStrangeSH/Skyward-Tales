@@ -68,6 +68,13 @@ func dock(region_id: String) -> Variant:
 func weather(slot: int = -1) -> String:
 	if slot < 0:
 		slot = current_slot()
+	# A storm and a fog come at least every third half-day: the storm isle
+	# and the mirage are keys of the story, a player must not wait for hours
+	# (the full-game bot waited 2.5 game days for its first storm).
+	if slot % 3 == 2:
+		return "storm"
+	if slot % 3 == 0 and slot % 2 == 0:
+		return "fog"
 	var rng := RandomNumberGenerator.new()
 	rng.seed = slot * 7919 + 13
 	var roll := rng.randf()
