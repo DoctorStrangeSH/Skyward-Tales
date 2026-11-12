@@ -21,7 +21,96 @@ const TROPHIES := {
 	"fair": ["fair_target", Vector2(200, 8), "Мишень с ярмарки", "Соломенная мишень: пять попаданий подряд."],
 }
 
+## Furnishings made of the foresters' planks and resin (Этап 22): built at
+## the table. id: name, cost, forester rank needed, what it gives.
+const FURNITURE := {
+	"bed": {"name": "Резная кровать", "cost": {"gold": 0, "materials": {"planks": 6, "resin": 2}}, "rank": 1,
+		"text": "«Отдых» после сна дома длится вдвое дольше — 10 минут."},
+	"bench": {"name": "Домашний верстак", "cost": {"gold": 0, "materials": {"planks": 8, "copper_ore": 3}}, "rank": 2,
+		"text": "Столярный верстак прямо дома — не нужно ходить в лес."},
+}
+
 var game: SkywardGame
+var furniture: Dictionary = {}
+
+func has_furniture(id: String) -> bool:
+	return furniture.has(id)
+
+## "" when it can be built now, otherwise why not.
+func furniture_blocked(id: String) -> String:
+	var info: Dictionary = FURNITURE.get(id, {})
+	if info.is_empty() or has_furniture(id):
+		return "уже есть"
+	if game.forestry.rank() < int(info["rank"]):
+		return "нужен ранг лесничих «%s»" % str(ForestGuild.RANKS[int(info["rank"])][0])
+	if not game.player.can_pay(info["cost"]):
+		return "не хватает материалов"
+	return ""
+
+func build_furniture(id: String) -> bool:
+	if not furniture_blocked(id).is_empty():
+		return false
+	var info: Dictionary = FURNITURE[id]
+	var materials: Dictionary = info["cost"]["materials"]
+	for material in materials:
+		game.player.remove_item(str(material), int(materials[material]))
+	furniture[id] = true
+	GameAudio.play("quest", -4.0, 0.0)
+	game.hud.show_title_card(str(info["name"]), 2.4)
+	game.hud.show_message(str(info["text"]), 4.5)
+	game.request_autosave()
+	if game.current_region == REGION:
+		_place_furniture(id)
+	return true
+
+func _materials_text(cost: Dictionary) -> String:
+	var parts: Array[String] = []
+	var materials: Dictionary = cost.get("materials", {})
+	for material in materials:
+		parts.append("%s %d/%d" % [game.player.get_item_name(str(material)), int(game.player.inventory.get(material, 0)), int(materials[material])])
+	return ", ".join(parts)
+
+## The table: what the house could still use.
+func open_furnishing() -> void:
+	var text := "Доски и смола лесничих годятся не только на продажу. Ранг в лесной гильдии: %s." % game.forestry.rank_name()
+	var choices: Array[Dictionary] = []
+	for id in FURNITURE:
+		var info: Dictionary = FURNITURE[id]
+		if has_furniture(str(id)):
+			text += "\n✓ %s — %s" % [str(info["name"]), str(info["text"])]
+			continue
+		var reason := furniture_blocked(str(id))
+		text += "\n• %s — %s Нужно: %s%s." % [str(info["name"]), str(info["text"]), _materials_text(info["cost"]), "" if reason.is_empty() else " (%s)" % reason]
+		if reason.is_empty():
+			choices.append({"id": "furnish_build:%s" % str(id), "label": "Поставить: %s" % str(info["name"])})
+	choices.append({"id": "furnish_close", "label": "Позже"})
+	game._show_dialogue_choices("Обустройство дома", text, choices)
+
+func handle_choice(choice_id: String) -> bool:
+	if not choice_id.begins_with("furnish_"):
+		return false
+	game.dialogues._close()
+	if choice_id.begins_with("furnish_build:"):
+		build_furniture(choice_id.trim_prefix("furnish_build:"))
+	return true
+
+func _place_furniture(id: String) -> void:
+	var r := ROOM
+	if id == "bed":
+		_object(Vector2(r.position.x + 50, r.position.y + 62), "lodge_bluebells")
+	elif id == "bench":
+		var bench := _object(Vector2(r.position.x + 150, r.position.y + 30), "lodge_bench", "E — столярный верстак", 40.0)
+		bench.used.connect(func(_o: TowerObject) -> void: game.crafting.open("carpentry"))
+
+func make_snapshot() -> Dictionary:
+	return {"furniture": furniture.keys()}
+
+func restore_snapshot(value: Variant) -> void:
+	furniture.clear()
+	var data: Dictionary = value if value is Dictionary else {}
+	for id in data.get("furniture", []):
+		if FURNITURE.has(str(id)):
+			furniture[str(id)] = true
 
 func home_level() -> int:
 	return game.settlement.building_level(VillageBuildings.HOME)
@@ -95,7 +184,10 @@ func populate() -> void:
 		_animated(Vector2(r.position.x + 78, r.position.y + 22), "lodge_hearth", Color(1.0, 0.62, 0.3, 0.45), 38.0)
 	var wardrobe := _object(Vector2(r.end.x - 34, r.position.y + 14), "lodge_shelf", "E — гардероб: сменить облик", 28.0)
 	wardrobe.used.connect(func(_o: TowerObject) -> void: change_look())
-	_object(Vector2(r.end.x - 70, r.end.y - 34), "lodge_table", "", 28.0)
+	var table := _object(Vector2(r.end.x - 70, r.end.y - 34), "lodge_table", "E — обустроить дом", 28.0)
+	table.used.connect(func(_o: TowerObject) -> void: open_furnishing())
+	for id in furniture:
+		_place_furniture(str(id))
 	_object(Vector2(r.end.x - 96, r.end.y - 28), "lodge_stool")
 	_animated(Vector2(r.end.x - 70, r.end.y - 50), "lodge_candle", Color(1.0, 0.8, 0.45, 0.2)).z_index = 5
 	_animated(Vector2(r.position.x + 150, r.position.y - 16), "lodge_lantern", Color(1.0, 0.75, 0.4, 0.22)).z_index = -58

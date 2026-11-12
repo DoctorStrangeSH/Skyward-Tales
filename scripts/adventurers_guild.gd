@@ -105,6 +105,8 @@ func talk() -> void:
 			choices.append({"id": "guild_take:%d" % index, "label": "%s%s — %s · %d золота" % ["☠ ГРОЗА: " if bool(offer["mighty"]) else "", offer["name"], RegionCatalog.display_name(str(offer["region"])), roundi(offer["gold"] * reward_mult())]})
 	if game.expeditions != null:
 		lines += "\nЭкспедиций в хранилище Узора: %d." % game.expeditions.completed
+		var rations := int(game.player.inventory.get("trail_ration", 0)) + int(game.player.inventory.get("captain_ration", 0))
+		lines += " В сумке пайков: %d — съешьте перед спуском." % rations if rations > 0 else " Совет: возьмите походный паёк — рыба и хлеб у котла; он переживёт за вас один смертельный удар."
 		choices.append({"id": "guild_expedition", "label": "Экспедиция в хранилище Узора (тайная тропа, ур. %d)" % maxi(1, game.player.level)})
 		for tier in range(1, game.expeditions.unlocked_difficulty() + 1):
 			var info: Dictionary = Expeditions.DIFFICULTY[tier]

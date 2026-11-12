@@ -146,12 +146,14 @@ func sleep() -> bool:
 	player.health = player.max_health
 	player.mana = player.max_mana
 	var cozy := level(HOME) >= 2
-	player.add_buff("power", 0.15 if cozy else 0.1, 300.0, "Отдых")
+	var carved := game.home != null and game.home.has_furniture("bed")
+	var rest := 600.0 if carved else 300.0
+	player.add_buff("power", 0.15 if cozy else 0.1, rest, "Отдых")
 	if cozy:
-		player.add_buff("regen", 2.0, 300.0, "Тепло камина")
+		player.add_buff("regen", 2.0, rest, "Тепло камина")
 	player.stats_changed.emit()
 	game.hud.show_title_card("Новый день", 2.0)
-	game.hud.show_message("Вы выспались: силы восстановлены, «Отдых» +%d%% силы на 5 минут." % (15 if cozy else 10), 3.5)
+	game.hud.show_message("Вы выспались: силы восстановлены, «Отдых» +%d%% силы на %d минут." % [15 if cozy else 10, 10 if carved else 5], 3.5)
 	GameAudio.play("level_up", -8.0, 0.0)
 	game.request_autosave()
 	return true

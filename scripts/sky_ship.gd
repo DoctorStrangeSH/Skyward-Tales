@@ -25,6 +25,12 @@ const REQUIRES := "main_echo"
 const REPAIR_MATERIALS := {"wood": 15, "iron_ore": 8, "wind_essence": 3}
 const ENGINE_COST := {"gold": 700, "materials": {"iron_ore": 10, "wind_essence": 5}}
 const RADAR_COST := {"gold": 600, "materials": {"gear_cog": 4, "shadow_essence": 3}}
+## Этап 22: a hull of the foresters' planks and resin — lightning over the
+## Storm isle hits the hero half as hard. Needs the forester rank «Лесничий».
+const HULL := "ship_hull"
+const HULL_COST := {"gold": 300, "materials": {"planks": 12, "resin": 6}}
+const HULL_RANK := 2
+const UPGRADES := {"engine": [ENGINE, ENGINE_COST, "Двигатель бурь установлен"], "radar": [RADAR, RADAR_COST, "Радар скрытых островов"], "hull": [HULL, HULL_COST, "Смолёная обшивка"]}
 const ROUTE := ["salt_coast", "haven", "sky_island", "wind_spires", "sky_rift", "sky_heart", "free_port", "storm_isle", "mirage_isle"]
 const WEATHER := {"clear": "Ясно", "storm": "Гроза", "fog": "Туман"}
 const MIRA := {
@@ -163,11 +169,14 @@ func talk(npc_id: String) -> bool:
 				choices.append({"id": "ship_upgrade:engine", "label": "Двигатель бурь — %s" % game.borin.cost_text(ENGINE_COST)})
 			if not has_upgrade(RADAR):
 				choices.append({"id": "ship_upgrade:radar", "label": "Радар скрытых островов — %s" % game.borin.cost_text(RADAR_COST)})
+			if not has_upgrade(HULL):
+				var short := "" if game.forestry.rank() >= HULL_RANK else " (нужен ранг лесничих «%s»)" % str(ForestGuild.RANKS[HULL_RANK][0])
+				choices.append({"id": "ship_upgrade:hull" if short.is_empty() else "ship_hull_rank", "label": "Смолёная обшивка — %s%s" % [game.borin.cost_text(HULL_COST), short]})
 			if choices.is_empty():
-				game._show_dialogue("Плотник Яр", "Корабль в полном порядке: двигатель гудит, радар слушает. Лучше, чем при Хранителях!")
+				game._show_dialogue("Плотник Яр", "Корабль в полном порядке: двигатель гудит, радар слушает, обшивка смолёная. Лучше, чем при Хранителях!")
 				return true
 			choices.append({"id": "ship_later", "label": "Позже"})
-			game._show_dialogue_choices("Плотник Яр", "Корабль летает, но можно лучше. Двигатель бурь пронесёт сквозь грозу, а радар услышит острова, спрятанные в тумане.", choices)
+			game._show_dialogue_choices("Плотник Яр", "Корабль летает, но можно лучше. Двигатель бурь пронесёт сквозь грозу, радар услышит острова, спрятанные в тумане, а смолёная обшивка из досок лесничих вдвое ослабит молнии над Грозовым островом.", choices)
 			return true
 	return false
 
@@ -191,16 +200,18 @@ func _finish_repair() -> void:
 	game.request_autosave()
 
 func upgrade(kind: String) -> bool:
-	var flag := ENGINE if kind == "engine" else RADAR
-	var cost: Dictionary = ENGINE_COST if kind == "engine" else RADAR_COST
-	if has_upgrade(flag) or not game.player.can_pay(cost):
+	if not UPGRADES.has(kind):
+		return false
+	var flag := str(UPGRADES[kind][0])
+	var cost: Dictionary = UPGRADES[kind][1]
+	if has_upgrade(flag) or not game.player.can_pay(cost) or (kind == "hull" and game.forestry.rank() < HULL_RANK):
 		return false
 	game.player.add_gold(-int(cost["gold"]))
 	var materials: Dictionary = cost["materials"]
 	for material in materials:
 		game.player.remove_item(str(material), int(materials[material]))
 	game.director.set_flag(flag)
-	game.hud.show_title_card("Двигатель бурь установлен" if kind == "engine" else "Радар скрытых островов", 2.5)
+	game.hud.show_title_card(str(UPGRADES[kind][2]), 2.5)
 	game.request_autosave()
 	return true
 
@@ -213,12 +224,15 @@ func handle_choice(choice_id: String) -> bool:
 	if choice_id == "ship_later":
 		_close()
 		return true
+	if choice_id == "ship_hull_rank":
+		game._show_dialogue("Плотник Яр", "Смолить борта — дело лесничих. Дорасти у Орвина до ранга «%s»: руби и сажай лес у деревни — тогда и доски твои я возьму." % str(ForestGuild.RANKS[HULL_RANK][0]))
+		return true
 	if choice_id.begins_with("ship_upgrade:"):
 		var kind := choice_id.trim_prefix("ship_upgrade:")
 		if upgrade(kind):
-			game._show_dialogue("Плотник Яр", "Ставлю! Через час будет как новенький." if kind == "engine" else "Радар из старых шестерёнок и теней — звучит странно, но слышит он всё.")
-		else:
-			game._show_dialogue("Плотник Яр", "Не хватает материалов или золота: %s." % game.borin.cost_text(ENGINE_COST if kind == "engine" else RADAR_COST))
+			game._show_dialogue("Плотник Яр", {"engine": "Ставлю! Через час будет как новенький.", "radar": "Радар из старых шестерёнок и теней — звучит странно, но слышит он всё.", "hull": "Хорошая доска, сухая. Просмолю в три слоя — молния соскользнёт, как вода с гуся."}.get(kind, "Готово."))
+		elif UPGRADES.has(kind):
+			game._show_dialogue("Плотник Яр", "Не хватает материалов или золота: %s." % game.borin.cost_text(UPGRADES[kind][1]))
 		return true
 	if choice_id.begins_with("ship_fly:"):
 		_close()
@@ -331,6 +345,9 @@ func fly_now(region_id: String) -> bool:
 
 # --- Grozovoy island: the warden and lightning ------------------------------
 
+func storm_damage() -> int:
+	return maxi(3, roundi(game.player.max_health * (0.06 if has_upgrade(HULL) else 0.12)))
+
 func _spawn_warden() -> void:
 	var enemy := game.spawn_enemy("sentinel", Vector2(640, 260), "fierce")
 	if enemy == null:
@@ -373,7 +390,7 @@ func _process(delta: float) -> void:
 		_storm_clock = randf_range(3.5, 5.5)
 		var strike := CrystalStrike.new()
 		strike.lightning = true
-		strike.damage = maxi(5, roundi(game.player.max_health * 0.12))
+		strike.damage = storm_damage()
 		game.add_child(strike)
 		strike.global_position = game.player.global_position + Vector2(randf_range(-60, 60), randf_range(-40, 40))
 	if _bolt_clock <= 0.0:

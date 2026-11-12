@@ -74,6 +74,10 @@ var gear_sets: Dictionary = {}
 var phoenix_ready_in: float = 0.0
 const PHOENIX_COOLDOWN := 180.0
 signal phoenix_triggered
+## A trail ration (fishing): the buff "ration" saved the hero from a lethal blow.
+signal ration_saved
+## Gear fittings from the mine (see GEAR_MODS): a message for the HUD.
+signal gear_mod_notice(text: String)
 
 func _ready() -> void:
 	_load_equipment_definitions()
@@ -276,6 +280,12 @@ func take_damage(amount: int, source: Node = null) -> void:
 		phoenix_ready_in = PHOENIX_COOLDOWN
 		Vfx.level_up(get_parent(), global_position)
 		phoenix_triggered.emit()
+	elif health <= 0 and buffs.has("ration"):
+		# A trail ration: one lethal blow is survived, the ration is spent.
+		health = maxi(1, int(max_health * ration_rescue()))
+		buffs.erase("ration")
+		Vfx.level_up(get_parent(), global_position)
+		ration_saved.emit()
 	Vfx.flash(visual, Color(1.0, 0.45, 0.45), 0.2)
 	stats_changed.emit()
 	if previous_health > 0 and health <= 0:
@@ -585,6 +595,15 @@ func upgrade_item(item_id: String) -> String:
 	forged["value"] = int(base.get("value", 20)) * (1 + next)
 	if next >= 4:
 		forged["name"] = "%s (пробуждён) +%d" % [str(base.get("name", base_id)), next]
+	# A fitting from the mine survives the forging.
+	var fitting := str(definition.get("mod", ""))
+	if GEAR_MODS.has(fitting):
+		var extra: Dictionary = GEAR_MODS[fitting]["stats"]
+		for stat in extra:
+			if base.has(stat) and stat in UPGRADE_STATS:
+				forged[stat] = int(forged[stat]) + int(extra[stat])
+		forged["plain_name"] = forged["name"]
+		forged["name"] = str(forged["name"]) + MOD_MARK
 	var new_id := register_generated_item(forged)
 	if not worn_slot.is_empty():
 		unequip_slot(worn_slot)
@@ -594,6 +613,60 @@ func upgrade_item(item_id: String) -> String:
 		equip_item(new_id)
 	stats_changed.emit()
 	return new_id
+
+# --- Fittings from the mine (Этап 22) -----------------------------------------
+
+## A fitting is an item made of copper and amethyst from the old adit; used
+## from the bag it is set into the worn piece of its slot. One fitting per
+## piece: a new one replaces the old. The fitted piece becomes its own item
+## (like a forged one) and keeps the fitting through later forging.
+const GEAR_MODS := {
+	"amethyst_inset": {"name": "Аметистовая оправа", "slot": "blade", "where": "оружие", "stats": {"spell_pct": 8, "max_mana": 10}},
+	"facet_edge": {"name": "Гранёная кромка", "slot": "blade", "where": "оружие", "stats": {"crit": 4, "crit_damage": 10}},
+	"copper_rivets": {"name": "Медные заклёпки", "slot": "armor", "where": "доспех", "stats": {"armor": 2, "max_health": 10}},
+}
+const MOD_MARK := " ◆"
+
+func gear_mod(item_id: String) -> String:
+	return str(get_item_definition(item_id).get("mod", ""))
+
+## Sets the fitting into the worn piece. Returns "" or why it cannot be done.
+func apply_gear_mod(mod_id: String) -> String:
+	if not GEAR_MODS.has(mod_id):
+		return "Неизвестная оправа."
+	var info: Dictionary = GEAR_MODS[mod_id]
+	var slot := str(info["slot"])
+	var item_id := str(equipment.get(slot, ""))
+	if item_id.is_empty():
+		return "Сначала наденьте %s: оправа ставится на надетую вещь." % str(info["where"])
+	var definition := get_item_definition(item_id)
+	var old := str(definition.get("mod", ""))
+	if old == mod_id:
+		return "На этой вещи уже стоит «%s»." % str(info["name"])
+	var fitted := definition.duplicate(true)
+	if GEAR_MODS.has(old):
+		var gone: Dictionary = GEAR_MODS[old]["stats"]
+		for stat in gone:
+			fitted[stat] = int(fitted.get(stat, 0)) - int(gone[stat])
+			if int(fitted[stat]) == 0:
+				fitted.erase(stat)
+	var stats: Dictionary = info["stats"]
+	for stat in stats:
+		fitted[stat] = int(fitted.get(stat, 0)) + int(stats[stat])
+	var plain_name := str(definition.get("plain_name", definition.get("name", item_id)))
+	fitted["mod"] = mod_id
+	fitted["base_id"] = str(definition.get("base_id", item_id))
+	fitted["icon"] = str(definition.get("icon", item_id))
+	fitted["plain_name"] = plain_name
+	fitted["name"] = plain_name + MOD_MARK
+	fitted["mod_text"] = "◆ %s: %s" % [str(info["name"]), stat_text(stats)]
+	var new_id := register_generated_item(fitted)
+	unequip_slot(slot)
+	remove_item(item_id, 1)
+	add_item(new_id, 1)
+	equip_item(new_id)
+	stats_changed.emit()
+	return ""
 
 ## Sword damage: base 10, +2 per level, the blade's "melee", +1 per 2 power.
 func get_melee_damage() -> int:
@@ -739,19 +812,27 @@ func _update_buffs(delta: float) -> void:
 		if float(buffs[type]["time"]) <= 0.0:
 			buffs.erase(type)
 			stats_changed.emit()
-	if buffs.has("regen") and health > 0 and health < max_health:
-		_regen_accumulator += delta * buff_value("regen")
+	if (buffs.has("regen") or buffs.has("ration")) and health > 0 and health < max_health:
+		_regen_accumulator += delta * (buff_value("regen") + buff_value("ration"))
 		if _regen_accumulator >= 1.0:
 			var healed := mini(int(_regen_accumulator), max_health - health)
 			health += healed
 			_regen_accumulator -= float(healed)
 			stats_changed.emit()
 
+## Share of health a trail ration leaves after a lethal blow.
+func ration_rescue() -> float:
+	return clampf(0.1 + 0.2 * buff_value("ration"), 0.3, 0.6)
+
 ## Food and elixirs described by "use" in equipment.json.
 func _use_generic(item_id: String) -> bool:
 	var effect: Variant = get_item_definition(item_id).get("use", {})
 	if not effect is Dictionary or effect.is_empty():
 		return false
+	if effect.has("mod"):
+		var problem := apply_gear_mod(str(effect["mod"]))
+		gear_mod_notice.emit(problem if not problem.is_empty() else "%s: %s." % [str(GEAR_MODS[str(effect["mod"])]["name"]), stat_text(GEAR_MODS[str(effect["mod"])]["stats"])])
+		return problem.is_empty()
 	var heal := int(effect.get("heal", 0))
 	var restore := int(effect.get("mana", 0))
 	var buff: Variant = effect.get("buff", {})

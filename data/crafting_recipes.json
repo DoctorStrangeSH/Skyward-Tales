@@ -802,6 +802,114 @@
         "item_id": "copper_axe",
         "amount": 1
       }
+    },
+    "cook_trail_ration": {
+      "name": "Походный паёк",
+      "description": "Две рыбы и хлеб — в дорогу, а не к столу.",
+      "gold_cost": 0,
+      "station": "kitchen",
+      "ingredients": [
+        {
+          "item_id": "fish",
+          "amount": 2
+        },
+        {
+          "item_id": "bread",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "item_id": "trail_ration",
+        "amount": 1
+      }
+    },
+    "cook_captain_ration": {
+      "name": "Капитанский паёк",
+      "description": "Тунец, морской окунь и хлеб. Улов Солёного берега.",
+      "gold_cost": 0,
+      "station": "kitchen",
+      "ingredients": [
+        {
+          "item_id": "sun_tuna",
+          "amount": 1
+        },
+        {
+          "item_id": "sea_bass",
+          "amount": 1
+        },
+        {
+          "item_id": "bread",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "item_id": "captain_ration",
+        "amount": 1
+      }
+    },
+    "forge_amethyst_inset": {
+      "name": "Аметистовая оправа",
+      "description": "Аметист из жеоды в медном кольце — для посоха или клинка мага.",
+      "gold_cost": 30,
+      "station": "forge",
+      "ingredients": [
+        {
+          "item_id": "amethyst",
+          "amount": 2
+        },
+        {
+          "item_id": "copper_ore",
+          "amount": 2
+        }
+      ],
+      "output": {
+        "item_id": "amethyst_inset",
+        "amount": 1
+      }
+    },
+    "forge_facet_edge": {
+      "name": "Гранёная кромка",
+      "description": "Осколок аметиста, вправленный в лезвие. Для тех, кто бьёт точно.",
+      "gold_cost": 30,
+      "station": "forge",
+      "ingredients": [
+        {
+          "item_id": "amethyst",
+          "amount": 1
+        },
+        {
+          "item_id": "stone",
+          "amount": 3
+        },
+        {
+          "item_id": "iron_ore",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "item_id": "facet_edge",
+        "amount": 1
+      }
+    },
+    "forge_copper_rivets": {
+      "name": "Медные заклёпки",
+      "description": "Медь из старой штольни крепит доспех.",
+      "gold_cost": 20,
+      "station": "forge",
+      "ingredients": [
+        {
+          "item_id": "copper_ore",
+          "amount": 4
+        },
+        {
+          "item_id": "iron_ore",
+          "amount": 1
+        }
+      ],
+      "output": {
+        "item_id": "copper_rivets",
+        "amount": 1
+      }
     }
   }
 }

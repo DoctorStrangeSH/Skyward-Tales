@@ -118,6 +118,8 @@ static func make(player: PlayerCharacter, item_id: String, hint: String = "") ->
 	if not description.is_empty() and not definition.get("generated", false):
 		box.add_child(_gap())
 		box.add_child(_wrapped(description, Color(0.86, 0.84, 0.78)))
+	if definition.has("mod_text"):
+		box.add_child(_wrapped(str(definition["mod_text"]), Color(0.85, 0.7, 1.0)))
 	var set_line := player.set_description(item_id)
 	if not set_line.is_empty():
 		box.add_child(_wrapped(set_line, Color(0.75, 0.95, 0.7)))

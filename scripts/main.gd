@@ -344,6 +344,10 @@ func _ready() -> void:
 		GameAudio.play("hurt", -3.0)
 		shake(clampf(1.5 + amount * 0.15, 1.5, 4.0), 0.18))
 	player.second_wind_triggered.connect(func() -> void: hud.show_message("Второе дыхание! Смерть отступила.", 3.0))
+	player.ration_saved.connect(func() -> void:
+		hud.show_title_card("Походный паёк спас вас!", 2.0)
+		hud.show_message("Смертельный удар пережит — паёк съеден до крошки.", 3.5))
+	player.gear_mod_notice.connect(func(text: String) -> void: hud.show_message(text, 3.5))
 	player.phoenix_triggered.connect(func() -> void:
 		hud.show_title_card("Перо феникса!", 2.0)
 		Vfx.burst(self, player.global_position, [Color(1, 0.9, 0.5), Color(1, 0.5, 0.2), Color(1, 0.3, 0.1, 0)], 30, 120.0, 0.6))
@@ -1701,11 +1705,12 @@ func _use_consumable(item_id: String, label: String = "") -> void:
 	if hud == null or hud.dialogue_visible or get_tree().paused:
 		return
 	if player.use_item(item_id):
-		hud.show_message("Использовано: " + (label if not label.is_empty() else player.get_item_name(item_id)), 1.5)
+		if not player.get_item_definition(item_id).get("use", {}).has("mod"):
+			hud.show_message("Использовано: " + (label if not label.is_empty() else player.get_item_name(item_id)), 1.5)
 		hud.refresh_inventory(player)
 	elif int(player.inventory.get(item_id, 0)) <= 0:
 		hud.show_message("Нет предмета: %s." % player.get_item_name(item_id), 1.5)
-	else:
+	elif not player.get_item_definition(item_id).get("use", {}).has("mod"):
 		hud.show_message("Восстановление не требуется.", 1.5)
 
 # --- Levels and talents --------------------------------------------------
