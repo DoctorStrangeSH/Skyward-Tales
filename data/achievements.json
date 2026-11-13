@@ -559,6 +559,27 @@
       "stat": "joint_actions",
       "goal": 10,
       "gold": 200
+    },
+    "good_friend": {
+      "title": "Добрый друг",
+      "description": "Поздравьте жителей с днём рождения 5 раз.",
+      "stat": "birthdays",
+      "goal": 5,
+      "gold": 150
+    },
+    "perfect_gift": {
+      "title": "В самое сердце",
+      "description": "Подарите имениннику его любимую вещь 3 раза.",
+      "stat": "favourite_gifts",
+      "goal": 3,
+      "gold": 200
+    },
+    "merrymaker": {
+      "title": "Душа праздника",
+      "description": "Отпразднуйте 5 праздников календаря.",
+      "stat": "festivals",
+      "goal": 5,
+      "gold": 250
     }
   }
 }

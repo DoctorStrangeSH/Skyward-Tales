@@ -418,6 +418,8 @@ func _spawn_npc(npc_data: Dictionary) -> void:
 		# An open investigation speaks first (clues, the case, the verdict).
 		var talk := action
 		npc.interacted.connect(func(source: Node2D) -> void:
+			if game.calendar != null and game.calendar.talk(npc_id):
+				return
 			if game.mysteries != null and game.mysteries.talk(npc_id):
 				return
 			if game.siege != null and game.siege.talk(npc_id):

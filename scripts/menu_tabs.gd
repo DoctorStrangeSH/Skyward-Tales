@@ -10,7 +10,7 @@ signal tab_requested(tab_id: String)
 
 const TABS := [
 	["hero", "Герой", "I"], ["journal", "Журнал", "J"], ["map", "Карта", "M"], ["talents", "Таланты", "T"],
-	["bestiary", "Бестиарий", "K"], ["activities", "Занятия", "L"], ["craft", "Ремесло", "B"],
+	["bestiary", "Бестиарий", "K"], ["activities", "Занятия", "L"], ["calendar", "Календарь", "N"], ["craft", "Ремесло", "B"],
 ]
 ## The common frame of every tabbed window.
 const FRAME := Rect2(12, 21, 616, 335)

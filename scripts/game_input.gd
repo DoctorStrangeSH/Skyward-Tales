@@ -125,7 +125,7 @@ func _input(event: InputEvent) -> void:
 # --- One window with tabs (owner's list №28) -----------------------------------
 
 ## Keys of the tabs; Tab opens the window on the last tab.
-const TAB_KEYS := {KEY_I: "hero", KEY_C: "hero", KEY_J: "journal", KEY_M: "map", KEY_T: "talents", KEY_K: "bestiary", KEY_L: "activities", KEY_B: "craft", KEY_TAB: "last"}
+const TAB_KEYS := {KEY_I: "hero", KEY_C: "hero", KEY_J: "journal", KEY_M: "map", KEY_T: "talents", KEY_K: "bestiary", KEY_L: "activities", KEY_N: "calendar", KEY_B: "craft", KEY_TAB: "last"}
 var last_tab: String = "hero"
 
 ## The tab open now ("" — the window is closed).
@@ -143,6 +143,8 @@ func current_tab() -> String:
 		return "bestiary"
 	if hud.activities_visible:
 		return "activities"
+	if hud.calendar_visible:
+		return "calendar"
 	if hud.crafting_visible:
 		return "craft"
 	return ""
@@ -156,6 +158,8 @@ func close_tabs() -> void:
 	game._close_books()
 	if hud.activities_visible:
 		hud.toggle_activities([])
+	if hud.calendar_visible:
+		hud.toggle_calendar(game.calendar)
 	if game.crafting.is_open():
 		game.crafting.close()
 
@@ -178,6 +182,8 @@ func open_tab(tab_id: String) -> void:
 			game.hud.toggle_bestiary(game.bestiary_entries, game.discovered_enemies)
 		"activities":
 			game.hud.toggle_activities(Activities.entries(game))
+		"calendar":
+			game.hud.toggle_calendar(game.calendar)
 		"craft":
 			game.crafting.open("hand")
 

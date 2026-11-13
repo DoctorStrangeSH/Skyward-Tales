@@ -96,6 +96,8 @@ signal keystone_requested
 var journal_visible: bool = false
 ## «Занятия» (owner's list №33) and the tab strip over every window (№28).
 var activities_view: ActivitiesPanel
+var calendar_view: CalendarPanel
+var calendar_visible: bool = false
 var activities_visible: bool = false
 var menu_tabs: MenuTabs
 signal menu_tab_requested(tab_id: String)
@@ -301,9 +303,11 @@ func _ready() -> void:
 	skills_view.keystone_requested.connect(func() -> void: keystone_requested.emit())
 	activities_view = ActivitiesPanel.new()
 	root.add_child(activities_view)
+	calendar_view = CalendarPanel.new()
+	root.add_child(calendar_view)
 	# Owner's list №28: one window with tabs — every book takes the same
 	# frame under the tab strip.
-	for window in [inventory_view, journal_view, world_map_view, skills_view, bestiary_view, activities_view, crafting_view]:
+	for window in [inventory_view, journal_view, world_map_view, skills_view, bestiary_view, activities_view, calendar_view, crafting_view]:
 		MenuTabs.fit(window)
 	menu_tabs = MenuTabs.new()
 	root.add_child(menu_tabs)
@@ -367,7 +371,7 @@ func _process(delta: float) -> void:
 			message_label.text = ""
 	# Toasts hide under big windows (the windows show their own status).
 	if toasts != null:
-		toasts.visible = not (inventory_open or crafting_visible or journal_visible or skills_visible or bestiary_visible or world_map_visible or activities_visible)
+		toasts.visible = not (inventory_open or crafting_visible or journal_visible or skills_visible or bestiary_visible or world_map_visible or activities_visible or calendar_visible)
 	if menu_tabs != null:
 		var open_tab: String = str(tab_provider.call())
 		if open_tab.is_empty() != not menu_tabs.visible or (not open_tab.is_empty() and not (menu_tabs.buttons[open_tab] as Button).button_pressed):
@@ -435,6 +439,10 @@ func close_top_window() -> bool:
 	if activities_visible:
 		activities_visible = false
 		activities_view.visible = false
+		return true
+	if calendar_visible:
+		calendar_visible = false
+		calendar_view.visible = false
 		return true
 	return false
 
@@ -579,7 +587,14 @@ func toggle_bestiary(entries: Dictionary, discovered: Dictionary) -> void:
 
 ## True while a full-screen book (bestiary or quest journal) is open.
 func overlay_visible() -> bool:
-	return bestiary_visible or journal_visible or skills_visible or activities_visible
+	return bestiary_visible or journal_visible or skills_visible or activities_visible or calendar_visible
+
+func toggle_calendar(calendar: GameCalendar) -> void:
+	calendar_visible = not calendar_visible
+	calendar_view.visible = calendar_visible
+	if calendar_visible:
+		calendar_view._selected = -1
+		calendar_view.populate(calendar)
 
 func toggle_activities(rows: Array[Dictionary]) -> void:
 	activities_visible = not activities_visible

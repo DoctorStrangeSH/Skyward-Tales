@@ -85,7 +85,10 @@ func ensure_follower() -> void:
 	game.add_child(_follower)
 	_follower.add_to_group("interactables")
 	_follower.global_position = game.player.global_position + _follower.follow_offset
-	_follower.interacted.connect(func(_source: Node2D) -> void: game.crew.talk(extra))
+	_follower.interacted.connect(func(_source: Node2D) -> void:
+		if game.calendar.talk(extra):
+			return
+		game.crew.talk(extra))
 	game.crew.apply(extra)
 
 func follower() -> Companion:

@@ -113,6 +113,7 @@ var consequences: Consequences
 var mysteries: Mysteries
 var puzzles: LocationPuzzles
 var joint: JointActions
+var calendar: GameCalendar
 var siege: FarmSiege
 var escort: EscortErrand
 var mastery: WeaponMastery
@@ -323,6 +324,10 @@ func _ready() -> void:
 	siege.name = "FarmSiege"
 	siege.game = self
 	add_child(siege)
+	calendar = GameCalendar.new()
+	calendar.name = "GameCalendar"
+	calendar.game = self
+	add_child(calendar)
 	joint = JointActions.new()
 	joint.name = "JointActions"
 	joint.game = self
@@ -1358,6 +1363,8 @@ func _on_elder_interacted(_source: Node2D) -> void:
 		dialogues.on_elder()
 
 func _on_cartographer_interacted(_source: Node2D) -> void:
+	if calendar.talk("cartographer"):
+		return
 	if director.try_talk("cartographer") or party.talk("cartographer"):
 		return
 	# Mira on the road: quest business first, otherwise her own menu
