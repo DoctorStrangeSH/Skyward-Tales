@@ -66,6 +66,7 @@ static func generate(rng: RandomNumberGenerator, level: int, rarity: String = ""
 	var pool: Array = data.get("affixes", []).duplicate()
 	var lines: Array[String] = []
 	var first_suffix := ""
+	var rolled: Array = []
 	for i in range(mini(int(rarity_data.get("affixes", 1)), pool.size())):
 		var affix: Dictionary = pool.pop_at(rng.randi_range(0, pool.size() - 1))
 		# Percent stats grow slower with the land's level than flat ones.
@@ -73,6 +74,7 @@ static func generate(rng: RandomNumberGenerator, level: int, rarity: String = ""
 		var amount := maxi(1, roundi(rng.randi_range(int(affix["min"]), int(affix["max"])) * affix_scale))
 		_add_stat(definition, str(affix["stat"]), amount)
 		lines.append(str(affix["label"]) % amount)
+		rolled.append({"id": str(affix["id"]), "amount": amount})
 		if first_suffix.is_empty():
 			first_suffix = str(affix["suffix"])
 	var names: Array = base.get("names", ["Предмет"])
@@ -80,6 +82,9 @@ static func generate(rng: RandomNumberGenerator, level: int, rarity: String = ""
 	if rarity == "legendary":
 		definition["name"] = "%s %s" % [LEGENDARY_PREFIXES[rng.randi_range(0, LEGENDARY_PREFIXES.size() - 1)], str(definition["name"]).to_lower()]
 	definition["description"] = ", ".join(lines)
+	# Kept for Borin's reforging (scripts/reforge.gd).
+	definition["affixes"] = rolled
+	definition["level"] = level
 	definition["value"] = int(rarity_data.get("value", 10)) + level * 2
 	return definition
 
@@ -93,6 +98,12 @@ static func _pick_base(rng: RandomNumberGenerator, bases: Dictionary) -> String:
 		if pick <= 0.0:
 			return str(base_id)
 	return str(bases.keys().back())
+
+static func affix(affix_id: String) -> Dictionary:
+	for entry in tables().get("affixes", []):
+		if str(entry.get("id", "")) == affix_id:
+			return entry
+	return {}
 
 static func _add_stat(definition: Dictionary, stat: String, amount: int) -> void:
 	if stat.begins_with("spell_bonus."):

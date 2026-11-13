@@ -112,6 +112,10 @@ var keystones: Keystones
 var consequences: Consequences
 var mysteries: Mysteries
 var siege: FarmSiege
+var mastery: WeaponMastery
+var signature: SignatureGear
+var reforge: Reforge
+var stars: MasteryStars
 var adit: OldAdit
 var home: HeroHome
 var pin: GoalPin
@@ -292,6 +296,22 @@ func _ready() -> void:
 	scout.name = "ScoutTrail"
 	scout.game = self
 	add_child(scout)
+	stars = MasteryStars.new()
+	stars.name = "MasteryStars"
+	stars.game = self
+	add_child(stars)
+	reforge = Reforge.new()
+	reforge.name = "Reforge"
+	reforge.game = self
+	add_child(reforge)
+	signature = SignatureGear.new()
+	signature.name = "SignatureGear"
+	signature.game = self
+	add_child(signature)
+	mastery = WeaponMastery.new()
+	mastery.name = "WeaponMastery"
+	mastery.game = self
+	add_child(mastery)
 	siege = FarmSiege.new()
 	siege.name = "FarmSiege"
 	siege.game = self
@@ -369,10 +389,12 @@ func _ready() -> void:
 		gear.on_parry(source)
 		keystones.on_parry())
 	player.blocked.connect(func(_amount: int) -> void:
+		signature.on_blocked(_amount)
 		GameAudio.play("hit", -8.0, 0.4)
 		Vfx.sparkle(self, player.global_position + player.facing * 12.0))
 	player.hurt.connect(func(amount: int) -> void:
 		gear.on_hurt(amount, player.last_attacker)
+		signature.on_hurt()
 		GameAudio.play("hurt", -3.0)
 		shake(clampf(1.5 + amount * 0.15, 1.5, 4.0), 0.18))
 	player.second_wind_triggered.connect(func() -> void: hud.show_message("Второе дыхание! Смерть отступила.", 3.0))
@@ -422,7 +444,10 @@ func _ready() -> void:
 		var due := keystones.pending()
 		if not due.is_empty():
 			hud.close_top_window()
-			keystones.offer(int(due[0])))
+			keystones.offer(int(due[0]))
+		elif stars.available() > 0:
+			hud.close_top_window()
+			stars.offer())
 	hud.dialogue_dismissed.connect(func() -> void: player.set_physics_process(true))
 	hud.can_dismiss_dialogue = func() -> bool: return not story.active
 	hud.menu_key_requested.connect(func(keycode: int) -> void: _handle_key(keycode as Key))
@@ -1582,6 +1607,7 @@ func _on_guardian_defeated(xp: int, death_position: Vector2) -> void:
 	player.add_gold(100)
 	_spawn_loot(death_position, "ancient_relic")
 	spawn_generated_loot(death_position + Vector2(14, 6), "rare", "boss")
+	signature.on_boss_defeated("guardian", death_position)
 	shake(5.0, 0.5)
 	hud.show_message("Хранитель побеждён! +100 золота. Древний артефакт ждёт!", 3.5)
 	_grant_sky_seal()
@@ -1600,6 +1626,7 @@ func _on_story_boss_defeated(kind: String, xp: int, death_position: Vector2) -> 
 	player.add_experience(xp)
 	_spawn_loot(death_position, "ancient_relic")
 	spawn_generated_loot(death_position + Vector2(14, 6), "rare", "boss")
+	signature.on_boss_defeated(kind, death_position)
 	shake(6.0, 0.6)
 	hit_stop(0.2)
 	update_music.call_deferred()
@@ -1622,7 +1649,9 @@ func _on_wolf_defeated(xp_reward: int, death_position: Vector2, elite: bool = fa
 func _on_enemy_defeated(xp_reward: int, death_position: Vector2, kind: String = "", elite: bool = false) -> void:
 	player.add_experience(roundi(float(xp_reward) * keystones.xp_mult()))
 	gear.on_kill()
+	signature.on_kill()
 	keystones.on_kill(elite, death_position)
+	mastery.on_kill(elite, STORY_BOSSES.has(kind))
 	defeated_enemies += 1
 	contracts.on_kill(kind)
 	achievements.add("kills")
@@ -1810,7 +1839,7 @@ func _on_level_up(new_level: int) -> void:
 	# No pause: each level gives a skill point to spend in the tree (T).
 	Vfx.level_up(self, player.global_position)
 	if hud != null and not game_over:
-		hud.show_message("НОВЫЙ УРОВЕНЬ: %d! +1 очко навыков." % new_level, 3.0)
+		hud.show_message("НОВЫЙ УРОВЕНЬ: %d! +1 очко навыков%s." % [new_level, " и ★ звезда мастерства (T)" if new_level > MasteryStars.FROM_LEVEL else ""], 3.0)
 		hud.show_tip("skill_tree", "Совет: T — дерево навыков. Там тратятся очки и Печати Неба.", 6.0)
 		_refresh_hud()
 

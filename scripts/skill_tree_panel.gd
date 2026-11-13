@@ -95,6 +95,10 @@ func _ready() -> void:
 	box.add_child(detail)
 	visible = false
 
+func arena_stars(player: PlayerCharacter) -> int:
+	var arena := player.get_parent()
+	return int(arena.stars.available()) if arena != null and arena.get("stars") != null else 0
+
 func show_group(group_id: String) -> void:
 	group = group_id
 	if _player != null:
@@ -124,7 +128,16 @@ func populate(player: PlayerCharacter) -> void:
 			due = int(tier)
 	keystone_line.text = ("Ключевые таланты: " + ", ".join(chosen)) if not chosen.is_empty() else "Ключевые таланты: на 5, 10 и 15 уровне — один из трёх, меняет стиль боя."
 	keystone_button.visible = due > 0
+	var free_stars := int(arena_stars(player))
+	var arena := player.get_parent()
+	if arena != null and arena.get("mastery") != null:
+		keystone_line.text += "\n" + str(arena.mastery.summary())
+	if arena != null and arena.get("stars") != null:
+		keystone_line.text += "\n" + str(arena.stars.summary())
 	keystone_button.text = "Выбрать ключевой талант (ур. %d)" % due
+	if due == 0 and free_stars > 0:
+		keystone_button.visible = true
+		keystone_button.text = "★ Звёзды мастерства: %d" % free_stars
 	if group == "combos":
 		_populate_combos()
 		return

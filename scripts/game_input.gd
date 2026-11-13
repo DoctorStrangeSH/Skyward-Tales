@@ -217,6 +217,8 @@ func _handle_key(keycode: Key) -> bool:
 				GameAudio.play("dash", -6.0)
 				game.gear.on_dodge()
 				game.keystones.on_dodge()
+				game.mastery.on_dodge()
+				game.signature.on_dodge()
 			return true
 		KEY_F when not world_blocked and not game.hud.inventory_open:
 			if game.player.start_guard():

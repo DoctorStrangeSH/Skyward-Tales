@@ -43,7 +43,13 @@ ICONS = {
     "sky_thread": JW % 12, "earth_star": JW % 9, "keeper_sigil": JW % 3, "phoenix_feather": JW % 8,
     "pyromancer_core": SH % 19, "frost_heart": SH % 20, "storm_eye": SH % 18, "flame_heart": SH % 14,
     "golem_heart": OR % 26, "keeper_hourglass": SH % 11, "dusk_fang": SH % 16, "cog_charm": SH % 12,
+    # Boss trophies (scripts/signature_gear.gd).
+    "crypt_lantern": SH % 2, "heartwood_bark": CL % 1, "crab_king_shell": JW % 4, "echo_prism": JW % 1,
+    "bog_signet": JW % 2, "giant_fist": AX % 1, "tempest_eye": SH % 3, "vail_cloak": CL % 3,
+    "ash_brand": SW % 1, "titan_core": CH % 3, "pattern_tuner": ST % 20, "shade_shard": SH % 4,
 }
+## Trophies that share a picture with another item get their own colour.
+TINTS = {"titan_core": (1.0, 0.55, 0.3)}
 SIZE = 32
 
 
@@ -59,7 +65,12 @@ def icon(rel: str) -> Image.Image:
 def build() -> None:
     folder = pack.ROOT / "assets" / "icons"
     for item_id, rel in ICONS.items():
-        icon(rel).save(folder / f"{item_id}.png", optimize=True)
+        img = icon(rel)
+        if item_id in TINTS:
+            r, g, b = TINTS[item_id]
+            ch = img.split()
+            img = Image.merge("RGBA", (ch[0].point(lambda v: min(255, int(v * r + 40 * r))), ch[1].point(lambda v: int(v * g)), ch[2].point(lambda v: int(v * b)), ch[3]))
+        img.save(folder / f"{item_id}.png", optimize=True)
     print(f"  item icons: {len(ICONS)}")
 
 

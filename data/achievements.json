@@ -503,6 +503,34 @@
       "stat": "sieges",
       "goal": 1,
       "gold": 120
+    },
+    "weapon_master": {
+      "title": "Мастер оружия",
+      "description": "Доведите мастерство одного вида оружия до III ступени.",
+      "stat": "mastery",
+      "goal": 3,
+      "gold": 300
+    },
+    "reforger": {
+      "title": "Перековщица",
+      "description": "Перекуйте свойства вещей у Борина 5 раз.",
+      "stat": "reforged",
+      "goal": 5,
+      "gold": 150
+    },
+    "trophy_hunter": {
+      "title": "Трофеи великих",
+      "description": "Соберите 6 трофеев великих врагов.",
+      "stat": "trophies",
+      "goal": 6,
+      "gold": 400
+    },
+    "star_path": {
+      "title": "Звёздный путь",
+      "description": "Потратьте 10 звёзд мастерства (с 21-го уровня).",
+      "stat": "stars",
+      "goal": 10,
+      "gold": 500
     }
   }
 }

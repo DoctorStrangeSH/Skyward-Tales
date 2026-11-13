@@ -104,6 +104,9 @@ func talk() -> bool:
 		var choices: Array[Dictionary] = []
 		choices.append({"id": "borin_forge", "label": "⚒ Заточка снаряжения (до +%d)" % forge_level()})
 		choices.append({"id": "borin_shop", "label": "Купить оружие и броню"})
+		choices.append({"id": "borin_reforge", "label": "⚒ Перековка свойства"})
+		if not game.signature.missing().is_empty():
+			choices.append({"id": "borin_trophies", "label": "Трофейная ковка (%d)" % game.signature.missing().size()})
 		if forge_level() < 3:
 			choices.append({"id": "borin_expand", "label": "Расширить кузницу — %s" % cost_text(EXPAND_COST)})
 		choices.append({"id": "borin_craft", "label": "Усилить снаряжение"})

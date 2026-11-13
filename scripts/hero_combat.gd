@@ -220,7 +220,7 @@ func _strike(enemy: SlimeEnemy, damage: int, push_direction: Vector2, push: floa
 		Vfx.sparkle(game, enemy.global_position)
 		game.gear.on_crit(enemy)
 		game.keystones.on_crit(enemy)
-	damage = roundi(float(damage) * game.keystones.strike_mult(enemy))
+	damage = roundi(float(damage) * game.keystones.strike_mult(enemy) * game.mastery.strike_mult(enemy, crit) * game.signature.strike_mult(enemy) * game.stars.melee_mult())
 	var shaped := game.gear.modify_strike(damage)
 	damage = int(shaped["damage"])
 	if bool(shaped["riposte"]):
@@ -236,6 +236,8 @@ func _strike(enemy: SlimeEnemy, damage: int, push_direction: Vector2, push: floa
 	game.combos.on_strike(enemy, damage)
 	game.gear.on_strike(enemy, damage)
 	game.keystones.on_strike(enemy, damage)
+	game.mastery.on_strike(enemy, damage)
+	game.signature.on_strike(enemy, damage, crit)
 	var heal := game.player.get_melee_lifesteal()
 	if heal > 0 and game.player.health < game.player.max_health:
 		game.player.health = mini(game.player.max_health, game.player.health + heal)
@@ -358,8 +360,8 @@ func _bow_release() -> void:
 	game._bow_holding = false
 	game.player.charge_rooted = false
 	var aimed := game._bow_held >= SkywardGame.AIM_TIME
-	var damage := game.player.get_ranged_damage() * (2 if aimed else 1)
-	var pierce := (99 if game.player.wears_base("wind_bow") else 2) if aimed else 0
+	var damage := roundi(game.mastery.bow_damage(game.player.get_ranged_damage() * (2 if aimed else 1), aimed) * game.stars.melee_mult())
+	var pierce := game.mastery.bow_pierce((99 if game.player.wears_base("wind_bow") else 2) if aimed else 0, aimed)
 	game.shoot_arrow(game._aim_direction(), damage, aimed, pierce)
 	game.player.play_cast(game._aim_direction())
 	GameAudio.play("dash", -6.0 if not aimed else -2.0, 0.2)
@@ -381,8 +383,8 @@ func _cast_spell() -> void:
 	if game.cast_cooldown_remaining > 0.0:
 		return
 	var spell: Dictionary = game.spell_definitions.get(game.selected_spell_id, {})
-	var mana_cost := int(spell.get("mana_cost", 8))
-	var spell_damage := roundi((int(spell.get("damage", 18)) + game.player.get_spell_bonus(game.selected_spell_id)) * game.player.get_spell_power_multiplier(game.selected_spell_id))
+	var mana_cost := game.mastery.mana_cost(int(spell.get("mana_cost", 8)))
+	var spell_damage := roundi(game.stars.spell_mult() * game.signature.spell_damage(game.mastery.spell_damage(roundi((int(spell.get("damage", 18)) + game.player.get_spell_bonus(game.selected_spell_id)) * game.player.get_spell_power_multiplier(game.selected_spell_id)))))
 	if not game.player.spend_mana(mana_cost):
 		game.hud.show_message("Недостаточно маны.", 1.2)
 		return

@@ -63,7 +63,7 @@ static func capture(game: SkywardGame) -> Dictionary:
 			"gold": player.gold,
 			"inventory": player.inventory.duplicate(true),
 			"equipment": player.equipment.duplicate(true),
-			"talents": player.talents.duplicate(true), "keystones": player.keystones.duplicate(), "keystone_offered": player.keystone_offered.duplicate(), "skill_slots": player.skill_slots.duplicate(), "learned_skills": player.learned_skills.duplicate(), "skills_need_learning": player.skills_need_learning, "fish_log": player.fish_log.duplicate(true), "starlight_essence_used": player.starlight_essence_used,
+			"talents": player.talents.duplicate(true), "keystones": player.keystones.duplicate(), "mastery": player.mastery.duplicate(), "stars": player.stars.duplicate(), "keystone_offered": player.keystone_offered.duplicate(), "skill_slots": player.skill_slots.duplicate(), "learned_skills": player.learned_skills.duplicate(), "skills_need_learning": player.skills_need_learning, "fish_log": player.fish_log.duplicate(true), "starlight_essence_used": player.starlight_essence_used,
 			"bonus_skill_points": player.bonus_skill_points,
 			"generated_items": player.generated_items.duplicate(true), "generated_counter": player._generated_counter,
 			"hero_name": player.hero_name, "hero_gender": player.hero_gender,
@@ -214,6 +214,8 @@ static func _apply_player(player: PlayerCharacter, character: Dictionary) -> voi
 	var order: Variant = character.get("bag_order", [])
 	player.bag_order = (order as Array).duplicate() if order is Array else []
 	player.talents = character.get("talents", {}).duplicate(true)
+	player.mastery = (character.get("mastery", {}) as Dictionary).duplicate() if character.get("mastery", {}) is Dictionary else {}
+	player.stars = (character.get("stars", {}) as Dictionary).duplicate() if character.get("stars", {}) is Dictionary else {}
 	player.keystones = (character.get("keystones", {}) as Dictionary).duplicate() if character.get("keystones", {}) is Dictionary else {}
 	player.keystone_offered = (character.get("keystone_offered", {}) as Dictionary).duplicate() if character.get("keystone_offered", {}) is Dictionary else {}
 	player.fish_log = (character.get("fish_log", {}) as Dictionary).duplicate(true) if character.get("fish_log", {}) is Dictionary else {}

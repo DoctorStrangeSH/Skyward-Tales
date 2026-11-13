@@ -900,6 +900,7 @@ func show_dialogue_choices(speaker: String, message: String, choices: Array[Dict
 		button.custom_minimum_size = Vector2(0, 15)
 		button.add_theme_font_size_override("font_size", UiFont.px(9))
 		_style_choice(button)
+		button.set_meta("choice_id", choice_id)
 		button.pressed.connect(_on_dialogue_choice_pressed.bind(choice_id))
 		dialogue_choices_container.add_child(button)
 	dialogue_panel.visible = true

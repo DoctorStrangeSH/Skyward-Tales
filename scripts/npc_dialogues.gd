@@ -140,6 +140,8 @@ func handle_choice(choice_id: String) -> void:
 		return
 	if game.givers != null and game.givers.handle_choice(choice_id):
 		return
+	if game.reforge != null and game.reforge.handle_choice(choice_id):
+		return
 	if game.borin != null and game.borin.handle_choice(choice_id):
 		return
 	if game.lira != null and game.lira.handle_choice(choice_id):
@@ -151,6 +153,8 @@ func handle_choice(choice_id: String) -> void:
 	if game.scout != null and game.scout.handle_choice(choice_id):
 		return
 	if game.home != null and game.home.handle_choice(choice_id):
+		return
+	if game.stars != null and game.stars.handle_choice(choice_id):
 		return
 	if game.keystones != null and game.keystones.handle_choice(choice_id):
 		return
@@ -477,6 +481,9 @@ func on_blacksmith_crafting() -> void:
 	if not game.borin.upgraded():
 		choices.push_front({"id": "borin_forge", "label": "⚒ Заточка снаряжения (до +1)"})
 		choices.push_back({"id": "borin_shop", "label": "Купить оружие"})
+		choices.push_back({"id": "borin_reforge", "label": "⚒ Перековка свойства"})
+		if not game.signature.missing().is_empty():
+			choices.push_back({"id": "borin_trophies", "label": "Трофейная ковка (%d)" % game.signature.missing().size()})
 	if not choices.is_empty():
 		choices.append({"id": "blacksmith_craft:later", "label": "В другой раз"})
 		_ask("Борин, кузнец", "Приноси материалы — и я превращу обычное снаряжение в надёжное. Железо не врёт: что вложишь, то и получишь. Выбирай работу:", choices)

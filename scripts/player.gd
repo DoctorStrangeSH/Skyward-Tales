@@ -80,6 +80,10 @@ signal phoenix_triggered
 var scene_hold: bool = false
 ## Key talents chosen at levels 5/10/15: {"5": id, ...} (scripts/keystones.gd).
 var keystones: Dictionary = {}
+## Weapon mastery points by kind: {"sword": 40, ...} (scripts/weapon_mastery.gd).
+var mastery: Dictionary = {}
+## Mastery stars past level 20: {"might": 3, ...} (scripts/mastery_stars.gd).
+var stars: Dictionary = {}
 var keystone_offered: Dictionary = {}
 
 func has_keystone(id: String) -> bool:
@@ -750,7 +754,9 @@ func has_passive(passive_id: String) -> bool:
 
 ## Chance (0..1) that a sword hit deals double damage.
 func get_crit_chance() -> float:
-	return (0.05 if has_passive("keen_eye") else 0.0) + 0.05 * float(talents.get("keen_edge", 0)) + 0.01 * float(_equipped_stat("crit")) + buff_value("crit")
+	var arena := get_parent()
+	var trained := float(arena.mastery.crit_bonus()) if arena != null and arena.get("mastery") != null else 0.0
+	return trained + (0.05 if has_passive("keen_eye") else 0.0) + 0.05 * float(talents.get("keen_edge", 0)) + 0.01 * float(_equipped_stat("crit")) + buff_value("crit")
 
 ## Part of incoming damage that is ignored (Unbreakable).
 func get_damage_reduction() -> float:
@@ -761,6 +767,9 @@ func get_damage_reduction() -> float:
 	# Golem heart: stone skin when the hero is close to falling.
 	if wears_base("golem_heart") and health < max_health * 0.3:
 		reduction += 0.3
+	if arena != null and arena.get("signature") != null:
+		reduction += float(arena.signature.damage_reduction())
+	reduction += 0.01 * float(stars.get("guard", 0))
 	return reduction
 
 ## Health restored by each sword hit.
@@ -771,7 +780,7 @@ func get_melee_lifesteal() -> int:
 func get_gold_multiplier() -> float:
 	var arena := get_parent()
 	var mode := float(arena.reward_mult()) if arena != null and arena.has_method("reward_mult") else 1.0
-	return (1.15 if has_passive("treasure_sense") else 1.0) * (1.35 if has_keystone("fortune") else 1.0) * (1.0 + 0.1 * float(talents.get("treasure_hunter", 0))) * mode
+	return (1.15 if has_passive("treasure_sense") else 1.0) * (1.35 if has_keystone("fortune") else 1.0) * (1.0 + 0.1 * float(talents.get("treasure_hunter", 0))) * (1.0 + 0.02 * float(stars.get("fortune", 0))) * mode
 
 ## Cooldown multiplier of the hotbar skills (Battle Rhythm).
 func get_skill_cooldown_multiplier() -> float:

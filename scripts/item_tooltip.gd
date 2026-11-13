@@ -142,7 +142,9 @@ static var _effect_texts: Dictionary = {}
 static func _effects() -> Dictionary:
 	if _effect_texts.is_empty():
 		var script: GDScript = load("res://scripts/gear_effects.gd")
-		_effect_texts = script.get_script_constant_map().get("DESCRIPTIONS", {})
+		_effect_texts = (script.get_script_constant_map().get("DESCRIPTIONS", {}) as Dictionary).duplicate()
+		var trophies: GDScript = load("res://scripts/signature_gear.gd")
+		_effect_texts.merge(trophies.get_script_constant_map().get("DESCRIPTIONS", {}))
 	return _effect_texts
 
 static func _line(text: String, font_size: int, color: Color) -> Label:
