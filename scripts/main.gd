@@ -115,6 +115,7 @@ var puzzles: LocationPuzzles
 var joint: JointActions
 var calendar: GameCalendar
 var settlement_life: SettlementLife
+var craft_orders: CraftOrders
 var siege: FarmSiege
 var escort: EscortErrand
 var mastery: WeaponMastery
@@ -325,6 +326,10 @@ func _ready() -> void:
 	siege.name = "FarmSiege"
 	siege.game = self
 	add_child(siege)
+	craft_orders = CraftOrders.new()
+	craft_orders.name = "CraftOrders"
+	craft_orders.game = self
+	add_child(craft_orders)
 	settlement_life = SettlementLife.new()
 	settlement_life.name = "SettlementLife"
 	settlement_life.game = self

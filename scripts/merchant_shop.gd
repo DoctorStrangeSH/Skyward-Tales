@@ -144,12 +144,15 @@ func get_price(item_id: String, reputation: int = 0) -> int:
 		return -1
 	return maxi(1, floori(float(base_price) * (1.0 - get_discount(reputation)) * price_mult))
 
-func get_offers(reputation: int = 0, bran_trust: int = 0) -> Array[Dictionary]:
+func get_offers(reputation: int = 0, bran_trust: int = 0, player: PlayerCharacter = null) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	var all := catalog()
 	for item_id in all:
 		var definition: Variant = all[item_id]
 		if not definition is Dictionary:
+			continue
+		# A recipe already known (or in the bag) is not offered again.
+		if player != null and str(item_id).begins_with("recipe_") and (player.learned_recipes.has(str(item_id)) or int(player.inventory.get(item_id, 0)) > 0):
 			continue
 		if bran_trust < int(definition.get("required_bran_trust", 0)):
 			continue

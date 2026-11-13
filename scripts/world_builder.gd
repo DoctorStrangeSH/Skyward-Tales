@@ -420,6 +420,8 @@ func _spawn_npc(npc_data: Dictionary) -> void:
 		npc.interacted.connect(func(source: Node2D) -> void:
 			if game.calendar != null and game.calendar.talk(npc_id):
 				return
+			if game.craft_orders != null and game.craft_orders.talk(npc_id):
+				return
 			if game.mysteries != null and game.mysteries.talk(npc_id):
 				return
 			if game.siege != null and game.siege.talk(npc_id):

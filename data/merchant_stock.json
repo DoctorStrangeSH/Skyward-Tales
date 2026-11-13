@@ -95,6 +95,29 @@
       "name": "Семена моркови",
       "description": "Для огорода",
       "base_price": 5
+    },
+    "recipe_hearty_stew": {
+      "name": "Рецепт: сытное рагу",
+      "description": "Котёл на площади: рагу, которое долго держит сытость",
+      "base_price": 50
+    },
+    "recipe_power_elixir": {
+      "name": "Рецепт: эликсир мощи",
+      "description": "Стол алхимика: сила заклинаний на время",
+      "base_price": 110,
+      "required_bran_trust": 20
+    },
+    "recipe_swift_tonic": {
+      "name": "Рецепт: тоник ветра",
+      "description": "Стол алхимика: скорость на время",
+      "base_price": 110,
+      "required_bran_trust": 20
+    },
+    "recipe_steel_mail": {
+      "name": "Рецепт: стальная кольчуга",
+      "description": "Горн мастера: крепкий доспех",
+      "base_price": 240,
+      "required_bran_trust": 50
     }
   },
   "sell_prices": {

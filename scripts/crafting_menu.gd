@@ -110,7 +110,8 @@ func open(station_id: String) -> void:
 		hint = "Ремесло в пути: из добычи с монстров и собранного."
 	_connect_window()
 	game.player.set_physics_process(false)
-	game.hud.crafting_view.open(game, station_id, name, hint + " Новые рецепты — в сундуках и в награду.", recipes_for(station_id))
+	var orders := game.craft_orders.summary() if game.craft_orders != null else ""
+	game.hud.crafting_view.open(game, station_id, name, (orders if not orders.is_empty() else hint + " Новые рецепты — в сундуках, у Брана и в награду."), recipes_for(station_id))
 
 var _window_connected := false
 

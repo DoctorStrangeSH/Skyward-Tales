@@ -67,6 +67,8 @@ func marker_for(npc_id: String) -> String:
 		marker = game.escort.marker(npc_id)
 	if marker.is_empty() and game.calendar != null:
 		marker = game.calendar.marker(npc_id)
+	if marker.is_empty() and game.craft_orders != null:
+		marker = game.craft_orders.marker(npc_id)
 	return marker
 
 func _base_marker(npc_id: String) -> String:
@@ -171,6 +173,8 @@ func handle_choice(choice_id: String) -> void:
 	if game.expeditions != null and game.expeditions.handle_choice(choice_id):
 		return
 	if game.calendar != null and game.calendar.handle_choice(choice_id):
+		return
+	if game.craft_orders != null and game.craft_orders.handle_choice(choice_id):
 		return
 	if game.forestry != null and game.forestry.handle_choice(choice_id):
 		return
@@ -599,7 +603,7 @@ func open_bran_shop() -> void:
 		message += "\nЗа помощь поселению действует скидка %d%%." % discount_percent
 	else:
 		message += "\nПомоги поселению — и я предложу лучшие цены."
-	for offer in game.merchant_shop.get_offers(reputation, bran_trust):
+	for offer in game.merchant_shop.get_offers(reputation, bran_trust, game.player):
 		var offer_label: String
 		if offer.has("trade_currency"):
 			offer_label = "Обменять %d × %s на %s" % [int(offer["trade_amount"]), _item_name(str(offer["trade_currency"])), str(offer["name"])]

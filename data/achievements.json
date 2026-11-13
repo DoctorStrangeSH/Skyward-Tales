@@ -594,6 +594,13 @@
       "stat": "settler_requests",
       "goal": 10,
       "gold": 200
+    },
+    "artisan": {
+      "title": "Подмастерье",
+      "description": "Выполните 10 заказов Борина и Лиры.",
+      "stat": "craft_orders",
+      "goal": 10,
+      "gold": 250
     }
   }
 }

@@ -9,7 +9,7 @@ class_name CraftingWindow
 signal craft_requested(recipe_id: String, times: int)
 signal closed
 
-const CATEGORIES := [["all", "Всё"], ["consumable", "Зелья и еда"], ["equipment", "Снаряжение"], ["other", "Материалы"]]
+const CATEGORIES := [["all", "Всё"], ["consumable", "Зелья и еда"], ["equipment", "Снаряжение"], ["other", "Материалы"], ["book", "Книга рецептов"]]
 
 var game: SkywardGame
 var station_id: String = ""
@@ -52,6 +52,8 @@ func _ready() -> void:
 	title_label = UiStyle.label("РЕМЕСЛО", 14, Color(1.0, 0.88, 0.56))
 	heading.add_child(title_label)
 	hint_label = UiStyle.label("", 8, UiStyle.MUTED)
+	hint_label.clip_text = true
+	hint_label.custom_minimum_size = Vector2(100, 0)
 	heading.add_child(hint_label)
 	var close := Button.new()
 	close.text = "Закрыть · Esc"
@@ -227,8 +229,15 @@ func _rebuild_list() -> void:
 		child.queue_free()
 	rows.clear()
 	var shown: Array[String] = []
+	if category == "book":
+		# Этап 24: every recipe of the world — known ones first, then the
+		# ones still to learn (where to make them and how to learn them).
+		for pass_known in [true, false]:
+			for recipe_id in game.crafting_service.recipes:
+				if _known(str(recipe_id)) == pass_known:
+					shown.append(str(recipe_id))
 	# Ready recipes first, the rest after.
-	for pass_ready in [true, false]:
+	for pass_ready in ([] if category == "book" else [true, false]):
 		for recipe_id in recipe_ids:
 			if category != "all" and _category_of(recipe_id) != category:
 				continue
@@ -246,6 +255,14 @@ func _rebuild_list() -> void:
 		selected = shown[0] if not shown.is_empty() else ""
 	_show_detail()
 
+func _known(recipe_id: String) -> bool:
+	var needs := str(game.crafting_service.recipes.get(recipe_id, {}).get("requires_recipe", ""))
+	return needs.is_empty() or game.player.learned_recipes.has(needs)
+
+func _station_name(recipe_id: String) -> String:
+	var station := str(game.crafting_service.recipes.get(recipe_id, {}).get("station", ""))
+	return str(game.crafting.station(station).get("name", station))
+
 func _row(recipe_id: String) -> Button:
 	var recipe: Dictionary = game.crafting_service.recipes[recipe_id]
 	var times := craftable_times(recipe_id)
@@ -258,6 +275,10 @@ func _row(recipe_id: String) -> Button:
 	button.expand_icon = false
 	UiStyle.fit_icon(button, 18)
 	button.text = str(recipe.get("name", recipe_id))
+	if category == "book":
+		button.text = ("" if _known(recipe_id) else "? ") + button.text + "  · " + _station_name(recipe_id)
+		if not recipe_ids.has(recipe_id):
+			times = 0
 	button.add_theme_font_size_override("font_size", UiFont.px(8))
 	button.add_theme_constant_override("h_separation", 4)
 	for state in ["normal", "hover", "pressed", "hover_pressed"]:
@@ -305,6 +326,13 @@ func _show_detail() -> void:
 	var description := game.player.get_item_description(output)
 	if description.is_empty():
 		description = str(recipe.get("description", ""))
+	if category == "book":
+		var where := "Где готовить: %s." % _station_name(selected)
+		if not _known(selected):
+			var scroll := str(recipe.get("requires_recipe", ""))
+			var source := ItemSources.describe(game, scroll)
+			where += " Не изучен: нужен свиток «%s»%s." % [game.player.get_item_name(scroll), (" — " + source) if not source.is_empty() else ""]
+		description = where + "\n" + description
 	detail_text.text = description
 	for ingredient in recipe.get("ingredients", []):
 		var item_id := str(ingredient.get("item_id", ""))
@@ -324,11 +352,13 @@ func _show_detail() -> void:
 		needs_box.add_child(_need_row("props/loot_coins.png", "Золото", game.player.gold, gold))
 	pin_button.visible = true
 	pin_button.text = "Открепить" if game.pin.is_pinned("recipe", selected) else "Закрепить"
-	var times := craftable_times(selected)
+	var times := craftable_times(selected) if recipe_ids.has(selected) else 0
 	make_button.disabled = times <= 0
 	make_all_button.visible = times > 1
 	make_all_button.text = "Создать все ×%d" % times
 	status_label.text = "" if times > 0 else str(game.crafting_service.get_recipe_status(game.player, selected).get("message", ""))
+	if not recipe_ids.has(selected):
+		status_label.text = "Готовится не здесь: %s." % _station_name(selected) if _known(selected) else "Сначала выучите рецепт."
 
 func _need_row(icon_path: String, item_name: String, have: int, need: int) -> Control:
 	var row := HBoxContainer.new()
