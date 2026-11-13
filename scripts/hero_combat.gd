@@ -220,7 +220,7 @@ func _strike(enemy: SlimeEnemy, damage: int, push_direction: Vector2, push: floa
 		Vfx.sparkle(game, enemy.global_position)
 		game.gear.on_crit(enemy)
 		game.keystones.on_crit(enemy)
-	damage = roundi(float(damage) * game.keystones.strike_mult(enemy) * game.mastery.strike_mult(enemy, crit) * game.signature.strike_mult(enemy) * game.stars.melee_mult())
+	damage = roundi(float(damage) * game.keystones.strike_mult(enemy) * game.mastery.strike_mult(enemy, crit) * game.signature.strike_mult(enemy) * game.stars.melee_mult() * game.joint.strike_mult(enemy))
 	var shaped := game.gear.modify_strike(damage)
 	damage = int(shaped["damage"])
 	if bool(shaped["riposte"]):

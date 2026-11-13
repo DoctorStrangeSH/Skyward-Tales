@@ -112,6 +112,7 @@ var keystones: Keystones
 var consequences: Consequences
 var mysteries: Mysteries
 var puzzles: LocationPuzzles
+var joint: JointActions
 var siege: FarmSiege
 var escort: EscortErrand
 var mastery: WeaponMastery
@@ -322,6 +323,10 @@ func _ready() -> void:
 	siege.name = "FarmSiege"
 	siege.game = self
 	add_child(siege)
+	joint = JointActions.new()
+	joint.name = "JointActions"
+	joint.game = self
+	add_child(joint)
 	puzzles = LocationPuzzles.new()
 	puzzles.name = "LocationPuzzles"
 	puzzles.game = self

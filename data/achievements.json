@@ -545,6 +545,20 @@
       "stat": "puzzles",
       "goal": 2,
       "gold": 250
+    },
+    "abyss_diver": {
+      "title": "Ныряльщик в бездну",
+      "description": "Пройдите третью глубину хранилища Узора.",
+      "stat": "depth",
+      "goal": 3,
+      "gold": 600
+    },
+    "together": {
+      "title": "Плечом к плечу",
+      "description": "Проведите 10 совместных приёмов со спутниками (G).",
+      "stat": "joint_actions",
+      "goal": 10,
+      "gold": 200
     }
   }
 }

@@ -96,5 +96,32 @@ func _run() -> void:
 		return _fail("four people's words are enough")
 	if m.accuse("lost_catch", "timofey") or not game.director.has_flag("mystery_lost_catch_wrong"):
 		return _fail("a wrong verdict is remembered")
+	# The port cargo: a late case, with places to look at in the free port.
+	game.hud.close_dialogue()
+	game.quests.states["main_archive"] = {"started": true, "completed": true, "progress": 1}
+	hero.level = 11
+	if m.marker("port_quartermaster") != "quest":
+		return _fail("Bruno asks about the cargo")
+	m.talk("port_quartermaster")
+	game._on_dialogue_choice_selected("mystery_take:port_cargo")
+	game._set_region("free_port", Vector2(640, 420), false)
+	for i in 14:
+		await physics_frame
+	var port_map := game.world.get_world_2d().navigation_map
+	var port_spots := get_nodes_in_group("mystery_spot")
+	if port_spots.size() != 3:
+		return _fail("three places to look at in the port, got %d" % port_spots.size())
+	for place in port_spots:
+		if NavigationServer2D.map_get_closest_point(port_map, place.global_position).distance_to(place.global_position) > 24.0:
+			return _fail("a place one can walk to: %s" % str(place.global_position))
+	for place in port_spots:
+		(place as TowerObject).interact()
+		game.hud.close_dialogue()
+	m.talk("port_captain_vorn")
+	game.hud.close_dialogue()
+	if not m.ready_to_accuse("port_cargo"):
+		return _fail("three places and Vorn's words are enough")
+	if not m.accuse("port_cargo", "nika") or not game.director.has_flag("mystery_port_cargo_right"):
+		return _fail("Nika it was")
 	print("MYSTERIES OK")
 	quit()

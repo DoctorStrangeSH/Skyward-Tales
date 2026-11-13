@@ -9,6 +9,12 @@ class_name Expeditions
 ##   шторм» (crystals fall around the hero), «Проклятие Хранителя» (elite
 ##   foes everywhere); each pays more. «Спокойное хранилище» — none.
 ## A run lives until the hero leaves; leaving or reloading starts afresh.
+## Этап 24 — the descent: after the warden a dark stair leads deeper (up to
+## 3 depths below). Each depth is harder (+25% to foes) with a new modifier;
+## its warden fills the descent chest instead of the floor. At the stair the
+## chest can be taken (and the hero goes home richer) — or risked on the next
+## depth: falling there loses the whole chest (it does not survive a reload),
+## walking out by the vault's exit stair takes it along.
 
 const REGION := "pattern_vault"
 const EXIT := Vector2(480, 1150)
@@ -58,6 +64,14 @@ var difficulty: int = 0
 var heroic_done: int = 0
 var legendary_done: int = 0
 var rng := RandomNumberGenerator.new()
+const MAX_DEPTH := 3
+const STAIR_OFFSET := Vector2(0, 50)
+## The descent: 0 — the first hall, 1..3 — depths below.
+var depth: int = 0
+var deepest: int = 0
+var bank_gold: int = 0
+## Rarities of the finds in the descent chest.
+var bank_items: Array = []
 var _storm_clock: float = 0.0
 var _dark: ColorRect
 
@@ -73,11 +87,14 @@ func unlocked_difficulty() -> int:
 	return 1 if completed >= 3 else 0
 
 func reward_mult() -> float:
-	return float(MODIFIERS[modifier]["reward"]) * float(DIFFICULTY[difficulty]["reward"])
+	return float(MODIFIERS[modifier]["reward"]) * float(DIFFICULTY[difficulty]["reward"]) * (1.0 + 0.5 * float(depth))
 
 ## Ragna's offer: a new run into the vault.
 func start(tier: int = 0) -> void:
 	difficulty = clampi(tier, 0, unlocked_difficulty())
+	depth = 0
+	bank_gold = 0
+	bank_items.clear()
 	run += 1
 	active = true
 	level = maxi(1, game.player.level)
@@ -100,12 +117,16 @@ func start(tier: int = 0) -> void:
 	game.hud.show_message(str(info["text"]), 5.0)
 
 func leave() -> void:
+	# Walked out with the chest still on the back: it comes along.
+	if active and (bank_gold > 0 or not bank_items.is_empty()):
+		cash_out()
 	active = false
+	depth = 0
 	if _dark != null and is_instance_valid(_dark):
 		_dark.queue_free()
 
 func power() -> float:
-	return (0.7 + 0.07 * float(level)) * float(DIFFICULTY[difficulty]["power"])
+	return (0.7 + 0.07 * float(level)) * float(DIFFICULTY[difficulty]["power"]) * (1.0 + 0.25 * float(depth))
 
 func _tier() -> Array:
 	var pick: Array = TIERS[0]
@@ -323,6 +344,11 @@ func _on_warden_down(at: Vector2) -> void:
 		game._spawn_loot(at + Vector2(20, -16), SkillTree.RESET_TOME)
 		game.spawn_generated_loot(at + Vector2(-20, -16), "legendary")
 	var mult := reward_mult()
+	if depth > 0:
+		_fill_bank(mult)
+		_spawn_stair()
+		game.request_autosave()
+		return
 	game._spawn_loot(at + Vector2(-16, 8), "gold").amount = roundi((150 + 30 * level) * mult)
 	game.spawn_generated_loot(at + Vector2(16, 8), "epic" if rng.randf() < 0.25 * mult else "rare")
 	if mult > 1.0:
@@ -332,7 +358,97 @@ func _on_warden_down(at: Vector2) -> void:
 		game._spawn_loot(at + Vector2(0, -14), str(missing[rng.randi_range(0, missing.size() - 1)]))
 	game.achievements.add("expeditions")
 	game.hud.show_title_card("Хранилище пройдено!", 3.0)
-	game.hud.show_message("Экспедиций пройдено: %d. Выход — лестница у входа в хранилище." % completed, 4.0)
+	game.hud.show_message("Экспедиций пройдено: %d. Выход — лестница у входа в хранилище. В зале стража открылся тёмный спуск вниз…" % completed, 5.0)
+	_spawn_stair()
+	game.request_autosave()
+
+# --- The descent -------------------------------------------------------------------
+
+func _fill_bank(mult: float) -> void:
+	bank_gold += roundi((150 + 30 * level) * mult)
+	bank_items.append("epic" if depth >= 2 else "rare")
+	if depth >= MAX_DEPTH:
+		bank_items.append("legendary")
+	deepest = maxi(deepest, depth)
+	game.achievements.set_max("depth", depth)
+	game.hud.show_title_card("Глубина %d пройдена" % depth, 2.6)
+	game.hud.show_message("Сундук спуска: %d золота, находок: %d. Заберите его у тёмной лестницы — или рискните глубже." % [bank_gold, bank_items.size()], 5.0)
+
+func _spawn_stair() -> void:
+	var stair := TowerObject.new()
+	stair.art = "gate_stairs_down"
+	stair.label = "E — тёмная лестница вниз"
+	stair.glow = Color(0.5, 0.4, 1.0, 0.7)
+	stair.add_to_group("vault_stair")
+	game.add_child(stair)
+	stair.global_position = hall_rect(BOSS_HALL).get_center() + STAIR_OFFSET
+	stair.used.connect(func(_object: TowerObject) -> void: offer_descent())
+
+func offer_descent() -> void:
+	var choices: Array[Dictionary] = []
+	var text := ""
+	if depth >= MAX_DEPTH:
+		text = "Ниже — только камень. Глубже дороги нет."
+	else:
+		text = "Из темноты тянет холодом. Глубина %d: враги сильнее на %d%%, другое испытание, награда ×%s за всё, что найдёте ниже." % [depth + 1, roundi(25.0 * float(depth + 1)), ("%.1f" % (1.0 + 0.5 * float(depth + 1))).trim_suffix(".0").replace(".", ",")]
+		choices.append({"id": "vault_deeper", "label": "Спуститься на глубину %d (риск)" % (depth + 1)})
+	if bank_gold > 0 or not bank_items.is_empty():
+		text += "\n\nСундук спуска: %d золота, находок: %d. Падёте ниже — он пропадёт." % [bank_gold, bank_items.size()]
+		choices.append({"id": "vault_cash", "label": "Забрать сундук (%d золота, находок: %d)" % [bank_gold, bank_items.size()]})
+	choices.append({"id": "vault_stay", "label": "Не сейчас"})
+	game._show_dialogue_choices("Тёмная лестница", text, choices)
+
+func handle_choice(choice_id: String) -> bool:
+	if not choice_id.begins_with("vault_"):
+		return false
+	game.dialogues._close()
+	if choice_id == "vault_deeper":
+		descend()
+	elif choice_id == "vault_cash":
+		cash_out()
+	return true
+
+func descend() -> bool:
+	if not active or not warden_down or depth >= MAX_DEPTH:
+		return false
+	depth += 1
+	var keys := MODIFIERS.keys().filter(func(key: String) -> bool: return key != "calm" and key != modifier)
+	modifier = str(keys[rng.randi_range(0, keys.size() - 1)])
+	order = [0, 1, 2, 3]
+	order.shuffle()
+	progress = 0
+	solved = false
+	warden_spawned = false
+	warden_down = false
+	run += 1
+	game.opened_doors.erase(SEAL)
+	game._travel(REGION, START)
+	var info: Dictionary = MODIFIERS[modifier]
+	game.hud.show_title_card("Глубина %d · %s" % [depth, str(info["name"])], 3.0)
+	game.hud.show_message("%s Враги сильнее на %d%%. Сундук спуска пропадёт, если падёте." % [str(info["text"]), roundi(25.0 * float(depth))], 5.0)
+	GameAudio.play("boss_roar", -10.0, 0.1)
+	return true
+
+## Takes the descent chest: gold and rolled finds straight into the bag.
+func cash_out() -> void:
+	if bank_gold <= 0 and bank_items.is_empty():
+		return
+	var hero := game.player
+	hero.add_gold(bank_gold)
+	var names: Array[String] = []
+	for rarity in bank_items:
+		var definition := LootGenerator.generate(game.loot_rng, hero.level, str(rarity))
+		if definition.is_empty():
+			continue
+		var item_id := hero.register_generated_item(definition)
+		hero.add_item(item_id, 1)
+		names.append(hero.get_item_name(item_id))
+	game.hud.show_title_card("Сундук спуска", 2.4)
+	game.hud.show_message("+%d золота%s" % [bank_gold, (": " + ", ".join(names)) if not names.is_empty() else ""], 5.0)
+	GameAudio.play("chest", -2.0, 0.0)
+	game.achievements.add("descents")
+	bank_gold = 0
+	bank_items.clear()
 	game.request_autosave()
 
 ## Map pins inside the vault: the warden's hall and the rune seal.
@@ -342,12 +458,15 @@ func targets() -> Array:
 	var result: Array = []
 	if not warden_down:
 		result.append({"region": REGION, "position": hall_rect(BOSS_HALL).get_center(), "kind": "side", "title": "Страж хранилища"})
+	if warden_down and depth < MAX_DEPTH:
+		result.append({"region": REGION, "position": hall_rect(BOSS_HALL).get_center() + STAIR_OFFSET, "kind": "side", "title": "Тёмная лестница вниз"})
 	if not solved:
 		result.append({"region": REGION, "position": hall_rect(PUZZLE_HALL).get_center(), "kind": "side", "title": "Печать рун"})
 	return result
 
 func make_snapshot() -> Dictionary:
-	return {"completed": completed, "run": run, "heroic": heroic_done, "legendary": legendary_done}
+	# The descent chest is not saved: a fall (and a reload) loses it.
+	return {"completed": completed, "run": run, "heroic": heroic_done, "legendary": legendary_done, "deepest": deepest}
 
 func restore_snapshot(value: Variant) -> void:
 	if value is Dictionary:
@@ -355,3 +474,7 @@ func restore_snapshot(value: Variant) -> void:
 		run = int(value.get("run", 0))
 		heroic_done = int(value.get("heroic", 0))
 		legendary_done = int(value.get("legendary", 0))
+		deepest = int(value.get("deepest", 0))
+	depth = 0
+	bank_gold = 0
+	bank_items.clear()

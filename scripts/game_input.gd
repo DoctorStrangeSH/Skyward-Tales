@@ -196,7 +196,7 @@ func _handle_key(keycode: Key) -> bool:
 		if keycode == KEY_E:
 			game.crafting.close()
 			return true
-		return keycode in [KEY_SPACE, KEY_F, KEY_1, KEY_2, KEY_3, KEY_4, KEY_Q, KEY_R]
+		return keycode in [KEY_SPACE, KEY_F, KEY_G, KEY_1, KEY_2, KEY_3, KEY_4, KEY_Q, KEY_R]
 	var tab := str(TAB_KEYS.get(keycode, ""))
 	if not tab.is_empty() and not world_blocked:
 		toggle_tab(tab)
@@ -219,6 +219,9 @@ func _handle_key(keycode: Key) -> bool:
 				game.keystones.on_dodge()
 				game.mastery.on_dodge()
 				game.signature.on_dodge()
+			return true
+		KEY_G when not world_blocked and not game.hud.inventory_open:
+			game.joint.trigger()
 			return true
 		KEY_F when not world_blocked and not game.hud.inventory_open:
 			if game.player.start_guard():

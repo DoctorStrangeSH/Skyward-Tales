@@ -134,6 +134,8 @@ func populate(player: PlayerCharacter) -> void:
 		keystone_line.text += "\n" + str(arena.mastery.summary())
 	if arena != null and arena.get("stars") != null:
 		keystone_line.text += "\n" + str(arena.stars.summary())
+	if arena != null and arena.get("joint") != null and not str(arena.joint.summary()).is_empty():
+		keystone_line.text += "\n" + str(arena.joint.summary())
 	keystone_button.text = "Выбрать ключевой талант (ур. %d)" % due
 	if due == 0 and free_stars > 0:
 		keystone_button.visible = true
