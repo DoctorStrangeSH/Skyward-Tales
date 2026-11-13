@@ -193,6 +193,8 @@ func handle_choice(choice_id: String) -> void:
 	if choice_id.begins_with("toren_buy:"):
 		_toren_buy(choice_id.trim_prefix("toren_buy:"))
 		return
+	if game.settlement_life != null and game.settlement_life.handle_choice(choice_id):
+		return
 	if game.settlement != null and game.settlement.handle_choice(choice_id):
 		return
 	if game.crafting != null and game.crafting.handle_choice(choice_id):

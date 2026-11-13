@@ -580,6 +580,20 @@
       "stat": "festivals",
       "goal": 5,
       "gold": 250
+    },
+    "founder": {
+      "title": "Основатель",
+      "description": "Доведите поселение до «Городка».",
+      "stat": "settlement_level",
+      "goal": 5,
+      "gold": 800
+    },
+    "good_neighbour": {
+      "title": "Добрый сосед",
+      "description": "Выполните 10 просьб жителей поселения.",
+      "stat": "settler_requests",
+      "goal": 10,
+      "gold": 200
     }
   }
 }

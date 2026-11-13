@@ -132,7 +132,7 @@ func marker_for(npc_id: String) -> String:
 		return "quest"
 	if not home_of(id).is_empty() and gift_ready(id):
 		return "ready"
-	return ""
+	return game.settlement_life.marker(npc_id) if game.settlement_life != null else ""
 
 func gift_ready(id: String) -> bool:
 	var service: Dictionary = settler(id).get("service", {})
@@ -156,6 +156,8 @@ func talk(npc_id: String) -> void:
 		return
 	if gift_ready(id):
 		_serve(id)
+		return
+	if game.settlement_life != null and game.settlement_life.talk(id):
 		return
 	var service: Dictionary = entry.get("service", {})
 	game._show_dialogue(speaker, StoryText.format(str(entry.get("home", ""))) + "\n" + str(service.get("label", "")))
@@ -258,6 +260,7 @@ func upgrade(id: String) -> bool:
 	GameAudio.play("chest", -2.0, 0.0)
 	game.achievements.set_max("buildings", _total_levels())
 	game.on_building_upgraded(id)
+	game.settlement_life.call_deferred("check_growth")
 	game.request_autosave()
 	return true
 
@@ -286,8 +289,8 @@ func _building_choices() -> Array[Dictionary]:
 func open_board() -> void:
 	var waiting := homeless()
 	var plots := free_plots()
-	var lines := "Жители: %d · свободных участков: %d" % [homes.size(), plots.size()]
-	var choices: Array[Dictionary] = []
+	var lines := game.settlement_life.board_lines() + "\nЖители: %d · свободных участков: %d" % [homes.size(), plots.size()]
+	var choices: Array[Dictionary] = game.settlement_life.board_choices()
 	for id in waiting:
 		if plots.is_empty():
 			break
@@ -331,6 +334,7 @@ func build(id: String) -> bool:
 	game.hud.show_message("Построен дом: %s въезжает!" % str(settler(id).get("name", id)).get_slice(",", 0), 3.5)
 	if game.current_region == village_region():
 		game.refresh_settlement()
+	game.settlement_life.call_deferred("check_growth")
 	game.request_autosave()
 	return true
 

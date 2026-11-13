@@ -114,6 +114,7 @@ var mysteries: Mysteries
 var puzzles: LocationPuzzles
 var joint: JointActions
 var calendar: GameCalendar
+var settlement_life: SettlementLife
 var siege: FarmSiege
 var escort: EscortErrand
 var mastery: WeaponMastery
@@ -324,6 +325,10 @@ func _ready() -> void:
 	siege.name = "FarmSiege"
 	siege.game = self
 	add_child(siege)
+	settlement_life = SettlementLife.new()
+	settlement_life.name = "SettlementLife"
+	settlement_life.game = self
+	add_child(settlement_life)
 	calendar = GameCalendar.new()
 	calendar.name = "GameCalendar"
 	calendar.game = self
