@@ -68,7 +68,9 @@ func _populate_region() -> void:
 	game.adit.populate()
 	game.home.populate()
 	game.mysteries.populate()
+	game.puzzles.populate()
 	game.siege.populate()
+	game.escort.populate()
 	_apply_camera_limits()
 	game.buildings.reveal_chests()
 	game.guild.spawn_target()
@@ -419,6 +421,8 @@ func _spawn_npc(npc_data: Dictionary) -> void:
 			if game.mysteries != null and game.mysteries.talk(npc_id):
 				return
 			if game.siege != null and game.siege.talk(npc_id):
+				return
+			if game.escort != null and game.escort.talk(npc_id):
 				return
 			talk.call(source))
 	var wander: Variant = npc_data.get("wander", [])

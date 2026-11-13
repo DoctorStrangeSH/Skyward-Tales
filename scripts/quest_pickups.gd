@@ -61,8 +61,14 @@ func _inspect_story_object(herb: WorldCollectible) -> void:
 	if game.story.active:
 		return
 	var spawns: Dictionary = data.get("spawns", {})
-	game.story.play(str(data.get("scene", "")), func() -> void:
+	var scene_id := str(data.get("scene", ""))
+	# A second try after fleeing or falling: the short version of the scene.
+	var again := scene_id + "_again"
+	if not spawns.is_empty() and game.director.has_flag("seen_" + scene_id) and game.story.has_scene(again):
+		scene_id = again
+	game.story.play(scene_id, func() -> void:
 		if not spawns.is_empty():
+			game.director.set_flag("seen_" + str(data.get("scene", "")))
 			# The scene unleashes a boss; the quest completes when it falls.
 			var pos: Array = spawns.get("position", [0, 0])
 			game.spawn_enemy(str(spawns.get("kind", "")), Vector2(float(pos[0]), float(pos[1])))

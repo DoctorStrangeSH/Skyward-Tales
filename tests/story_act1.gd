@@ -157,5 +157,15 @@ func _run() -> void:
 			restored_echo = true
 	if not _verify(restored_echo, "mid-fight save keeps the boss"):
 		return
+	# Fled and came back: the altar plays the short version of the scene.
+	if not _verify(restored.director.has_flag("seen_altar_vail"), "the altar scene is remembered"):
+		return
+	var again := WorldCollectible.new()
+	again.item_id = "altar_heart"
+	restored.add_child(again)
+	restored._on_herb_interacted(again)
+	if not _verify(restored.story.scene_id == "altar_vail_again", "a second try is short: " + restored.story.scene_id):
+		return
+	restored.story.skip()
 	print("STORY ACT I OK: star map, Vail, guardian and key, altar, Echo Warden, finale, save/load")
 	quit(0)

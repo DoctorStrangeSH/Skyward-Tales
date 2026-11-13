@@ -111,7 +111,9 @@ var forestry: ForestGuild
 var keystones: Keystones
 var consequences: Consequences
 var mysteries: Mysteries
+var puzzles: LocationPuzzles
 var siege: FarmSiege
+var escort: EscortErrand
 var mastery: WeaponMastery
 var signature: SignatureGear
 var reforge: Reforge
@@ -312,10 +314,18 @@ func _ready() -> void:
 	mastery.name = "WeaponMastery"
 	mastery.game = self
 	add_child(mastery)
+	escort = EscortErrand.new()
+	escort.name = "EscortErrand"
+	escort.game = self
+	add_child(escort)
 	siege = FarmSiege.new()
 	siege.name = "FarmSiege"
 	siege.game = self
 	add_child(siege)
+	puzzles = LocationPuzzles.new()
+	puzzles.name = "LocationPuzzles"
+	puzzles.game = self
+	add_child(puzzles)
 	mysteries = Mysteries.new()
 	mysteries.name = "Mysteries"
 	mysteries.game = self

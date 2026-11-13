@@ -531,6 +531,20 @@
       "stat": "stars",
       "goal": 10,
       "gold": 500
+    },
+    "guide": {
+      "title": "Проводник",
+      "description": "Проводите Ведану через Туманную топь.",
+      "stat": "escorts",
+      "goal": 1,
+      "gold": 150
+    },
+    "riddler": {
+      "title": "Разгадчик",
+      "description": "Раскройте обе тайны земель: руны перевала и колокола Шпилей.",
+      "stat": "puzzles",
+      "goal": 2,
+      "gold": 250
     }
   }
 }
