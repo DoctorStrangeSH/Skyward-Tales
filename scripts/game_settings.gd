@@ -6,7 +6,7 @@ class_name GameSettings
 
 const PATH := "user://settings.cfg"
 const DEFAULTS := {"hints": true, "damage_numbers": true, "screen_shake": true, "master_volume": 1.0, "music_volume": 0.6, "sfx_volume": 0.8,
-	"ui_volume": 0.6, "ambience_volume": 0.5, "nature_volume": 0.35, "mute_unfocused": true, "color_grade": true, "close_camera": false}
+	"ui_volume": 0.6, "ambience_volume": 0.5, "nature_volume": 0.35, "mute_unfocused": true, "color_grade": true, "close_camera": false, "difficulty": 1.0}
 
 static var _config: ConfigFile
 

@@ -7,6 +7,7 @@ signal confirmed(hero_name: String, gender: String)
 signal cancelled
 
 var gender: String = "m"
+var difficulty_picker: OptionButton
 var name_edit: LineEdit
 var male_button: Button
 var female_button: Button
@@ -54,6 +55,26 @@ func _ready() -> void:
 	name_edit.placeholder_text = "Введите имя"
 	name_edit.text_changed.connect(func(_t: String) -> void: _name_touched = true)
 	box.add_child(name_edit)
+	# Этап 24: difficulty of the new adventure (can be changed later in settings).
+	var level_label := Label.new()
+	level_label.text = "Сложность"
+	level_label.add_theme_color_override("font_color", Color(0.85, 0.85, 0.9))
+	box.add_child(level_label)
+	difficulty_picker = OptionButton.new()
+	for name in Difficulty.names():
+		difficulty_picker.add_item(str(name))
+	difficulty_picker.select(Difficulty.default_level())
+	box.add_child(difficulty_picker)
+	var level_text := Label.new()
+	level_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	level_text.custom_minimum_size = Vector2(220, 0)
+	level_text.add_theme_font_size_override("font_size", UiFont.px(8))
+	level_text.add_theme_color_override("font_color", Color(0.75, 0.78, 0.85))
+	level_text.text = str(Difficulty.info(difficulty_picker.selected)["text"])
+	box.add_child(level_text)
+	difficulty_picker.item_selected.connect(func(index: int) -> void:
+		level_text.text = str(Difficulty.info(index)["text"])
+		GameSettings.set_float("difficulty", float(index)))
 	var start := Button.new()
 	start.text = "Начать приключение"
 	start.custom_minimum_size = Vector2(0, 32)

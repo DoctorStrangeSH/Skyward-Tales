@@ -175,6 +175,12 @@ func _ready() -> void:
 	quests.quest_started.connect(_on_quest_started)
 	quests.quest_completed.connect(func(_id: String) -> void:
 		_progress_unsaved = true
+		if _id == "main_heart":
+			# The story finished without ever lowering the difficulty.
+			if lowest_difficulty >= Difficulty.HEROIC:
+				achievements.set_max("heroic_end", 1)
+			if lowest_difficulty >= Difficulty.HEROIC + 1:
+				achievements.set_max("legendary_end", 1)
 		if consequences != null:
 			consequences.check.call_deferred())
 	quests.quest_completed.connect(func(quest_id: String) -> void:
@@ -431,6 +437,8 @@ func _ready() -> void:
 	elif get_tree().has_meta("skyward_new_hero"):
 		var hero: Dictionary = get_tree().get_meta("skyward_new_hero")
 		get_tree().remove_meta("skyward_new_hero")
+		difficulty = Difficulty.default_level()
+		lowest_difficulty = difficulty
 		start_new_story(str(hero.get("name", "")), str(hero.get("gender", "m")))
 		# Only the weapon at first: skills are learned from trainers.
 		player.skills_need_learning = true
@@ -899,6 +907,23 @@ static func gap_xp_mult(gap: int) -> float:
 
 ## Tests of the older mechanics switch the balance pass off to check base stats.
 var classic_balance: bool = false
+## Этап 24: this save's difficulty (Difficulty.LEVELS) and the lowest one it
+## was ever played on (for the heroic achievements).
+var difficulty: int = Difficulty.DEFAULT
+var lowest_difficulty: int = Difficulty.DEFAULT
+const SELF_SCALED := ["trial_tower", "pattern_vault"]
+## Set around spawns that scale themselves (deep rifts by depth).
+var self_scaled_spawn: bool = false
+
+func set_difficulty(level: int) -> void:
+	difficulty = Difficulty.clamp_level(level)
+	lowest_difficulty = mini(lowest_difficulty, difficulty)
+	GameSettings.set_float("difficulty", float(difficulty))
+	if hud != null:
+		hud.show_message("Сложность: %s — для врагов, что появятся дальше." % str(Difficulty.info(difficulty)["name"]), 3.5)
+
+func reward_mult() -> float:
+	return float(Difficulty.info(difficulty)["reward"])
 
 func _apply_toughness(enemy: SlimeEnemy) -> void:
 	if classic_balance:
@@ -910,9 +935,21 @@ func _apply_toughness(enemy: SlimeEnemy) -> void:
 	var gap := clampi(level_gap(), 0, 8)
 	health *= 1.0 + GAP_HEALTH * gap
 	damage *= 1.0 + GAP_DAMAGE * gap
+	var mode := Difficulty.info(difficulty)
+	health *= float(mode["health"])
+	damage *= float(mode["damage"])
+	# Foes catch up with a hero who outgrew the land (story mode excepted).
+	# Lands that scale their own foes (the Tower by floor, the vault by the
+	# hero) are left as they are.
+	var lift := 0 if current_region in SELF_SCALED or self_scaled_spawn else Difficulty.catch_up(difficulty, player.level if player != null else 1, RegionCatalog.level(current_region))
+	var xp := gap_xp_mult(level_gap())
+	if lift > 0:
+		health *= Difficulty.lift_health(lift)
+		damage *= Difficulty.lift_damage(lift)
+		xp = Difficulty.lift_xp(lift)
 	enemy.max_health = int(round(enemy.max_health * health))
 	enemy.attack_damage = int(round(enemy.attack_damage * damage))
-	enemy.xp_reward = maxi(1, int(round(enemy.xp_reward * gap_xp_mult(level_gap()))))
+	enemy.xp_reward = maxi(1, int(round(enemy.xp_reward * xp * float(mode["reward"]))))
 
 ## The camera shows the world at 2x (320x180 world pixels on screen): enemies
 ## notice and shoot from about two-thirds of their old ranges, so nothing
@@ -1199,7 +1236,7 @@ func spawn_enemy(kind: String, spawn_position: Vector2, elite: String = "") -> S
 	enemy.position = spawn_position
 	enemy.magic_attacks = kind in MAGIC_FOES
 	if elite == "?":
-		elite = EliteModifiers.roll(loot_rng) if director.story_mode() and EliteModifiers.can_be_elite(kind) else ""
+		elite = EliteModifiers.roll(loot_rng, float(Difficulty.info(difficulty)["elite"])) if director.story_mode() and EliteModifiers.can_be_elite(kind) else ""
 	if not elite.is_empty():
 		EliteModifiers.apply(enemy, elite)
 	add_child(enemy)

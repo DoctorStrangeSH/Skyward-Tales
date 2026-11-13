@@ -14,6 +14,7 @@ var sfx_slider: HSlider
 var resolution_picker: OptionButton
 var window_picker: OptionButton
 var sliders: Dictionary = {}
+var difficulty_picker: OptionButton
 
 func _ready() -> void:
 	add_theme_constant_override("separation", 14)
@@ -23,6 +24,27 @@ func _ready() -> void:
 	shake_toggle = _toggle(game_column, "Тряска экрана", "screen_shake")
 	_toggle(game_column, "Цветокоррекция и виньетка", "color_grade")
 	_toggle(game_column, "Камера ближе к герою", "close_camera")
+	# Этап 24: difficulty — of this save in a game, of new adventures in the title menu.
+	var game := get_tree().current_scene as SkywardGame if is_inside_tree() else null
+	var current := game.difficulty if game != null else Difficulty.default_level()
+	difficulty_picker = _picker(game_column, "Сложность", Difficulty.names(), current)
+	var difficulty_hint := _label(str(Difficulty.info(current)["text"]), 7, UiStyle.MUTED)
+	difficulty_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	difficulty_hint.custom_minimum_size = Vector2(190, 0)
+	game_column.add_child(difficulty_hint)
+	difficulty_picker.item_selected.connect(func(index: int) -> void:
+		difficulty_hint.text = str(Difficulty.info(index)["text"])
+		var running := get_tree().current_scene as SkywardGame
+		if running != null:
+			running.set_difficulty(index)
+		else:
+			GameSettings.set_float("difficulty", float(index)))
+	# The pause menu is built before a save loads: show the save's level.
+	visibility_changed.connect(func() -> void:
+		var running := get_tree().current_scene as SkywardGame if is_inside_tree() else null
+		if running != null and is_visible_in_tree():
+			difficulty_picker.select(running.difficulty)
+			difficulty_hint.text = str(Difficulty.info(running.difficulty)["text"]))
 	var resolutions: Array = []
 	for index in GameSettings.RESOLUTIONS.size():
 		resolutions.append(GameSettings.resolution_label(index))

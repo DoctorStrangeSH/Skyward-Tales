@@ -44,6 +44,20 @@ func _ready() -> void:
 			_icon = WorldArt.texture("icons/%s.png" % icon_id)
 	queue_redraw()
 
+## Gold, materials and potions fly to the hero by themselves (the owner
+## allowed it after the full-game review: pressing E over every bat wing is
+## chores); gear still waits for E so the player sees what dropped.
+var _magnet_checked: bool = false
+var _is_magnetic: bool = false
+
+func _magnetic() -> bool:
+	if not _magnet_checked:
+		_magnet_checked = true
+		var player := _player()
+		var definition: Dictionary = player.get_item_definition(item_id) if player != null else {}
+		_is_magnetic = item_id == "gold" or (player != null and not definition.is_empty() and str(definition.get("slot", "")).is_empty() and not item_id.begins_with("gen_"))
+	return _is_magnetic
+
 func _player() -> PlayerCharacter:
 	var parent := get_parent()
 	if parent != null and "player" in parent:
@@ -64,7 +78,7 @@ func _process(delta: float) -> void:
 	var player := _player()
 	if player != null and player.health > 0 and settle_time <= 0.0:
 		var offset := player.global_position + Vector2(0, -4) - global_position
-		if item_id == "gold" and (_flying or offset.length() < MAGNET_RADIUS):
+		if _magnetic() and (_flying or offset.length() < MAGNET_RADIUS):
 			_flying = true
 			if offset.length() < PICKUP_RADIUS:
 				interact()

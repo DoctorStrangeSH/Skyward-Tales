@@ -34,8 +34,11 @@ func _run() -> void:
 		return _fail("waiting until the morning")
 	elder.set_asleep(false)
 
-	# №10: items wait on the ground, coins still fly into the purse.
-	var sword := game._spawn_loot(hero.global_position + Vector2(10, 0), "iron_ore")
+	# №10 (revised in Этап 24 by the owner): gear waits on the ground for E;
+	# coins, materials and potions fly into the bag.
+	var ore := game._spawn_loot(hero.global_position + Vector2(10, 4), "iron_ore")
+	var ore_before := int(hero.inventory.get("iron_ore", 0))
+	var sword := game._spawn_loot(hero.global_position + Vector2(10, 0), "iron_sword")
 	var coins := game._spawn_loot(hero.global_position + Vector2(-10, 0), "gold")
 	coins.amount = 7
 	var gold := hero.gold
@@ -45,7 +48,9 @@ func _run() -> void:
 		return _fail("loot is not picked up by itself")
 	if hero.gold != gold + 7:
 		return _fail("coins are still picked up by walking")
-	if not game._interaction_prompt(sword).contains("Железная руда") and not game._interaction_prompt(sword).contains("подобрать"):
+	if int(hero.inventory.get("iron_ore", 0)) != ore_before + 1 or (is_instance_valid(ore) and not ore.is_queued_for_deletion()):
+		return _fail("materials fly into the bag")
+	if not game._interaction_prompt(sword).contains("подобрать"):
 		return _fail("the prompt names the item")
 	sword.interact()
 

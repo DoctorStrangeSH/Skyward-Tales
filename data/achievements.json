@@ -475,6 +475,20 @@
       "stat": "adit_guardian",
       "goal": 1,
       "gold": 150
+    },
+    "heroic_end": {
+      "title": "Героическая сага",
+      "description": "Пройдите историю на героической сложности, ни разу её не снизив.",
+      "stat": "heroic_end",
+      "goal": 1,
+      "gold": 1000
+    },
+    "legendary_end": {
+      "title": "Легенда во плоти",
+      "description": "Пройдите историю на легендарной сложности, ни разу её не снизив.",
+      "stat": "legendary_end",
+      "goal": 1,
+      "gold": 2000
     }
   }
 }

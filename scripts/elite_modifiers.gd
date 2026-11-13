@@ -22,8 +22,8 @@ static func has(elite_id: String) -> bool:
 static func can_be_elite(kind: String) -> bool:
 	return kind in data().get("kinds", [])
 
-static func roll(rng: RandomNumberGenerator) -> String:
-	if rng.randf() >= float(data().get("random_chance", 0.0)):
+static func roll(rng: RandomNumberGenerator, chance_mult: float = 1.0) -> String:
+	if rng.randf() >= float(data().get("random_chance", 0.0)) * chance_mult:
 		return ""
 	var ids: Array = data().get("modifiers", {}).keys()
 	return str(ids[rng.randi_range(0, ids.size() - 1)]) if not ids.is_empty() else ""

@@ -89,7 +89,9 @@ func _next_wave() -> void:
 		var elite := ""
 		if EliteModifiers.can_be_elite(kind) and rng.randf() < minf(0.85, 0.2 + 0.05 * depth):
 			elite = EliteModifiers.pick(rng)
+		game.self_scaled_spawn = true
 		var echo := game.spawn_enemy(kind, at, elite)
+		game.self_scaled_spawn = false
 		if echo == null:
 			continue
 		echo.set_meta("rift_echo", true)
@@ -110,7 +112,9 @@ func _next_wave() -> void:
 		_on_wave_cleared()
 
 func _spawn_devourer(at: Vector2) -> void:
+	game.self_scaled_spawn = true
 	var boss := game.spawn_enemy("shade", at)
+	game.self_scaled_spawn = false
 	if boss == null:
 		_on_wave_cleared()
 		return
