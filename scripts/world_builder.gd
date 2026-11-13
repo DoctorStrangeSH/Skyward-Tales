@@ -67,6 +67,8 @@ func _populate_region() -> void:
 	game.forestry.populate()
 	game.adit.populate()
 	game.home.populate()
+	game.mysteries.populate()
+	game.siege.populate()
 	_apply_camera_limits()
 	game.buildings.reveal_chests()
 	game.guild.spawn_target()
@@ -398,17 +400,27 @@ func _spawn_npc(npc_data: Dictionary) -> void:
 	game.add_child(npc)
 	npc.global_position = SkywardGame._vec(npc_data.get("position"))
 	var handler := Callable(game, "_on_%s_interacted" % npc_id)
+	var action := Callable()
 	if handler.is_valid() and game.trainers.has_trainer(npc_id):
 		# A trainer first asks: talk or learn (owner's list №29).
-		npc.interacted.connect(func(source: Node2D) -> void: game.trainers.greet(npc_id, func(_s: Variant) -> void: handler.call(source)))
+		action = func(source: Node2D) -> void: game.trainers.greet(npc_id, func(_s: Variant) -> void: handler.call(source))
 	elif handler.is_valid():
-		npc.interacted.connect(handler)
+		action = handler
 	elif game.settlement.has_settler_npc(npc_id):
-		npc.interacted.connect(func(_source: Node2D) -> void: game.settlement.talk(npc_id))
+		action = func(_source: Node2D) -> void: game.settlement.talk(npc_id)
 	elif game.givers.has_giver(npc_id) or game.givers.is_special(npc_id):
-		npc.interacted.connect(func(_source: Node2D) -> void: game.givers.talk(npc_id))
+		action = func(_source: Node2D) -> void: game.givers.talk(npc_id)
 	else:
 		push_warning("У NPC нет обработчика диалога: " + npc_id)
+	if action.is_valid():
+		# An open investigation speaks first (clues, the case, the verdict).
+		var talk := action
+		npc.interacted.connect(func(source: Node2D) -> void:
+			if game.mysteries != null and game.mysteries.talk(npc_id):
+				return
+			if game.siege != null and game.siege.talk(npc_id):
+				return
+			talk.call(source))
 	var wander: Variant = npc_data.get("wander", [])
 	if wander is Array and not (wander as Array).is_empty():
 		var walker := NpcWander.new()

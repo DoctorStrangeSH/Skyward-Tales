@@ -110,6 +110,8 @@ var scout: ScoutTrail
 var forestry: ForestGuild
 var keystones: Keystones
 var consequences: Consequences
+var mysteries: Mysteries
+var siege: FarmSiege
 var adit: OldAdit
 var home: HeroHome
 var pin: GoalPin
@@ -290,6 +292,14 @@ func _ready() -> void:
 	scout.name = "ScoutTrail"
 	scout.game = self
 	add_child(scout)
+	siege = FarmSiege.new()
+	siege.name = "FarmSiege"
+	siege.game = self
+	add_child(siege)
+	mysteries = Mysteries.new()
+	mysteries.name = "Mysteries"
+	mysteries.game = self
+	add_child(mysteries)
 	consequences = Consequences.new()
 	consequences.name = "Consequences"
 	consequences.game = self
@@ -386,6 +396,7 @@ func _ready() -> void:
 	hud.journal_view.achievements = achievements
 	hud.journal_view.lore_book = lore
 	hud.journal_view.director = director
+	hud.journal_view.mysteries = mysteries
 	hud.journal_view.factions_ref = factions
 	hud.journal_view.tracking_changed.connect(func() -> void:
 		quest_nav.refresh()

@@ -91,7 +91,7 @@ func _run() -> void:
 	# Unspent points show on the experience bar.
 	hero.add_experience(hero.experience_to_next)
 	game._refresh_hud()
-	if not game.hud.action_bar.xp_label.text.contains("✦"):
+	if not game.hud.action_bar.xp_label.text.contains("очков"):
 		return _fail("unspent points are shown: " + game.hud.action_bar.xp_label.text)
 	print("KEYSTONES OK")
 	quit()

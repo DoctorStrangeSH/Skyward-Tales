@@ -58,6 +58,14 @@ func _grant_reward(reward: Dictionary) -> String:
 ## What floats above an NPC: "quest" (!), "ready" (?), "service" (craft) or "".
 ## Mirrors the conditions used by the conversations below.
 func marker_for(npc_id: String) -> String:
+	var marker := _base_marker(npc_id)
+	if marker.is_empty() and game.mysteries != null:
+		marker = game.mysteries.marker(npc_id)
+	if marker.is_empty() and game.siege != null:
+		marker = game.siege.marker(npc_id)
+	return marker
+
+func _base_marker(npc_id: String) -> String:
 	var quests := game.quests
 	# A story chapter waiting for this NPC decides the marker (open or not yet).
 	if game.director != null and not game.director.chapter_quest(npc_id).is_empty():
@@ -145,6 +153,10 @@ func handle_choice(choice_id: String) -> void:
 	if game.home != null and game.home.handle_choice(choice_id):
 		return
 	if game.keystones != null and game.keystones.handle_choice(choice_id):
+		return
+	if game.mysteries != null and game.mysteries.handle_choice(choice_id):
+		return
+	if game.siege != null and game.siege.handle_choice(choice_id):
 		return
 	if game.forestry != null and game.forestry.handle_choice(choice_id):
 		return

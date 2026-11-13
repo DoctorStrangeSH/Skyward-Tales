@@ -489,6 +489,20 @@
       "stat": "legendary_end",
       "goal": 1,
       "gold": 2000
+    },
+    "detective": {
+      "title": "Сыщица",
+      "description": "Раскройте два расследования, назвав настоящего виновника.",
+      "stat": "mysteries",
+      "goal": 2,
+      "gold": 250
+    },
+    "defender": {
+      "title": "Защитница амбара",
+      "description": "Отстойте амбар Гаврилы от трёх волн.",
+      "stat": "sieges",
+      "goal": 1,
+      "gold": 120
     }
   }
 }

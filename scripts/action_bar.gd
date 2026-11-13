@@ -111,7 +111,7 @@ func set_experience(level: int, current: int, needed: int, unspent: int = 0) -> 
 	xp_bar.value = clampf(float(current) / maxf(1.0, float(needed)), 0.0, 1.0)
 	# Unspent skill points stay in sight (the first-hour bot that never opened
 	# the tree died twenty times at the Guardian; a player could too).
-	xp_label.text = "ур. %d · %d/%d%s" % [level, current, needed, ("  ✦%d — T" % unspent) if unspent > 0 else ""]
+	xp_label.text = "ур. %d · %d/%d%s" % [level, current, needed, ("  · очков: %d (T)" % unspent) if unspent > 0 else ""]
 	xp_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.45) if unspent > 0 else Color(0.75, 0.9, 0.6))
 	xp_bar.tooltip_text = "Опыт до следующего уровня"
 

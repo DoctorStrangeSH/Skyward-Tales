@@ -17,6 +17,8 @@ var achievements: Object
 var lore_book: Object
 ## StoryDirector: chapters that wait for preparation show in the story tab.
 var director: Object
+## Investigations add their clues to their pages (set by SkywardGame).
+static var mysteries: Object
 var factions_ref: Object
 ## A quest was switched on or off for the tracker and the map.
 signal tracking_changed
@@ -96,7 +98,7 @@ static func build_entries(quests: QuestManager) -> Dictionary:
 		var entry := {
 			"id": str(quest_id),
 			"title": str(definition.get("title", quest_id)),
-			"description": str(definition.get("description", "")),
+			"description": str(definition.get("description", "")) + (("\n\n" + mysteries.journal_text(str(quest_id))) if mysteries != null and bool(definition.get("mystery", false)) and not mysteries.journal_text(str(quest_id)).is_empty() else ""),
 			"progress": int(state.get("progress", 0)),
 			"target": int(definition.get("target", 1)),
 			"decision": "",
