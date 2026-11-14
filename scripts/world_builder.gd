@@ -460,6 +460,9 @@ func _spawn_lore(lore_data: Dictionary) -> void:
 	if game.lore.entry(lore_id).is_empty():
 		return
 	var stone := LoreStone.new()
+	# Этап 24 (the bot found it): rune stones went with the land — before, a
+	# stone stayed behind in the next land and kept opening its text there.
+	stone.add_to_group("region_actor")
 	stone.lore_id = lore_id
 	stone.fresh = not game.lore.read.has(lore_id)
 	game.add_child(stone)
