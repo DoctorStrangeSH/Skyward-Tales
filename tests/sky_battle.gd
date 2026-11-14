@@ -64,10 +64,10 @@ func _run() -> void:
 		await process_frame
 	if game.current_region != SkyBattle.DECK or battle._boarders.size() != SkyBattle.BOARDERS.size():
 		return _fail("the fight moves onto the deck: %s, %d" % [game.current_region, battle._boarders.size()])
-	var map := game.world.get_world_2d().navigation_map
+	var deck := Rect2(144, 128, 512, 224)
 	for foe in battle._boarders:
 		var p: Vector2 = (foe as Node2D).global_position
-		if NavigationServer2D.map_get_closest_point(map, p).distance_to(p) > 20.0:
+		if not deck.has_point(p):
 			return _fail("boarders stand on the deck: %s" % str(p))
 	var gold := hero.gold
 	for foe in battle._boarders:
