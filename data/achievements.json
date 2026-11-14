@@ -622,6 +622,13 @@
       "stat": "keepers_found",
       "goal": 1,
       "gold": 300
+    },
+    "sky_ace": {
+      "title": "Гроза пиратов",
+      "description": "Победите небесных пиратов 5 раз.",
+      "stat": "sky_battles",
+      "goal": 5,
+      "gold": 400
     }
   }
 }

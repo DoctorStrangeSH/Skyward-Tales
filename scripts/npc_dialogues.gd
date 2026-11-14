@@ -184,6 +184,8 @@ func handle_choice(choice_id: String) -> void:
 		return
 	if game.sanctum != null and game.sanctum.handle_choice(choice_id):
 		return
+	if game.sky_battle != null and game.sky_battle.handle_choice(choice_id):
+		return
 	if game.craft_orders != null and game.craft_orders.handle_choice(choice_id):
 		return
 	if game.forestry != null and game.forestry.handle_choice(choice_id):

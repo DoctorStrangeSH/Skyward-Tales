@@ -223,6 +223,8 @@ func _run() -> void:
 
 	# A real flight with the transition.
 	game.visited_regions["haven"] = true
+	# No pirates on this flight (scripts/sky_battle.gd has its own test).
+	game.sky_battle.enabled = false
 	if not ship.fly("haven"):
 		return _fail("flight starts")
 	var transitions := game.get_children().filter(func(node: Node) -> bool: return node is FlightTransition)

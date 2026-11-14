@@ -326,6 +326,9 @@ func fly(region_id: String) -> bool:
 	var spot: Variant = dock(region_id)
 	if _flying or not is_ready() or spot == null or not blocked(region_id).is_empty():
 		return false
+	# Этап 24: sky pirates may wait on the way (scripts/sky_battle.gd).
+	if game.sky_battle != null and game.sky_battle.maybe_ambush(region_id):
+		return true
 	_flying = true
 	var transition := FlightTransition.new()
 	transition.title = "«Ветрокрыл» · курс на %s" % RegionCatalog.display_name(region_id)
