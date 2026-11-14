@@ -780,7 +780,7 @@ func get_melee_lifesteal() -> int:
 func get_gold_multiplier() -> float:
 	var arena := get_parent()
 	var mode := float(arena.reward_mult()) if arena != null and arena.has_method("reward_mult") else 1.0
-	return (1.15 if has_passive("treasure_sense") else 1.0) * (1.35 if has_keystone("fortune") else 1.0) * (1.0 + 0.1 * float(talents.get("treasure_hunter", 0))) * (1.0 + 0.02 * float(stars.get("fortune", 0))) * mode
+	return (1.15 if has_passive("treasure_sense") else 1.0) * (1.35 if has_keystone("fortune") else 1.0) * (1.0 + 0.1 * float(talents.get("treasure_hunter", 0))) * (1.0 + 0.02 * float(stars.get("fortune", 0))) * (float(arena.tavern_party.gold_mult()) if arena != null and arena.get("tavern_party") != null else 1.0) * mode
 
 ## Cooldown multiplier of the hotbar skills (Battle Rhythm).
 func get_skill_cooldown_multiplier() -> float:

@@ -17,8 +17,9 @@ const KIND_COLORS := {
 	"festival": Color(1.0, 0.82, 0.35),
 	"fair": Color(0.55, 0.9, 0.55),
 	"birthday": Color(1.0, 0.6, 0.78),
+	"party": Color(0.75, 0.7, 1.0),
 }
-const KIND_MARKS := {"festival": "★", "fair": "⚑", "birthday": "♥"}
+const KIND_MARKS := {"festival": "★", "fair": "⚑", "birthday": "♥", "party": "♪"}
 const CELL := Vector2(62, 44)
 
 var calendar: GameCalendar
@@ -70,7 +71,7 @@ func _ready() -> void:
 	upcoming_box = VBoxContainer.new()
 	upcoming_box.add_theme_constant_override("separation", 2)
 	side.add_child(upcoming_box)
-	side.add_child(UiStyle.label("★ праздник\n⚑ ярмарка (по субботам)\n♥ день рождения", 7, UiStyle.MUTED))
+	side.add_child(UiStyle.label("★ праздник\n⚑ ярмарка (по субботам)\n♪ таверна (по пятницам)\n♥ день рождения", 7, UiStyle.MUTED))
 	detail = UiStyle.label("", 8, Color(0.88, 0.86, 0.8))
 	detail.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	detail.custom_minimum_size = Vector2(590, 26)

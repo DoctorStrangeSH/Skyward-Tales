@@ -227,6 +227,9 @@ func talk(id: String) -> void:
 		{"id": "crew_page:" + id, "label": "Снаряжение и навыки%s" % (("  (очков: %d)" % int(s["points"])) if int(s["points"]) > 0 else "")},
 		{"id": "crew_stance:" + id, "label": "Тактика: «%s» → «%s»" % [STANCES[stance], STANCES[_next_stance(stance)]]},
 	]
+	var personal: Dictionary = game.companion_quests.offer_choice(id) if game.companion_quests != null else {}
+	if not personal.is_empty():
+		choices.push_front(personal)
 	if id == "cartographer":
 		choices.append({"id": "crew_business:" + id, "label": "О делах и картах"})
 	else:

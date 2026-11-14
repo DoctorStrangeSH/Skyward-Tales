@@ -54,6 +54,7 @@ func _collect() -> Array:
 	result.append_array(game.ship.targets())
 	result.append_array(game.fates.targets())
 	result.append_array(game.party.targets())
+	result.append_array(game.companion_quests.targets())
 	result.append_array(game.deep_rifts.targets())
 	result.append_array(game.legends.hunt_targets())
 	# A lost mine is a job for anyone passing by.

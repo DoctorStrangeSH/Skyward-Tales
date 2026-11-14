@@ -601,6 +601,20 @@
       "stat": "craft_orders",
       "goal": 10,
       "gold": 250
+    },
+    "confidant": {
+      "title": "Доверенное лицо",
+      "description": "Пройдите личные истории Торена и Рейны.",
+      "stat": "companion_stories",
+      "goal": 2,
+      "gold": 400
+    },
+    "lucky_dice": {
+      "title": "Везёт в кости",
+      "description": "Выиграйте в кости у возницы Яра 10 раз.",
+      "stat": "dice_wins",
+      "goal": 10,
+      "gold": 150
     }
   }
 }

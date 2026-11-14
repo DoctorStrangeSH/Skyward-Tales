@@ -65,6 +65,8 @@ func marker_for(npc_id: String) -> String:
 		marker = game.siege.marker(npc_id)
 	if marker.is_empty() and game.escort != null:
 		marker = game.escort.marker(npc_id)
+	if marker.is_empty() and game.companion_quests != null:
+		marker = game.companion_quests.marker(npc_id)
 	if marker.is_empty() and game.calendar != null:
 		marker = game.calendar.marker(npc_id)
 	if marker.is_empty() and game.craft_orders != null:
@@ -173,6 +175,10 @@ func handle_choice(choice_id: String) -> void:
 	if game.expeditions != null and game.expeditions.handle_choice(choice_id):
 		return
 	if game.calendar != null and game.calendar.handle_choice(choice_id):
+		return
+	if game.companion_quests != null and game.companion_quests.handle_choice(choice_id):
+		return
+	if game.tavern_party != null and game.tavern_party.handle_choice(choice_id):
 		return
 	if game.craft_orders != null and game.craft_orders.handle_choice(choice_id):
 		return

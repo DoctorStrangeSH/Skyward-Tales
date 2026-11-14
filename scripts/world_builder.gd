@@ -69,6 +69,7 @@ func _populate_region() -> void:
 	game.home.populate()
 	game.mysteries.populate()
 	game.puzzles.populate()
+	game.companion_quests.populate()
 	game.siege.populate()
 	game.escort.populate()
 	_apply_camera_limits()
@@ -418,6 +419,8 @@ func _spawn_npc(npc_data: Dictionary) -> void:
 		# An open investigation speaks first (clues, the case, the verdict).
 		var talk := action
 		npc.interacted.connect(func(source: Node2D) -> void:
+			if game.companion_quests != null and game.companion_quests.talk(npc_id):
+				return
 			if game.calendar != null and game.calendar.talk(npc_id):
 				return
 			if game.craft_orders != null and game.craft_orders.talk(npc_id):

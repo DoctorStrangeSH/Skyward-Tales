@@ -1747,6 +1747,52 @@
       "value": 260,
       "description": "Трофей Отголоска: +6% крит, +2 к силе магии. Особое: Критический удар отзывается эхом: враги рядом получают половину урона.",
       "trophy": true
+    },
+    "yan_bow": {
+      "name": "Лук Яна",
+      "description": "Лук пропавшего следопыта, оплетённый серебряным мхом: +18 к урону стрел, +5% крит. Подходит Торену.",
+      "slot": "blade",
+      "bow": true,
+      "rarity": "epic",
+      "ranged": 18,
+      "crit": 5,
+      "value": 360,
+      "hands": 2,
+      "kind": "bow",
+      "icon": "wind_bow"
+    },
+    "stag_feather": {
+      "name": "Перо белого оленя",
+      "description": "Подарок сторожа Лунной рощи: +4 к ловкости, +30 к здоровью, +1 к восстановлению здоровья.",
+      "slot": "amulet",
+      "rarity": "epic",
+      "agility": 4,
+      "max_health": 30,
+      "hp_regen": 1,
+      "value": 320,
+      "icon": "phoenix_feather"
+    },
+    "salt_charm": {
+      "name": "Солёный оберег",
+      "description": "Прощальный подарок команды «Ласточки»: +5% крит, +25 к здоровью, +3 к броне.",
+      "slot": "amulet",
+      "rarity": "epic",
+      "crit": 5,
+      "max_health": 25,
+      "armor": 3,
+      "value": 320,
+      "icon": "earth_star"
+    },
+    "swallow_bell": {
+      "name": "Колокол «Ласточки»",
+      "description": "Колокол погибшего шлюпа: +4 к броне, +4% крит, +2 к воле. Иногда звенит сам собой.",
+      "slot": "relic",
+      "rarity": "epic",
+      "armor": 4,
+      "crit": 4,
+      "will": 2,
+      "value": 340,
+      "icon": "keeper_hourglass"
     }
   },
   "sets": {

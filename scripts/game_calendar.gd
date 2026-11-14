@@ -114,6 +114,8 @@ func events_on(doy: int) -> Array:
 		var info: Dictionary = FESTIVALS[id]
 		if int(info["day"]) == doy:
 			result.append({"kind": "festival", "id": str(id), "title": str(info["name"]), "short": str(info.get("short", info["name"])), "text": str(info["text"])})
+	if game.tavern_party != null and game.tavern_party.tavern_built() and TavernParty.is_party_day(doy):
+		result.append({"kind": "party", "id": "party", "title": "Вечер в таверне", "short": "Таверна", "text": "Пятничный вечер у Греты: кости с Яром, песни барда, угощение на всех."})
 	if VillageFair.is_fair_day(doy):
 		result.append({"kind": "fair", "id": "fair", "title": "Ярмарка", "short": "Ярмарка", "text": "Субботняя ярмарка в Ясном Краю: тир, лавка призов, вечером — фейерверк."})
 	for npc in BIRTHDAYS:
@@ -137,14 +139,14 @@ static func short_name(npc_id: String) -> String:
 func upcoming(count: int = 6) -> Array:
 	var result: Array = []
 	var day := today()
-	var fair_listed := false
+	var listed_weekly: Dictionary = {}
 	for offset in range(0, DAYS_PER_YEAR + 1):
 		for event in events_on(day_of_year(day + offset)):
 			# The fair is weekly: only the next one is worth listing.
-			if str(event["kind"]) == "fair":
-				if fair_listed:
+			if str(event["kind"]) in ["fair", "party"]:
+				if listed_weekly.has(str(event["kind"])):
 					continue
-				fair_listed = true
+				listed_weekly[str(event["kind"])] = true
 			var entry: Dictionary = (event as Dictionary).duplicate()
 			entry["in"] = offset
 			entry["day"] = day + offset

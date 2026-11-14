@@ -116,6 +116,8 @@ var joint: JointActions
 var calendar: GameCalendar
 var settlement_life: SettlementLife
 var craft_orders: CraftOrders
+var companion_quests: CompanionQuests
+var tavern_party: TavernParty
 var siege: FarmSiege
 var escort: EscortErrand
 var mastery: WeaponMastery
@@ -326,6 +328,14 @@ func _ready() -> void:
 	siege.name = "FarmSiege"
 	siege.game = self
 	add_child(siege)
+	tavern_party = TavernParty.new()
+	tavern_party.name = "TavernParty"
+	tavern_party.game = self
+	add_child(tavern_party)
+	companion_quests = CompanionQuests.new()
+	companion_quests.name = "CompanionQuests"
+	companion_quests.game = self
+	add_child(companion_quests)
 	craft_orders = CraftOrders.new()
 	craft_orders.name = "CraftOrders"
 	craft_orders.game = self

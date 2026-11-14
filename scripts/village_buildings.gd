@@ -70,7 +70,7 @@ func npcs() -> Array[Dictionary]:
 # --- Tavern ---------------------------------------------------------------
 
 func talk_tavern() -> void:
-	var choices: Array[Dictionary] = []
+	var choices: Array[Dictionary] = game.tavern_party.choices() if game.tavern_party != null else []
 	for item_id in FOOD:
 		choices.append({"id": "tavern_buy:" + item_id, "label": "%s — %d золота" % [game.player.get_item_name(item_id), int(FOOD[item_id])]})
 	choices.append({"id": "tavern_map", "label": "Карта сокровищ и свежий слух — %d золота" % MAP_PRICE})
@@ -80,7 +80,8 @@ func talk_tavern() -> void:
 		else:
 			choices.append({"id": "tavern_merc", "label": "Нанять наёмника на день — %d золота" % MERC_PRICE})
 	choices.append({"id": "tavern_close", "label": "Уйти"})
-	game._show_dialogue_choices("Грета, хозяйка таверны", StoryText.format("Заходи, {hero}! Горячая еда, холодный эль и новости со всех островов."), choices)
+	var party := game.tavern_party.greeting() if game.tavern_party != null else ""
+	game._show_dialogue_choices("Грета, хозяйка таверны", StoryText.format(party if not party.is_empty() else "Заходи, {hero}! Горячая еда, холодный эль и новости со всех островов."), choices)
 
 func _buy(price: int) -> bool:
 	if game.player.gold < price:
