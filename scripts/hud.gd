@@ -593,8 +593,7 @@ func toggle_calendar(calendar: GameCalendar) -> void:
 	calendar_visible = not calendar_visible
 	calendar_view.visible = calendar_visible
 	if calendar_visible:
-		calendar_view._selected = -1
-		calendar_view.populate(calendar)
+		calendar_view.open(calendar)
 
 func toggle_activities(rows: Array[Dictionary]) -> void:
 	activities_visible = not activities_visible

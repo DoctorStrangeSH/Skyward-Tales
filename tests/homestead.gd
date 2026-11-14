@@ -27,8 +27,8 @@ func _run() -> void:
 	var seasons := game.seasons
 
 	# The calendar.
-	if Seasons.season_of(0) != "summer" or Seasons.season_of(4) != "autumn" or Seasons.season_of(8) != "winter" or Seasons.season_of(12) != "spring" or Seasons.season_of(16) != "summer":
-		return _fail("four seasons of four days")
+	if Seasons.season_of(0) != "summer" or Seasons.season_of(27) != "summer" or Seasons.season_of(28) != "autumn" or Seasons.season_of(56) != "winter" or Seasons.season_of(84) != "spring" or Seasons.season_of(112) != "summer":
+		return _fail("four seasons of 28 days")
 	await process_frame
 	var tree_count := _trees(game, "")
 	if tree_count == 0:
@@ -36,7 +36,7 @@ func _run() -> void:
 
 	if not seasons.here() or _trees(game, "season_") != 0:
 		return _fail("summer keeps the land's own trees")
-	game.day_night.day = 4
+	game.day_night.day = 28
 	await process_frame
 	await process_frame
 	if _trees(game, "season_autumn") < int(tree_count * 0.8):
@@ -45,7 +45,7 @@ func _run() -> void:
 		await process_frame
 	if game.world.get_node_or_null("SeasonLayer") == null or game.hud.minimap.season_label != "осень":
 		return _fail("autumn veil and the label on the map")
-	game.day_night.day = 8
+	game.day_night.day = 56
 	await process_frame
 	await process_frame
 	if _trees(game, "season_winter") != tree_count or _trees(game, "season_autumn") != 0:
@@ -87,15 +87,15 @@ func _run() -> void:
 		return _fail("carrots ripen under glass")
 
 	# Spring is faster, autumn is richer.
-	game.day_night.day = 12
+	game.day_night.day = 84
 	await process_frame
 	if not farm.plant(0, "seed_wheat"):
 		return _fail("spring planting")
 	var spring_days := farm.growth_days(0)
-	game.day_night.day = 16
+	game.day_night.day = 112
 	if spring_days >= farm.growth_days(0):
 		return _fail("spring grows faster than summer")
-	game.day_night.day = 4
+	game.day_night.day = 28
 	farm.beds[0]["planted"] = farm._now() - 2.0
 	farm.rng.seed = 1
 	var before := int(hero.inventory.get("wheat", 0))
@@ -122,7 +122,7 @@ func _run() -> void:
 		return _fail("the pie sharpens the eye")
 
 	# Other lands keep their own climate.
-	game.day_night.day = 8
+	game.day_night.day = 56
 	if Seasons.tree_file("winter", "day", 0, Vector2.ZERO).is_empty() or RegionCatalog.style("salt_coast") in Seasons.SEASONAL_STYLES:
 		return _fail("the coast has no winter")
 	print("HOMESTEAD OK")

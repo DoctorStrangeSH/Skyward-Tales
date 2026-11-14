@@ -15,8 +15,9 @@ class_name VillageFair
 ## Tokens are an item ("fair_token"); the best gallery score is saved.
 
 const REGION := "greenreach"
-const EVERY := 4
-const OFFSET := 2
+const EVERY := 7
+## Saturday (Seasons.WEEKDAYS[5]).
+const OFFSET := 5
 const OPEN_FROM := 0.27
 const CLOSE_AT := 0.84
 const FIREWORKS_FROM := 0.72

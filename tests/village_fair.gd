@@ -28,12 +28,12 @@ func _run() -> void:
 
 	# Not every day.
 	var days := 0
-	for d in 12:
+	for d in 28:
 		if VillageFair.is_fair_day(d):
 			days += 1
-	if days != 3:
-		return _fail("a fair every fourth day")
-	game.day_night.day = 1
+	if days != 4 or not VillageFair.is_fair_day(5):
+		return _fail("a fair every Saturday")
+	game.day_night.day = 4
 	game.day_night.time = 0.5
 	await process_frame
 	if fair.open() or fair.days_until() != 1:
@@ -43,11 +43,11 @@ func _run() -> void:
 			return _fail("no stalls without a fair")
 
 	# Fair day: stalls, garlands, music, an announcement.
-	game.day_night.day = 2
+	game.day_night.day = 5
 	await process_frame
 	await process_frame
 	if not fair.open_here():
-		return _fail("the fair is open on day 2")
+		return _fail("the fair is open on Saturday")
 	var stands: Array = []
 	for node in game.get_children():
 		if node is VillageFair.FairStand:
@@ -56,7 +56,7 @@ func _run() -> void:
 		return _fail("two stalls: %d" % stands.size())
 	if GameAudio.instance().current_track != "fair":
 		return _fail("fair music plays: " + GameAudio.instance().current_track)
-	if fair.announced_day != 2:
+	if fair.announced_day != 5:
 		return _fail("the fair is announced")
 
 	# The shooting gallery: targets pop up and can be hit.

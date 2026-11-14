@@ -1,14 +1,18 @@
 extends Node
 class_name Seasons
 
-## The year (stage 21, step 4): four seasons of LENGTH days each, starting
+## The year (stage 21, step 4; этап 24 — like Stardew Valley: 28 days a
+## season, weeks of 7 days): four seasons of LENGTH days each, starting
 ## in summer. In the homelands (styles "day" and "haven") the trees change
 ## (art: assets/world_hd/season_*), the ground gets a seasonal veil and
 ## details, leaves / snow / petals drift in the air. The garden feels it too
 ## (scripts/farm.gd): spring grows faster, autumn gives a richer harvest,
 ## in winter outdoor beds sleep — only the greenhouse works.
 
-const LENGTH := 4
+const LENGTH := 28
+const WEEK := 7
+const WEEKDAYS := ["понедельник", "вторник", "среда", "четверг", "пятница", "суббота", "воскресенье"]
+const WEEKDAYS_SHORT := ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"]
 const ORDER := ["summer", "autumn", "winter", "spring"]
 const NAMES := {"summer": "Лето", "autumn": "Осень", "winter": "Зима", "spring": "Весна"}
 const ANNOUNCE := {
@@ -31,6 +35,9 @@ var _shown: String = ""
 var _region: String = ""
 var _layer: Node2D
 var _drift: CPUParticles2D
+
+static func weekday_of(day: int) -> int:
+	return posmod(day, WEEK)
 
 static func season_of(day: int) -> String:
 	return ORDER[(maxi(day, 0) / LENGTH) % ORDER.size()]
