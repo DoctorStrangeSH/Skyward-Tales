@@ -60,9 +60,15 @@ func _run() -> void:
 	# Boarding: below 40% — the boarders follow to the landing.
 	battle.enemy_hp = 10
 	game.dialogues.handle_choice("sky_board")
-	await process_frame
-	if battle._boarders.size() != SkyBattle.BOARDERS.size():
-		return _fail("the boarders jump after you")
+	for i in 3:
+		await process_frame
+	if game.current_region != SkyBattle.DECK or battle._boarders.size() != SkyBattle.BOARDERS.size():
+		return _fail("the fight moves onto the deck: %s, %d" % [game.current_region, battle._boarders.size()])
+	var map := game.world.get_world_2d().navigation_map
+	for foe in battle._boarders:
+		var p: Vector2 = (foe as Node2D).global_position
+		if NavigationServer2D.map_get_closest_point(map, p).distance_to(p) > 20.0:
+			return _fail("boarders stand on the deck: %s" % str(p))
 	var gold := hero.gold
 	for foe in battle._boarders:
 		(foe as SlimeEnemy).take_damage(9999999)
@@ -70,6 +76,10 @@ func _run() -> void:
 		await process_frame
 	if battle._boarding or hero.gold <= gold or battle.won != 2:
 		return _fail("beaten boarders — the captain's chest")
+	await create_timer(2.8).timeout
+	await process_frame
+	if game.current_region != "haven":
+		return _fail("the ship flies on after the deck is clear: " + game.current_region)
 	game.hud.close_dialogue()
 	# Lost: the hull breaks, they take gold.
 	battle.start("haven")

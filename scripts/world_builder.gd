@@ -73,6 +73,7 @@ func _populate_region() -> void:
 	game.companion_quests.populate()
 	game.sanctum.populate()
 	game.starfall.populate()
+	game.sky_battle.populate()
 	game.siege.populate()
 	game.escort.populate()
 	_apply_camera_limits()

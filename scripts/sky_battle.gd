@@ -177,7 +177,11 @@ func _win(boarded: bool) -> void:
 	var loot := _loot(1.6 if boarded else 1.0)
 	game.hud.show_title_card("Победа в небе!", 2.2)
 	game._show_dialogue("Небесный бой", ("Последний пират сдался. В сундуке капитана: " if boarded else "Пиратский корабль %s кренится и уходит вниз, в облака, теряя груз. Мира подбирает, что смогла: " % str(enemy["name"])) + loot + ".")
-	if not boarded:
+	if boarded:
+		get_tree().create_timer(2.5).timeout.connect(func() -> void:
+			game.hud.show_message("Палуба чиста. Мира: «Держитесь — летим дальше!»", 3.0)
+			_continue())
+	else:
 		_continue()
 
 func _lose() -> void:
@@ -196,24 +200,40 @@ func _continue() -> void:
 		game.ship.call_deferred("fly_now", region)
 
 ## Boarding: the ship lands at the destination, the boarders follow.
+const DECK := "ship_deck"
+const DECK_CENTER := Vector2(400, 240)
+
+## Boarding: the fight moves onto the deck of the «Ветрокрыл»
+## (region "ship_deck"); when the deck is clear the ship flies on.
 func board() -> void:
 	active = false
 	_show_view(false)
 	_boarding = true
-	var region := destination
-	destination = ""
-	game.ship.fly_now(region)
+	game._travel(DECK, DECK_CENTER + Vector2(-120, 0))
 	game.hud.show_title_card("Абордаж!", 2.0)
-	game.hud.show_message("Пираты прыгают на палубу за вами! Отбейтесь — и сундук капитана ваш.", 4.0)
-	var map := game.world.get_world_2d().navigation_map
+	game.hud.show_message("Пираты прыгают к вам на палубу! Отбейтесь — и сундук капитана ваш.", 4.0)
+
+## Called when the deck is built: its gear, and the boarders if a fight is on.
+func populate() -> void:
+	if game.current_region != DECK:
+		return
+	for piece in [["farm_barrel", Vector2(190, 160)], ["farm_barrel", Vector2(612, 160)], ["supply_crate", Vector2(200, 320)], ["supply_crate", Vector2(600, 322)], ["tower_banner", Vector2(400, 134)], ["farm_barrel", Vector2(228, 322)]]:
+		var prop := TowerObject.new()
+		prop.art = str(piece[0])
+		prop.wall_width = 18.0
+		prop.add_to_group("region_actor")
+		game.add_child(prop)
+		prop.global_position = piece[1]
+	if not _boarding:
+		return
+	_boarders.clear()
 	for i in BOARDERS.size():
 		var kind := str(BOARDERS[i])
 		var elite := ""
 		if kind.ends_with("@"):
 			kind = kind.trim_suffix("@")
 			elite = EliteModifiers.pick(game.loot_rng)
-		var spot := game.player.global_position + Vector2.RIGHT.rotated(TAU * float(i) / float(BOARDERS.size())) * 110.0
-		spot = NavigationServer2D.map_get_closest_point(map, spot) if NavigationServer2D.map_get_iteration_id(map) > 0 else spot
+		var spot := DECK_CENTER + Vector2(100 + 40 * (i % 2), -60 + 40 * i)
 		var foe := game.spawn_enemy(kind, spot, elite)
 		if foe == null:
 			continue
@@ -234,7 +254,7 @@ func _process(delta: float) -> void:
 			_nag = 0.0
 			_round("Пираты не отстают!")
 		return
-	if not _boarding or game.get_tree().paused:
+	if not _boarding or game.get_tree().paused or game.current_region != DECK:
 		return
 	_boarders = _boarders.filter(func(foe: Variant) -> bool: return is_instance_valid(foe) and not (foe as Node).is_queued_for_deletion() and (foe as SlimeEnemy).health > 0)
 	if _boarders.is_empty():
