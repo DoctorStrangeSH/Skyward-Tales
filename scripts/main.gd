@@ -121,6 +121,7 @@ var companion_quests: CompanionQuests
 var tavern_party: TavernParty
 var sanctum: KeepersSanctum
 var sky_battle: SkyBattle
+var starfall: StarfallIsle
 var siege: FarmSiege
 var escort: EscortErrand
 var mastery: WeaponMastery
@@ -331,6 +332,10 @@ func _ready() -> void:
 	siege.name = "FarmSiege"
 	siege.game = self
 	add_child(siege)
+	starfall = StarfallIsle.new()
+	starfall.name = "StarfallIsle"
+	starfall.game = self
+	add_child(starfall)
 	sky_battle = SkyBattle.new()
 	sky_battle.name = "SkyBattle"
 	sky_battle.game = self

@@ -10857,5 +10857,89 @@
         }
       ]
     }
+  },
+  "starfall_isle": {
+    "name": "Звёздный остров",
+    "map_color": [0.55, 0.6, 0.95],
+    "level": 10,
+    "enemy_power": 1.1,
+    "hidden": true,
+    "dock": [640, 720],
+    "npcs": [],
+    "chests": [
+      {
+        "id": "starfall_crater",
+        "position": [300, 260],
+        "gold": 160,
+        "item": "starlight_essence",
+        "amount": 1,
+        "tier": "iron"
+      }
+    ],
+    "herbs": [],
+    "story_objects": [],
+    "enemies": [
+      {
+        "kind": "wisp",
+        "position": [420, 520]
+      },
+      {
+        "kind": "wisp",
+        "position": [860, 520]
+      },
+      {
+        "kind": "wisp",
+        "position": [980, 300]
+      },
+      {
+        "kind": "shade",
+        "position": [300, 420]
+      }
+    ],
+    "gates": [],
+    "secrets": {},
+    "terrain": {
+      "size": [1280, 864],
+      "style": "sky",
+      "edge_margin": 64,
+      "trails": [
+        [
+          [640, 720],
+          [640, 560],
+          [640, 420]
+        ],
+        [
+          [640, 560],
+          [420, 520],
+          [300, 300]
+        ],
+        [
+          [640, 560],
+          [880, 500],
+          [1000, 300]
+        ]
+      ],
+      "ponds": [
+        {
+          "circle": [640, 300, 46]
+        }
+      ],
+      "trees": [
+        [180, 200],
+        [1100, 180],
+        [170, 620],
+        [1110, 640],
+        [400, 760],
+        [880, 760]
+      ],
+      "props": [],
+      "blockers": [
+        {
+          "center": [640, 300],
+          "size": [80, 76]
+        }
+      ],
+      "bushes": []
+    }
   }
 }

@@ -62,6 +62,17 @@ const DIFFICULTY := [
 ]
 var difficulty: int = 0
 var heroic_done: int = 0
+## Этап 24: special halls of a run (cell → kind):
+##   "ambush" — quiet until the hero steps in; then foes rush from every side
+##              with an elite among them; beaten — a gold chest appears;
+##   "shrine" — no foes: a spring of the Pattern restores half of health and
+##              mana once;
+##   "imp"    — a loot imp scurries about: catch it before it digs away.
+const HALL_KINDS := {"ambush": "Зал засады", "shrine": "Источник Узора", "imp": "Зал бесёнка"}
+var hall_kinds: Dictionary = {}
+var _ambush_state: String = ""
+var _ambush_foes: Array = []
+var _shrine_used: bool = false
 var legendary_done: int = 0
 var rng := RandomNumberGenerator.new()
 const MAX_DEPTH := 3
@@ -154,9 +165,17 @@ func populate() -> void:
 			if cell in [START_HALL, BOSS_HALL, TREASURE_HALL]:
 				continue
 			fight_halls.append(cell)
+	_roll_hall_kinds(fight_halls)
 	var chest_serial := 0
 	for cell in fight_halls:
-		var count := rng.randi_range(3, 5) if cell != PUZZLE_HALL else 2
+		if hall_kinds.has(cell):
+			_dress_hall(cell, str(hall_kinds[cell]))
+			# The spring and the imp hall keep two guards; the ambush waits.
+			if str(hall_kinds[cell]) != "ambush":
+				for i in 2:
+					_spawn_foe(str(kinds[rng.randi_range(0, kinds.size() - 1)]), _random_spot(cell))
+			continue
+		var count := (rng.randi_range(3, 5) + (1 if hall_kinds.size() >= 2 else 0)) if cell != PUZZLE_HALL else 2
 		for i in count:
 			_spawn_foe(str(kinds[rng.randi_range(0, kinds.size() - 1)]), _random_spot(cell))
 		if rng.randf() < 0.45:
@@ -237,6 +256,95 @@ func _spawn_foe(kind: String, at: Vector2, boss: bool = false) -> SlimeEnemy:
 	enemy.combat_feedback.set_health(enemy.health, enemy.max_health)
 	return enemy
 
+func _roll_hall_kinds(fight_halls: Array) -> void:
+	hall_kinds.clear()
+	_ambush_state = ""
+	_ambush_foes.clear()
+	_shrine_used = false
+	var free: Array = fight_halls.filter(func(cell: Vector2i) -> bool: return cell != PUZZLE_HALL)
+	for i in range(free.size() - 1, 0, -1):
+		var j := rng.randi_range(0, i)
+		var swap: Variant = free[i]
+		free[i] = free[j]
+		free[j] = swap
+	if free.size() > 0:
+		hall_kinds[free[0]] = "ambush"
+	if free.size() > 1 and rng.randf() < 0.65:
+		hall_kinds[free[1]] = "shrine"
+	if free.size() > 2 and rng.randf() < 0.45:
+		hall_kinds[free[2]] = "imp"
+
+func _dress_hall(cell: Vector2i, kind: String) -> void:
+	var center := hall_rect(cell).get_center()
+	match kind:
+		"ambush":
+			_ambush_state = "waiting"
+		"shrine":
+			var spring := TowerObject.new()
+			spring.art = "tower_altar_charged"
+			spring.label = "E — испить из источника Узора"
+			spring.glow = Color(0.6, 0.8, 1.0, 0.6)
+			spring.wall_width = 24.0
+			spring.add_to_group("region_actor")
+			game.add_child(spring)
+			spring.global_position = center
+			spring.used.connect(func(object: TowerObject) -> void: drink(object))
+		"imp":
+			game.spawn_enemy("loot_imp", center)
+
+## The spring of the Pattern: half of health and mana back, once a run.
+func drink(spring: TowerObject = null) -> bool:
+	if _shrine_used:
+		game.hud.show_message("Источник иссяк до следующей экспедиции.", 2.0)
+		return false
+	_shrine_used = true
+	var hero := game.player
+	hero.heal(roundi(hero.max_health * 0.5))
+	hero.mana = mini(hero.max_mana, hero.mana + roundi(hero.max_mana * 0.5))
+	hero.stats_changed.emit()
+	game.hud.show_message("Холодная вода Узора: силы возвращаются.", 2.5)
+	GameAudio.play("quest", -6.0, 0.3)
+	if spring != null:
+		spring.art = "tower_altar"
+		spring.label = ""
+		spring.glow = Color(0, 0, 0, 0)
+		spring.queue_redraw()
+	return true
+
+func _ambush_cell() -> Vector2i:
+	for cell in hall_kinds:
+		if str(hall_kinds[cell]) == "ambush":
+			return cell
+	return Vector2i(-1, -1)
+
+func _update_ambush(hero: Vector2) -> void:
+	var cell := _ambush_cell()
+	if cell.x < 0:
+		return
+	var rect := hall_rect(cell)
+	if _ambush_state == "waiting" and rect.grow(-30).has_point(hero):
+		_ambush_state = "fighting"
+		game.hud.show_title_card("Засада!", 1.6)
+		GameAudio.play("boss_roar", -8.0, 0.3)
+		var kinds: Array = _tier()[1]
+		for i in 6:
+			var angle := TAU * float(i) / 6.0
+			var at := rect.get_center() + Vector2(cos(angle) * rect.size.x * 0.38, sin(angle) * rect.size.y * 0.36)
+			var foe := _spawn_foe(str(kinds[i % kinds.size()]), at)
+			if foe != null:
+				foe.detection_radius = 999.0
+				_ambush_foes.append(foe)
+		var elite := _spawn_foe(str(kinds[0]), rect.get_center() + Vector2(0, -rect.size.y * 0.3))
+		if elite != null:
+			EliteModifiers.apply(elite, EliteModifiers.pick(rng))
+			_ambush_foes.append(elite)
+	elif _ambush_state == "fighting":
+		_ambush_foes = _ambush_foes.filter(func(foe: Variant) -> bool: return is_instance_valid(foe) and not (foe as Node).is_queued_for_deletion() and (foe as SlimeEnemy).health > 0)
+		if _ambush_foes.is_empty():
+			_ambush_state = "done"
+			_chest(95, rect.get_center(), "gold")
+			game.hud.show_message("Засада отбита! Посреди зала — сундук.", 3.0)
+
 func _chest(serial: int, at: Vector2, tier: String) -> void:
 	var gold := roundi((30 + 12 * level) * (3 if tier == "gold" else 1) * reward_mult())
 	var item := "health_potion" if tier != "gold" else "starlight_essence"
@@ -289,6 +397,7 @@ func _process(delta: float) -> void:
 	var hero := game.player.global_position
 	if not warden_spawned and hall_rect(BOSS_HALL).grow(-20).has_point(hero):
 		_spawn_warden()
+	_update_ambush(hero)
 	if modifier == "storm":
 		_storm_clock -= delta
 		if _storm_clock <= 0.0:

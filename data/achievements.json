@@ -629,6 +629,13 @@
       "stat": "sky_battles",
       "goal": 5,
       "gold": 400
+    },
+    "star_catcher": {
+      "title": "Ловец звёзд",
+      "description": "Победите Звёздного стража на Звёздном острове.",
+      "stat": "star_guardians",
+      "goal": 1,
+      "gold": 300
     }
   }
 }
