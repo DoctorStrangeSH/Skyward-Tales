@@ -93,6 +93,7 @@ var epilogue: Epilogue
 var quest_nav: QuestNav
 var world_state: WorldState
 var village: VillageLife
+var haven_life: VillageLife
 var mine: PassMine
 var borin: BorinStory
 var lira: LiraStory
@@ -397,6 +398,11 @@ func _ready() -> void:
 	village.name = "VillageLife"
 	village.game = self
 	add_child(village)
+	haven_life = VillageLife.new()
+	haven_life.name = "HavenLife"
+	haven_life.settlement_key = "haven"
+	haven_life.game = self
+	add_child(haven_life)
 	legends = Legends.new()
 	legends.name = "Legends"
 	legends.game = self

@@ -23,6 +23,8 @@ const WORK := {
 	"woodcutter": {"name": "Лесопилка Яроша", "items": {"wood": 3}},
 	"fisher": {"name": "Причал Ульфа", "items": {"fish": 2}},
 	"cook": {"name": "Кухня Марты", "items": {"hearty_stew": 1}},
+	"beekeeper": {"name": "Пасека Мирона", "items": {"sunberry": 2}},
+	"stonecutter": {"name": "Каменоломня Вилмы", "items": {"stone": 3}},
 }
 const REQUESTS := {
 	"woodcutter": [
@@ -34,6 +36,16 @@ const REQUESTS := {
 		{"items": {"fish": 2}, "text": "Ухи хочу наварить на всю деревню. Две рыбы найдётся?"},
 		{"items": {"healroot": 2}, "text": "Целебного корня бы два — в похлёбку, от простуды."},
 		{"items": {"sunberry": 2}, "text": "Пирог задумала! Две солнечные ягоды — и будет праздник."},
+	],
+	"beekeeper": [
+		{"items": {"wood": 2}, "text": "Новый улей сколотить надо. Пару брёвен найдёшь?"},
+		{"items": {"bluebell": 2}, "text": "Синецвет — лучший медонос. Принесёшь пару кустиков?"},
+		{"items": {"bread": 1}, "text": "Мёд есть, а хлеба к нему нет. Краюху бы!"},
+	],
+	"stonecutter": [
+		{"items": {"iron_ore": 1}, "text": "Зубило затупилось. Кусок железной руды — и Борин сделает новое."},
+		{"items": {"fish_stew": 1}, "text": "Целый день в каменоломне — живот к спине прилип. Ухи не найдётся?"},
+		{"items": {"copper_ore": 1}, "text": "Медные клинья камень колют ровнее. Медной руды бы кусочек."},
 	],
 	"fisher": [
 		{"items": {"wood": 2}, "text": "Лодка течёт. Две доски-бревна — и залатаю."},
@@ -62,6 +74,8 @@ func today() -> int:
 
 func points() -> int:
 	var total := _settlement().homes.size() * 2 + requests_done / 2
+	for plot_id in _settlement().homes:
+		total += _settlement().home_level(str(_settlement().homes[plot_id])) - 1
 	for id in _settlement().buildings:
 		total += int(_settlement().buildings[id])
 	return total
@@ -133,7 +147,7 @@ func store() -> Dictionary:
 			continue
 		var items: Dictionary = WORK[id]["items"]
 		for item in items:
-			result[item] = int(result.get(item, 0)) + int(items[item]) * days
+			result[item] = int(result.get(item, 0)) + int(items[item]) * days * maxi(1, _settlement().home_level(id))
 	var gold := treasury_waiting()
 	if gold > 0:
 		result["gold"] = gold

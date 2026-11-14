@@ -26,6 +26,7 @@ func _populate_region() -> void:
 	game.treasure.spawn_mark()
 	game.epilogue.spawn_rift()
 	game.village.on_region_ready()
+	game.haven_life.on_region_ready()
 	for node_data in layout.get("resource_nodes", []):
 		var node_id := str(node_data.get("id", ""))
 		if not bool(game.gathered_resource_nodes.get(node_id, false)):

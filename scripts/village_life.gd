@@ -15,6 +15,9 @@ const NPC_SCRIPT := preload("res://scripts/npc.gd")
 
 var game: SkywardGame
 var data: Dictionary = {}
+## Этап 24: "" — the home village (Ясный Край); else a key of
+## routines.json → "settlements" (the Haven) with its own routines.
+var settlement_key: String = ""
 var phase: String = ""
 var guard: WorldNpc
 var rng := RandomNumberGenerator.new()
@@ -30,7 +33,7 @@ func _ready() -> void:
 	if file != null:
 		var parsed: Variant = JSON.parse_string(file.get_as_text())
 		if parsed is Dictionary:
-			data = parsed
+			data = parsed if settlement_key.is_empty() else (parsed.get("settlements", {}).get(settlement_key, {}) as Dictionary)
 
 func region() -> String:
 	return str(data.get("region", "greenreach"))
@@ -65,6 +68,8 @@ func spot(npc_id: String, for_phase: String) -> Vector2:
 	var routine: Dictionary = data.get("npcs", {}).get(npc_id, {})
 	match for_phase:
 		"evening":
+			if not settlement_key.is_empty():
+				return SkywardGame._vec(routine.get("evening", [0, 0]))
 			# A fair day: everyone dances around the ribbon pole (stage 20).
 			if game.fair != null and VillageFair.is_fair_day(game.day_night.day):
 				return game.fair.evening_spot(data.get("npcs", {}).keys().find(npc_id))
@@ -150,7 +155,7 @@ func _update_guard() -> void:
 
 func _guard_talk() -> void:
 	var lines: Array = data.get("guard_lines", ["Всё спокойно."])
-	var line := str(lines[rng.randi_range(0, lines.size() - 1)])
+	var line := StoryText.format(str(lines[rng.randi_range(0, lines.size() - 1)]))
 	if rng.randf() < 0.5:
 		line = rumor()
 	game._show_dialogue(guard.display_name if guard != null else "Стражник", line)
@@ -159,6 +164,8 @@ func _guard_talk() -> void:
 func rumor() -> String:
 	var lines: Array = (data.get("rumors", []) as Array).duplicate()
 	var live: Array = []
+	if not settlement_key.is_empty():
+		return StoryText.format(str(lines[rng.randi_range(0, lines.size() - 1)])) if not lines.is_empty() else ""
 	if game.world_state.has("trade_route"):
 		live.append("Караван дошёл целым! У Брана теперь заморские товары, да ещё со скидкой.")
 	if game.world_state.has("caravan_lost"):

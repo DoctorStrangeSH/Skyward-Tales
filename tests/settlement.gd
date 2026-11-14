@@ -34,7 +34,7 @@ func _run() -> void:
 	root.add_child(game)
 	await process_frame
 	game.autosave_enabled = false
-	if not _verify(_objects("board") == 1 and _objects("plot") == 3 and _objects("house") == 0, "the village has a board and three empty plots"):
+	if not _verify(_objects("board") == 1 and _objects("plot") == 5 and _objects("house") == 0, "the village has a board and five empty plots"):
 		return
 
 	# Yarosh waits in the grove.
@@ -67,7 +67,7 @@ func _run() -> void:
 	await process_frame
 	if not _verify(game.settlement.homes.size() == 1 and game.player.gold == 140, "a house for 60 gold"):
 		return
-	if not _verify(_objects("house") == 1 and _objects("plot") == 2, "the house replaces a plot"):
+	if not _verify(_objects("house") == 1 and _objects("plot") == 4, "the house replaces a plot"):
 		return
 	if not _verify(game.settlement.house_cost("cook") == 90 and int(game.settlement.house_materials("cook")["wood"]) == 6, "the woodcutter makes the next house cheaper (gold and wood)"):
 		return
