@@ -615,6 +615,13 @@
       "stat": "dice_wins",
       "goal": 10,
       "gold": 150
+    },
+    "last_keepers": {
+      "title": "Последние Хранители",
+      "description": "Пройдите печати Обители и найдите последних Хранителей.",
+      "stat": "keepers_found",
+      "goal": 1,
+      "gold": 300
     }
   }
 }

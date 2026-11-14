@@ -329,6 +329,10 @@ static func xp_for_level(level_now: int) -> int:
 signal experience_gained(amount: int)
 
 func add_experience(amount: int) -> void:
+	# Этап 24: the Keepers' blessing (scripts/keepers_sanctum.gd): +10% for a day.
+	var arena := get_parent()
+	if amount > 0 and arena != null and arena.get("world_state") != null and arena.world_state.has("keeper_blessing"):
+		amount = roundi(float(amount) * 1.1)
 	experience += amount
 	if amount > 0:
 		experience_gained.emit(amount)

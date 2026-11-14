@@ -119,6 +119,7 @@ var settlement_life: SettlementLife
 var craft_orders: CraftOrders
 var companion_quests: CompanionQuests
 var tavern_party: TavernParty
+var sanctum: KeepersSanctum
 var siege: FarmSiege
 var escort: EscortErrand
 var mastery: WeaponMastery
@@ -329,6 +330,10 @@ func _ready() -> void:
 	siege.name = "FarmSiege"
 	siege.game = self
 	add_child(siege)
+	sanctum = KeepersSanctum.new()
+	sanctum.name = "KeepersSanctum"
+	sanctum.game = self
+	add_child(sanctum)
 	tavern_party = TavernParty.new()
 	tavern_party.name = "TavernParty"
 	tavern_party.game = self

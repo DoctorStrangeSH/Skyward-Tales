@@ -20,6 +20,23 @@ const PUZZLES := {
 		"hint": "На плите выбито: «Пять рун уснули. Тронь одну — проснутся и соседи. Разбуди всех разом — и камень откроет то, что хранит».",
 		"reward": {"gold": 220, "rarity": "epic"},
 	},
+	# The Keepers' Abode (scripts/keepers_sanctum.gd): each opens a seal.
+	"sanctum_runes": {
+		"region": "keepers_sanctum", "kind": "lights", "title": "Руны Обители", "opens": "sanctum_runes",
+		"center": [400, 1040], "radius": 66.0,
+		"names": ["Руна Начала", "Руна Памяти", "Руна Пути", "Руна Света", "Руна Тени", "Руна Конца"],
+		"scramble": [1, 4],
+		"hint": "На плите — письмена Хранителей: «Шесть рун хранят дверь. Каждая будит соседей. Пусть проснутся все — и печать узнает своих».",
+		"reward": {"gold": 120, "rarity": "rare"},
+	},
+	"sanctum_crystals": {
+		"region": "keepers_sanctum", "kind": "order", "title": "Поющие кристаллы Обители", "opens": "sanctum_crystals",
+		"center": [400, 760], "radius": 70.0,
+		"names": ["Кристалл Огня", "Кристалл Земли", "Кристалл Ветра", "Кристалл Воды"],
+		"order": [1, 3, 0, 2],
+		"hint": "Над кристаллами вырезано: «Корень держит. Вода точит. Огонь плавит. Ветер уносит. Так учили нас — так и пой».",
+		"reward": {"gold": 160, "rarity": "rare"},
+	},
 	"spire_bells": {
 		"region": "wind_spires", "kind": "order", "title": "Колокола Шпилей",
 		"center": [320, 590], "radius": 56.0,
@@ -93,6 +110,13 @@ func _solve(id: String) -> void:
 	game.achievements.add("puzzles")
 	var reward: Dictionary = info.get("reward", {})
 	var center := SkywardGame._vec(info["center"])
+	var opens := str(info.get("opens", ""))
+	if not opens.is_empty():
+		game.opened_doors[opens] = true
+		for node in game.get_children():
+			if node is DungeonDoor and node.door_id == opens:
+				node.set_open(true)
+		game.shake(3.0, 0.3)
 	game.player.add_gold(int(reward.get("gold", 0)))
 	game.player.add_experience(180 + 12 * game.player.level)
 	var items: Dictionary = reward.get("items", {})

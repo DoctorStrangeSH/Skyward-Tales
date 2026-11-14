@@ -71,6 +71,7 @@ func _populate_region() -> void:
 	game.mysteries.populate()
 	game.puzzles.populate()
 	game.companion_quests.populate()
+	game.sanctum.populate()
 	game.siege.populate()
 	game.escort.populate()
 	_apply_camera_limits()
@@ -414,6 +415,8 @@ func _spawn_npc(npc_data: Dictionary) -> void:
 		action = func(_source: Node2D) -> void: game.settlement.talk(npc_id)
 	elif game.givers.has_giver(npc_id) or game.givers.is_special(npc_id):
 		action = func(_source: Node2D) -> void: game.givers.talk(npc_id)
+	elif npc_id.begins_with("keeper_"):
+		action = func(_source: Node2D) -> void: game.sanctum.talk(npc_id)
 	else:
 		push_warning("У NPC нет обработчика диалога: " + npc_id)
 	if action.is_valid():
